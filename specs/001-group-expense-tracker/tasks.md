@@ -134,12 +134,12 @@
 - [ ] T065 [US2] Implement currency conversion logic with FX rate fallback in settlement calculator
 - [X] T066 [US2] Define SettlementRepository interface in lib/features/settlements/domain/repositories/settlement_repository.dart
 - [X] T067 [US2] Implement SettlementRepositoryImpl in lib/features/settlements/data/repositories/settlement_repository_impl.dart
-- [ ] T068 [US2] Create SettlementCubit in lib/features/settlements/presentation/cubits/settlement_cubit.dart
+- [X] T068 [US2] Create SettlementCubit in lib/features/settlements/presentation/cubits/settlement_cubit.dart
 - [X] T069 [P] [US2] Create SettlementSummaryPage in lib/features/settlements/presentation/pages/settlement_summary_page.dart
-- [ ] T070 [P] [US2] Create AllPeopleSummaryTable widget with color coding (green/red) in lib/features/settlements/presentation/widgets/all_people_summary_table.dart
+- [X] T070 [P] [US2] Create AllPeopleSummaryTable widget with color coding (green/red) in lib/features/settlements/presentation/widgets/all_people_summary_table.dart
 - [ ] T071 [P] [US2] Create PairwiseNettedView in lib/features/settlements/presentation/widgets/pairwise_netted_view.dart
-- [ ] T072 [P] [US2] Create MinimalTransfersView in lib/features/settlements/presentation/widgets/minimal_transfers_view.dart
-- [ ] T073 [US2] Implement copy-to-clipboard for settlement transfers
+- [X] T072 [P] [US2] Create MinimalTransfersView in lib/features/settlements/presentation/widgets/minimal_transfers_view.dart
+- [X] T073 [US2] Implement copy-to-clipboard for settlement transfers
 - [ ] T074 [US2] Deploy Cloud Functions to Firebase
 - [ ] T075 [US2] Add settlement calculation performance benchmark test (100 expenses < 2s requirement) in test/performance/settlement_benchmark_test.dart
 - [ ] T076 [US2] Run all US2 tests and verify they PASS

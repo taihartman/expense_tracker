@@ -1,4 +1,5 @@
 import '../../../../core/models/currency_code.dart';
+import '../../../../core/models/participant.dart';
 
 /// Trip domain entity
 ///
@@ -20,12 +21,17 @@ class Trip {
   /// When the trip was last updated
   final DateTime updatedAt;
 
+  /// Participants specific to this trip
+  /// Empty list means no participants configured yet (needs migration)
+  final List<Participant> participants;
+
   const Trip({
     required this.id,
     required this.name,
     required this.baseCurrency,
     required this.createdAt,
     required this.updatedAt,
+    this.participants = const [],
   });
 
   /// Validation rules for trip creation/update
@@ -47,6 +53,7 @@ class Trip {
     CurrencyCode? baseCurrency,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<Participant>? participants,
   }) {
     return Trip(
       id: id ?? this.id,
@@ -54,6 +61,7 @@ class Trip {
       baseCurrency: baseCurrency ?? this.baseCurrency,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      participants: participants ?? this.participants,
     );
   }
 
@@ -70,6 +78,7 @@ class Trip {
   @override
   String toString() {
     return 'Trip(id: $id, name: $name, baseCurrency: $baseCurrency, '
-        'createdAt: $createdAt, updatedAt: $updatedAt)';
+        'createdAt: $createdAt, updatedAt: $updatedAt, '
+        'participants: ${participants.length} participants)';
   }
 }

@@ -6,8 +6,10 @@ import '../../features/trips/presentation/widgets/trip_selector.dart';
 import '../../features/trips/presentation/cubits/trip_state.dart';
 import '../../features/trips/presentation/pages/trip_list_page.dart';
 import '../../features/trips/presentation/pages/trip_create_page.dart';
+import '../../features/trips/presentation/pages/trip_settings_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
+import '../../features/expenses/presentation/widgets/expense_form_bottom_sheet.dart';
 import '../../features/expenses/presentation/cubits/expense_cubit.dart';
 import '../../features/settlements/presentation/pages/settlement_summary_page.dart';
 
@@ -33,6 +35,13 @@ class AppRouter {
         builder: (context, state) => const TripCreatePage(),
       ),
       GoRoute(
+        path: '/trips/:tripId/settings',
+        builder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+          return TripSettingsPage(tripId: tripId);
+        },
+      ),
+      GoRoute(
         path: '/trips/:tripId/expenses',
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
@@ -44,6 +53,23 @@ class AppRouter {
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return ExpenseFormPage(tripId: tripId);
+        },
+      ),
+      GoRoute(
+        path: '/trips/:tripId/expenses/:expenseId/edit',
+        builder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+          final expenseId = state.pathParameters['expenseId']!;
+
+          // Get expense from ExpenseCubit
+          final expense = context.read<ExpenseCubit>().expenses.firstWhere(
+            (e) => e.id == expenseId,
+          );
+
+          return ExpenseFormPage(
+            tripId: tripId,
+            expense: expense,
+          );
         },
       ),
       GoRoute(
@@ -140,7 +166,10 @@ class _HomePageContent extends StatelessWidget {
           if (state is TripLoaded && state.selectedTrip != null) {
             return FloatingActionButton(
               onPressed: () {
-                context.go('/trips/${state.selectedTrip!.id}/expenses/create');
+                showExpenseFormBottomSheet(
+                  context: context,
+                  tripId: state.selectedTrip!.id,
+                );
               },
               child: const Icon(Icons.add),
             );

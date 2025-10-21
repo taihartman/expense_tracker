@@ -55,7 +55,7 @@ class TripSelectorWidget extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            trip.baseCurrency.name.toUpperCase(),
+                            trip.baseCurrency.code,
                             style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                   color: Theme.of(context).colorScheme.onPrimaryContainer,
                                 ),
@@ -135,7 +135,7 @@ class TripSelectorWidget extends StatelessWidget {
                     return ListTile(
                       leading: const Icon(Icons.flight_takeoff),
                       title: Text(trip.name),
-                      subtitle: Text(trip.baseCurrency.name.toUpperCase()),
+                      subtitle: Text(trip.baseCurrency.code),
                       onTap: () {
                         context.read<TripCubit>().selectTrip(trip);
                         Navigator.of(context).pop();

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../cubits/expense_cubit.dart';
 import '../cubits/expense_state.dart';
 import '../widgets/expense_card.dart';
+import '../widgets/expense_form_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Page displaying list of expenses for a trip
@@ -22,6 +23,13 @@ class ExpenseListPage extends StatelessWidget {
         title: const Text('Expenses'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Trip Settings',
+            onPressed: () {
+              context.go('/trips/$tripId/settings');
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.account_balance_wallet),
             tooltip: 'View Settlement',
             onPressed: () {
@@ -30,10 +38,11 @@ class ExpenseListPage extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.add),
+            tooltip: 'Add Expense',
             onPressed: () {
-              Navigator.of(context).pushNamed(
-                '/expense-form',
-                arguments: {'tripId': tripId},
+              showExpenseFormBottomSheet(
+                context: context,
+                tripId: tripId,
               );
             },
           ),
@@ -111,10 +120,11 @@ class ExpenseListPage extends StatelessWidget {
                 return ExpenseCard(
                   expense: expense,
                   onTap: () {
-                    // Navigate to expense detail or edit
-                    Navigator.of(context).pushNamed(
-                      '/expense-detail',
-                      arguments: {'expense': expense},
+                    // Show bottom sheet for editing
+                    showExpenseFormBottomSheet(
+                      context: context,
+                      tripId: tripId,
+                      expense: expense,
                     );
                   },
                 );
