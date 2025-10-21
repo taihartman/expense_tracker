@@ -8,8 +8,11 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'features/trips/data/repositories/trip_repository_impl.dart';
 import 'features/expenses/data/repositories/expense_repository_impl.dart';
+import 'features/categories/data/repositories/category_repository_impl.dart';
+import 'features/settlements/data/repositories/settlement_repository_impl.dart';
 import 'features/trips/presentation/cubits/trip_cubit.dart';
 import 'features/expenses/presentation/cubits/expense_cubit.dart';
+import 'features/settlements/presentation/cubits/settlement_cubit.dart';
 import 'shared/services/firestore_service.dart';
 
 /// Helper function to log with timestamps
@@ -69,6 +72,12 @@ class ExpenseTrackerApp extends StatelessWidget {
   static final _firestoreService = FirestoreService();
   static final _tripRepository = TripRepositoryImpl(firestoreService: _firestoreService);
   static final _expenseRepository = ExpenseRepositoryImpl(firestoreService: _firestoreService);
+  static final _categoryRepository = CategoryRepositoryImpl(firestoreService: _firestoreService);
+  static final _settlementRepository = SettlementRepositoryImpl(
+    firestoreService: _firestoreService,
+    expenseRepository: _expenseRepository,
+    tripRepository: _tripRepository,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +89,8 @@ class ExpenseTrackerApp extends StatelessWidget {
       providers: [
         RepositoryProvider.value(value: _tripRepository),
         RepositoryProvider.value(value: _expenseRepository),
+        RepositoryProvider.value(value: _categoryRepository),
+        RepositoryProvider.value(value: _settlementRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -87,7 +98,10 @@ class ExpenseTrackerApp extends StatelessWidget {
             create: (context) {
               _log('🔵 Creating TripCubit (lazy mode - will load when first accessed)...');
               final cubitStart = DateTime.now();
-              final cubit = TripCubit(tripRepository: _tripRepository);
+              final cubit = TripCubit(
+                tripRepository: _tripRepository,
+                categoryRepository: _categoryRepository,
+              );
               _log('✅ TripCubit created (${DateTime.now().difference(cubitStart).inMilliseconds}ms)');
               return cubit;
             },
@@ -97,6 +111,12 @@ class ExpenseTrackerApp extends StatelessWidget {
             create: (context) {
               _log('🔵 Creating ExpenseCubit...');
               return ExpenseCubit(expenseRepository: _expenseRepository);
+            },
+          ),
+          BlocProvider(
+            create: (context) {
+              _log('🔵 Creating SettlementCubit...');
+              return SettlementCubit(settlementRepository: _settlementRepository);
             },
           ),
         ],

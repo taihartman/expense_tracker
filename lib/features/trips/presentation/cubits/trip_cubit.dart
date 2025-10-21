@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/repositories/trip_repository.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import 'trip_state.dart';
 import '../../../../core/models/currency_code.dart';
 
@@ -13,11 +14,15 @@ void _log(String message) {
 
 class TripCubit extends Cubit<TripState> {
   final TripRepository _tripRepository;
+  final CategoryRepository? _categoryRepository;
   StreamSubscription<List<Trip>>? _tripsSubscription;
 
-  TripCubit({required TripRepository tripRepository})
-      : _tripRepository = tripRepository,
-        super(const TripInitial());
+  TripCubit({
+    required TripRepository tripRepository,
+    CategoryRepository? categoryRepository,
+  }) : _tripRepository = tripRepository,
+       _categoryRepository = categoryRepository,
+       super(const TripInitial());
 
   /// Load all trips for the user
   Future<void> loadTrips() async {
@@ -34,7 +39,9 @@ class TripCubit extends Cubit<TripState> {
       _log('🔍 Calling repository.getAllTrips()...');
       final repoStart = DateTime.now();
       final tripsStream = _tripRepository.getAllTrips();
-      _log('✅ Got trips stream (${DateTime.now().difference(repoStart).inMilliseconds}ms)');
+      _log(
+        '✅ Got trips stream (${DateTime.now().difference(repoStart).inMilliseconds}ms)',
+      );
 
       _log('⏳ Waiting for first stream emission...');
       final streamStart = DateTime.now();
@@ -42,7 +49,9 @@ class TripCubit extends Cubit<TripState> {
       // Use listen instead of await for to properly manage subscription
       _tripsSubscription = tripsStream.listen(
         (trips) {
-          _log('📦 Received ${trips.length} trips from stream (${DateTime.now().difference(streamStart).inMilliseconds}ms)');
+          _log(
+            '📦 Received ${trips.length} trips from stream (${DateTime.now().difference(streamStart).inMilliseconds}ms)',
+          );
 
           // Only emit if cubit is not closed
           if (!isClosed) {
@@ -66,11 +75,10 @@ class TripCubit extends Cubit<TripState> {
               _log('🎯 Auto-selected first trip: ${selectedTrip.name}');
             }
 
-            emit(TripLoaded(
-              trips: trips,
-              selectedTrip: selectedTrip,
-            ));
-            _log('✅ Emitted TripLoaded state (total time: ${DateTime.now().difference(loadStart).inMilliseconds}ms)');
+            emit(TripLoaded(trips: trips, selectedTrip: selectedTrip));
+            _log(
+              '✅ Emitted TripLoaded state (total time: ${DateTime.now().difference(loadStart).inMilliseconds}ms)',
+            );
           } else {
             _log('⚠️ Cubit closed, skipping emit');
           }
@@ -96,6 +104,7 @@ class TripCubit extends Cubit<TripState> {
     required CurrencyCode baseCurrency,
   }) async {
     try {
+      _log('🆕 Creating trip: $name with base currency: ${baseCurrency.name}');
       emit(const TripCreating());
 
       final trip = Trip(
@@ -107,12 +116,30 @@ class TripCubit extends Cubit<TripState> {
       );
 
       final createdTrip = await _tripRepository.createTrip(trip);
+      _log('✅ Trip created with ID: ${createdTrip.id}');
+
+      // Seed default categories for the new trip
+      if (_categoryRepository != null) {
+        _log('🌱 Seeding default categories for trip ${createdTrip.id}...');
+        try {
+          final categories = await _categoryRepository.seedDefaultCategories(
+            createdTrip.id,
+          );
+          _log('✅ Seeded ${categories.length} default categories');
+        } catch (e) {
+          _log('⚠️ Failed to seed categories (non-fatal): $e');
+          // Don't fail trip creation if category seeding fails
+        }
+      } else {
+        _log('⚠️ CategoryRepository not provided, skipping category seeding');
+      }
 
       emit(TripCreated(createdTrip));
 
       // Reload trips to update the list
       await loadTrips();
     } catch (e) {
+      _log('❌ Failed to create trip: $e');
       emit(TripError('Failed to create trip: ${e.toString()}'));
     }
   }

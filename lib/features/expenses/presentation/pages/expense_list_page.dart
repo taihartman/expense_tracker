@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubits/expense_cubit.dart';
 import '../cubits/expense_state.dart';
 import '../widgets/expense_card.dart';
@@ -20,6 +21,13 @@ class ExpenseListPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Expenses'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.account_balance_wallet),
+            tooltip: 'View Settlement',
+            onPressed: () {
+              context.go('/trips/$tripId/settlement');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {

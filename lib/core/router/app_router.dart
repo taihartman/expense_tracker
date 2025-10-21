@@ -9,6 +9,7 @@ import '../../features/trips/presentation/pages/trip_create_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
 import '../../features/expenses/presentation/cubits/expense_cubit.dart';
+import '../../features/settlements/presentation/pages/settlement_summary_page.dart';
 
 /// App routing configuration using go_router
 ///
@@ -43,6 +44,13 @@ class AppRouter {
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return ExpenseFormPage(tripId: tripId);
+        },
+      ),
+      GoRoute(
+        path: '/trips/:tripId/settlement',
+        builder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+          return SettlementSummaryPage(tripId: tripId);
         },
       ),
     ],

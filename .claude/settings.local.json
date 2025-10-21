@@ -16,7 +16,11 @@
       "Bash(specs/001-group-expense-tracker/tasks.md)",
       "Bash(flutter analyze:*)",
       "Bash(flutter test:*)",
-      "Bash(flutter:*)"
+      "Bash(flutter:*)",
+      "Bash(if [ -d \"/Users/a515138832/expense_tracker/specs/001-group-expense-tracker/checklists\" ])",
+      "Bash(then echo \"EXISTS\")",
+      "Bash(else echo \"NO_CHECKLISTS\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

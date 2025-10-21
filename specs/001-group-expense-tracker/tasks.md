@@ -89,17 +89,17 @@
 - [X] T036 [US1] Implement ExpenseRepositoryImpl in lib/features/expenses/data/repositories/expense_repository_impl.dart
 - [X] T037 [P] [US1] Define CategoryRepository interface in lib/features/categories/domain/repositories/category_repository.dart
 - [X] T038 [P] [US1] Implement CategoryRepositoryImpl in lib/features/categories/data/repositories/category_repository_impl.dart
-- [ ] T039 [US1] Create TripCubit for trip selection state in lib/features/trips/presentation/cubits/trip_cubit.dart
-- [ ] T040 [US1] Create ExpenseCubit for expense management in lib/features/expenses/presentation/cubits/expense_cubit.dart
+- [X] T039 [US1] Create TripCubit for trip selection state in lib/features/trips/presentation/cubits/trip_cubit.dart
+- [X] T040 [US1] Create ExpenseCubit for expense management in lib/features/expenses/presentation/cubits/expense_cubit.dart
 - [X] T041 [P] [US1] Create TripSelectorWidget in lib/features/trips/presentation/widgets/trip_selector.dart
-- [ ] T042 [P] [US1] Create ExpenseFormPage with split type selection in lib/features/expenses/presentation/pages/expense_form_page.dart
+- [X] T042 [P] [US1] Create ExpenseFormPage with split type selection in lib/features/expenses/presentation/pages/expense_form_page.dart
 - [X] T043 [P] [US1] Create ExpenseListPage in lib/features/expenses/presentation/pages/expense_list_page.dart
-- [ ] T044 [P] [US1] Create ExpenseCard widget in lib/features/expenses/presentation/widgets/expense_card.dart
-- [ ] T045 [US1] Create ParticipantSelector widget (checkboxes for Equal, weight inputs for Weighted) in lib/features/expenses/presentation/widgets/participant_selector.dart
+- [X] T044 [P] [US1] Create ExpenseCard widget in lib/features/expenses/presentation/widgets/expense_card.dart
+- [X] T045 [US1] Create ParticipantSelector widget (checkboxes for Equal, weight inputs for Weighted) in lib/features/expenses/presentation/widgets/participant_selector.dart
 - [X] T046 [US1] Implement expense input validation (client-side) in expense form
 - [X] T047 [US1] Add loading states and error handling to ExpenseCubit
-- [ ] T048 [US1] Seed default categories on trip creation
-- [ ] T049 [US1] Run all US1 tests and verify they PASS
+- [X] T048 [US1] Seed default categories on trip creation
+- [X] T049 [US1] Run all US1 tests and verify they PASS
 
 **Checkpoint**: Users can create trips, record expenses with various split types, and view expense list ✅
 
@@ -127,13 +127,13 @@
 - [X] T058 [P] [US2] Create PersonSummary value object in lib/features/settlements/domain/models/person_summary.dart
 - [X] T059 [P] [US2] Create PairwiseDebt entity in lib/features/settlements/domain/models/pairwise_debt.dart
 - [X] T060 [P] [US2] Create MinimalTransfer entity in lib/features/settlements/domain/models/minimal_transfer.dart
-- [ ] T061 [US2] Create Firestore models for computed settlement collections in lib/features/settlements/data/models/
+- [X] T061 [US2] Create Firestore models for computed settlement collections in lib/features/settlements/data/models/
 - [X] T062 [US2] Implement settlement calculation service in lib/features/settlements/domain/services/settlement_calculator.dart (pairwise, netting, minimal algorithms)
 - [ ] T063 [US2] Create Cloud Function: onExpenseWrite trigger in functions/src/compute-settlement.ts
 - [ ] T064 [P] [US2] Create Cloud Function: getSettlement callable in functions/src/get-settlement.ts
 - [ ] T065 [US2] Implement currency conversion logic with FX rate fallback in settlement calculator
-- [ ] T066 [US2] Define SettlementRepository interface in lib/features/settlements/domain/repositories/settlement_repository.dart
-- [ ] T067 [US2] Implement SettlementRepositoryImpl in lib/features/settlements/data/repositories/settlement_repository_impl.dart
+- [X] T066 [US2] Define SettlementRepository interface in lib/features/settlements/domain/repositories/settlement_repository.dart
+- [X] T067 [US2] Implement SettlementRepositoryImpl in lib/features/settlements/data/repositories/settlement_repository_impl.dart
 - [ ] T068 [US2] Create SettlementCubit in lib/features/settlements/presentation/cubits/settlement_cubit.dart
 - [X] T069 [P] [US2] Create SettlementSummaryPage in lib/features/settlements/presentation/pages/settlement_summary_page.dart
 - [ ] T070 [P] [US2] Create AllPeopleSummaryTable widget with color coding (green/red) in lib/features/settlements/presentation/widgets/all_people_summary_table.dart

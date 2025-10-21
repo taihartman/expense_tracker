@@ -23,6 +23,10 @@ class FirestoreService {
   CollectionReference get exchangeRates =>
       _firestore.collection('exchangeRates');
 
+  /// Get reference to settlements collection (parent for summaries and transfers)
+  CollectionReference get settlements =>
+      _firestore.collection('settlements');
+
   /// Get reference to settlement summaries collection
   CollectionReference get settlementSummaries =>
       _firestore.collection('settlementSummaries');
