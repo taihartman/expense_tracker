@@ -1,11 +1,19 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/repositories/trip_repository.dart';
 import 'trip_state.dart';
 import '../../../../core/models/currency_code.dart';
 
+/// Helper function to log with timestamps
+void _log(String message) {
+  debugPrint('[${DateTime.now().toIso8601String()}] [TripCubit] $message');
+}
+
 class TripCubit extends Cubit<TripState> {
   final TripRepository _tripRepository;
+  StreamSubscription<List<Trip>>? _tripsSubscription;
 
   TripCubit({required TripRepository tripRepository})
       : _tripRepository = tripRepository,
@@ -14,37 +22,71 @@ class TripCubit extends Cubit<TripState> {
   /// Load all trips for the user
   Future<void> loadTrips() async {
     try {
+      _log('📥 loadTrips() started');
+      final loadStart = DateTime.now();
+
+      // Cancel existing subscription if any
+      await _tripsSubscription?.cancel();
+
       emit(const TripLoading());
+      _log('✅ Emitted TripLoading state');
 
+      _log('🔍 Calling repository.getAllTrips()...');
+      final repoStart = DateTime.now();
       final tripsStream = _tripRepository.getAllTrips();
+      _log('✅ Got trips stream (${DateTime.now().difference(repoStart).inMilliseconds}ms)');
 
-      await for (final trips in tripsStream) {
-        // Get currently selected trip if any
-        Trip? selectedTrip;
-        if (state is TripLoaded) {
-          selectedTrip = (state as TripLoaded).selectedTrip;
+      _log('⏳ Waiting for first stream emission...');
+      final streamStart = DateTime.now();
 
-          // Verify selected trip still exists in the list
-          if (selectedTrip != null) {
-            final stillExists = trips.any((t) => t.id == selectedTrip!.id);
-            if (!stillExists) {
-              selectedTrip = null;
+      // Use listen instead of await for to properly manage subscription
+      _tripsSubscription = tripsStream.listen(
+        (trips) {
+          _log('📦 Received ${trips.length} trips from stream (${DateTime.now().difference(streamStart).inMilliseconds}ms)');
+
+          // Only emit if cubit is not closed
+          if (!isClosed) {
+            // Get currently selected trip if any
+            Trip? selectedTrip;
+            if (state is TripLoaded) {
+              selectedTrip = (state as TripLoaded).selectedTrip;
+
+              // Verify selected trip still exists in the list
+              if (selectedTrip != null) {
+                final stillExists = trips.any((t) => t.id == selectedTrip!.id);
+                if (!stillExists) {
+                  selectedTrip = null;
+                }
+              }
             }
+
+            // If no trip selected and trips exist, select the first one
+            if (selectedTrip == null && trips.isNotEmpty) {
+              selectedTrip = trips.first;
+              _log('🎯 Auto-selected first trip: ${selectedTrip.name}');
+            }
+
+            emit(TripLoaded(
+              trips: trips,
+              selectedTrip: selectedTrip,
+            ));
+            _log('✅ Emitted TripLoaded state (total time: ${DateTime.now().difference(loadStart).inMilliseconds}ms)');
+          } else {
+            _log('⚠️ Cubit closed, skipping emit');
           }
-        }
-
-        // If no trip selected and trips exist, select the first one
-        if (selectedTrip == null && trips.isNotEmpty) {
-          selectedTrip = trips.first;
-        }
-
-        emit(TripLoaded(
-          trips: trips,
-          selectedTrip: selectedTrip,
-        ));
-      }
+        },
+        onError: (error) {
+          _log('❌ Stream error: $error');
+          if (!isClosed) {
+            emit(TripError('Failed to load trips: ${error.toString()}'));
+          }
+        },
+      );
     } catch (e) {
-      emit(TripError('Failed to load trips: ${e.toString()}'));
+      _log('❌ Error loading trips: $e');
+      if (!isClosed) {
+        emit(TripError('Failed to load trips: ${e.toString()}'));
+      }
     }
   }
 
@@ -137,5 +179,12 @@ class TripCubit extends Cubit<TripState> {
     } catch (e) {
       emit(TripError('Failed to delete trip: ${e.toString()}'));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _log('🔴 Closing TripCubit - cancelling stream subscription');
+    _tripsSubscription?.cancel();
+    return super.close();
   }
 }

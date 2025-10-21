@@ -1,7 +1,13 @@
+import 'package:flutter/material.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/repositories/trip_repository.dart';
 import '../models/trip_model.dart';
+
+/// Helper function to log with timestamps
+void _log(String message) {
+  debugPrint('[${DateTime.now().toIso8601String()}] [TripRepository] $message');
+}
 
 /// Firestore implementation of TripRepository
 class TripRepositoryImpl implements TripRepository {
@@ -57,13 +63,23 @@ class TripRepositoryImpl implements TripRepository {
   @override
   Stream<List<Trip>> getAllTrips() {
     try {
+      _log('🔍 getAllTrips() called - creating Firestore stream with cache-first strategy');
+      final streamStart = DateTime.now();
+
+      // Use snapshots with metadata changes to get cache data immediately
+      // This emits cache data first, then server data when available
       return _firestoreService.trips
           .orderBy('createdAt', descending: true)
-          .snapshots()
+          .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
-        return snapshot.docs.map((doc) => TripModel.fromFirestore(doc)).toList();
+        final mapStart = DateTime.now();
+        final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
+        final trips = snapshot.docs.map((doc) => TripModel.fromFirestore(doc)).toList();
+        _log('📦 Stream emitted ${trips.length} trips from $source (query: ${DateTime.now().difference(streamStart).inMilliseconds}ms, map: ${DateTime.now().difference(mapStart).inMilliseconds}ms)');
+        return trips;
       });
     } catch (e) {
+      _log('❌ Error creating trips stream: $e');
       throw Exception('Failed to get trips stream: $e');
     }
   }

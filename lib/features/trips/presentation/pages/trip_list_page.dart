@@ -4,23 +4,32 @@ import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../../../../core/theme/app_theme.dart';
 
+/// Helper function to log with timestamps
+void _log(String message) {
+  debugPrint('[${DateTime.now().toIso8601String()}] [TripListPage] $message');
+}
+
 /// Page displaying all trips
 class TripListPage extends StatelessWidget {
   const TripListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    _log('🎨 Building TripListPage');
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Trips'),
-      ),
+      appBar: AppBar(title: const Text('My Trips')),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
+          _log('🔄 BlocBuilder rebuilding with state: ${state.runtimeType}');
+
           if (state is TripLoading) {
+            _log('⏳ Showing loading indicator');
             return const Center(child: CircularProgressIndicator());
           }
 
           if (state is TripError) {
+            _log('❌ Showing error: ${state.message}');
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -39,18 +48,20 @@ class TripListPage extends StatelessWidget {
 
           if (state is TripLoaded) {
             if (state.trips.isEmpty) {
+              _log('📭 No trips to display');
               return const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.flight_takeoff, size: 64),
-                    const SizedBox(height: AppTheme.spacing2),
-                    const Text('No trips yet'),
+                    Icon(Icons.flight_takeoff, size: 64),
+                    SizedBox(height: AppTheme.spacing2),
+                    Text('No trips yet'),
                   ],
                 ),
               );
             }
 
+            _log('✅ Rendering ${state.trips.length} trips');
             return ListView.builder(
               padding: const EdgeInsets.all(AppTheme.spacing2),
               itemCount: state.trips.length,
@@ -62,12 +73,19 @@ class TripListPage extends StatelessWidget {
                   child: ListTile(
                     leading: Icon(
                       Icons.flight_takeoff,
-                      color: isSelected ? Theme.of(context).colorScheme.primary : null,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
                     ),
                     title: Text(trip.name),
-                    subtitle: Text('Base: ${trip.baseCurrency.name.toUpperCase()}'),
+                    subtitle: Text(
+                      'Base: ${trip.baseCurrency.name.toUpperCase()}',
+                    ),
                     trailing: isSelected
-                        ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
+                        ? Icon(
+                            Icons.check_circle,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
                         : null,
                     onTap: () {
                       context.read<TripCubit>().selectTrip(trip);

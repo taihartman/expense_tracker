@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -31,7 +32,7 @@ class _TripCreatePageState extends State<TripCreatePage> {
             name: _nameController.text.trim(),
             baseCurrency: _selectedCurrency,
           );
-      Navigator.of(context).pop();
+      context.go('/');
     }
   }
 

@@ -8,13 +8,14 @@ import '../../features/trips/presentation/pages/trip_list_page.dart';
 import '../../features/trips/presentation/pages/trip_create_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
-import '../../features/trips/data/repositories/trip_repository_impl.dart';
-import '../../features/expenses/data/repositories/expense_repository_impl.dart';
 import '../../features/expenses/presentation/cubits/expense_cubit.dart';
-import '../../shared/services/firestore_service.dart';
 
 /// App routing configuration using go_router
+///
+/// Note: BLoC providers are now managed at the app root level in main.dart
+/// This ensures singleton cubit instances across all routes for proper caching
 class AppRouter {
+
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     routes: [
@@ -55,35 +56,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiRepositoryProvider(
-      providers: [
-        RepositoryProvider(
-          create: (context) => TripRepositoryImpl(
-            firestoreService: FirestoreService(),
-          ),
-        ),
-        RepositoryProvider(
-          create: (context) => ExpenseRepositoryImpl(
-            firestoreService: FirestoreService(),
-          ),
-        ),
-      ],
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => TripCubit(
-              tripRepository: context.read<TripRepositoryImpl>(),
-            )..loadTrips(),
-          ),
-          BlocProvider(
-            create: (context) => ExpenseCubit(
-              expenseRepository: context.read<ExpenseRepositoryImpl>(),
-            ),
-          ),
-        ],
-        child: const _HomePageContent(),
-      ),
-    );
+    return const _HomePageContent();
   }
 }
 
