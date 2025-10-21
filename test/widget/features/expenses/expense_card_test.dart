@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:decimal/decimal.dart';
 import 'package:expense_tracker/features/expenses/presentation/widgets/expense_card.dart';
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart';
+import 'package:expense_tracker/core/models/participant.dart';
 import 'package:expense_tracker/core/models/split_type.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
 import 'package:intl/intl.dart';
@@ -12,8 +13,16 @@ void main() {
     late Expense testExpenseEqualSplit;
     late Expense testExpenseWeightedSplit;
     late Expense testExpenseVND;
+    late List<Participant> testParticipants;
 
     setUp(() {
+      // Create test participants
+      testParticipants = [
+        const Participant(id: 'tai', name: 'Tai'),
+        const Participant(id: 'khiet', name: 'Khiet'),
+        const Participant(id: 'bob', name: 'Bob'),
+        const Participant(id: 'ethan', name: 'Ethan'),
+      ];
       testExpenseEqualSplit = Expense(
         id: 'expense-1',
         tripId: 'trip-1',
@@ -76,7 +85,10 @@ void main() {
     Widget createWidgetUnderTest(Expense expense) {
       return MaterialApp(
         home: Scaffold(
-          body: ExpenseCard(expense: expense),
+          body: ExpenseCard(
+            expense: expense,
+            participants: testParticipants,
+          ),
         ),
       );
     }
@@ -190,6 +202,7 @@ void main() {
         home: Scaffold(
           body: ExpenseCard(
             expense: testExpense,
+            participants: testParticipants,
             onTap: () => tapped = true,
           ),
         ),

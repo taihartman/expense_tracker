@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -118,7 +119,7 @@ class _TripListPageState extends State<TripListPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).pushNamed('/trips/create'),
+        onPressed: () => context.push('/trips/create'),
         child: const Icon(Icons.add),
       ),
     );

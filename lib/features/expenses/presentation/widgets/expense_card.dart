@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/expense.dart';
-import '../../../../core/constants/participants.dart';
+import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 
@@ -10,13 +10,23 @@ import '../../../../core/utils/formatters.dart';
 /// Shows amount, description, payer, date, split type, and participants
 class ExpenseCard extends StatelessWidget {
   final Expense expense;
+  final List<Participant> participants;
   final VoidCallback? onTap;
 
   const ExpenseCard({
     required this.expense,
+    required this.participants,
     this.onTap,
     super.key,
   });
+
+  String _getParticipantName(String userId) {
+    try {
+      return participants.firstWhere((p) => p.id == userId).name;
+    } catch (e) {
+      return userId; // Fallback to ID if not found
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +84,7 @@ class ExpenseCard extends StatelessWidget {
                 children: [
                   // Payer
                   Text(
-                    'Paid by ${Participants.getNameById(expense.payerUserId)}',
+                    'Paid by ${_getParticipantName(expense.payerUserId)}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

@@ -6,6 +6,7 @@ import '../../domain/repositories/trip_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
 import 'trip_state.dart';
 import '../../../../core/models/currency_code.dart';
+import '../../../../core/services/local_storage_service.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -15,14 +16,25 @@ void _log(String message) {
 class TripCubit extends Cubit<TripState> {
   final TripRepository _tripRepository;
   final CategoryRepository? _categoryRepository;
+  final LocalStorageService _localStorageService;
   StreamSubscription<List<Trip>>? _tripsSubscription;
+
+  /// Currently selected trip ID (persisted across state changes)
+  String? _selectedTripId;
 
   TripCubit({
     required TripRepository tripRepository,
+    required LocalStorageService localStorageService,
     CategoryRepository? categoryRepository,
   }) : _tripRepository = tripRepository,
        _categoryRepository = categoryRepository,
-       super(const TripInitial());
+       _localStorageService = localStorageService,
+       super(const TripInitial()) {
+    // Load saved selected trip ID from storage
+    _log('🔄 TripCubit constructor called - loading saved trip ID...');
+    _selectedTripId = _localStorageService.getSelectedTripId();
+    _log('🔄 Initialized with saved trip ID: ${_selectedTripId ?? "null (no saved trip)"}');
+  }
 
   /// Load all trips for the user
   Future<void> loadTrips() async {
@@ -48,36 +60,54 @@ class TripCubit extends Cubit<TripState> {
 
       // Use listen instead of await for to properly manage subscription
       _tripsSubscription = tripsStream.listen(
-        (trips) {
+        (trips) async {
           _log(
             '📦 Received ${trips.length} trips from stream (${DateTime.now().difference(streamStart).inMilliseconds}ms)',
           );
 
           // Only emit if cubit is not closed
           if (!isClosed) {
-            // Get currently selected trip if any
+            // Try to restore the selected trip using persisted ID
             Trip? selectedTrip;
-            if (state is TripLoaded) {
-              selectedTrip = (state as TripLoaded).selectedTrip;
 
-              // Verify selected trip still exists in the list
+            _log('🔍 Trip restoration logic:');
+            _log('  - Received ${trips.length} trips');
+            _log('  - Saved trip ID in memory: ${_selectedTripId ?? "null"}');
+
+            // Log all trip IDs for debugging
+            for (var trip in trips) {
+              _log('  - Available trip: ${trip.name} (ID: ${trip.id})');
+            }
+
+            if (_selectedTripId != null) {
+              _log('🔎 Attempting to restore trip with ID: $_selectedTripId');
+              // Try to find the trip with the persisted ID
+              selectedTrip = trips.where((t) => t.id == _selectedTripId).firstOrNull;
+
               if (selectedTrip != null) {
-                final stillExists = trips.any((t) => t.id == selectedTrip!.id);
-                if (!stillExists) {
-                  selectedTrip = null;
-                }
+                _log('✅ Restored selected trip from storage: ${selectedTrip.name} (ID: ${selectedTrip.id})');
+              } else {
+                _log('⚠️ Saved trip ID $_selectedTripId not found in trips list');
+                _log('⚠️ Clearing invalid trip ID from storage');
+                _selectedTripId = null;
+                await _localStorageService.clearSelectedTripId();
               }
+            } else {
+              _log('ℹ️ No saved trip ID found in storage');
             }
 
             // If no trip selected and trips exist, select the first one
             if (selectedTrip == null && trips.isNotEmpty) {
               selectedTrip = trips.first;
-              _log('🎯 Auto-selected first trip: ${selectedTrip.name}');
+              _selectedTripId = selectedTrip.id;
+              _log('🎯 Auto-selecting first trip: ${selectedTrip.name} (ID: ${selectedTrip.id})');
+              await _localStorageService.saveSelectedTripId(selectedTrip.id);
+              _log('💾 Auto-selected trip saved to storage');
             }
 
             emit(TripLoaded(trips: trips, selectedTrip: selectedTrip));
             _log(
-              '✅ Emitted TripLoaded state (total time: ${DateTime.now().difference(loadStart).inMilliseconds}ms)',
+              '✅ Emitted TripLoaded state with selected trip: ${selectedTrip?.name ?? "none"} (total time: ${DateTime.now().difference(loadStart).inMilliseconds}ms)',
             );
           } else {
             _log('⚠️ Cubit closed, skipping emit');
@@ -145,10 +175,17 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Select a trip
-  void selectTrip(Trip trip) {
+  Future<void> selectTrip(Trip trip) async {
+    _log('👆 User selected trip: ${trip.name} (ID: ${trip.id})');
     if (state is TripLoaded) {
       final currentState = state as TripLoaded;
+      _selectedTripId = trip.id;
+      _log('💾 Saving trip ID to storage...');
+      await _localStorageService.saveSelectedTripId(trip.id);
+      _log('✅ Trip selection complete - emitting new state');
       emit(currentState.copyWith(selectedTrip: trip));
+    } else {
+      _log('⚠️ Cannot select trip - state is not TripLoaded (current state: ${state.runtimeType})');
     }
   }
 
@@ -188,12 +225,48 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
+  /// Update trip details (name and base currency)
+  Future<void> updateTripDetails({
+    required String tripId,
+    required String name,
+    required CurrencyCode baseCurrency,
+  }) async {
+    try {
+      _log('✏️ Updating trip $tripId: name="$name", baseCurrency=${baseCurrency.name}');
+
+      // Get the current trip to preserve other fields
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Create updated trip with new details
+      final updatedTrip = currentTrip.copyWith(
+        name: name,
+        baseCurrency: baseCurrency,
+      );
+
+      // Use existing updateTrip method
+      await updateTrip(updatedTrip);
+      _log('✅ Trip details updated successfully');
+    } catch (e) {
+      _log('❌ Failed to update trip details: $e');
+      emit(TripError('Failed to update trip: ${e.toString()}'));
+    }
+  }
+
   /// Delete a trip
   Future<void> deleteTrip(String tripId) async {
     try {
       await _tripRepository.deleteTrip(tripId);
 
       // If deleted trip was selected, clear selection
+      if (_selectedTripId == tripId) {
+        _selectedTripId = null;
+        await _localStorageService.clearSelectedTripId();
+        _log('🗑️ Cleared selected trip from storage (trip deleted)');
+      }
+
       if (state is TripLoaded) {
         final currentState = state as TripLoaded;
         if (currentState.selectedTrip?.id == tripId) {

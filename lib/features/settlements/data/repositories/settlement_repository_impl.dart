@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
@@ -8,6 +9,11 @@ import '../../domain/repositories/settlement_repository.dart';
 import '../../domain/services/settlement_calculator.dart';
 import '../models/settlement_summary_model.dart';
 import '../models/minimal_transfer_model.dart';
+
+/// Helper function to log with timestamps
+void _log(String message) {
+  debugPrint('[${DateTime.now().toIso8601String()}] [SettlementRepository] $message');
+}
 
 /// Firestore implementation of SettlementRepository
 ///
@@ -127,47 +133,81 @@ class SettlementRepositoryImpl implements SettlementRepository {
   @override
   Future<SettlementSummary> computeSettlement(String tripId) async {
     try {
+      _log('🔄 computeSettlement() called for trip: $tripId');
+
       // Get trip to determine base currency
       final trip = await _tripRepository.getTripById(tripId);
       if (trip == null) {
         throw Exception('Trip not found: $tripId');
       }
+      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
 
       // Get all expenses for the trip (await first value from stream)
       final expenses = await _expenseRepository
           .getExpensesByTrip(tripId)
           .first;
 
+      _log('📦 Retrieved ${expenses.length} expenses from Firestore');
+
       // Calculate person summaries from expenses (raw calculation)
+      _log('\n=== CALCULATING PERSON SUMMARIES ===');
       var personSummaries = _calculator.calculatePersonSummaries(
         expenses: expenses,
         baseCurrency: trip.baseCurrency,
       );
 
-      // Calculate minimal transfers from raw summaries
-      final transfers = _calculator.calculateMinimalTransfers(
-        tripId: tripId,
-        personSummaries: personSummaries,
-      );
-
-      // Get existing transfers and build map of settled transfers
+      // Get existing transfers and build list of settled transfers
+      _log('\n=== CHECKING FOR SETTLED TRANSFERS ===');
       final existingTransfers = await _firestoreService.settlements
           .doc(tripId)
           .collection('transfers')
           .get();
 
-      // Build map of settled transfers: "fromUserId-toUserId" -> (isSettled, settledAt, amount)
+      _log('📦 Found ${existingTransfers.docs.length} existing transfers');
+
+      // Build list of settled transfers to apply as adjustments
+      final settledTransfersToApply = <MinimalTransfer>[];
       final settledMap = <String, ({bool isSettled, DateTime? settledAt, })>{};
+
       for (final doc in existingTransfers.docs) {
         final existingTransfer = MinimalTransferModel.fromFirestore(doc);
         if (existingTransfer.isSettled) {
+          settledTransfersToApply.add(existingTransfer);
           final key = '${existingTransfer.fromUserId}-${existingTransfer.toUserId}';
           settledMap[key] = (
             isSettled: existingTransfer.isSettled,
             settledAt: existingTransfer.settledAt,
           );
+          _log('✅ Settled transfer found: ${existingTransfer.fromUserId} -> ${existingTransfer.toUserId} (${existingTransfer.amountBase})');
         }
       }
+
+      // Apply adjustments to person summaries based on settled transfers BEFORE calculating new transfers
+      _log('\n=== APPLYING SETTLED TRANSFER ADJUSTMENTS ===');
+      if (settledTransfersToApply.isNotEmpty) {
+        _log('Applying ${settledTransfersToApply.length} settled transfer adjustments');
+        for (final t in settledTransfersToApply) {
+          _log('  ${t.fromUserId} -> ${t.toUserId}: ${t.amountBase}');
+        }
+        personSummaries = _applySettledTransferAdjustments(
+          personSummaries,
+          settledTransfersToApply,
+        );
+      } else {
+        _log('No settled transfers to adjust');
+      }
+
+      _log('\n📊 Person Summaries AFTER adjustments (BEFORE calculating transfers):');
+      personSummaries.forEach((userId, summary) {
+        _log('  $userId: Net = ${summary.netBase}');
+      });
+
+      // NOW calculate minimal transfers from ADJUSTED summaries
+      _log('\n=== CALCULATING MINIMAL TRANSFERS ===');
+      final transfers = _calculator.calculateMinimalTransfers(
+        tripId: tripId,
+        personSummaries: personSummaries,
+      );
 
       // Build list of transfers with settled status preserved
       final transfersWithSettledStatus = <MinimalTransfer>[];
@@ -187,12 +227,6 @@ class SettlementRepositoryImpl implements SettlementRepository {
         ));
       }
 
-      // Apply adjustments to person summaries based on settled transfers
-      personSummaries = _applySettledTransferAdjustments(
-        personSummaries,
-        transfersWithSettledStatus,
-      );
-
       // Create settlement summary with adjusted summaries
       final settlementSummary = SettlementSummary(
         tripId: tripId,
@@ -200,6 +234,8 @@ class SettlementRepositoryImpl implements SettlementRepository {
         personSummaries: personSummaries,
         lastComputedAt: DateTime.now(),
       );
+
+      _log('\n💾 Saving settlement summary to Firestore...');
 
       // Save settlement summary to Firestore (with adjusted summaries)
       await _firestoreService.settlements
@@ -237,8 +273,13 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
       await batch.commit();
 
+      _log('✅ Settlement computed and saved successfully');
+      _log('   ${transfersWithSettledStatus.length} transfers created');
+      _log('   ${personSummaries.length} person summaries saved\n');
+
       return settlementSummary;
     } catch (e) {
+      _log('❌ Error in computeSettlement: $e');
       throw Exception('Failed to compute settlement: $e');
     }
   }

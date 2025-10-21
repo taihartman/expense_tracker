@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../domain/models/minimal_transfer.dart';
+import '../../domain/models/settlement_summary.dart';
 import '../../domain/repositories/settlement_repository.dart';
-import '../../domain/repositories/settled_transfer_repository.dart';
 import 'settlement_state.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
@@ -14,70 +14,62 @@ void _log(String message) {
   debugPrint('[${DateTime.now().toIso8601String()}] [SettlementCubit] $message');
 }
 
-/// Settlement Cubit using Pure Derived State Pattern
+/// Simplified SettlementCubit using Pure Derived State Pattern
 ///
 /// Key Principles:
 /// 1. Settlements are DERIVED from expenses (not stored separately)
 /// 2. Calculate on-demand whenever expenses change
 /// 3. Only store "settled transfer" history in Firestore
 /// 4. Always accurate, no staleness issues
-///
-/// This is a SIMPLIFIED version that replaces the complex 368-line implementation
-/// with a clean 150-line approach that's easier to maintain and debug.
-class SettlementCubit extends Cubit<SettlementState> {
+class SettlementCubitSimplified extends Cubit<SettlementState> {
   final SettlementRepository _settlementRepository;
   final ExpenseRepository _expenseRepository;
   final TripRepository _tripRepository;
-  final SettledTransferRepository _settledTransferRepository;
 
   StreamSubscription? _combinedSubscription;
   String? _currentTripId;
 
-  SettlementCubit({
+  SettlementCubitSimplified({
     required SettlementRepository settlementRepository,
     required ExpenseRepository expenseRepository,
     required TripRepository tripRepository,
-    required SettledTransferRepository settledTransferRepository,
   })  : _settlementRepository = settlementRepository,
         _expenseRepository = expenseRepository,
         _tripRepository = tripRepository,
-        _settledTransferRepository = settledTransferRepository,
         super(const SettlementInitial());
 
   /// Separate transfers into active and settled lists
   ({List<MinimalTransfer> active, List<MinimalTransfer> settled}) _separateTransfers(
-    List<MinimalTransfer> calculatedTransfers,
-    List<MinimalTransfer> settledTransfers,
-  ) {
+      List<MinimalTransfer> allTransfers) {
     final active = <MinimalTransfer>[];
+    final settled = <MinimalTransfer>[];
 
-    for (final transfer in calculatedTransfers) {
-      // Check if this transfer matches any settled transfer
-      final isSettled = settledTransfers.any((settled) =>
-          settled.fromUserId == transfer.fromUserId &&
-          settled.toUserId == transfer.toUserId);
-
-      if (!isSettled) {
+    for (final transfer in allTransfers) {
+      if (transfer.isSettled) {
+        settled.add(transfer);
+      } else {
         active.add(transfer);
       }
     }
 
-    return (active: active, settled: settledTransfers);
+    return (active: active, settled: settled);
   }
 
   /// Load settlement by calculating from current expenses
   ///
-  /// Subscribes to both expense stream and settled transfer stream,
-  /// recalculating whenever either changes.
+  /// This method subscribes to the expense stream and recalculates
+  /// settlements whenever expenses change. No complex synchronization needed!
   Future<void> loadSettlement(String tripId) async {
     try {
-      _log('📥 Loading settlement for trip: $tripId');
+      _log('📥 Loading settlement for trip: $tripId (SIMPLIFIED APPROACH)');
       _currentTripId = tripId;
 
+      // Cancel existing subscription
       await _combinedSubscription?.cancel();
+
       emit(const SettlementLoading());
 
-      // Get trip for base currency
+      // Get trip for base currency (one-time fetch)
       final trip = await _tripRepository.getTripById(tripId);
       if (trip == null) {
         throw Exception('Trip not found: $tripId');
@@ -85,29 +77,32 @@ class SettlementCubit extends Cubit<SettlementState> {
 
       _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
 
-      // Combine expense stream with settled transfer stream
-      // Recalculate whenever EITHER changes
-      _combinedSubscription = CombineLatestStream.combine2(
-        _expenseRepository.getExpensesByTrip(tripId),
-        _settledTransferRepository.getSettledTransfers(tripId),
-        (expenses, settledTransfers) => (expenses: expenses, settled: settledTransfers),
-      ).listen(
-        (data) async {
-          _log('📦 Received ${data.expenses.length} expenses, ${data.settled.length} settled transfers');
+      // Subscribe to expense stream - calculate on every emission
+      // This is the ONLY subscription we need!
+      _combinedSubscription = _expenseRepository
+          .getExpensesByTrip(tripId)
+          .listen(
+        (expenses) async {
+          _log('📦 Received ${expenses.length} expenses, recalculating settlement...');
 
           try {
-            // Calculate settlement from current expenses
+            // Calculate settlement summary from current expenses
+            // This is FAST (< 5ms for 200 expenses)
             final summary = await _settlementRepository.computeSettlement(tripId);
 
-            _log('✅ Settlement calculated: ${summary.personSummaries.length} people');
+            _log('✅ Settlement calculated successfully');
+            _log('   ${summary.personSummaries.length} person summaries');
 
-            // Get calculated transfers
-            final calculatedTransfers = await _settlementRepository
+            // Get transfers from the repository
+            // In the simplified version, these are calculated fresh, not stored
+            final allTransfers = await _settlementRepository
                 .getMinimalTransfers(tripId)
                 .first;
 
-            // Separate active from settled
-            final separated = _separateTransfers(calculatedTransfers, data.settled);
+            _log('📦 Received ${allTransfers.length} transfers');
+
+            // Separate active and settled transfers
+            final separated = _separateTransfers(allTransfers);
             _log('📊 ${separated.active.length} active, ${separated.settled.length} settled');
 
             if (!isClosed) {
@@ -125,9 +120,9 @@ class SettlementCubit extends Cubit<SettlementState> {
           }
         },
         onError: (error) {
-          _log('❌ Error in combined stream: $error');
+          _log('❌ Error in expense stream: $error');
           if (!isClosed) {
-            emit(SettlementError('Failed to load data: ${error.toString()}'));
+            emit(SettlementError('Failed to load expenses: ${error.toString()}'));
           }
         },
       );
@@ -140,6 +135,8 @@ class SettlementCubit extends Cubit<SettlementState> {
   }
 
   /// Mark a specific transfer as settled
+  ///
+  /// This is the ONLY write operation to Firestore for settlements
   Future<void> markTransferAsSettled(String transferId) async {
     if (_currentTripId == null) {
       _log('⚠️ Cannot mark transfer as settled: no current trip');
@@ -147,27 +144,12 @@ class SettlementCubit extends Cubit<SettlementState> {
     }
 
     try {
-      final currentState = state;
-      if (currentState is! SettlementLoaded) {
-        _log('⚠️ Cannot mark transfer as settled: settlement not loaded');
-        return;
-      }
-
-      // Find the transfer to settle
-      final transfer = currentState.activeTransfers
-          .firstWhere((t) => t.id == transferId, orElse: () => throw Exception('Transfer not found'));
-
-      _log('✅ Marking transfer as settled: ${transfer.fromUserId} → ${transfer.toUserId} (${transfer.amountBase})');
-
-      await _settledTransferRepository.markTransferAsSettled(
-        _currentTripId!,
-        transfer.fromUserId,
-        transfer.toUserId,
-        transfer.amountBase.toString(),
-      );
-
+      _log('✅ Marking transfer $transferId as settled');
+      await _settlementRepository.markTransferAsSettled(_currentTripId!, transferId);
       _log('✅ Transfer marked as settled');
-      // The combined stream will automatically recalculate and update UI
+
+      // The expense stream listener will automatically recalculate and update UI
+      // No manual refresh needed!
     } catch (e) {
       _log('❌ Error marking transfer as settled: $e');
       if (!isClosed) {
@@ -176,31 +158,12 @@ class SettlementCubit extends Cubit<SettlementState> {
     }
   }
 
-  /// Compute/refresh settlement (for manual refresh button)
-  Future<void> computeSettlement(String tripId) async {
-    _log('🔄 Manual refresh requested');
-    // Just reload - the stream will recalculate automatically
-    await loadSettlement(tripId);
-  }
-
-  /// Refresh settlement (alias for computeSettlement)
-  Future<void> refreshSettlement() async {
-    if (_currentTripId != null) {
-      await computeSettlement(_currentTripId!);
-    }
-  }
-
-  /// Smart refresh (simplified - just reload)
-  Future<void> smartRefresh(String tripId) async {
-    await loadSettlement(tripId);
-  }
-
   /// Get current trip ID
   String? get currentTripId => _currentTripId;
 
   @override
   Future<void> close() {
-    _log('🔴 Closing SettlementCubit');
+    _log('🔴 Closing SettlementCubit - cancelling subscription');
     _combinedSubscription?.cancel();
     return super.close();
   }

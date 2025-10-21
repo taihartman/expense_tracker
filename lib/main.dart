@@ -3,13 +3,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'core/services/local_storage_service.dart';
+import 'core/services/migration_service.dart';
 import 'features/trips/data/repositories/trip_repository_impl.dart';
+import 'features/trips/domain/repositories/trip_repository.dart';
 import 'features/expenses/data/repositories/expense_repository_impl.dart';
+import 'features/expenses/domain/repositories/expense_repository.dart';
 import 'features/categories/data/repositories/category_repository_impl.dart';
+import 'features/categories/domain/repositories/category_repository.dart';
 import 'features/settlements/data/repositories/settlement_repository_impl.dart';
+import 'features/settlements/domain/repositories/settlement_repository.dart';
+import 'features/settlements/data/repositories/settled_transfer_repository_impl.dart';
+import 'features/settlements/domain/repositories/settled_transfer_repository.dart';
 import 'features/trips/presentation/cubits/trip_cubit.dart';
 import 'features/expenses/presentation/cubits/expense_cubit.dart';
 import 'features/settlements/presentation/cubits/settlement_cubit.dart';
@@ -60,19 +69,43 @@ Future<void> main() async {
   );
   _log('✅ Firestore persistence configured (${DateTime.now().difference(persistenceStart).inMilliseconds}ms)');
 
+  // Initialize LocalStorageService for user preferences
+  _log('💾 Initializing LocalStorageService...');
+  final storageStart = DateTime.now();
+  final localStorageService = await LocalStorageService.init();
+  _log('✅ LocalStorageService initialized (${DateTime.now().difference(storageStart).inMilliseconds}ms)');
+
+  // Run data migrations
+  _log('🔄 Running data migrations...');
+  final migrationStart = DateTime.now();
+  final prefs = await SharedPreferences.getInstance();
+  final firestoreService = FirestoreService();
+  final migrationService = MigrationService(
+    firestoreService: firestoreService,
+    prefs: prefs,
+  );
+  await migrationService.runMigrations();
+  _log('✅ Migrations completed (${DateTime.now().difference(migrationStart).inMilliseconds}ms)');
+
   _log('🎬 Launching app widget (total startup: ${DateTime.now().difference(startTime).inMilliseconds}ms)');
-  runApp(const ExpenseTrackerApp());
+  runApp(ExpenseTrackerApp(localStorageService: localStorageService));
 }
 
 /// Root application widget with singleton BLoC providers
 class ExpenseTrackerApp extends StatelessWidget {
-  const ExpenseTrackerApp({super.key});
+  final LocalStorageService localStorageService;
+
+  const ExpenseTrackerApp({
+    super.key,
+    required this.localStorageService,
+  });
 
   // Singleton instances shared across the entire app
   static final _firestoreService = FirestoreService();
   static final _tripRepository = TripRepositoryImpl(firestoreService: _firestoreService);
   static final _expenseRepository = ExpenseRepositoryImpl(firestoreService: _firestoreService);
   static final _categoryRepository = CategoryRepositoryImpl(firestoreService: _firestoreService);
+  static final _settledTransferRepository = SettledTransferRepositoryImpl(firestoreService: _firestoreService);
   static final _settlementRepository = SettlementRepositoryImpl(
     firestoreService: _firestoreService,
     expenseRepository: _expenseRepository,
@@ -87,10 +120,11 @@ class ExpenseTrackerApp extends StatelessWidget {
     _log('📦 Creating repository providers...');
     final widget = MultiRepositoryProvider(
       providers: [
-        RepositoryProvider.value(value: _tripRepository),
-        RepositoryProvider.value(value: _expenseRepository),
-        RepositoryProvider.value(value: _categoryRepository),
-        RepositoryProvider.value(value: _settlementRepository),
+        RepositoryProvider<TripRepository>.value(value: _tripRepository),
+        RepositoryProvider<ExpenseRepository>.value(value: _expenseRepository),
+        RepositoryProvider<CategoryRepository>.value(value: _categoryRepository),
+        RepositoryProvider<SettlementRepository>.value(value: _settlementRepository),
+        RepositoryProvider<SettledTransferRepository>.value(value: _settledTransferRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -100,6 +134,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               final cubitStart = DateTime.now();
               final cubit = TripCubit(
                 tripRepository: _tripRepository,
+                localStorageService: localStorageService,
                 categoryRepository: _categoryRepository,
               );
               _log('✅ TripCubit created (${DateTime.now().difference(cubitStart).inMilliseconds}ms)');
@@ -115,8 +150,13 @@ class ExpenseTrackerApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) {
-              _log('🔵 Creating SettlementCubit...');
-              return SettlementCubit(settlementRepository: _settlementRepository);
+              _log('🔵 Creating SettlementCubit (SIMPLIFIED)...');
+              return SettlementCubit(
+                settlementRepository: _settlementRepository,
+                expenseRepository: _expenseRepository,
+                tripRepository: _tripRepository,
+                settledTransferRepository: _settledTransferRepository,
+              );
             },
           ),
         ],

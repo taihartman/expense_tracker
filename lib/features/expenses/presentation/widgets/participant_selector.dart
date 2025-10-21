@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/participants.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/models/split_type.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -13,15 +12,14 @@ class ParticipantSelector extends StatefulWidget {
   final Map<String, num> selectedParticipants;
   final ValueChanged<Map<String, num>> onParticipantsChanged;
 
-  /// Available participants for this trip
-  /// If null, uses the global default list for backward compatibility
-  final List<Participant>? availableParticipants;
+  /// Available participants for this trip (required)
+  final List<Participant> availableParticipants;
 
   const ParticipantSelector({
     required this.splitType,
     required this.selectedParticipants,
     required this.onParticipantsChanged,
-    this.availableParticipants,
+    required this.availableParticipants,
     super.key,
   });
 
@@ -61,8 +59,7 @@ class _ParticipantSelectorState extends State<ParticipantSelector> {
     super.dispose();
   }
 
-  List<Participant> get _participants =>
-      widget.availableParticipants ?? Participants.all;
+  List<Participant> get _participants => widget.availableParticipants;
 
   void _initializeControllers() {
     if (widget.splitType == SplitType.weighted) {

@@ -3,15 +3,21 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
+import 'dart:async' as _i6;
 
+import 'package:expense_tracker/core/models/currency_code.dart' as _i10;
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart'
-    as _i4;
+    as _i5;
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_cubit.dart'
-    as _i3;
+    as _i4;
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_state.dart'
     as _i2;
-import 'package:flutter_bloc/flutter_bloc.dart' as _i6;
+import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i9;
+import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart'
+    as _i8;
+import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart'
+    as _i3;
+import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -33,21 +39,26 @@ class _FakeExpenseState_0 extends _i1.SmartFake implements _i2.ExpenseState {
     : super(parent, parentInvocation);
 }
 
+class _FakeTripState_1 extends _i1.SmartFake implements _i3.TripState {
+  _FakeTripState_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [ExpenseCubit].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockExpenseCubit extends _i1.Mock implements _i3.ExpenseCubit {
+class MockExpenseCubit extends _i1.Mock implements _i4.ExpenseCubit {
   MockExpenseCubit() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  List<_i4.Expense> get expenses =>
+  List<_i5.Expense> get expenses =>
       (super.noSuchMethod(
             Invocation.getter(#expenses),
-            returnValue: <_i4.Expense>[],
+            returnValue: <_i5.Expense>[],
           )
-          as List<_i4.Expense>);
+          as List<_i5.Expense>);
 
   @override
   _i2.ExpenseState get state =>
@@ -58,12 +69,12 @@ class MockExpenseCubit extends _i1.Mock implements _i3.ExpenseCubit {
           as _i2.ExpenseState);
 
   @override
-  _i5.Stream<_i2.ExpenseState> get stream =>
+  _i6.Stream<_i2.ExpenseState> get stream =>
       (super.noSuchMethod(
             Invocation.getter(#stream),
-            returnValue: _i5.Stream<_i2.ExpenseState>.empty(),
+            returnValue: _i6.Stream<_i2.ExpenseState>.empty(),
           )
-          as _i5.Stream<_i2.ExpenseState>);
+          as _i6.Stream<_i2.ExpenseState>);
 
   @override
   bool get isClosed =>
@@ -71,46 +82,55 @@ class MockExpenseCubit extends _i1.Mock implements _i3.ExpenseCubit {
           as bool);
 
   @override
-  _i5.Future<void> loadExpenses(String? tripId) =>
+  _i6.Future<void> loadExpenses(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#loadExpenses, [tripId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i5.Future<void> createExpense(_i4.Expense? expense) =>
+  _i6.Future<void> createExpense(_i5.Expense? expense) =>
       (super.noSuchMethod(
             Invocation.method(#createExpense, [expense]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i5.Future<void> updateExpense(_i4.Expense? expense) =>
+  _i6.Future<void> updateExpense(_i5.Expense? expense) =>
       (super.noSuchMethod(
             Invocation.method(#updateExpense, [expense]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i5.Future<void> deleteExpense(String? expenseId) =>
+  _i6.Future<void> deleteExpense(String? expenseId) =>
       (super.noSuchMethod(
             Invocation.method(#deleteExpense, [expenseId]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  void selectExpense(_i4.Expense? expense) => super.noSuchMethod(
+  void selectExpense(_i5.Expense? expense) => super.noSuchMethod(
     Invocation.method(#selectExpense, [expense]),
     returnValueForMissingStub: null,
   );
+
+  @override
+  _i6.Future<void> close() =>
+      (super.noSuchMethod(
+            Invocation.method(#close, []),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
 
   @override
   void emit(_i2.ExpenseState? state) => super.noSuchMethod(
@@ -119,7 +139,7 @@ class MockExpenseCubit extends _i1.Mock implements _i3.ExpenseCubit {
   );
 
   @override
-  void onChange(_i6.Change<_i2.ExpenseState>? change) => super.noSuchMethod(
+  void onChange(_i7.Change<_i2.ExpenseState>? change) => super.noSuchMethod(
     Invocation.method(#onChange, [change]),
     returnValueForMissingStub: null,
   );
@@ -135,13 +155,140 @@ class MockExpenseCubit extends _i1.Mock implements _i3.ExpenseCubit {
     Invocation.method(#onError, [error, stackTrace]),
     returnValueForMissingStub: null,
   );
+}
+
+/// A class which mocks [TripCubit].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
+  MockTripCubit() {
+    _i1.throwOnMissingStub(this);
+  }
 
   @override
-  _i5.Future<void> close() =>
+  List<_i9.Trip> get trips =>
+      (super.noSuchMethod(Invocation.getter(#trips), returnValue: <_i9.Trip>[])
+          as List<_i9.Trip>);
+
+  @override
+  _i3.TripState get state =>
+      (super.noSuchMethod(
+            Invocation.getter(#state),
+            returnValue: _FakeTripState_1(this, Invocation.getter(#state)),
+          )
+          as _i3.TripState);
+
+  @override
+  _i6.Stream<_i3.TripState> get stream =>
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i6.Stream<_i3.TripState>.empty(),
+          )
+          as _i6.Stream<_i3.TripState>);
+
+  @override
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
+
+  @override
+  _i6.Future<void> loadTrips() =>
+      (super.noSuchMethod(
+            Invocation.method(#loadTrips, []),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> createTrip({
+    required String? name,
+    required _i10.CurrencyCode? baseCurrency,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createTrip, [], {
+              #name: name,
+              #baseCurrency: baseCurrency,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> selectTrip(_i9.Trip? trip) =>
+      (super.noSuchMethod(
+            Invocation.method(#selectTrip, [trip]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> updateTrip(_i9.Trip? trip) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateTrip, [trip]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> updateTripDetails({
+    required String? tripId,
+    required String? name,
+    required _i10.CurrencyCode? baseCurrency,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateTripDetails, [], {
+              #tripId: tripId,
+              #name: name,
+              #baseCurrency: baseCurrency,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> deleteTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#deleteTrip, [tripId]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> close() =>
       (super.noSuchMethod(
             Invocation.method(#close, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i5.Future<void>);
+          as _i6.Future<void>);
+
+  @override
+  void emit(_i3.TripState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void onChange(_i7.Change<_i3.TripState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }

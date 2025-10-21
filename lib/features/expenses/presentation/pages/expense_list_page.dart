@@ -5,6 +5,9 @@ import '../cubits/expense_cubit.dart';
 import '../cubits/expense_state.dart';
 import '../widgets/expense_card.dart';
 import '../widgets/expense_form_bottom_sheet.dart';
+import '../../../trips/presentation/cubits/trip_cubit.dart';
+import '../../../trips/presentation/cubits/trip_state.dart';
+import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Page displaying list of expenses for a trip
@@ -112,19 +115,34 @@ class ExpenseListPage extends StatelessWidget {
               );
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing1),
-              itemCount: state.expenses.length,
-              itemBuilder: (context, index) {
-                final expense = state.expenses[index];
-                return ExpenseCard(
-                  expense: expense,
-                  onTap: () {
-                    // Show bottom sheet for editing
-                    showExpenseFormBottomSheet(
-                      context: context,
-                      tripId: tripId,
+            return BlocBuilder<TripCubit, TripState>(
+              builder: (context, tripState) {
+                // Get trip participants
+                final List<Participant> participants = tripState is TripLoaded
+                    ? tripState.trips
+                        .firstWhere(
+                          (t) => t.id == tripId,
+                          orElse: () => tripState.selectedTrip!,
+                        )
+                        .participants
+                    : <Participant>[];
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing1),
+                  itemCount: state.expenses.length,
+                  itemBuilder: (context, index) {
+                    final expense = state.expenses[index];
+                    return ExpenseCard(
                       expense: expense,
+                      participants: participants,
+                      onTap: () {
+                        // Show bottom sheet for editing
+                        showExpenseFormBottomSheet(
+                          context: context,
+                          tripId: tripId,
+                          expense: expense,
+                        );
+                      },
                     );
                   },
                 );

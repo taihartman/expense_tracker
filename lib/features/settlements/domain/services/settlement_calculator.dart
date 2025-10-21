@@ -1,23 +1,43 @@
 import 'package:decimal/decimal.dart';
+import 'package:flutter/foundation.dart';
 import '../../../expenses/domain/models/expense.dart';
 import '../models/person_summary.dart';
 import '../models/minimal_transfer.dart';
 import '../../../../core/models/currency_code.dart';
 
+/// Helper function to log with timestamps
+void _log(String message) {
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [SettlementCalculator] $message',
+  );
+}
+
 /// Service for calculating settlements from expenses
-/// 
+///
 /// Implements pairwise debt netting and minimal transfer algorithms
 class SettlementCalculator {
   /// Calculate person summaries from expenses
-  /// 
+  ///
   /// Returns map of userId -> PersonSummary with totals in base currency
   Map<String, PersonSummary> calculatePersonSummaries({
     required List<Expense> expenses,
     required CurrencyCode baseCurrency,
   }) {
+    _log(
+      '🧮 calculatePersonSummaries() called with ${expenses.length} expenses',
+    );
     final summaries = <String, _MutablePersonSummary>{};
 
-    for (final expense in expenses) {
+    for (int i = 0; i < expenses.length; i++) {
+      final expense = expenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+      _log('  ID: ${expense.id}');
+      _log('  Description: ${expense.description ?? "No description"}');
+      _log('  Payer: ${expense.payerUserId}');
+      _log('  Amount: ${expense.amount} ${expense.currency.code}');
+      _log('  Split Type: ${expense.splitType}');
+      _log('  Participants: ${expense.participants}');
+
       // Convert amount to base currency (for now, assume same currency)
       // TODO: Add FX conversion in Phase 5
       final amountInBase = expense.amount;
@@ -28,12 +48,15 @@ class SettlementCalculator {
         () => _MutablePersonSummary(userId: expense.payerUserId),
       );
       summaries[expense.payerUserId]!.totalPaidBase += amountInBase;
+      _log('  → ${expense.payerUserId} paid: $amountInBase');
 
       // Calculate and distribute shares
       final shares = expense.calculateShares();
+      _log('  Calculated shares:');
       for (final entry in shares.entries) {
         final userId = entry.key;
         final shareAmount = entry.value;
+        _log('    → $userId owes: $shareAmount');
 
         summaries.putIfAbsent(
           userId,
@@ -43,8 +66,15 @@ class SettlementCalculator {
       }
     }
 
+    _log('\n💰 Raw Person Summaries (before adjustments):');
+    summaries.forEach((userId, summary) {
+      _log('  $userId:');
+      _log('    Total Paid: ${summary.totalPaidBase}');
+      _log('    Total Owed: ${summary.totalOwedBase}');
+    });
+
     // Convert to immutable PersonSummary and calculate net
-    return summaries.map((userId, mutable) {
+    final result = summaries.map((userId, mutable) {
       final netBase = mutable.totalPaidBase - mutable.totalOwedBase;
       return MapEntry(
         userId,
@@ -56,16 +86,33 @@ class SettlementCalculator {
         ),
       );
     });
+
+    _log('\n✅ Final Person Summaries (with net balances):');
+    result.forEach((userId, summary) {
+      final status = summary.netBase > Decimal.zero
+          ? 'Should RECEIVE ${summary.netBase.abs()}'
+          : summary.netBase < Decimal.zero
+          ? 'Should PAY ${summary.netBase.abs()}'
+          : 'EVEN';
+      _log('  $userId:');
+      _log('    Total Paid: ${summary.totalPaidBase}');
+      _log('    Total Owed: ${summary.totalOwedBase}');
+      _log('    Net Balance: ${summary.netBase}');
+      _log('    Status: $status');
+    });
+
+    return result;
   }
 
   /// Calculate minimal transfers using greedy algorithm
-  /// 
+  ///
   /// Input: Map of userId -> PersonSummary with net balances
   /// Output: List of transfers that settle all debts with minimum transactions
   List<MinimalTransfer> calculateMinimalTransfers({
     required String tripId,
     required Map<String, PersonSummary> personSummaries,
   }) {
+    _log('\n🔄 calculateMinimalTransfers() called');
     final transfers = <MinimalTransfer>[];
     final now = DateTime.now();
 
@@ -80,11 +127,24 @@ class SettlementCalculator {
         .map((p) => _Balance(userId: p.userId, amount: p.netBase.abs()))
         .toList();
 
+    _log('👥 Creditors (should receive money):');
+    for (final c in creditors) {
+      _log('  ${c.userId}: ${c.amount}');
+    }
+
+    _log('👥 Debtors (should pay money):');
+    for (final d in debtors) {
+      _log('  ${d.userId}: ${d.amount}');
+    }
+
     // Sort by amount (largest first) for greedy algorithm
     creditors.sort((a, b) => b.amount.compareTo(a.amount));
     debtors.sort((a, b) => b.amount.compareTo(a.amount));
 
+    _log('\n🔀 Starting greedy matching algorithm...');
+
     // Greedy matching: match largest creditor with largest debtor
+    int transferCount = 0;
     while (creditors.isNotEmpty && debtors.isNotEmpty) {
       final creditor = creditors.first;
       final debtor = debtors.first;
@@ -94,34 +154,51 @@ class SettlementCalculator {
           ? creditor.amount
           : debtor.amount;
 
+      transferCount++;
+      _log('\n💸 Transfer #$transferCount:');
+      _log('  ${debtor.userId} pays ${creditor.userId}');
+      _log('  Amount: $transferAmount');
+      _log('  (Creditor has ${creditor.amount}, Debtor owes ${debtor.amount})');
+
       // Create transfer
-      transfers.add(MinimalTransfer(
-        id: '', // Will be set by Firestore
-        tripId: tripId,
-        fromUserId: debtor.userId,
-        toUserId: creditor.userId,
-        amountBase: transferAmount,
-        computedAt: now,
-      ));
+      transfers.add(
+        MinimalTransfer(
+          id: '', // Will be set by Firestore
+          tripId: tripId,
+          fromUserId: debtor.userId,
+          toUserId: creditor.userId,
+          amountBase: transferAmount,
+          computedAt: now,
+        ),
+      );
 
       // Update balances
       creditor.amount -= transferAmount;
       debtor.amount -= transferAmount;
 
+      _log(
+        '  After transfer: Creditor remaining ${creditor.amount}, Debtor remaining ${debtor.amount}',
+      );
+
       // Remove if settled (with small epsilon for floating point errors)
       if (creditor.amount < Decimal.parse('0.01')) {
+        _log('  ✅ ${creditor.userId} fully settled (removed from creditors)');
         creditors.removeAt(0);
       }
       if (debtor.amount < Decimal.parse('0.01')) {
+        _log('  ✅ ${debtor.userId} fully settled (removed from debtors)');
         debtors.removeAt(0);
       }
     }
 
+    _log(
+      '\n✅ Minimal transfers calculation complete: ${transfers.length} transfers',
+    );
     return transfers;
   }
 
   /// Validate that sum of all net balances equals zero
-  /// 
+  ///
   /// Returns true if conservation of money holds
   bool validateBalances(Map<String, PersonSummary> personSummaries) {
     final sum = personSummaries.values
@@ -140,8 +217,8 @@ class _MutablePersonSummary {
   Decimal totalOwedBase;
 
   _MutablePersonSummary({required this.userId})
-      : totalPaidBase = Decimal.zero,
-        totalOwedBase = Decimal.zero;
+    : totalPaidBase = Decimal.zero,
+      totalOwedBase = Decimal.zero;
 }
 
 /// Helper class for tracking balances during transfer calculation

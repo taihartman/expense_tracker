@@ -10,6 +10,9 @@ class FirestoreService {
   FirestoreService({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
+  /// Get Firestore instance (for direct access when needed)
+  FirebaseFirestore get firestore => _firestore;
+
   /// Get reference to trips collection
   CollectionReference get trips => _firestore.collection('trips');
 

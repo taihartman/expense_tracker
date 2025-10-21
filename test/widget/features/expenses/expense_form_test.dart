@@ -3,25 +3,62 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:expense_tracker/features/expenses/presentation/pages/expense_form_page.dart';
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_cubit.dart';
-import 'package:expense_tracker/core/constants/participants.dart';
+import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart';
+import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart';
+import 'package:expense_tracker/features/trips/domain/models/trip.dart';
+import 'package:expense_tracker/core/models/participant.dart';
+import 'package:expense_tracker/core/models/currency_code.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 
 import 'expense_form_test.mocks.dart';
 
-@GenerateMocks([ExpenseCubit])
+@GenerateMocks([ExpenseCubit, TripCubit])
 void main() {
   group('ExpenseForm Widget -', () {
     late MockExpenseCubit mockExpenseCubit;
+    late MockTripCubit mockTripCubit;
+    late List<Participant> testParticipants;
+    late Trip testTrip;
 
     setUp(() {
       mockExpenseCubit = MockExpenseCubit();
+      mockTripCubit = MockTripCubit();
+
+      // Create test participants
+      testParticipants = const [
+        Participant(id: 'tai', name: 'Tai'),
+        Participant(id: 'khiet', name: 'Khiet'),
+        Participant(id: 'bob', name: 'Bob'),
+        Participant(id: 'ethan', name: 'Ethan'),
+      ];
+
+      // Create test trip with participants
+      testTrip = Trip(
+        id: 'test-trip-1',
+        name: 'Test Trip',
+        baseCurrency: CurrencyCode.usd,
+        participants: testParticipants,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Setup mock trip cubit to return loaded state with test trip
+      when(mockTripCubit.state).thenReturn(
+        TripLoaded(trips: [testTrip], selectedTrip: testTrip),
+      );
+      when(mockTripCubit.stream).thenAnswer((_) => Stream.value(
+        TripLoaded(trips: [testTrip], selectedTrip: testTrip),
+      ));
     });
 
     Widget createWidgetUnderTest() {
       return MaterialApp(
-        home: BlocProvider<ExpenseCubit>.value(
-          value: mockExpenseCubit,
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<ExpenseCubit>.value(value: mockExpenseCubit),
+            BlocProvider<TripCubit>.value(value: mockTripCubit),
+          ],
           child: const ExpenseFormPage(tripId: 'test-trip-1'),
         ),
       );
@@ -64,7 +101,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert - All participants should be available
-      for (final participant in kFixedParticipants) {
+      for (final participant in testParticipants) {
         expect(find.text(participant.name), findsWidgets);
       }
     });
@@ -171,7 +208,7 @@ void main() {
       // Select payer
       await tester.tap(find.text('Payer'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(kFixedParticipants.first.name).last);
+      await tester.tap(find.text(testParticipants.first.name).last);
       await tester.pumpAndSettle();
 
       // Select currency
@@ -212,7 +249,7 @@ void main() {
       // Select payer
       await tester.tap(find.text('Payer'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(kFixedParticipants.first.name).last);
+      await tester.tap(find.text(testParticipants.first.name).last);
       await tester.pumpAndSettle();
 
       // Select currency

@@ -4,6 +4,10 @@ import '../cubits/settlement_cubit.dart';
 import '../cubits/settlement_state.dart';
 import '../widgets/all_people_summary_table.dart';
 import '../widgets/minimal_transfers_view.dart';
+import '../../../trips/presentation/cubits/trip_cubit.dart';
+import '../../../trips/presentation/cubits/trip_state.dart';
+import '../../../expenses/domain/repositories/expense_repository.dart';
+import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 
 /// Page displaying settlement summary with transfers
@@ -12,10 +16,7 @@ import '../../../../core/theme/app_theme.dart';
 class SettlementSummaryPage extends StatefulWidget {
   final String tripId;
 
-  const SettlementSummaryPage({
-    super.key,
-    required this.tripId,
-  });
+  const SettlementSummaryPage({super.key, required this.tripId});
 
   @override
   State<SettlementSummaryPage> createState() => _SettlementSummaryPageState();
@@ -36,6 +37,9 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Capture repository here where providers are accessible
+    final expenseRepository = context.read<ExpenseRepository>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settlement'),
@@ -47,7 +51,9 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                   icon: const Icon(Icons.refresh),
                   tooltip: 'Recompute Settlement',
                   onPressed: () {
-                    context.read<SettlementCubit>().computeSettlement(widget.tripId);
+                    context.read<SettlementCubit>().computeSettlement(
+                      widget.tripId,
+                    );
                   },
                 );
               }
@@ -87,13 +93,12 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                     color: Theme.of(context).colorScheme.error,
                   ),
                   const SizedBox(height: AppTheme.spacing2),
-                  Text(
-                    'Error',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                  Text('Error', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: AppTheme.spacing1),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacing3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacing3,
+                    ),
                     child: Text(
                       state.message,
                       textAlign: TextAlign.center,
@@ -103,7 +108,9 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                   const SizedBox(height: AppTheme.spacing3),
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.read<SettlementCubit>().loadSettlement(widget.tripId);
+                      context.read<SettlementCubit>().loadSettlement(
+                        widget.tripId,
+                      );
                     },
                     icon: const Icon(Icons.refresh),
                     label: const Text('Retry'),
@@ -114,51 +121,73 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
           }
 
           if (state is SettlementLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                await context.read<SettlementCubit>().computeSettlement(widget.tripId);
-              },
-              child: ListView(
-                padding: const EdgeInsets.all(AppTheme.spacing2),
-                children: [
-                  // Last computed timestamp
-                  Card(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppTheme.spacing2),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.primary,
+            return BlocBuilder<TripCubit, TripState>(
+              builder: (context, tripState) {
+                // Get trip participants
+                final participants = tripState is TripLoaded
+                    ? tripState.trips
+                          .firstWhere(
+                            (t) => t.id == widget.tripId,
+                            orElse: () => tripState.selectedTrip!,
+                          )
+                          .participants
+                    : <Participant>[];
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    await context.read<SettlementCubit>().computeSettlement(
+                      widget.tripId,
+                    );
+                  },
+                  child: ListView(
+                    padding: const EdgeInsets.all(AppTheme.spacing2),
+                    children: [
+                      // Last computed timestamp
+                      Card(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppTheme.spacing2),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                size: 20,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                              const SizedBox(width: AppTheme.spacing1),
+                              Text(
+                                'Last updated: ${_formatTimestamp(state.summary.lastComputedAt)}',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: AppTheme.spacing1),
-                          Text(
-                            'Last updated: ${_formatTimestamp(state.summary.lastComputedAt)}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spacing2),
+                      const SizedBox(height: AppTheme.spacing2),
 
-                  // Summary table
-                  AllPeopleSummaryTable(
-                    personSummaries: state.summary.personSummaries,
-                    baseCurrency: state.summary.baseCurrency,
-                  ),
-                  const SizedBox(height: AppTheme.spacing3),
+                      // Summary table
+                      AllPeopleSummaryTable(
+                        personSummaries: state.summary.personSummaries,
+                        baseCurrency: state.summary.baseCurrency,
+                        participants: participants,
+                      ),
+                      const SizedBox(height: AppTheme.spacing3),
 
-                  // Minimal transfers
-                  MinimalTransfersView(
-                    activeTransfers: state.activeTransfers,
-                    settledTransfers: state.settledTransfers,
-                    baseCurrency: state.summary.baseCurrency,
+                      // Minimal transfers
+                      MinimalTransfersView(
+                        tripId: widget.tripId,
+                        activeTransfers: state.activeTransfers,
+                        settledTransfers: state.settledTransfers,
+                        baseCurrency: state.summary.baseCurrency,
+                        participants: participants,
+                        expenseRepository: expenseRepository,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           }
 
@@ -170,7 +199,9 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                 Icon(
                   Icons.calculate_outlined,
                   size: 64,
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.5),
                 ),
                 const SizedBox(height: AppTheme.spacing2),
                 Text(

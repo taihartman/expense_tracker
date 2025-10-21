@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../cubits/trip_cubit.dart';
@@ -27,6 +28,15 @@ class TripSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Trip Settings'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit Trip',
+            onPressed: () {
+              context.push('/trips/$tripId/edit');
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {

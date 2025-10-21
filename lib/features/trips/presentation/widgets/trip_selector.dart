@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -89,7 +90,7 @@ class TripSelectorWidget extends StatelessWidget {
         // No trip selected or error
         return TextButton.icon(
           onPressed: () {
-            Navigator.of(context).pushNamed('/trips/create');
+            context.push('/trips/create');
           },
           icon: const Icon(Icons.add),
           label: const Text('Create Trip'),
@@ -120,7 +121,7 @@ class TripSelectorWidget extends StatelessWidget {
                     icon: const Icon(Icons.add),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).pushNamed('/trips/create');
+                      context.push('/trips/create');
                     },
                   ),
                 ],
@@ -136,9 +137,11 @@ class TripSelectorWidget extends StatelessWidget {
                       leading: const Icon(Icons.flight_takeoff),
                       title: Text(trip.name),
                       subtitle: Text(trip.baseCurrency.code),
-                      onTap: () {
-                        context.read<TripCubit>().selectTrip(trip);
-                        Navigator.of(context).pop();
+                      onTap: () async {
+                        await context.read<TripCubit>().selectTrip(trip);
+                        if (context.mounted) {
+                          Navigator.of(context).pop();
+                        }
                       },
                     );
                   },

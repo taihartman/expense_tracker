@@ -6,6 +6,7 @@ import '../../features/trips/presentation/widgets/trip_selector.dart';
 import '../../features/trips/presentation/cubits/trip_state.dart';
 import '../../features/trips/presentation/pages/trip_list_page.dart';
 import '../../features/trips/presentation/pages/trip_create_page.dart';
+import '../../features/trips/presentation/pages/trip_edit_page.dart';
 import '../../features/trips/presentation/pages/trip_settings_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
@@ -33,6 +34,19 @@ class AppRouter {
       GoRoute(
         path: '/trips/create',
         builder: (context, state) => const TripCreatePage(),
+      ),
+      GoRoute(
+        path: '/trips/:tripId/edit',
+        builder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+
+          // Get trip from TripCubit
+          final trip = context.read<TripCubit>().trips.firstWhere(
+            (t) => t.id == tripId,
+          );
+
+          return TripEditPage(trip: trip);
+        },
       ),
       GoRoute(
         path: '/trips/:tripId/settings',

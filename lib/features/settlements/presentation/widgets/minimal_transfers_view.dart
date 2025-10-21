@@ -2,26 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/minimal_transfer.dart';
-import '../../../../core/constants/participants.dart';
+import '../../../../core/models/participant.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
 import '../../../../core/theme/app_theme.dart';
 import '../cubits/settlement_cubit.dart';
+import 'transfer_breakdown_bottom_sheet.dart';
+import '../../../expenses/domain/repositories/expense_repository.dart';
 
 /// View showing minimal transfers to settle all debts
 ///
 /// Displays optimized list of transfers with copy-to-clipboard functionality
 /// and settlement marking
 class MinimalTransfersView extends StatelessWidget {
+  final String tripId;
   final List<MinimalTransfer> activeTransfers;
   final List<MinimalTransfer> settledTransfers;
   final CurrencyCode baseCurrency;
+  final List<Participant> participants;
+  final ExpenseRepository expenseRepository;
 
   const MinimalTransfersView({
     super.key,
+    required this.tripId,
     required this.activeTransfers,
     required this.settledTransfers,
     required this.baseCurrency,
+    required this.participants,
+    required this.expenseRepository,
   });
 
   @override
@@ -72,9 +80,9 @@ class MinimalTransfersView extends StatelessWidget {
                 Text(
                   '${activeTransfers.length + settledTransfers.length} total',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -82,8 +90,8 @@ class MinimalTransfersView extends StatelessWidget {
             Text(
               'Tap a transfer to mark as settled',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppTheme.spacing2),
             const Divider(),
@@ -102,8 +110,8 @@ class MinimalTransfersView extends StatelessWidget {
                   Text(
                     'Pending Transfers',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(width: AppTheme.spacing1),
                   Container(
@@ -118,9 +126,9 @@ class MinimalTransfersView extends StatelessWidget {
                     child: Text(
                       '${activeTransfers.length}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -130,8 +138,11 @@ class MinimalTransfersView extends StatelessWidget {
                 final index = entry.key;
                 final transfer = entry.value;
                 return _TransferCard(
+                  tripId: tripId,
                   transfer: transfer,
                   baseCurrency: baseCurrency,
+                  participants: participants,
+                  expenseRepository: expenseRepository,
                   index: index + 1,
                   isSettled: false,
                 );
@@ -140,7 +151,8 @@ class MinimalTransfersView extends StatelessWidget {
 
             // Settled Transfers Section
             if (settledTransfers.isNotEmpty) ...[
-              if (activeTransfers.isNotEmpty) const SizedBox(height: AppTheme.spacing3),
+              if (activeTransfers.isNotEmpty)
+                const SizedBox(height: AppTheme.spacing3),
               Row(
                 children: [
                   Icon(
@@ -152,9 +164,9 @@ class MinimalTransfersView extends StatelessWidget {
                   Text(
                     'Settled Transfers',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green.shade700,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade700,
+                    ),
                   ),
                   const SizedBox(width: AppTheme.spacing1),
                   Container(
@@ -169,9 +181,9 @@ class MinimalTransfersView extends StatelessWidget {
                     child: Text(
                       '${settledTransfers.length}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -179,8 +191,11 @@ class MinimalTransfersView extends StatelessWidget {
               const SizedBox(height: AppTheme.spacing2),
               ...settledTransfers.map((transfer) {
                 return _TransferCard(
+                  tripId: tripId,
                   transfer: transfer,
                   baseCurrency: baseCurrency,
+                  participants: participants,
+                  expenseRepository: expenseRepository,
                   index: null, // No step number for settled transfers
                   isSettled: true,
                 );
@@ -195,14 +210,20 @@ class MinimalTransfersView extends StatelessWidget {
 
 /// Individual transfer card with copy and settlement functionality
 class _TransferCard extends StatefulWidget {
+  final String tripId;
   final MinimalTransfer transfer;
   final CurrencyCode baseCurrency;
+  final List<Participant> participants;
+  final ExpenseRepository expenseRepository;
   final int? index; // Null for settled transfers
   final bool isSettled;
 
   const _TransferCard({
+    required this.tripId,
     required this.transfer,
     required this.baseCurrency,
+    required this.participants,
+    required this.expenseRepository,
     required this.index,
     required this.isSettled,
   });
@@ -212,9 +233,17 @@ class _TransferCard extends StatefulWidget {
 }
 
 class _TransferCardState extends State<_TransferCard> {
+  String _getParticipantName(String userId) {
+    try {
+      return widget.participants.firstWhere((p) => p.id == userId).name;
+    } catch (e) {
+      return userId; // Fallback to ID if not found
+    }
+  }
+
   void _copyToClipboard(BuildContext context) {
-    final fromName = Participants.getNameById(widget.transfer.fromUserId);
-    final toName = Participants.getNameById(widget.transfer.toUserId);
+    final fromName = _getParticipantName(widget.transfer.fromUserId);
+    final toName = _getParticipantName(widget.transfer.toUserId);
     final amount = Formatters.formatCurrency(
       widget.transfer.amountBase,
       widget.baseCurrency,
@@ -234,8 +263,8 @@ class _TransferCardState extends State<_TransferCard> {
   }
 
   Future<void> _showSettleDialog(BuildContext context) async {
-    final fromName = Participants.getNameById(widget.transfer.fromUserId);
-    final toName = Participants.getNameById(widget.transfer.toUserId);
+    final fromName = _getParticipantName(widget.transfer.fromUserId);
+    final toName = _getParticipantName(widget.transfer.toUserId);
     final amount = Formatters.formatCurrency(
       widget.transfer.amountBase,
       widget.baseCurrency,
@@ -262,14 +291,16 @@ class _TransferCardState extends State<_TransferCard> {
     );
 
     if (confirmed == true && context.mounted) {
-      await context.read<SettlementCubit>().markTransferAsSettled(widget.transfer.id);
+      await context.read<SettlementCubit>().markTransferAsSettled(
+        widget.transfer.id,
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final fromName = Participants.getNameById(widget.transfer.fromUserId);
-    final toName = Participants.getNameById(widget.transfer.toUserId);
+    final fromName = _getParticipantName(widget.transfer.fromUserId);
+    final toName = _getParticipantName(widget.transfer.toUserId);
     final amount = Formatters.formatCurrency(
       widget.transfer.amountBase,
       widget.baseCurrency,
@@ -335,7 +366,8 @@ class _TransferCardState extends State<_TransferCard> {
                         children: [
                           Text(
                             amount,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
                                   color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.bold,
                                   decoration: widget.isSettled
@@ -343,13 +375,13 @@ class _TransferCardState extends State<_TransferCard> {
                                       : null,
                                 ),
                           ),
-                          if (widget.isSettled && widget.transfer.settledAt != null) ...[
+                          if (widget.isSettled &&
+                              widget.transfer.settledAt != null) ...[
                             const SizedBox(width: AppTheme.spacing1),
                             Text(
                               '• ${_formatDate(widget.transfer.settledAt!)}',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.green.shade600,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.green.shade600),
                             ),
                           ],
                         ],
@@ -357,18 +389,46 @@ class _TransferCardState extends State<_TransferCard> {
                     ],
                   ),
                 ),
-                // Copy button (always available on long press)
-                if (!widget.isSettled)
-                  const Icon(
-                    Icons.touch_app,
-                    size: 20,
-                    color: Colors.grey,
-                  ),
+                // Action buttons
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Breakdown button (only for active transfers)
+                    if (!widget.isSettled)
+                      IconButton(
+                        icon: Icon(
+                          Icons.info_outline,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        tooltip: 'View Breakdown',
+                        onPressed: () => _showBreakdown(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    if (!widget.isSettled)
+                      const SizedBox(width: AppTheme.spacing1),
+                    // Touch indicator
+                    if (!widget.isSettled)
+                      const Icon(Icons.touch_app, size: 20, color: Colors.grey),
+                  ],
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _showBreakdown(BuildContext context) {
+    TransferBreakdownBottomSheet.show(
+      context,
+      transfer: widget.transfer,
+      tripId: widget.tripId,
+      baseCurrency: widget.baseCurrency,
+      participants: widget.participants,
+      repository: widget.expenseRepository,
     );
   }
 
@@ -387,24 +447,23 @@ class _TransferCardState extends State<_TransferCard> {
     }
   }
 
-  Widget _buildPersonChip(BuildContext context, String name, {required bool isFrom}) {
+  Widget _buildPersonChip(
+    BuildContext context,
+    String name, {
+    required bool isFrom,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isFrom
-            ? Colors.red.shade50
-            : Colors.green.shade50,
+        color: isFrom ? Colors.red.shade50 : Colors.green.shade50,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
         name,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isFrom ? Colors.red.shade700 : Colors.green.shade700,
-              fontWeight: FontWeight.w600,
-            ),
+          color: isFrom ? Colors.red.shade700 : Colors.green.shade700,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

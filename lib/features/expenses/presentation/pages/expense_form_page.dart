@@ -6,13 +6,15 @@ import '../../domain/models/expense.dart';
 import '../cubits/expense_cubit.dart';
 import '../widgets/participant_selector.dart';
 import '../../../categories/presentation/widgets/category_selector.dart';
+import '../../../trips/presentation/cubits/trip_cubit.dart';
+import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/split_type.dart';
 import '../../../../core/models/participant.dart';
-import '../../../../core/constants/participants.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/utils/currency_input_formatter.dart';
 
 /// Page for creating or editing an expense
 class ExpenseFormPage extends StatefulWidget {
@@ -46,8 +48,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
     super.initState();
 
     if (widget.expense != null) {
-      // Editing existing expense
-      _amountController.text = widget.expense!.amount.toString();
+      // Editing existing expense - format the amount with commas
+      final formatter = NumberFormat('#,##0.##', 'en_US');
+      _amountController.text = formatter.format(widget.expense!.amount.toDouble());
       _descriptionController.text = widget.expense!.description ?? '';
       _selectedCurrency = widget.expense!.currency;
       _selectedPayer = widget.expense!.payerUserId;
@@ -55,12 +58,8 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
       _selectedDate = widget.expense!.date;
       _participants = Map.from(widget.expense!.participants);
       _selectedCategory = widget.expense!.categoryId;
-    } else {
-      // New expense - default to first participant
-      _selectedPayer = Participants.all.first.id;
-      // Default participants for equal split
-      _participants = {Participants.all.first.id: 1};
     }
+    // For new expenses, defaults will be set in build method when trip participants are available
   }
 
   @override
@@ -92,7 +91,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
         date: _selectedDate,
         payerUserId: _selectedPayer!,
         currency: _selectedCurrency,
-        amount: Decimal.parse(_amountController.text),
+        amount: Decimal.parse(stripCurrencyFormatting(_amountController.text)),
         description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
         categoryId: _selectedCategory,
         splitType: _selectedSplitType,
@@ -119,54 +118,116 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
       appBar: AppBar(
         title: Text(widget.expense == null ? 'Add Expense' : 'Edit Expense'),
       ),
-      body: ExpenseFormContent(
-        formKey: _formKey,
-        amountController: _amountController,
-        descriptionController: _descriptionController,
-        selectedCurrency: _selectedCurrency,
-        selectedPayer: _selectedPayer,
-        selectedCategory: _selectedCategory,
-        selectedSplitType: _selectedSplitType,
-        selectedDate: _selectedDate,
-        participants: _participants,
-        isEditMode: widget.expense != null,
-        onCurrencyChanged: (value) {
-          setState(() {
-            _selectedCurrency = value;
-          });
+      body: BlocBuilder<TripCubit, TripState>(
+        builder: (context, tripState) {
+          // Get trip participants
+          List<Participant> tripParticipants = [];
+
+          if (tripState is TripLoaded) {
+            final trip = tripState.trips.firstWhere(
+              (t) => t.id == widget.tripId,
+              orElse: () => tripState.selectedTrip!,
+            );
+            tripParticipants = trip.participants;
+          }
+
+          // Show error if no participants configured
+          if (tripParticipants.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.people_outline, size: 64, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'No participants configured',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Please add participants to this trip first.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Go Back'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          // Initialize defaults if needed (only for new expenses)
+          if (widget.expense == null && _selectedPayer == null && tripParticipants.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _selectedPayer = tripParticipants.first.id;
+                  _participants = {tripParticipants.first.id: 1};
+                });
+              }
+            });
+          }
+
+          return ExpenseFormContent(
+            formKey: _formKey,
+            amountController: _amountController,
+            descriptionController: _descriptionController,
+            selectedCurrency: _selectedCurrency,
+            selectedPayer: _selectedPayer,
+            selectedCategory: _selectedCategory,
+            selectedSplitType: _selectedSplitType,
+            selectedDate: _selectedDate,
+            participants: _participants,
+            availableParticipants: tripParticipants,
+            isEditMode: widget.expense != null,
+            onCurrencyChanged: (value) {
+              setState(() {
+                _selectedCurrency = value;
+              });
+            },
+            onPayerChanged: (value) {
+              setState(() {
+                _selectedPayer = value;
+              });
+            },
+            onCategoryChanged: (value) {
+              setState(() {
+                _selectedCategory = value;
+              });
+            },
+            onSplitTypeChanged: (value) {
+              setState(() {
+                _selectedSplitType = value;
+                // Reset participants when changing split type
+                if (value == SplitType.equal) {
+                  _participants = {
+                    for (var id in _participants.keys) id: 1,
+                  };
+                }
+              });
+            },
+            onDateChanged: (value) {
+              setState(() {
+                _selectedDate = value;
+              });
+            },
+            onParticipantsChanged: (value) {
+              setState(() {
+                _participants = value;
+              });
+            },
+            onSubmit: _submitForm,
+          );
         },
-        onPayerChanged: (value) {
-          setState(() {
-            _selectedPayer = value;
-          });
-        },
-        onCategoryChanged: (value) {
-          setState(() {
-            _selectedCategory = value;
-          });
-        },
-        onSplitTypeChanged: (value) {
-          setState(() {
-            _selectedSplitType = value;
-            // Reset participants when changing split type
-            if (value == SplitType.equal) {
-              _participants = {
-                for (var id in _participants.keys) id: 1,
-              };
-            }
-          });
-        },
-        onDateChanged: (value) {
-          setState(() {
-            _selectedDate = value;
-          });
-        },
-        onParticipantsChanged: (value) {
-          setState(() {
-            _participants = value;
-          });
-        },
-        onSubmit: _submitForm,
       ),
     );
   }
@@ -183,7 +244,7 @@ class ExpenseFormContent extends StatelessWidget {
   final SplitType selectedSplitType;
   final DateTime selectedDate;
   final Map<String, num> participants;
-  final List<Participant>? availableParticipants;
+  final List<Participant> availableParticipants;
   final bool isEditMode;
   final ValueChanged<CurrencyCode> onCurrencyChanged;
   final ValueChanged<String?> onPayerChanged;
@@ -204,7 +265,7 @@ class ExpenseFormContent extends StatelessWidget {
     required this.selectedSplitType,
     required this.selectedDate,
     required this.participants,
-    this.availableParticipants,
+    required this.availableParticipants,
     required this.isEditMode,
     required this.onCurrencyChanged,
     required this.onPayerChanged,
@@ -252,12 +313,14 @@ class ExpenseFormContent extends StatelessWidget {
                   controller: amountController,
                   label: 'Amount',
                   keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Required';
                     }
                     try {
-                      final amount = Decimal.parse(value);
+                      final cleanValue = stripCurrencyFormatting(value);
+                      final amount = Decimal.parse(cleanValue);
                       if (amount <= Decimal.zero) {
                         return 'Must be > 0';
                       }
@@ -322,7 +385,7 @@ class ExpenseFormContent extends StatelessWidget {
                     labelText: 'Payer',
                     prefixIcon: Icon(Icons.person),
                   ),
-                  items: Participants.all.map((participant) {
+                  items: availableParticipants.map((participant) {
                     return DropdownMenuItem(
                       value: participant.id,
                       child: Text(participant.name),

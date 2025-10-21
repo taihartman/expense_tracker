@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 import '../../domain/models/person_summary.dart';
-import '../../../../core/constants/participants.dart';
+import '../../../../core/models/participant.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
 import '../../../../core/theme/app_theme.dart';
@@ -13,11 +13,13 @@ import '../../../../core/theme/app_theme.dart';
 class AllPeopleSummaryTable extends StatelessWidget {
   final Map<String, PersonSummary> personSummaries;
   final CurrencyCode baseCurrency;
+  final List<Participant> participants;
 
   const AllPeopleSummaryTable({
     super.key,
     required this.personSummaries,
     required this.baseCurrency,
+    required this.participants,
   });
 
   @override
@@ -53,7 +55,7 @@ class AllPeopleSummaryTable extends StatelessWidget {
                 rows: sortedEntries.map((entry) {
                   final userId = entry.key;
                   final summary = entry.value;
-                  final userName = Participants.getNameById(userId);
+                  final userName = _getParticipantName(userId);
 
                   // Determine color based on net balance
                   final isPositive = summary.netBase > Decimal.zero;
@@ -184,6 +186,15 @@ class AllPeopleSummaryTable extends StatelessWidget {
     );
   }
 
+  String _getParticipantName(String userId) {
+    try {
+      return participants.firstWhere((p) => p.id == userId).name;
+    } catch (e) {
+      // Fallback to ID if participant not found
+      return userId;
+    }
+  }
+
   Color _getAvatarColor(String userId) {
     // Consistent colors for each user
     final colors = [
@@ -195,7 +206,8 @@ class AllPeopleSummaryTable extends StatelessWidget {
       Colors.teal,
     ];
 
-    final index = Participants.allIds.indexOf(userId);
-    return colors[index % colors.length];
+    // Find index in participants list for consistent coloring
+    final index = participants.indexWhere((p) => p.id == userId);
+    return colors[index >= 0 ? index % colors.length : 0];
   }
 }

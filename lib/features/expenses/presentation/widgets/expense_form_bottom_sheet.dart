@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
+import 'package:intl/intl.dart';
 import '../../domain/models/expense.dart';
 import '../cubits/expense_cubit.dart';
 import '../pages/expense_form_page.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/split_type.dart';
 import '../../../../core/models/participant.dart';
-import '../../../../core/constants/participants.dart';
+import '../../../../shared/utils/currency_input_formatter.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 
@@ -65,7 +66,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
   void _initializeFormState() {
     // Get available participants from trip
     final tripState = context.read<TripCubit>().state;
-    List<Participant> availableParticipants = Participants.all;
+    List<Participant> availableParticipants = [];
 
     if (tripState is TripLoaded) {
       final trip = tripState.trips.firstWhere(
@@ -73,15 +74,14 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         orElse: () => tripState.trips.first,
       );
 
-      // Use trip participants if available, otherwise fall back to global list
-      if (trip.participants.isNotEmpty) {
-        availableParticipants = trip.participants;
-      }
+      // Use trip participants
+      availableParticipants = trip.participants;
     }
 
     if (widget.expense != null) {
-      // Editing existing expense
-      _amountController.text = widget.expense!.amount.toString();
+      // Editing existing expense - format the amount with commas
+      final formatter = NumberFormat('#,##0.##', 'en_US');
+      _amountController.text = formatter.format(widget.expense!.amount.toDouble());
       _descriptionController.text = widget.expense!.description ?? '';
       _selectedCurrency = widget.expense!.currency;
       _selectedPayer = widget.expense!.payerUserId;
@@ -127,7 +127,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         date: _selectedDate,
         payerUserId: _selectedPayer!,
         currency: _selectedCurrency,
-        amount: Decimal.parse(_amountController.text),
+        amount: Decimal.parse(stripCurrencyFormatting(_amountController.text)),
         description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
         categoryId: _selectedCategory,
         splitType: _selectedSplitType,
@@ -185,7 +185,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
   Widget build(BuildContext context) {
     // Get available participants from trip
     final tripState = context.watch<TripCubit>().state;
-    List<Participant>? availableParticipants;
+    List<Participant> availableParticipants = [];
 
     if (tripState is TripLoaded) {
       final trip = tripState.trips.firstWhere(
@@ -193,10 +193,8 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         orElse: () => tripState.trips.first,
       );
 
-      // Use trip participants if available
-      if (trip.participants.isNotEmpty) {
-        availableParticipants = trip.participants;
-      }
+      // Use trip participants
+      availableParticipants = trip.participants;
     }
 
     return DraggableScrollableSheet(
