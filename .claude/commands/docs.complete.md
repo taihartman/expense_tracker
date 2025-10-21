@@ -1,9 +1,9 @@
 ---
-description: Mark feature as complete and update CHANGELOG.md
+description: Mark feature as complete and roll up to root CHANGELOG.md
 tags: [project]
 ---
 
-Mark the current feature as complete in documentation and update the changelog.
+Mark the current feature as complete in documentation and roll up the feature changelog to the root CHANGELOG.md.
 
 **Steps**:
 
@@ -12,16 +12,28 @@ Mark the current feature as complete in documentation and update the changelog.
    - All tasks in `specs/<feature-id>/tasks.md` are checked off
    - Tests are passing
    - Feature has been reviewed
+   - Feature CLAUDE.md is up to date
+   - Feature CHANGELOG.md has all development changes logged
 3. Run the completion script:
    ```bash
    .specify/scripts/bash/update-feature-docs.sh complete <feature-id>
    ```
-4. Verify changes:
-   - Check that `specs/<feature-id>/CLAUDE.md` status is now "Completed"
-   - Check that `CHANGELOG.md` has a new entry for this feature
+4. This will:
+   - Mark `specs/<feature-id>/CLAUDE.md` status as "Completed"
+   - Extract feature summary from CLAUDE.md
+   - Create entry in root `CHANGELOG.md` with link to feature docs
+   - Preserve detailed `specs/<feature-id>/CHANGELOG.md` for historical reference
+   - Remove feature from "Unreleased" section in root CHANGELOG.md
 5. Review the changelog entry and enhance it if needed with:
    - Specific features added
    - Breaking changes (if any)
    - Migration notes (if any)
 
-**Output**: Updated feature documentation and changelog entry.
+**What happens to changelogs**:
+- **Feature CHANGELOG.md**: Preserved as-is in `specs/<feature-id>/CHANGELOG.md` for detailed development history
+- **Root CHANGELOG.md**: Gets a new entry with feature summary and links to feature docs
+
+**Output**:
+- Updated feature documentation (status changed to "Completed")
+- New entry in root CHANGELOG.md
+- Feature changelog preserved for reference

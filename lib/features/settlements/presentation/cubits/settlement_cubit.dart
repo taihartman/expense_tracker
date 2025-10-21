@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/models/minimal_transfer.dart';
 import '../../domain/repositories/settlement_repository.dart';
 import 'settlement_state.dart';
 
@@ -22,6 +23,23 @@ class SettlementCubit extends Cubit<SettlementState> {
     required SettlementRepository settlementRepository,
   })  : _settlementRepository = settlementRepository,
         super(const SettlementInitial());
+
+  /// Separate transfers into active and settled lists
+  ({List<MinimalTransfer> active, List<MinimalTransfer> settled}) _separateTransfers(
+      List<MinimalTransfer> allTransfers) {
+    final active = <MinimalTransfer>[];
+    final settled = <MinimalTransfer>[];
+
+    for (final transfer in allTransfers) {
+      if (transfer.isSettled) {
+        settled.add(transfer);
+      } else {
+        active.add(transfer);
+      }
+    }
+
+    return (active: active, settled: settled);
+  }
 
   /// Load settlement for a trip
   ///
@@ -60,16 +78,21 @@ class SettlementCubit extends Cubit<SettlementState> {
           _log('📦 Received settlement summary');
 
           // Get transfers
-          final transfers = await _settlementRepository
+          final allTransfers = await _settlementRepository
               .getMinimalTransfers(tripId)
               .first;
 
-          _log('📦 Received ${transfers.length} minimal transfers');
+          _log('📦 Received ${allTransfers.length} minimal transfers');
+
+          // Separate active and settled transfers
+          final separated = _separateTransfers(allTransfers);
+          _log('📊 ${separated.active.length} active, ${separated.settled.length} settled');
 
           if (!isClosed) {
             emit(SettlementLoaded(
               summary: summary,
-              transfers: transfers,
+              activeTransfers: separated.active,
+              settledTransfers: separated.settled,
             ));
           }
         },
@@ -85,11 +108,16 @@ class SettlementCubit extends Cubit<SettlementState> {
       _transfersSubscription = _settlementRepository
           .getMinimalTransfers(tripId)
           .listen(
-        (transfers) {
-          _log('📦 Transfers updated: ${transfers.length} transfers');
+        (allTransfers) {
+          _log('📦 Transfers updated: ${allTransfers.length} transfers');
           if (state is SettlementLoaded && !isClosed) {
             final currentState = state as SettlementLoaded;
-            emit(currentState.copyWith(transfers: transfers));
+            final separated = _separateTransfers(allTransfers);
+            _log('📊 ${separated.active.length} active, ${separated.settled.length} settled');
+            emit(currentState.copyWith(
+              activeTransfers: separated.active,
+              settledTransfers: separated.settled,
+            ));
           }
         },
         onError: (error) {
@@ -117,14 +145,19 @@ class SettlementCubit extends Cubit<SettlementState> {
       _log('✅ Settlement computed successfully');
 
       // Get the computed transfers
-      final transfers = await _settlementRepository
+      final allTransfers = await _settlementRepository
           .getMinimalTransfers(tripId)
           .first;
+
+      // Separate active and settled transfers
+      final separated = _separateTransfers(allTransfers);
+      _log('📊 ${separated.active.length} active, ${separated.settled.length} settled');
 
       if (!isClosed) {
         emit(SettlementLoaded(
           summary: summary,
-          transfers: transfers,
+          activeTransfers: separated.active,
+          settledTransfers: separated.settled,
         ));
       }
 
@@ -146,6 +179,55 @@ class SettlementCubit extends Cubit<SettlementState> {
   Future<void> refreshSettlement() async {
     if (_currentTripId != null) {
       await computeSettlement(_currentTripId!);
+    }
+  }
+
+  /// Mark a specific transfer as settled
+  ///
+  /// Updates the transfer in Firestore, which will trigger real-time update
+  Future<void> markTransferAsSettled(String transferId) async {
+    if (_currentTripId == null) {
+      _log('⚠️ Cannot mark transfer as settled: no current trip');
+      return;
+    }
+
+    try {
+      _log('✅ Marking transfer $transferId as settled');
+      await _settlementRepository.markTransferAsSettled(_currentTripId!, transferId);
+      _log('✅ Transfer marked as settled');
+      // Real-time listener will automatically update the UI
+    } catch (e) {
+      _log('❌ Error marking transfer as settled: $e');
+      if (!isClosed) {
+        emit(SettlementError('Failed to mark transfer as settled: ${e.toString()}'));
+      }
+    }
+  }
+
+  /// Smart refresh: only recompute if expenses have changed
+  ///
+  /// Checks if expenses were modified after settlement was last computed
+  /// If yes, recomputes settlement. Otherwise, just reloads existing data.
+  /// Always reloads settlement data to ensure UI shows latest state (e.g., settled transfers).
+  Future<void> smartRefresh(String tripId) async {
+    try {
+      _log('🔍 Smart refresh check for trip: $tripId');
+
+      final shouldRecompute = await _settlementRepository.shouldRecompute(tripId);
+
+      if (shouldRecompute) {
+        _log('🔄 Expenses changed, recomputing settlement');
+        await computeSettlement(tripId);
+      } else {
+        _log('✅ Settlement is up-to-date, reloading from Firestore');
+        // Always reload to get latest data (e.g., settled transfers)
+        await loadSettlement(tripId);
+      }
+    } catch (e) {
+      _log('❌ Error in smart refresh: $e');
+      if (!isClosed) {
+        emit(SettlementError('Failed to refresh settlement: ${e.toString()}'));
+      }
     }
   }
 

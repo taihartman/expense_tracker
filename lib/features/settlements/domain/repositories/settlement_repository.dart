@@ -29,4 +29,13 @@ abstract class SettlementRepository {
   /// Delete settlement data for a trip
   /// Used when trip is deleted or reset
   Future<void> deleteSettlement(String tripId);
+
+  /// Mark a specific transfer as settled
+  /// Updates the transfer's isSettled and settledAt fields
+  Future<void> markTransferAsSettled(String tripId, String transferId);
+
+  /// Check if settlement should be recomputed
+  /// Compares settlement's lastComputedAt with trip's lastExpenseModifiedAt
+  /// Returns true if expenses have been modified after settlement was computed
+  Future<bool> shouldRecompute(String tripId);
 }

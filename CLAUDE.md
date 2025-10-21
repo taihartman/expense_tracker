@@ -142,32 +142,79 @@ Uses `flutter_lints` package (v5.0.0) with default recommended lints defined in 
 1. Create feature branch: `{id}-{feature-name}`
 2. Create spec directory: `specs/{id}-{feature-name}/`
 3. Use `/speckit.specify` to create specification
-4. **Create feature documentation**: Use `/docs.create` to create feature-specific CLAUDE.md
+4. **Create feature documentation**: Use `/docs.create` to create CLAUDE.md and CHANGELOG.md
 5. Use `/speckit.plan` to generate implementation plan
 6. Use `/speckit.tasks` to generate task breakdown
 7. Use `/speckit.implement` to execute implementation
-8. **Update docs during development**: Use `/docs.update` as you make changes
-9. **Mark complete**: Use `/docs.complete` to finalize documentation and update CHANGELOG.md
+8. **During development**:
+   - Use `/docs.log` frequently to track changes in feature CHANGELOG.md
+   - Update feature CLAUDE.md occasionally with `/docs.update` for architectural changes
+9. **Mark complete**: Use `/docs.complete` to finalize documentation and roll up to root CHANGELOG.md
+
+**Documentation Best Practice**: Use `/docs.log` after every significant change to keep a detailed development history. This makes it easy to generate release notes and understand feature evolution.
 
 ### Documentation Workflow
 
-Each feature maintains its own CLAUDE.md file in `specs/{feature-id}/CLAUDE.md`:
+Each feature maintains TWO documentation files:
+- **CLAUDE.md** (`specs/{feature-id}/CLAUDE.md`): Architecture, design decisions, and implementation guide
+- **CHANGELOG.md** (`specs/{feature-id}/CHANGELOG.md`): Day-to-day development log
 
-**Available commands**:
-- `/docs.create` - Create initial feature CLAUDE.md from template
-- `/docs.update` - Update feature CLAUDE.md with recent changes
-- `/docs.complete` - Mark feature complete and update CHANGELOG.md
+#### Available Slash Commands
 
-**Manual script usage**:
+- `/docs.create` - Create initial feature CLAUDE.md and CHANGELOG.md from templates
+- `/docs.log` - Add entry to feature CHANGELOG.md (use frequently!)
+- `/docs.update` - Update feature CLAUDE.md with recent changes (manual)
+- `/docs.complete` - Mark feature complete and roll up to root CHANGELOG.md
+
+#### Manual Script Usage
+
 ```bash
-# Create feature documentation
+# Create feature documentation (both CLAUDE.md and CHANGELOG.md)
 .specify/scripts/bash/update-feature-docs.sh create {feature-id}
 
-# Mark feature as complete (updates CLAUDE.md and CHANGELOG.md)
+# Log a development change (use frequently during development)
+.specify/scripts/bash/update-feature-docs.sh log {feature-id} "Description of what changed"
+
+# Mark feature as complete (rolls up to root CHANGELOG.md)
 .specify/scripts/bash/update-feature-docs.sh complete {feature-id}
 ```
 
-**Feature CLAUDE.md includes**:
+#### When to Update Documentation
+
+**Feature CLAUDE.md** (update occasionally):
+- After implementing major architectural decisions
+- When adding new dependencies
+- When creating significant new components
+- After settling on state management patterns
+- Document known limitations and trade-offs
+
+**Feature CHANGELOG.md** (update frequently with `/docs.log`):
+- After each significant change or milestone
+- When adding new files or components
+- When fixing bugs
+- When changing existing functionality
+- At the end of each work session
+
+**Example workflow**:
+```bash
+# Start feature
+/docs.create
+
+# During development - log changes frequently
+/docs.log "Added expense form with validation"
+/docs.log "Implemented settlement calculator with pairwise netting"
+/docs.log "Fixed decimal precision in split calculations"
+
+# Occasionally update architecture docs
+/docs.update  # (manual edit of CLAUDE.md)
+
+# When feature complete
+/docs.complete
+```
+
+#### What Each File Contains
+
+**Feature CLAUDE.md** (`specs/{feature-id}/CLAUDE.md`):
 - Quick reference commands specific to the feature
 - Files created/modified by the feature
 - Architecture decisions and design patterns
@@ -175,10 +222,17 @@ Each feature maintains its own CLAUDE.md file in `specs/{feature-id}/CLAUDE.md`:
 - Testing strategy
 - Migration notes and breaking changes
 
-**CHANGELOG.md**:
-- Automatically updated when feature is marked complete
-- Tracks all features in reverse chronological order
+**Feature CHANGELOG.md** (`specs/{feature-id}/CHANGELOG.md`):
+- Chronological development log with dates
+- Specific changes, additions, fixes
+- Preserved as historical reference after feature completion
 - Follows [Keep a Changelog](https://keepachangelog.com/) format
+
+**Root CHANGELOG.md**:
+- High-level feature completion summary
+- Automatically updated when feature is marked complete
+- Links to feature-specific docs for details
+- Release history for the entire project
 
 ### Before Committing
 

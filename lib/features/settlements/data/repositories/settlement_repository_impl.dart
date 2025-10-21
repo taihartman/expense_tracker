@@ -3,6 +3,7 @@ import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
 import '../../domain/models/settlement_summary.dart';
 import '../../domain/models/minimal_transfer.dart';
+import '../../domain/models/person_summary.dart';
 import '../../domain/repositories/settlement_repository.dart';
 import '../../domain/services/settlement_calculator.dart';
 import '../models/settlement_summary_model.dart';
@@ -27,6 +28,51 @@ class SettlementRepositoryImpl implements SettlementRepository {
         _expenseRepository = expenseRepository,
         _tripRepository = tripRepository,
         _calculator = calculator ?? SettlementCalculator();
+
+  /// Apply adjustments to person summaries based on settled transfers
+  ///
+  /// When a transfer is settled:
+  /// - Payer's netBase increases (they owe less, have paid their debt)
+  /// - Receiver's netBase decreases (they're owed less, have been paid)
+  ///
+  /// This ensures the summary reflects the current state after payments.
+  Map<String, PersonSummary> _applySettledTransferAdjustments(
+    Map<String, PersonSummary> personSummaries,
+    List<MinimalTransfer> settledTransfers,
+  ) {
+    // Create a mutable copy
+    final adjusted = <String, PersonSummary>{};
+    for (final entry in personSummaries.entries) {
+      adjusted[entry.key] = entry.value;
+    }
+
+    // Apply each settled transfer's adjustment
+    for (final transfer in settledTransfers.where((t) => t.isSettled)) {
+      // Adjust payer (fromUserId): they've paid, so their net balance increases
+      if (adjusted.containsKey(transfer.fromUserId)) {
+        final payer = adjusted[transfer.fromUserId]!;
+        adjusted[transfer.fromUserId] = PersonSummary(
+          userId: payer.userId,
+          totalPaidBase: payer.totalPaidBase,
+          totalOwedBase: payer.totalOwedBase,
+          netBase: payer.netBase + transfer.amountBase,
+        );
+      }
+
+      // Adjust receiver (toUserId): they've been paid, so their net balance decreases
+      if (adjusted.containsKey(transfer.toUserId)) {
+        final receiver = adjusted[transfer.toUserId]!;
+        adjusted[transfer.toUserId] = PersonSummary(
+          userId: receiver.userId,
+          totalPaidBase: receiver.totalPaidBase,
+          totalOwedBase: receiver.totalOwedBase,
+          netBase: receiver.netBase - transfer.amountBase,
+        );
+      }
+    }
+
+    return adjusted;
+  }
 
   @override
   Future<SettlementSummary?> getSettlementSummary(String tripId) async {
@@ -92,13 +138,62 @@ class SettlementRepositoryImpl implements SettlementRepository {
           .getExpensesByTrip(tripId)
           .first;
 
-      // Calculate person summaries
-      final personSummaries = _calculator.calculatePersonSummaries(
+      // Calculate person summaries from expenses (raw calculation)
+      var personSummaries = _calculator.calculatePersonSummaries(
         expenses: expenses,
         baseCurrency: trip.baseCurrency,
       );
 
-      // Create settlement summary
+      // Calculate minimal transfers from raw summaries
+      final transfers = _calculator.calculateMinimalTransfers(
+        tripId: tripId,
+        personSummaries: personSummaries,
+      );
+
+      // Get existing transfers and build map of settled transfers
+      final existingTransfers = await _firestoreService.settlements
+          .doc(tripId)
+          .collection('transfers')
+          .get();
+
+      // Build map of settled transfers: "fromUserId-toUserId" -> (isSettled, settledAt, amount)
+      final settledMap = <String, ({bool isSettled, DateTime? settledAt, })>{};
+      for (final doc in existingTransfers.docs) {
+        final existingTransfer = MinimalTransferModel.fromFirestore(doc);
+        if (existingTransfer.isSettled) {
+          final key = '${existingTransfer.fromUserId}-${existingTransfer.toUserId}';
+          settledMap[key] = (
+            isSettled: existingTransfer.isSettled,
+            settledAt: existingTransfer.settledAt,
+          );
+        }
+      }
+
+      // Build list of transfers with settled status preserved
+      final transfersWithSettledStatus = <MinimalTransfer>[];
+      for (final transfer in transfers) {
+        final key = '${transfer.fromUserId}-${transfer.toUserId}';
+        final wasSettled = settledMap[key];
+
+        transfersWithSettledStatus.add(MinimalTransfer(
+          id: '', // Will be set when saving
+          tripId: transfer.tripId,
+          fromUserId: transfer.fromUserId,
+          toUserId: transfer.toUserId,
+          amountBase: transfer.amountBase,
+          computedAt: transfer.computedAt,
+          isSettled: wasSettled?.isSettled ?? false,
+          settledAt: wasSettled?.settledAt,
+        ));
+      }
+
+      // Apply adjustments to person summaries based on settled transfers
+      personSummaries = _applySettledTransferAdjustments(
+        personSummaries,
+        transfersWithSettledStatus,
+      );
+
+      // Create settlement summary with adjusted summaries
       final settlementSummary = SettlementSummary(
         tripId: tripId,
         baseCurrency: trip.baseCurrency,
@@ -106,23 +201,12 @@ class SettlementRepositoryImpl implements SettlementRepository {
         lastComputedAt: DateTime.now(),
       );
 
-      // Save to Firestore
+      // Save settlement summary to Firestore (with adjusted summaries)
       await _firestoreService.settlements
           .doc(tripId)
           .set(SettlementSummaryModel.toJson(settlementSummary));
 
-      // Calculate and save minimal transfers
-      final transfers = _calculator.calculateMinimalTransfers(
-        tripId: tripId,
-        personSummaries: personSummaries,
-      );
-
-      // Delete existing transfers
-      final existingTransfers = await _firestoreService.settlements
-          .doc(tripId)
-          .collection('transfers')
-          .get();
-
+      // Now save the transfers
       final batch = _firestoreService.batch();
 
       // Delete old transfers
@@ -130,8 +214,8 @@ class SettlementRepositoryImpl implements SettlementRepository {
         batch.delete(doc.reference);
       }
 
-      // Add new transfers
-      for (final transfer in transfers) {
+      // Add new transfers with preserved settled status
+      for (final transfer in transfersWithSettledStatus) {
         final docRef = _firestoreService.settlements
             .doc(tripId)
             .collection('transfers')
@@ -144,6 +228,8 @@ class SettlementRepositoryImpl implements SettlementRepository {
           toUserId: transfer.toUserId,
           amountBase: transfer.amountBase,
           computedAt: transfer.computedAt,
+          isSettled: transfer.isSettled,
+          settledAt: transfer.settledAt,
         );
 
         batch.set(docRef, MinimalTransferModel.toJson(transferWithId));
@@ -189,6 +275,86 @@ class SettlementRepositoryImpl implements SettlementRepository {
       await batch.commit();
     } catch (e) {
       throw Exception('Failed to delete settlement: $e');
+    }
+  }
+
+  @override
+  Future<void> markTransferAsSettled(String tripId, String transferId) async {
+    try {
+      // First, mark the transfer as settled in Firestore
+      await _firestoreService.settlements
+          .doc(tripId)
+          .collection('transfers')
+          .doc(transferId)
+          .update({
+        'isSettled': true,
+        'settledAt': _firestoreService.now,
+      });
+
+      // Fetch the transfer to get its details (needed for summary adjustment)
+      final transferDoc = await _firestoreService.settlements
+          .doc(tripId)
+          .collection('transfers')
+          .doc(transferId)
+          .get();
+
+      if (!transferDoc.exists) {
+        throw Exception('Transfer not found after marking as settled');
+      }
+
+      final transfer = MinimalTransferModel.fromFirestore(transferDoc);
+
+      // Fetch current settlement summary
+      final settlementDoc = await _firestoreService.settlements.doc(tripId).get();
+
+      if (!settlementDoc.exists) {
+        throw Exception('Settlement not found');
+      }
+
+      final summary = SettlementSummaryModel.fromFirestore(settlementDoc);
+
+      // Apply adjustment for this single settled transfer
+      final adjustedSummaries = _applySettledTransferAdjustments(
+        summary.personSummaries,
+        [transfer],
+      );
+
+      // Update settlement with adjusted summaries
+      await _firestoreService.settlements.doc(tripId).update({
+        'personSummaries': adjustedSummaries.map(
+          (userId, personSummary) => MapEntry(userId, personSummary.toMap()),
+        ),
+      });
+    } catch (e) {
+      throw Exception('Failed to mark transfer as settled: $e');
+    }
+  }
+
+  @override
+  Future<bool> shouldRecompute(String tripId) async {
+    try {
+      // Get settlement summary to check lastComputedAt
+      final settlement = await getSettlementSummary(tripId);
+      if (settlement == null) {
+        // No settlement exists, should compute
+        return true;
+      }
+
+      // Get trip to check lastExpenseModifiedAt
+      final trip = await _tripRepository.getTripById(tripId);
+      if (trip == null) {
+        throw Exception('Trip not found: $tripId');
+      }
+
+      // If no expenses have been modified, no need to recompute
+      if (trip.lastExpenseModifiedAt == null) {
+        return false;
+      }
+
+      // Recompute if expenses were modified after settlement was computed
+      return trip.lastExpenseModifiedAt!.isAfter(settlement.lastComputedAt);
+    } catch (e) {
+      throw Exception('Failed to check if should recompute: $e');
     }
   }
 }

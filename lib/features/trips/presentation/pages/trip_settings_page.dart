@@ -312,17 +312,20 @@ class TripSettingsPage extends StatelessWidget {
       isScrollControlled: true,
       useSafeArea: true,
       showDragHandle: true,
-      builder: (sheetContext) => ParticipantFormBottomSheet(
-        tripId: tripId,
-        onParticipantAdded: (participant) {
-          Navigator.of(sheetContext).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('✓ ${participant.name} added successfully'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        },
+      builder: (sheetContext) => BlocProvider.value(
+        value: context.read<TripCubit>(),
+        child: ParticipantFormBottomSheet(
+          tripId: tripId,
+          onParticipantAdded: (participant) {
+            Navigator.of(sheetContext).pop();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('✓ ${participant.name} added successfully'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+        ),
       ),
     );
   }

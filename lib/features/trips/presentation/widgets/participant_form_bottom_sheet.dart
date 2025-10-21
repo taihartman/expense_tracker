@@ -214,7 +214,7 @@ class _ParticipantFormBottomSheetState
   }
 
   Future<void> _addParticipantToTrip(trip, Participant participant) async {
-    final updatedParticipants = [...trip.participants, participant];
+    final List<Participant> updatedParticipants = [...trip.participants, participant];
     final updatedTrip = trip.copyWith(
       participants: updatedParticipants,
       updatedAt: DateTime.now(),

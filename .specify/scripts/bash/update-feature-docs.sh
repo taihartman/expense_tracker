@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Script to update feature documentation and changelog
-# Usage: ./update-feature-docs.sh <feature-id> <action> [options]
-# Actions: create, update, complete
+# Usage: ./update-feature-docs.sh <action> <feature-id> [message]
+# Actions: create, update, log, complete
 
 set -e
 
@@ -11,17 +11,20 @@ source "$SCRIPT_DIR/common.sh"
 
 ACTION="$1"
 FEATURE_ID="$2"
+MESSAGE="$3"
 
 if [ -z "$ACTION" ] || [ -z "$FEATURE_ID" ]; then
-    echo "Usage: $0 <action> <feature-id> [options]"
+    echo "Usage: $0 <action> <feature-id> [message]"
     echo ""
     echo "Actions:"
-    echo "  create    - Create initial feature CLAUDE.md"
-    echo "  update    - Update feature CLAUDE.md with changes"
-    echo "  complete  - Mark feature as complete and update CHANGELOG.md"
+    echo "  create    - Create initial feature CLAUDE.md and CHANGELOG.md"
+    echo "  update    - Update feature CLAUDE.md with changes (manual)"
+    echo "  log       - Add entry to feature CHANGELOG.md"
+    echo "  complete  - Mark feature as complete and roll up to root CHANGELOG.md"
     echo ""
     echo "Examples:"
     echo "  $0 create 001-group-expense-tracker"
+    echo "  $0 log 001-group-expense-tracker 'Added expense form validation'"
     echo "  $0 complete 001-group-expense-tracker"
     exit 1
 fi
@@ -37,8 +40,9 @@ cd "$REPO_ROOT"
 
 FEATURE_DIR="$REPO_ROOT/specs/$FEATURE_ID"
 FEATURE_CLAUDE="$FEATURE_DIR/CLAUDE.md"
+FEATURE_CHANGELOG="$FEATURE_DIR/CHANGELOG.md"
 SPEC_FILE="$FEATURE_DIR/spec.md"
-CHANGELOG="$REPO_ROOT/CHANGELOG.md"
+ROOT_CHANGELOG="$REPO_ROOT/CHANGELOG.md"
 
 create_feature_claude() {
     if [ ! -f "$SPEC_FILE" ]; then
@@ -50,10 +54,10 @@ create_feature_claude() {
     FEATURE_NAME=$(grep -m1 "^# Feature Specification:" "$SPEC_FILE" | sed 's/# Feature Specification: //' || echo "Unknown Feature")
     CREATED_DATE=$(grep -m1 "^\*\*Created\*\*:" "$SPEC_FILE" | sed 's/\*\*Created\*\*: //' || date +%Y-%m-%d)
 
-    # Copy template
-    TEMPLATE="$REPO_ROOT/.specify/templates/feature-claude-template.md"
-    if [ -f "$TEMPLATE" ]; then
-        cp "$TEMPLATE" "$FEATURE_CLAUDE"
+    # Create CLAUDE.md from template
+    CLAUDE_TEMPLATE="$REPO_ROOT/.specify/templates/feature-claude-template.md"
+    if [ -f "$CLAUDE_TEMPLATE" ]; then
+        cp "$CLAUDE_TEMPLATE" "$FEATURE_CLAUDE"
 
         # Replace placeholders
         sed -i.bak "s|\[FEATURE NAME\]|$FEATURE_NAME|g" "$FEATURE_CLAUDE"
@@ -63,11 +67,80 @@ create_feature_claude() {
         rm -f "$FEATURE_CLAUDE.bak"
 
         echo "✓ Created feature CLAUDE.md at $FEATURE_CLAUDE"
-        echo "  Please update it with feature-specific information."
     else
-        echo "Error: Template not found at $TEMPLATE"
+        echo "Error: CLAUDE template not found at $CLAUDE_TEMPLATE"
         exit 1
     fi
+
+    # Create CHANGELOG.md from template
+    CHANGELOG_TEMPLATE="$REPO_ROOT/.specify/templates/feature-changelog-template.md"
+    if [ -f "$CHANGELOG_TEMPLATE" ]; then
+        cp "$CHANGELOG_TEMPLATE" "$FEATURE_CHANGELOG"
+
+        # Replace placeholders
+        sed -i.bak "s|\[FEATURE NAME\]|$FEATURE_NAME|g" "$FEATURE_CHANGELOG"
+        sed -i.bak "s|\[###-feature-name\]|$FEATURE_ID|g" "$FEATURE_CHANGELOG"
+        sed -i.bak "s|\[DATE\]|$CREATED_DATE|g" "$FEATURE_CHANGELOG"
+        rm -f "$FEATURE_CHANGELOG.bak"
+
+        echo "✓ Created feature CHANGELOG.md at $FEATURE_CHANGELOG"
+        echo "  Use './update-feature-docs.sh log $FEATURE_ID \"message\"' to add entries"
+    else
+        echo "Error: CHANGELOG template not found at $CHANGELOG_TEMPLATE"
+        exit 1
+    fi
+}
+
+log_to_feature_changelog() {
+    if [ ! -f "$FEATURE_CHANGELOG" ]; then
+        echo "Error: Feature CHANGELOG.md not found at $FEATURE_CHANGELOG"
+        echo "Run '$0 create $FEATURE_ID' first."
+        exit 1
+    fi
+
+    if [ -z "$MESSAGE" ]; then
+        echo "Error: Log message required"
+        echo "Usage: $0 log $FEATURE_ID \"Your log message\""
+        exit 1
+    fi
+
+    # Current date
+    LOG_DATE=$(date +%Y-%m-%d)
+
+    # Create log entry with timestamp
+    LOG_ENTRY="
+## $LOG_DATE
+
+### Changed
+- $MESSAGE
+"
+
+    # Insert after "<!-- Add entries below in reverse chronological order (newest first) -->"
+    # If that marker doesn't exist, insert after "## Development Log"
+    if grep -q "<!-- Add entries below in reverse chronological order" "$FEATURE_CHANGELOG"; then
+        awk -v entry="$LOG_ENTRY" '
+            /<!-- Add entries below in reverse chronological order/ {
+                print
+                print entry
+                next
+            }
+            { print }
+        ' "$FEATURE_CHANGELOG" > "$FEATURE_CHANGELOG.tmp"
+    else
+        awk -v entry="$LOG_ENTRY" '
+            /## Development Log/ {
+                print
+                print entry
+                next
+            }
+            { print }
+        ' "$FEATURE_CHANGELOG" > "$FEATURE_CHANGELOG.tmp"
+    fi
+
+    mv "$FEATURE_CHANGELOG.tmp" "$FEATURE_CHANGELOG"
+
+    echo "✓ Added log entry to $FEATURE_CHANGELOG"
+    echo "  Entry: $MESSAGE"
 }
 
 complete_feature() {
@@ -84,20 +157,27 @@ complete_feature() {
     FEATURE_NAME=$(grep -m1 "^# Feature Documentation:" "$FEATURE_CLAUDE" | sed 's/# Feature Documentation: //' || echo "Unknown Feature")
     COMPLETION_DATE=$(date +%Y-%m-%d)
 
-    # Update CHANGELOG.md
-    if [ -f "$CHANGELOG" ]; then
-        # Create changelog entry
-        CHANGELOG_ENTRY="
+    # Read summary from feature CLAUDE.md "Feature Overview" section
+    FEATURE_SUMMARY=""
+    if [ -f "$FEATURE_CLAUDE" ]; then
+        # Extract first paragraph of Feature Overview
+        FEATURE_SUMMARY=$(awk '/## Feature Overview/,/##/ {if (!/##/ && NF) print}' "$FEATURE_CLAUDE" | head -1)
+    fi
+
+    # Create changelog entry with summary from feature changelog
+    CHANGELOG_ENTRY="
 ## [$FEATURE_ID] - $COMPLETION_DATE
 
-### Added
-- $FEATURE_NAME (See specs/$FEATURE_ID/CLAUDE.md for details)
+$FEATURE_SUMMARY
+
+See \`specs/$FEATURE_ID/CLAUDE.md\` and \`specs/$FEATURE_ID/CHANGELOG.md\` for complete details.
 
 ---
 "
 
+    # Update root CHANGELOG.md
+    if [ -f "$ROOT_CHANGELOG" ]; then
         # Insert after "<!-- Features will be appended below in reverse chronological order -->"
-        # Use a temp file for cross-platform compatibility
         awk -v entry="$CHANGELOG_ENTRY" '
             /<!-- Features will be appended below in reverse chronological order -->/ {
                 print
@@ -105,23 +185,27 @@ complete_feature() {
                 next
             }
             { print }
-        ' "$CHANGELOG" > "$CHANGELOG.tmp"
-        mv "$CHANGELOG.tmp" "$CHANGELOG"
+        ' "$ROOT_CHANGELOG" > "$ROOT_CHANGELOG.tmp"
+        mv "$ROOT_CHANGELOG.tmp" "$ROOT_CHANGELOG"
 
-        # Update "Unreleased" section - move from "In Progress" to completed
-        sed -i.bak "/\[$FEATURE_ID\] $FEATURE_NAME/d" "$CHANGELOG"
-        rm -f "$CHANGELOG.bak"
+        # Update "Unreleased" section - remove from "In Progress"
+        sed -i.bak "/\[$FEATURE_ID\]/d" "$ROOT_CHANGELOG"
+        rm -f "$ROOT_CHANGELOG.bak"
 
-        echo "✓ Updated CHANGELOG.md with feature completion"
+        echo "✓ Updated root CHANGELOG.md with feature completion"
         echo "✓ Marked feature as completed in $FEATURE_CLAUDE"
+        echo "✓ Feature changelog preserved at $FEATURE_CHANGELOG"
     else
-        echo "Warning: CHANGELOG.md not found at $CHANGELOG"
+        echo "Warning: Root CHANGELOG.md not found at $ROOT_CHANGELOG"
     fi
 }
 
 case "$ACTION" in
     create)
         create_feature_claude
+        ;;
+    log)
+        log_to_feature_changelog
         ;;
     complete)
         complete_feature
@@ -132,7 +216,7 @@ case "$ACTION" in
         ;;
     *)
         echo "Error: Unknown action '$ACTION'"
-        echo "Valid actions: create, update, complete"
+        echo "Valid actions: create, log, update, complete"
         exit 1
         ;;
 esac

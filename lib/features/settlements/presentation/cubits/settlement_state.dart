@@ -28,23 +28,30 @@ class SettlementComputing extends SettlementState {
 /// Settlement data loaded successfully
 class SettlementLoaded extends SettlementState {
   final SettlementSummary summary;
-  final List<MinimalTransfer> transfers;
+  final List<MinimalTransfer> activeTransfers;
+  final List<MinimalTransfer> settledTransfers;
 
   const SettlementLoaded({
     required this.summary,
-    required this.transfers,
+    required this.activeTransfers,
+    required this.settledTransfers,
   });
 
   @override
-  List<Object?> get props => [summary, transfers];
+  List<Object?> get props => [summary, activeTransfers, settledTransfers];
+
+  /// Get all transfers (active + settled)
+  List<MinimalTransfer> get allTransfers => [...activeTransfers, ...settledTransfers];
 
   SettlementLoaded copyWith({
     SettlementSummary? summary,
-    List<MinimalTransfer>? transfers,
+    List<MinimalTransfer>? activeTransfers,
+    List<MinimalTransfer>? settledTransfers,
   }) {
     return SettlementLoaded(
       summary: summary ?? this.summary,
-      transfers: transfers ?? this.transfers,
+      activeTransfers: activeTransfers ?? this.activeTransfers,
+      settledTransfers: settledTransfers ?? this.settledTransfers,
     );
   }
 }

@@ -89,7 +89,7 @@ class TripSelectorWidget extends StatelessWidget {
         // No trip selected or error
         return TextButton.icon(
           onPressed: () {
-            Navigator.of(context).pushNamed('/trip-create');
+            Navigator.of(context).pushNamed('/trips/create');
           },
           icon: const Icon(Icons.add),
           label: const Text('Create Trip'),
@@ -120,7 +120,7 @@ class TripSelectorWidget extends StatelessWidget {
                     icon: const Icon(Icons.add),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).pushNamed('/trip-create');
+                      Navigator.of(context).pushNamed('/trips/create');
                     },
                   ),
                 ],

@@ -14,6 +14,9 @@ class TripModel {
       'baseCurrency': trip.baseCurrency.code,
       'createdAt': Timestamp.fromDate(trip.createdAt),
       'updatedAt': Timestamp.fromDate(trip.updatedAt),
+      'lastExpenseModifiedAt': trip.lastExpenseModifiedAt != null
+          ? Timestamp.fromDate(trip.lastExpenseModifiedAt!)
+          : null,
       'participants': trip.participants.map((p) => p.toJson()).toList(),
     };
   }
@@ -25,9 +28,8 @@ class TripModel {
     // Parse participants array (defaults to empty list if not present for backward compatibility)
     final participantsList = data['participants'] as List<dynamic>?;
     final participants = participantsList != null
-        ? participantsList
-            .map((p) => Participant.fromJson(p as Map<String, dynamic>))
-            .toList()
+        ? List<Participant>.from(participantsList
+            .map((p) => Participant.fromJson(p as Map<String, dynamic>)))
         : <Participant>[];
 
     return Trip(
@@ -37,6 +39,9 @@ class TripModel {
           CurrencyCode.usd,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
+      lastExpenseModifiedAt: data['lastExpenseModifiedAt'] != null
+          ? (data['lastExpenseModifiedAt'] as Timestamp).toDate()
+          : null,
       participants: participants,
     );
   }

@@ -14,6 +14,10 @@ class MinimalTransferModel {
       'toUserId': transfer.toUserId,
       'amountBase': transfer.amountBase.toString(),
       'computedAt': Timestamp.fromDate(transfer.computedAt),
+      'isSettled': transfer.isSettled,
+      'settledAt': transfer.settledAt != null
+          ? Timestamp.fromDate(transfer.settledAt!)
+          : null,
     };
   }
 
@@ -28,6 +32,10 @@ class MinimalTransferModel {
       toUserId: data['toUserId'] as String,
       amountBase: Decimal.parse(data['amountBase'] as String),
       computedAt: (data['computedAt'] as Timestamp).toDate(),
+      isSettled: data['isSettled'] as bool? ?? false,
+      settledAt: data['settledAt'] != null
+          ? (data['settledAt'] as Timestamp).toDate()
+          : null,
     );
   }
 }

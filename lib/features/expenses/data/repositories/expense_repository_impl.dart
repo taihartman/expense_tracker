@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../domain/models/expense.dart';
@@ -15,6 +16,20 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
   ExpenseRepositoryImpl({required FirestoreService firestoreService})
       : _firestoreService = firestoreService;
+
+  /// Update trip's lastExpenseModifiedAt timestamp
+  /// Used for smart settlement refresh detection
+  Future<void> _updateTripLastExpenseModified(String tripId) async {
+    try {
+      await _firestoreService.trips.doc(tripId).update({
+        'lastExpenseModifiedAt': Timestamp.fromDate(DateTime.now()),
+      });
+      _log('✅ Updated trip $tripId lastExpenseModifiedAt');
+    } catch (e) {
+      _log('⚠️ Failed to update trip lastExpenseModifiedAt: $e');
+      // Don't throw - this is a non-critical operation
+    }
+  }
 
   @override
   Future<Expense> createExpense(Expense expense) async {
@@ -38,6 +53,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
       // Save to Firestore
       await docRef.set(ExpenseModel.toJson(newExpense));
+
+      // Update trip's lastExpenseModifiedAt for smart settlement refresh
+      await _updateTripLastExpenseModified(newExpense.tripId);
 
       return newExpense;
     } catch (e) {
@@ -111,6 +129,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           .doc(expense.id)
           .update(ExpenseModel.toJson(updatedExpense));
 
+      // Update trip's lastExpenseModifiedAt for smart settlement refresh
+      await _updateTripLastExpenseModified(updatedExpense.tripId);
+
       return updatedExpense;
     } catch (e) {
       throw Exception('Failed to update expense: $e');
@@ -120,7 +141,17 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   @override
   Future<void> deleteExpense(String expenseId) async {
     try {
+      // Get the expense first to retrieve tripId
+      final expense = await getExpenseById(expenseId);
+      if (expense == null) {
+        throw Exception('Expense not found: $expenseId');
+      }
+
+      // Delete the expense
       await _firestoreService.expenses.doc(expenseId).delete();
+
+      // Update trip's lastExpenseModifiedAt for smart settlement refresh
+      await _updateTripLastExpenseModified(expense.tripId);
     } catch (e) {
       throw Exception('Failed to delete expense: $e');
     }

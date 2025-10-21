@@ -21,6 +21,10 @@ class Trip {
   /// When the trip was last updated
   final DateTime updatedAt;
 
+  /// When any expense was last added/modified/deleted for this trip
+  /// Used for smart settlement refresh to detect if recomputation is needed
+  final DateTime? lastExpenseModifiedAt;
+
   /// Participants specific to this trip
   /// Empty list means no participants configured yet (needs migration)
   final List<Participant> participants;
@@ -31,6 +35,7 @@ class Trip {
     required this.baseCurrency,
     required this.createdAt,
     required this.updatedAt,
+    this.lastExpenseModifiedAt,
     this.participants = const [],
   });
 
@@ -53,6 +58,7 @@ class Trip {
     CurrencyCode? baseCurrency,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? lastExpenseModifiedAt,
     List<Participant>? participants,
   }) {
     return Trip(
@@ -61,6 +67,7 @@ class Trip {
       baseCurrency: baseCurrency ?? this.baseCurrency,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      lastExpenseModifiedAt: lastExpenseModifiedAt ?? this.lastExpenseModifiedAt,
       participants: participants ?? this.participants,
     );
   }
@@ -79,6 +86,7 @@ class Trip {
   String toString() {
     return 'Trip(id: $id, name: $name, baseCurrency: $baseCurrency, '
         'createdAt: $createdAt, updatedAt: $updatedAt, '
+        'lastExpenseModifiedAt: $lastExpenseModifiedAt, '
         'participants: ${participants.length} participants)';
   }
 }

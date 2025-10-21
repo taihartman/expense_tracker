@@ -25,10 +25,11 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
   @override
   void initState() {
     super.initState();
-    // Load settlement when page initializes
+    // Smart refresh settlement when page initializes
+    // This will only recompute if expenses have changed since last settlement
     Future.microtask(() {
       if (mounted) {
-        context.read<SettlementCubit>().loadSettlement(widget.tripId);
+        context.read<SettlementCubit>().smartRefresh(widget.tripId);
       }
     });
   }
@@ -152,7 +153,8 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
 
                   // Minimal transfers
                   MinimalTransfersView(
-                    transfers: state.transfers,
+                    activeTransfers: state.activeTransfers,
+                    settledTransfers: state.settledTransfers,
                     baseCurrency: state.summary.baseCurrency,
                   ),
                 ],
