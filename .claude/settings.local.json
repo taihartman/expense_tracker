@@ -3,7 +3,20 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(gh run list:*)",
+      "Bash(.specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(cat:*)",
+      "Bash(chmod:*)",
+      "Bash(.specify/scripts/bash/update-feature-docs.sh create:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(flutter pub:*)",
+      "Bash(.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(sed:*)",
+      "Bash(specs/001-group-expense-tracker/tasks.md)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(flutter:*)"
     ],
     "deny": [],
     "ask": []

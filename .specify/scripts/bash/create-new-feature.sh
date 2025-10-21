@@ -196,6 +196,15 @@ if [ -f "$TEMPLATE" ]; then cp "$TEMPLATE" "$SPEC_FILE"; else touch "$SPEC_FILE"
 # Set the SPECIFY_FEATURE environment variable for the current session
 export SPECIFY_FEATURE="$BRANCH_NAME"
 
+# Create feature CLAUDE.md using the update-feature-docs.sh script
+# This will happen after spec.md is created by the /speckit.specify command
+# For now, just note that it should be created
+UPDATE_DOCS_SCRIPT="$SCRIPT_DIR/update-feature-docs.sh"
+if [ -f "$UPDATE_DOCS_SCRIPT" ]; then
+    >&2 echo "[specify] Remember to run: .specify/scripts/bash/update-feature-docs.sh create $BRANCH_NAME"
+    >&2 echo "[specify] after creating the spec.md file"
+fi
+
 if $JSON_MODE; then
     printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s"}\n' "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM"
 else

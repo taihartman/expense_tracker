@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Check if user is authenticated (anonymous or full auth)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Trips: Read/write if authenticated
+    match /trips/{tripId} {
+      allow read, write: if isAuthenticated();
+
+      // Categories, fxRates, expenses: Inherit trip permissions
+      match /{document=**} {
+        allow read, write: if isAuthenticated();
+      }
+
+      // Computed data: Read-only (Cloud Functions write)
+      match /computed/{document=**} {
+        allow read: if isAuthenticated();
+        allow write: if false;  // Only server can write
+      }
+    }
+  }
+}

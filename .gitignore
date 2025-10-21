@@ -46,3 +46,13 @@ app.*.map.json
 
 # Spec-kit / Claude agent credentials (keep settings but include commands)
 .claude/settings.local.json
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+functions/node_modules/
+functions/lib/
+functions/.env
+*.cache
