@@ -10,8 +10,25 @@ void _log(String message) {
 }
 
 /// Page displaying all trips
-class TripListPage extends StatelessWidget {
+class TripListPage extends StatefulWidget {
   const TripListPage({super.key});
+
+  @override
+  State<TripListPage> createState() => _TripListPageState();
+}
+
+class _TripListPageState extends State<TripListPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Load trips when page initializes (lazy loading)
+    _log('🔄 initState: Loading trips...');
+    Future.microtask(() {
+      if (mounted) {
+        context.read<TripCubit>().loadTrips();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

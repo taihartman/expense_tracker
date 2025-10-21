@@ -64,7 +64,6 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   Stream<List<Expense>> getExpensesByTrip(String tripId) {
     try {
       _log('🔍 getExpensesByTrip() called for tripId: $tripId - creating Firestore stream with cache-first strategy');
-      final streamStart = DateTime.now();
 
       // Use snapshots with metadata changes to get cache data immediately
       // This emits cache data first, then server data when available
@@ -73,12 +72,14 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           .orderBy('date', descending: true)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
+        // Timer starts here when data actually arrives, not when stream is created
         final mapStart = DateTime.now();
         final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
         final expenses = snapshot.docs
             .map((doc) => ExpenseModel.fromFirestore(doc))
             .toList();
-        _log('📦 Stream emitted ${expenses.length} expenses from $source (query: ${DateTime.now().difference(streamStart).inMilliseconds}ms, map: ${DateTime.now().difference(mapStart).inMilliseconds}ms)');
+        final mapDuration = DateTime.now().difference(mapStart).inMilliseconds;
+        _log('📦 Stream emitted ${expenses.length} expenses from $source (mapping took ${mapDuration}ms)');
         return expenses;
       });
     } catch (e) {

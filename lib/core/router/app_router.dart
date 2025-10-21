@@ -51,8 +51,24 @@ class AppRouter {
 }
 
 /// Home page with trip selector and expense list
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Load trips when home page initializes (lazy loading)
+    Future.microtask(() {
+      if (mounted) {
+        context.read<TripCubit>().loadTrips();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

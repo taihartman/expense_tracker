@@ -159,4 +159,11 @@ class AppTheme {
       ),
     );
   }
+
+  /// Helper method to get color based on balance value
+  static Color getBalanceColor(num balance) {
+    if (balance > 0) return positiveNetColor;
+    if (balance < 0) return negativeNetColor;
+    return neutralColor;
+  }
 }

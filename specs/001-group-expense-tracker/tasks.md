@@ -123,19 +123,19 @@
 
 ### Implementation for User Story 2
 
-- [ ] T057 [P] [US2] Create SettlementSummary domain entity in lib/features/settlements/domain/models/settlement_summary.dart
-- [ ] T058 [P] [US2] Create PersonSummary value object in lib/features/settlements/domain/models/person_summary.dart
-- [ ] T059 [P] [US2] Create PairwiseDebt entity in lib/features/settlements/domain/models/pairwise_debt.dart
-- [ ] T060 [P] [US2] Create MinimalTransfer entity in lib/features/settlements/domain/models/minimal_transfer.dart
+- [X] T057 [P] [US2] Create SettlementSummary domain entity in lib/features/settlements/domain/models/settlement_summary.dart
+- [X] T058 [P] [US2] Create PersonSummary value object in lib/features/settlements/domain/models/person_summary.dart
+- [X] T059 [P] [US2] Create PairwiseDebt entity in lib/features/settlements/domain/models/pairwise_debt.dart
+- [X] T060 [P] [US2] Create MinimalTransfer entity in lib/features/settlements/domain/models/minimal_transfer.dart
 - [ ] T061 [US2] Create Firestore models for computed settlement collections in lib/features/settlements/data/models/
-- [ ] T062 [US2] Implement settlement calculation service in lib/features/settlements/domain/services/settlement_calculator.dart (pairwise, netting, minimal algorithms)
+- [X] T062 [US2] Implement settlement calculation service in lib/features/settlements/domain/services/settlement_calculator.dart (pairwise, netting, minimal algorithms)
 - [ ] T063 [US2] Create Cloud Function: onExpenseWrite trigger in functions/src/compute-settlement.ts
 - [ ] T064 [P] [US2] Create Cloud Function: getSettlement callable in functions/src/get-settlement.ts
 - [ ] T065 [US2] Implement currency conversion logic with FX rate fallback in settlement calculator
 - [ ] T066 [US2] Define SettlementRepository interface in lib/features/settlements/domain/repositories/settlement_repository.dart
 - [ ] T067 [US2] Implement SettlementRepositoryImpl in lib/features/settlements/data/repositories/settlement_repository_impl.dart
 - [ ] T068 [US2] Create SettlementCubit in lib/features/settlements/presentation/cubits/settlement_cubit.dart
-- [ ] T069 [P] [US2] Create SettlementSummaryPage in lib/features/settlements/presentation/pages/settlement_summary_page.dart
+- [X] T069 [P] [US2] Create SettlementSummaryPage in lib/features/settlements/presentation/pages/settlement_summary_page.dart
 - [ ] T070 [P] [US2] Create AllPeopleSummaryTable widget with color coding (green/red) in lib/features/settlements/presentation/widgets/all_people_summary_table.dart
 - [ ] T071 [P] [US2] Create PairwiseNettedView in lib/features/settlements/presentation/widgets/pairwise_netted_view.dart
 - [ ] T072 [P] [US2] Create MinimalTransfersView in lib/features/settlements/presentation/widgets/minimal_transfers_view.dart

@@ -64,7 +64,6 @@ class TripRepositoryImpl implements TripRepository {
   Stream<List<Trip>> getAllTrips() {
     try {
       _log('🔍 getAllTrips() called - creating Firestore stream with cache-first strategy');
-      final streamStart = DateTime.now();
 
       // Use snapshots with metadata changes to get cache data immediately
       // This emits cache data first, then server data when available
@@ -72,10 +71,12 @@ class TripRepositoryImpl implements TripRepository {
           .orderBy('createdAt', descending: true)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
+        // Timer starts here when data actually arrives, not when stream is created
         final mapStart = DateTime.now();
         final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
         final trips = snapshot.docs.map((doc) => TripModel.fromFirestore(doc)).toList();
-        _log('📦 Stream emitted ${trips.length} trips from $source (query: ${DateTime.now().difference(streamStart).inMilliseconds}ms, map: ${DateTime.now().difference(mapStart).inMilliseconds}ms)');
+        final mapDuration = DateTime.now().difference(mapStart).inMilliseconds;
+        _log('📦 Stream emitted ${trips.length} trips from $source (mapping took ${mapDuration}ms)');
         return trips;
       });
     } catch (e) {
