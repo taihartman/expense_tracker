@@ -3,90 +3,92 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/expense_cubit.dart';
 import '../cubits/expense_state.dart';
 import '../widgets/expense_card.dart';
-import 'expense_form_page.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../shared/widgets/loading_indicator.dart';
-import '../../../trips/presentation/cubits/trip_cubit.dart';
-import '../../../trips/presentation/cubits/trip_state.dart';
 
-/// Page displaying a list of expenses for the selected trip
-class ExpenseListPage extends StatefulWidget {
-  const ExpenseListPage({super.key});
+/// Page displaying list of expenses for a trip
+class ExpenseListPage extends StatelessWidget {
+  final String tripId;
 
-  @override
-  State<ExpenseListPage> createState() => _ExpenseListPageState();
-}
-
-class _ExpenseListPageState extends State<ExpenseListPage> {
-  @override
-  void initState() {
-    super.initState();
-    _loadExpenses();
-  }
-
-  void _loadExpenses() {
-    final tripCubit = context.read<TripCubit>();
-    final selectedTrip = tripCubit.selectedTrip;
-
-    if (selectedTrip != null) {
-      context.read<ExpenseCubit>().loadExpenses(selectedTrip.id);
-    }
-  }
+  const ExpenseListPage({
+    required this.tripId,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Expenses'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              Navigator.of(context).pushNamed(
+                '/expense-form',
+                arguments: {'tripId': tripId},
+              );
+            },
+          ),
+        ],
       ),
-      body: BlocConsumer<ExpenseCubit, ExpenseState>(
-        listener: (context, state) {
-          if (state is ExpenseError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
-            );
-          } else if (state is ExpenseCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Expense created successfully')),
-            );
-          }
-        },
+      body: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
           if (state is ExpenseLoading) {
-            return const Center(child: LoadingIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (state is ExpenseError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+                  Text(
+                    state.message,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<ExpenseCubit>().loadExpenses(tripId);
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (state is ExpenseLoaded) {
-            final expenses = state.expenses;
-
-            if (expenses.isEmpty) {
+            if (state.expenses.isEmpty) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.receipt_long,
+                      Icons.receipt_long_outlined,
                       size: 64,
-                      color: theme.colorScheme.onSurfaceVariant,
+                      color: Theme.of(context).colorScheme.outline,
                     ),
                     const SizedBox(height: AppTheme.spacing2),
                     Text(
                       'No expenses yet',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppTheme.spacing1),
                     Text(
-                      'Tap the + button to add an expense',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                      'Tap + to add your first expense',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                     ),
                   ],
                 ),
@@ -94,69 +96,26 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
             }
 
             return ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing2),
-              itemCount: expenses.length,
+              padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing1),
+              itemCount: state.expenses.length,
               itemBuilder: (context, index) {
-                final expense = expenses[index];
+                final expense = state.expenses[index];
                 return ExpenseCard(
                   expense: expense,
                   onTap: () {
-                    _navigateToExpenseForm(expense.tripId, expense: expense);
+                    // Navigate to expense detail or edit
+                    Navigator.of(context).pushNamed(
+                      '/expense-detail',
+                      arguments: {'expense': expense},
+                    );
                   },
                 );
               },
             );
           }
 
-          // Initial state - show empty view
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  size: 64,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: AppTheme.spacing2),
-                Text(
-                  'Select a trip to view expenses',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          );
+          return const SizedBox.shrink();
         },
-      ),
-      floatingActionButton: BlocBuilder<TripCubit, TripState>(
-        builder: (context, tripState) {
-          // Only show FAB if a trip is selected
-          final selectedTrip = context.read<TripCubit>().selectedTrip;
-
-          if (selectedTrip == null) {
-            return const SizedBox.shrink();
-          }
-
-          return FloatingActionButton(
-            onPressed: () {
-              _navigateToExpenseForm(selectedTrip.id);
-            },
-            child: const Icon(Icons.add),
-          );
-        },
-      ),
-    );
-  }
-
-  void _navigateToExpenseForm(String tripId, {expense}) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => ExpenseFormPage(
-          tripId: tripId,
-          expense: expense,
-        ),
       ),
     );
   }

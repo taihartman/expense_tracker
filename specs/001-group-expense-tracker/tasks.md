@@ -91,13 +91,13 @@
 - [X] T038 [P] [US1] Implement CategoryRepositoryImpl in lib/features/categories/data/repositories/category_repository_impl.dart
 - [ ] T039 [US1] Create TripCubit for trip selection state in lib/features/trips/presentation/cubits/trip_cubit.dart
 - [ ] T040 [US1] Create ExpenseCubit for expense management in lib/features/expenses/presentation/cubits/expense_cubit.dart
-- [ ] T041 [P] [US1] Create TripSelectorWidget in lib/features/trips/presentation/widgets/trip_selector.dart
+- [X] T041 [P] [US1] Create TripSelectorWidget in lib/features/trips/presentation/widgets/trip_selector.dart
 - [ ] T042 [P] [US1] Create ExpenseFormPage with split type selection in lib/features/expenses/presentation/pages/expense_form_page.dart
-- [ ] T043 [P] [US1] Create ExpenseListPage in lib/features/expenses/presentation/pages/expense_list_page.dart
+- [X] T043 [P] [US1] Create ExpenseListPage in lib/features/expenses/presentation/pages/expense_list_page.dart
 - [ ] T044 [P] [US1] Create ExpenseCard widget in lib/features/expenses/presentation/widgets/expense_card.dart
 - [ ] T045 [US1] Create ParticipantSelector widget (checkboxes for Equal, weight inputs for Weighted) in lib/features/expenses/presentation/widgets/participant_selector.dart
-- [ ] T046 [US1] Implement expense input validation (client-side) in expense form
-- [ ] T047 [US1] Add loading states and error handling to ExpenseCubit
+- [X] T046 [US1] Implement expense input validation (client-side) in expense form
+- [X] T047 [US1] Add loading states and error handling to ExpenseCubit
 - [ ] T048 [US1] Seed default categories on trip creation
 - [ ] T049 [US1] Run all US1 tests and verify they PASS
 
