@@ -44,5 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Spec-kit / Claude agent credentials
-.claude/
+# Spec-kit / Claude agent credentials (keep settings but include commands)
+.claude/settings.local.json
