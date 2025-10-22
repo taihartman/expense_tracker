@@ -6,9 +6,9 @@ import '../models/transfer_breakdown.dart';
 class TransferBreakdownCalculator {
   /// Calculate breakdown showing which expenses contribute to a transfer
   ///
-  /// Analyzes all expenses to determine how the debt between fromUserId
-  /// and toUserId accumulated. Returns proportional contributions that sum
-  /// to the actual transfer amount.
+  /// With pairwise netting, each transfer directly corresponds to the raw
+  /// expenses between two people. This breakdown shows exactly how much
+  /// each expense contributed to the debt, with no scaling or optimization.
   TransferBreakdown calculateBreakdown({
     required String fromUserId,
     required String toUserId,
@@ -17,7 +17,7 @@ class TransferBreakdownCalculator {
   }) {
     final expenseBreakdowns = <ExpenseBreakdown>[];
 
-    // First pass: calculate raw net contributions
+    // Calculate raw net contributions for each expense
     for (final expense in expenses) {
       // Calculate what each person paid and owes for this expense
       final shares = expense.calculateShares();
@@ -33,20 +33,18 @@ class TransferBreakdownCalculator {
       final fromOwes = shares[fromUserId] ?? Decimal.zero;
       final toOwes = shares[toUserId] ?? Decimal.zero;
 
-      // Calculate net contribution to the transfer
-      // Net = (what FROM paid - what FROM owes) - (what TO paid - what TO owes)
-      // Positive net means FROM is owed money (increases debt to FROM, which means TO owes more)
-      // Negative net means TO is owed money (decreases debt to FROM)
-
-      // Actually, we want to track debt FROM -> TO
-      // If FROM paid more than they owe, that reduces the debt
-      // If FROM owes more than they paid, that increases the debt
-
-      // Net contribution to FROM->TO debt:
-      // = (what FROM owes - what FROM paid) - (what TO owes - what TO paid)
-      // = what FROM owes to others - what TO owes to others + what TO paid - what FROM paid
-
-      // Simpler: contribution = (fromOwes - fromPaid) - (toOwes - toPaid)
+      // Calculate net contribution to the transfer FROM -> TO
+      // This represents how this expense changed the debt between these two people
+      //
+      // Net contribution = (what FROM owes - what FROM paid) - (what TO owes - what TO paid)
+      //
+      // Examples:
+      // - If FROM owes $10 but paid $0, and TO owes $0 but paid $20:
+      //   Net = (10 - 0) - (0 - 20) = 10 + 20 = +30 (FROM owes TO more)
+      // - If TO paid and FROM participated:
+      //   FROM owes TO, so positive contribution
+      // - If FROM paid and TO participated:
+      //   TO owes FROM, so negative contribution (reduces debt)
       final fromNet = fromOwes - fromPaid;
       final toNet = toOwes - toPaid;
       final netContribution = fromNet - toNet;
@@ -61,40 +59,11 @@ class TransferBreakdownCalculator {
       ));
     }
 
-    // Calculate total positive contributions (expenses that increase the debt)
-    final totalPositiveContributions = expenseBreakdowns
-        .where((b) => b.netContribution > Decimal.zero)
-        .fold(Decimal.zero, (sum, b) => sum + b.netContribution);
-
-    // Scale contributions proportionally to match the actual transfer amount
-    // This is necessary because the minimal transfer algorithm nets multiple debts
-    // The raw contributions show expense-level debt changes, but the transfer
-    // represents the netted/optimized payment
-    final scaledBreakdowns = <ExpenseBreakdown>[];
-
-    if (totalPositiveContributions > Decimal.zero) {
-      final scaleFactor = (transferAmount / totalPositiveContributions).toDecimal();
-
-      for (final breakdown in expenseBreakdowns) {
-        scaledBreakdowns.add(ExpenseBreakdown(
-          expense: breakdown.expense,
-          fromPaid: breakdown.fromPaid,
-          fromOwes: breakdown.fromOwes,
-          toPaid: breakdown.toPaid,
-          toOwes: breakdown.toOwes,
-          netContribution: breakdown.netContribution * scaleFactor,
-        ));
-      }
-    } else {
-      // If no positive contributions, use raw values (edge case)
-      scaledBreakdowns.addAll(expenseBreakdowns);
-    }
-
     return TransferBreakdown(
       fromUserId: fromUserId,
       toUserId: toUserId,
       totalAmount: transferAmount,
-      expenseBreakdowns: scaledBreakdowns,
+      expenseBreakdowns: expenseBreakdowns,
     );
   }
 }

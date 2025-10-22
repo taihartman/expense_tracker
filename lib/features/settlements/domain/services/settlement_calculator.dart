@@ -104,10 +104,136 @@ class SettlementCalculator {
     return result;
   }
 
+  /// Calculate pairwise netted transfers
+  ///
+  /// For each pair of people, calculates the direct debt between them
+  /// by looking at all expenses they both participated in.
+  /// Nets the debts (A→B minus B→A) to get the final transfer.
+  ///
+  /// This is simpler and more transparent than minimal transfers because
+  /// each transfer directly corresponds to expenses between those two people.
+  List<MinimalTransfer> calculatePairwiseNetTransfers({
+    required String tripId,
+    required List<Expense> expenses,
+  }) {
+    _log('\n🔄 calculatePairwiseNetTransfers() called');
+    final transfers = <MinimalTransfer>[];
+    final now = DateTime.now();
+
+    // Build a map of pairwise debts: (fromUserId, toUserId) -> amount
+    final pairwiseDebts = <String, Decimal>{};
+
+    for (int i = 0; i < expenses.length; i++) {
+      final expense = expenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+      _log('  Description: ${expense.description ?? "No description"}');
+      _log('  Payer: ${expense.payerUserId}');
+      _log('  Amount: ${expense.amount} ${expense.currency.code}');
+
+      final shares = expense.calculateShares();
+      final payerId = expense.payerUserId;
+
+      // For each participant who owes money
+      for (final entry in shares.entries) {
+        final participantId = entry.key;
+        final shareAmount = entry.value;
+
+        // Skip if payer is the same as participant (they don't owe themselves)
+        if (participantId == payerId) continue;
+
+        // Participant owes the payer
+        final key = _pairKey(participantId, payerId);
+        pairwiseDebts[key] = (pairwiseDebts[key] ?? Decimal.zero) + shareAmount;
+
+        _log('  → $participantId owes $payerId: $shareAmount');
+      }
+    }
+
+    _log('\n💰 Pairwise debts (before netting):');
+    pairwiseDebts.forEach((key, amount) {
+      _log('  $key: $amount');
+    });
+
+    // Now net the pairwise debts
+    final nettedDebts = <String, Decimal>{};
+    final processedPairs = <String>{};
+
+    for (final entry in pairwiseDebts.entries) {
+      final key = entry.key;
+      if (processedPairs.contains(key)) continue;
+
+      final parts = key.split('→');
+      final userA = parts[0];
+      final userB = parts[1];
+
+      // Get debt in both directions
+      final aOwesB = pairwiseDebts[_pairKey(userA, userB)] ?? Decimal.zero;
+      final bOwesA = pairwiseDebts[_pairKey(userB, userA)] ?? Decimal.zero;
+
+      // Calculate net debt
+      final netDebt = aOwesB - bOwesA;
+
+      _log('\n🔀 Netting debt between $userA and $userB:');
+      _log('  $userA owes $userB: $aOwesB');
+      _log('  $userB owes $userA: $bOwesA');
+      _log('  Net: ${netDebt > Decimal.zero ? "$userA owes $userB $netDebt" : "$userB owes $userA ${netDebt.abs()}"}');
+
+      if (netDebt.abs() >= Decimal.parse('0.01')) {
+        // Create transfer for net debt
+        if (netDebt > Decimal.zero) {
+          // userA owes userB
+          nettedDebts[_pairKey(userA, userB)] = netDebt;
+        } else {
+          // userB owes userA
+          nettedDebts[_pairKey(userB, userA)] = netDebt.abs();
+        }
+      }
+
+      // Mark both directions as processed
+      processedPairs.add(_pairKey(userA, userB));
+      processedPairs.add(_pairKey(userB, userA));
+    }
+
+    _log('\n✅ Netted debts:');
+    nettedDebts.forEach((key, amount) {
+      _log('  $key: $amount');
+    });
+
+    // Convert to MinimalTransfer objects
+    for (final entry in nettedDebts.entries) {
+      final parts = entry.key.split('→');
+      final fromUserId = parts[0];
+      final toUserId = parts[1];
+      final amount = entry.value;
+
+      transfers.add(
+        MinimalTransfer(
+          id: '', // Will be set by Firestore
+          tripId: tripId,
+          fromUserId: fromUserId,
+          toUserId: toUserId,
+          amountBase: amount,
+          computedAt: now,
+        ),
+      );
+    }
+
+    _log('\n✅ Pairwise transfers calculation complete: ${transfers.length} transfers');
+    return transfers;
+  }
+
+  /// Helper to create a consistent key for a pair of users
+  String _pairKey(String fromUserId, String toUserId) {
+    return '$fromUserId→$toUserId';
+  }
+
   /// Calculate minimal transfers using greedy algorithm
   ///
   /// Input: Map of userId -> PersonSummary with net balances
   /// Output: List of transfers that settle all debts with minimum transactions
+  ///
+  /// DEPRECATED: Use calculatePairwiseNetTransfers() instead for simpler, more transparent transfers
+  @Deprecated('Use calculatePairwiseNetTransfers() instead')
   List<MinimalTransfer> calculateMinimalTransfers({
     required String tripId,
     required Map<String, PersonSummary> personSummaries,

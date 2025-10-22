@@ -125,7 +125,8 @@ class Expense {
       // Share = (weight / totalWeight) * amount
       final weightRatio = DecimalHelpers.safeDivide(weight, totalWeightDecimal);
       final shareRational = weightRatio * amount;
-      final share = Decimal.parse(shareRational.toString());
+      // Convert Rational to Decimal via double to handle non-terminating decimals
+      final share = Decimal.parse(shareRational.toDouble().toString());
 
       // Round to currency decimal places
       final roundedShare = DecimalHelpers.round(share, currency.decimalPlaces);

@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
@@ -197,34 +198,67 @@ class SettlementRepositoryImpl implements SettlementRepository {
         _log('No settled transfers to adjust');
       }
 
-      _log('\n📊 Person Summaries AFTER adjustments (BEFORE calculating transfers):');
+      _log('\n📊 Person Summaries AFTER adjustments:');
       personSummaries.forEach((userId, summary) {
         _log('  $userId: Net = ${summary.netBase}');
       });
 
-      // NOW calculate minimal transfers from ADJUSTED summaries
-      _log('\n=== CALCULATING MINIMAL TRANSFERS ===');
-      final transfers = _calculator.calculateMinimalTransfers(
+      // Calculate pairwise netted transfers directly from expenses
+      _log('\n=== CALCULATING PAIRWISE NETTED TRANSFERS ===');
+      final rawTransfers = _calculator.calculatePairwiseNetTransfers(
         tripId: tripId,
-        personSummaries: personSummaries,
+        expenses: expenses,
       );
 
-      // Build list of transfers with settled status preserved
+      // Apply settled transfer reductions
+      // For pairwise transfers, we subtract any settled amounts from the raw debts
+      _log('\n=== APPLYING SETTLED TRANSFER REDUCTIONS ===');
       final transfersWithSettledStatus = <MinimalTransfer>[];
-      for (final transfer in transfers) {
-        final key = '${transfer.fromUserId}-${transfer.toUserId}';
-        final wasSettled = settledMap[key];
 
-        transfersWithSettledStatus.add(MinimalTransfer(
-          id: '', // Will be set when saving
-          tripId: transfer.tripId,
-          fromUserId: transfer.fromUserId,
-          toUserId: transfer.toUserId,
-          amountBase: transfer.amountBase,
-          computedAt: transfer.computedAt,
-          isSettled: wasSettled?.isSettled ?? false,
-          settledAt: wasSettled?.settledAt,
-        ));
+      // Build a map of settled amounts by pair
+      final settledAmounts = <String, ({Decimal amount, DateTime settledAt})>{};
+      for (final settled in settledTransfersToApply) {
+        final key = '${settled.fromUserId}-${settled.toUserId}';
+        settledAmounts[key] = (amount: settled.amountBase, settledAt: settled.settledAt!);
+        _log('  Settled: ${settled.fromUserId} -> ${settled.toUserId}: ${settled.amountBase}');
+      }
+
+      for (final transfer in rawTransfers) {
+        final key = '${transfer.fromUserId}-${transfer.toUserId}';
+        final settledInfo = settledAmounts[key];
+
+        if (settledInfo != null) {
+          // Subtract settled amount from raw debt
+          final remainingAmount = transfer.amountBase - settledInfo.amount;
+          _log('  ${transfer.fromUserId} -> ${transfer.toUserId}: ${transfer.amountBase} - ${settledInfo.amount} = $remainingAmount');
+
+          if (remainingAmount > Decimal.parse('0.01')) {
+            // Still have remaining debt
+            transfersWithSettledStatus.add(MinimalTransfer(
+              id: '',
+              tripId: transfer.tripId,
+              fromUserId: transfer.fromUserId,
+              toUserId: transfer.toUserId,
+              amountBase: remainingAmount,
+              computedAt: transfer.computedAt,
+              isSettled: false, // Remaining debt is not settled
+              settledAt: null,
+            ));
+          }
+          // If remainingAmount <= 0, the debt is fully settled, don't add a transfer
+        } else {
+          // No settled amount, use full raw amount
+          transfersWithSettledStatus.add(MinimalTransfer(
+            id: '',
+            tripId: transfer.tripId,
+            fromUserId: transfer.fromUserId,
+            toUserId: transfer.toUserId,
+            amountBase: transfer.amountBase,
+            computedAt: transfer.computedAt,
+            isSettled: false,
+            settledAt: null,
+          ));
+        }
       }
 
       // Create settlement summary with adjusted summaries

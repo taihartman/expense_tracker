@@ -35,11 +35,11 @@ class ExpenseBreakdown {
   /// Description of how this expense affects the transfer
   String get explanation {
     if (netContribution > Decimal.zero) {
-      return 'Contributes ${netContribution.abs()} to transfer';
+      return 'Increases debt by ${netContribution.abs()}';
     } else if (netContribution < Decimal.zero) {
-      return 'Reduces transfer by ${netContribution.abs()}';
+      return 'Reduces debt by ${netContribution.abs()}';
     } else {
-      return 'No net effect on transfer';
+      return 'No net effect on debt';
     }
   }
 }

@@ -213,14 +213,14 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: AppTheme.spacing1),
                 Text(
-                  'This breakdown shows how each expense contributed to the debt between $fromName and $toName.',
+                  'This shows all expenses that created debts between $fromName and $toName. The amounts shown are the exact debts from each expense, after pairwise netting.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacing1),
                 Text(
-                  '${relevantBreakdowns.length} expenses contribute to this transfer',
+                  '${relevantBreakdowns.length} expense${relevantBreakdowns.length == 1 ? '' : 's'} between these two people',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,

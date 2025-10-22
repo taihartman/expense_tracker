@@ -106,11 +106,11 @@ Future<void> main() async {
       }
     });
 
-    // Calculate minimal transfers
-    debugPrint('\n=== MINIMAL TRANSFERS ===\n');
-    final transfers = calculator.calculateMinimalTransfers(
+    // Calculate pairwise netted transfers
+    debugPrint('\n=== PAIRWISE NETTED TRANSFERS ===\n');
+    final transfers = calculator.calculatePairwiseNetTransfers(
       tripId: tripId,
-      personSummaries: personSummaries,
+      expenses: expenses,
     );
 
     debugPrint('Found ${transfers.length} transfers needed:');
