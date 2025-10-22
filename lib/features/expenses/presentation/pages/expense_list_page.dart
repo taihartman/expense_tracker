@@ -29,7 +29,7 @@ class ExpenseListPage extends StatelessWidget {
             icon: const Icon(Icons.settings),
             tooltip: 'Trip Settings',
             onPressed: () {
-              context.go('/trips/$tripId/settings');
+              context.push('/trips/$tripId/settings');
             },
           ),
           IconButton(
