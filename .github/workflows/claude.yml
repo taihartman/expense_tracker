@@ -20,6 +20,9 @@ jobs:
       issues: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
       - name: Claude Code Action Official
         uses: anthropics/claude-code-action@v1
         with:
