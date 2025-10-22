@@ -32,7 +32,7 @@ class TripSettingsPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Back to Expenses',
           onPressed: () {
-            context.go('/trips/$tripId/expenses');
+            context.pop();
           },
         ),
         actions: [
