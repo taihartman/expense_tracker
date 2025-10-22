@@ -28,6 +28,13 @@ class TripSettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Trip Settings'),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to Expenses',
+          onPressed: () {
+            context.go('/trips/$tripId/expenses');
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),

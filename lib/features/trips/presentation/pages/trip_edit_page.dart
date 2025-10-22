@@ -46,7 +46,7 @@ class _TripEditPageState extends State<TripEditPage> {
             name: _nameController.text.trim(),
             baseCurrency: _selectedCurrency,
           );
-      context.pop();
+      context.go('/trips/${widget.trip.id}/settings');
     }
   }
 
@@ -55,6 +55,13 @@ class _TripEditPageState extends State<TripEditPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Trip'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Back to Settings',
+          onPressed: () {
+            context.go('/trips/${widget.trip.id}/settings');
+          },
+        ),
       ),
       body: Form(
         key: _formKey,
