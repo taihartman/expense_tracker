@@ -1,32 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
-import '../../domain/models/person_summary.dart';
+import '../../domain/models/minimal_transfer.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
 import '../../../../core/theme/app_theme.dart';
 
+/// Summary data for a person based on settlement transfers
+class _PersonTransferSummary {
+  final String userId;
+  final Decimal totalToReceive;  // Sum of transfers where user receives
+  final Decimal totalToPay;      // Sum of transfers where user pays
+  final Decimal netBalance;      // totalToReceive - totalToPay
+
+  _PersonTransferSummary({
+    required this.userId,
+    required this.totalToReceive,
+    required this.totalToPay,
+  }) : netBalance = totalToReceive - totalToPay;
+}
+
 /// Table showing summary for all people in a trip
 ///
-/// Displays total paid, total owed, and net balance for each person
-/// Color coded: green for positive (owed money), red for negative (owes money)
+/// Displays amounts to receive, amounts to pay, and net balance based on settlement transfers
+/// Color coded: green for positive (will receive money), red for negative (needs to pay)
 class AllPeopleSummaryTable extends StatelessWidget {
-  final Map<String, PersonSummary> personSummaries;
+  final List<MinimalTransfer> activeTransfers;
   final CurrencyCode baseCurrency;
   final List<Participant> participants;
 
   const AllPeopleSummaryTable({
     super.key,
-    required this.personSummaries,
+    required this.activeTransfers,
     required this.baseCurrency,
     required this.participants,
   });
 
+  /// Calculate transfer summaries from active transfers
+  Map<String, _PersonTransferSummary> _calculateTransferSummaries() {
+    final summaries = <String, _PersonTransferSummary>{};
+
+    // Initialize summaries for all participants
+    for (final participant in participants) {
+      summaries[participant.id] = _PersonTransferSummary(
+        userId: participant.id,
+        totalToReceive: Decimal.zero,
+        totalToPay: Decimal.zero,
+      );
+    }
+
+    // Calculate totals from transfers
+    for (final transfer in activeTransfers) {
+      // Person receiving money
+      final receiver = summaries[transfer.toUserId];
+      if (receiver != null) {
+        summaries[transfer.toUserId] = _PersonTransferSummary(
+          userId: transfer.toUserId,
+          totalToReceive: receiver.totalToReceive + transfer.amountBase,
+          totalToPay: receiver.totalToPay,
+        );
+      }
+
+      // Person paying money
+      final payer = summaries[transfer.fromUserId];
+      if (payer != null) {
+        summaries[transfer.fromUserId] = _PersonTransferSummary(
+          userId: transfer.fromUserId,
+          totalToReceive: payer.totalToReceive,
+          totalToPay: payer.totalToPay + transfer.amountBase,
+        );
+      }
+    }
+
+    return summaries;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Calculate summaries from transfers
+    final transferSummaries = _calculateTransferSummaries();
+
     // Sort by net balance (highest to lowest)
-    final sortedEntries = personSummaries.entries.toList()
-      ..sort((a, b) => b.value.netBase.compareTo(a.value.netBase));
+    final sortedEntries = transferSummaries.entries.toList()
+      ..sort((a, b) => b.value.netBalance.compareTo(a.value.netBalance));
 
     return Card(
       child: Padding(
@@ -48,9 +104,9 @@ class AllPeopleSummaryTable extends StatelessWidget {
                 ),
                 columns: const [
                   DataColumn(label: Text('Person')),
-                  DataColumn(label: Text('Paid'), numeric: true),
-                  DataColumn(label: Text('Owed'), numeric: true),
-                  DataColumn(label: Text('Balance'), numeric: true),
+                  DataColumn(label: Text('To Receive'), numeric: true),
+                  DataColumn(label: Text('To Pay'), numeric: true),
+                  DataColumn(label: Text('Net'), numeric: true),
                 ],
                 rows: sortedEntries.map((entry) {
                   final userId = entry.key;
@@ -58,8 +114,8 @@ class AllPeopleSummaryTable extends StatelessWidget {
                   final userName = _getParticipantName(userId);
 
                   // Determine color based on net balance
-                  final isPositive = summary.netBase > Decimal.zero;
-                  final isNegative = summary.netBase < Decimal.zero;
+                  final isPositive = summary.netBalance > Decimal.zero;
+                  final isNegative = summary.netBalance < Decimal.zero;
                   final balanceColor = isPositive
                       ? Colors.green.shade700
                       : isNegative
@@ -91,7 +147,7 @@ class AllPeopleSummaryTable extends StatelessWidget {
                       DataCell(
                         Text(
                           Formatters.formatCurrency(
-                            summary.totalPaidBase,
+                            summary.totalToReceive,
                             baseCurrency,
                           ),
                         ),
@@ -99,7 +155,7 @@ class AllPeopleSummaryTable extends StatelessWidget {
                       DataCell(
                         Text(
                           Formatters.formatCurrency(
-                            summary.totalOwedBase,
+                            summary.totalToPay,
                             baseCurrency,
                           ),
                         ),
@@ -120,7 +176,7 @@ class AllPeopleSummaryTable extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               Formatters.formatCurrency(
-                                summary.netBase.abs(),
+                                summary.netBalance.abs(),
                                 baseCurrency,
                               ),
                               style: TextStyle(
@@ -144,13 +200,13 @@ class AllPeopleSummaryTable extends StatelessWidget {
                 _buildLegendItem(
                   context,
                   Icons.arrow_upward,
-                  'Gets money back',
+                  'Will receive money',
                   Colors.green.shade700,
                 ),
                 _buildLegendItem(
                   context,
                   Icons.arrow_downward,
-                  'Owes money',
+                  'Needs to pay',
                   Colors.red.shade700,
                 ),
                 _buildLegendItem(

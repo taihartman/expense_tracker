@@ -169,7 +169,7 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
 
                       // Summary table
                       AllPeopleSummaryTable(
-                        personSummaries: state.summary.personSummaries,
+                        activeTransfers: state.activeTransfers,
                         baseCurrency: state.summary.baseCurrency,
                         participants: participants,
                       ),
