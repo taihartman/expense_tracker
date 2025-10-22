@@ -36,7 +36,7 @@ class ExpenseListPage extends StatelessWidget {
             icon: const Icon(Icons.account_balance_wallet),
             tooltip: 'View Settlement',
             onPressed: () {
-              context.go('/trips/$tripId/settlement');
+              context.push('/trips/$tripId/settlement');
             },
           ),
           IconButton(
