@@ -33,21 +33,22 @@ class TransferBreakdownCalculator {
       final fromOwes = shares[fromUserId] ?? Decimal.zero;
       final toOwes = shares[toUserId] ?? Decimal.zero;
 
-      // Calculate net contribution to the transfer FROM -> TO
-      // This represents how this expense changed the debt between these two people
+      // Calculate direct pairwise debt contribution: how much FROM owes TO from this expense
       //
-      // Net contribution = (what FROM owes - what FROM paid) - (what TO owes - what TO paid)
+      // This represents the actual debt created between these two people
+      // (ignoring any third parties involved in the expense)
       //
       // Examples:
-      // - If FROM owes $10 but paid $0, and TO owes $0 but paid $20:
-      //   Net = (10 - 0) - (0 - 20) = 10 + 20 = +30 (FROM owes TO more)
-      // - If TO paid and FROM participated:
-      //   FROM owes TO, so positive contribution
-      // - If FROM paid and TO participated:
-      //   TO owes FROM, so negative contribution (reduces debt)
-      final fromNet = fromOwes - fromPaid;
-      final toNet = toOwes - toPaid;
-      final netContribution = fromNet - toNet;
+      // - If TO paid and FROM participated: FROM owes their share to TO (positive)
+      // - If FROM paid and TO participated: TO owes their share to FROM (negative)
+      // - If neither paid (third party): no debt between FROM and TO (zero)
+      final netContribution = _calculateDirectPairwiseDebt(
+        expense: expense,
+        fromUserId: fromUserId,
+        toUserId: toUserId,
+        fromOwes: fromOwes,
+        toOwes: toOwes,
+      );
 
       expenseBreakdowns.add(ExpenseBreakdown(
         expense: expense,
@@ -65,5 +66,34 @@ class TransferBreakdownCalculator {
       totalAmount: transferAmount,
       expenseBreakdowns: expenseBreakdowns,
     );
+  }
+
+  /// Calculate the direct pairwise debt between FROM and TO for a specific expense
+  ///
+  /// This calculates how much FROM owes TO directly from this expense,
+  /// focusing only on the debt between these two people.
+  ///
+  /// Returns:
+  /// - Positive: FROM owes TO (increases FROM->TO debt)
+  /// - Negative: TO owes FROM (decreases FROM->TO debt)
+  /// - Zero: No direct debt between them
+  Decimal _calculateDirectPairwiseDebt({
+    required Expense expense,
+    required String fromUserId,
+    required String toUserId,
+    required Decimal fromOwes,
+    required Decimal toOwes,
+  }) {
+    if (expense.payerUserId == toUserId) {
+      // TO paid the expense: FROM owes their share to TO
+      return fromOwes;
+    } else if (expense.payerUserId == fromUserId) {
+      // FROM paid the expense: TO owes their share to FROM
+      // (negative contribution - reduces FROM->TO debt)
+      return -toOwes;
+    } else {
+      // Third party paid: no direct debt between FROM and TO
+      return Decimal.zero;
+    }
   }
 }
