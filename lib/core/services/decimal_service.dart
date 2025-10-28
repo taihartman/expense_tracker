@@ -58,8 +58,7 @@ class DecimalService {
     // Multiply to shift decimal point
     final shifted = value * multiplier;
 
-    // Apply rounding mode - shifted is a Rational, convert to Decimal
-    final shiftedDecimal = shifted.toDecimal();
+    // Apply rounding mode
     final Decimal rounded;
     switch (mode) {
       case RoundingMode.roundHalfUp:
@@ -67,19 +66,19 @@ class DecimalService {
         rounded = Decimal.parse(shifted.toStringAsFixed(0));
         break;
       case RoundingMode.roundHalfEven:
-        rounded = _roundHalfEven(shiftedDecimal);
+        rounded = _roundHalfEven(shifted);
         break;
       case RoundingMode.floor:
-        rounded = shiftedDecimal.floor();
+        rounded = shifted.floor();
         break;
       case RoundingMode.ceil:
-        rounded = shiftedDecimal.ceil();
+        rounded = shifted.ceil();
         break;
     }
 
-    // Divide back
-    final result = rounded / multiplier;
-    return result.toDecimal();
+    // Divide back - division returns Rational, convert to Decimal
+    final resultRational = rounded / multiplier;
+    return resultRational.toDecimal();
   }
 
   /// Round half to even (banker's rounding)
@@ -132,9 +131,9 @@ class DecimalService {
     String currencyCode,
   ) {
     final precision = Iso4217Precision.getDecimalPlaces(currencyCode);
-    final epsilon = Decimal.parse('1${'0' * precision}').pow(-1).toDecimal();
+    final epsilon = Decimal.parse('0.${'0' * (precision - 1)}1');
 
-    final diff = (a - b).abs().toDecimal();
+    final diff = (a - b).abs();
     return diff < epsilon;
   }
 

@@ -2,6 +2,10 @@ import 'package:decimal/decimal.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/split_type.dart';
 import '../../../../core/utils/decimal_helpers.dart';
+import 'allocation_rule.dart';
+import 'extras.dart';
+import 'line_item.dart';
+import 'participant_breakdown.dart';
 
 /// Expense domain entity
 ///
@@ -39,6 +43,7 @@ class Expense {
   /// Map of participant IDs to their weights
   /// - For Equal split: all weights must be 1
   /// - For Weighted split: all weights must be > 0
+  /// - For Itemized split: may be empty (items field contains the data)
   final Map<String, num> participants;
 
   /// When this expense was created (immutable)
@@ -46,6 +51,26 @@ class Expense {
 
   /// When this expense was last updated
   final DateTime updatedAt;
+
+  // ===== Itemized Expense Fields (optional) =====
+
+  /// Line items (only for splitType = itemized)
+  final List<LineItem>? items;
+
+  /// Tax, tip, fees, discounts (only for splitType = itemized)
+  final Extras? extras;
+
+  /// Allocation rules (only for splitType = itemized)
+  final AllocationRule? allocation;
+
+  /// Per-person amounts (only for splitType = itemized)
+  /// Canonical source for settlement calculations
+  /// Keys: user IDs, Values: amount strings (Decimal serialized)
+  final Map<String, Decimal>? participantAmounts;
+
+  /// Detailed per-person breakdown (only for splitType = itemized)
+  /// Full audit trail with item contributions
+  final Map<String, ParticipantBreakdown>? participantBreakdown;
 
   const Expense({
     required this.id,
@@ -60,6 +85,11 @@ class Expense {
     required this.participants,
     required this.createdAt,
     required this.updatedAt,
+    this.items,
+    this.extras,
+    this.allocation,
+    this.participantAmounts,
+    this.participantBreakdown,
   });
 
   /// Calculate shares for each participant based on split type
@@ -151,23 +181,67 @@ class Expense {
       return 'Expense date cannot be in the future';
     }
 
-    // Validate participants
-    if (participants.isEmpty) {
-      return 'At least one participant is required';
-    }
-
     // Validate split type constraints
     if (splitType == SplitType.equal) {
       // All weights must be 1 for equal split
+      if (participants.isEmpty) {
+        return 'At least one participant is required';
+      }
       final allWeightsOne = participants.values.every((w) => w == 1);
       if (!allWeightsOne) {
         return 'Equal split requires all participant weights to be 1';
       }
     } else if (splitType == SplitType.weighted) {
       // All weights must be > 0 for weighted split
+      if (participants.isEmpty) {
+        return 'At least one participant is required';
+      }
       final allWeightsPositive = participants.values.every((w) => w > 0);
       if (!allWeightsPositive) {
         return 'Weighted split requires all participant weights to be greater than 0';
+      }
+    } else if (splitType == SplitType.itemized) {
+      // Itemized split requires items and participantAmounts
+      if (items == null || items!.isEmpty) {
+        return 'Itemized split requires at least one item';
+      }
+
+      if (participantAmounts == null || participantAmounts!.isEmpty) {
+        return 'Itemized split requires participant amounts';
+      }
+
+      // Validate all items
+      for (int i = 0; i < items!.length; i++) {
+        final itemError = items![i].validate();
+        if (itemError != null) {
+          return 'Item ${i + 1} error: $itemError';
+        }
+      }
+
+      // Validate extras if present
+      if (extras != null) {
+        final extrasError = extras!.validate();
+        if (extrasError != null) {
+          return extrasError;
+        }
+      }
+
+      // Validate allocation if present
+      if (allocation != null) {
+        final allocationError = allocation!.validate();
+        if (allocationError != null) {
+          return allocationError;
+        }
+      }
+
+      // Validate sum of participantAmounts equals amount (within epsilon)
+      final sum = participantAmounts!.values.fold(
+        Decimal.zero,
+        (a, b) => a + b,
+      );
+      final epsilon = Decimal.parse('0.01');
+      if ((sum - amount).abs() > epsilon) {
+        return 'Sum of participant amounts ($sum) must equal total amount ($amount)';
       }
     }
 
@@ -193,6 +267,11 @@ class Expense {
     Map<String, num>? participants,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<LineItem>? items,
+    Extras? extras,
+    AllocationRule? allocation,
+    Map<String, Decimal>? participantAmounts,
+    Map<String, ParticipantBreakdown>? participantBreakdown,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -207,6 +286,11 @@ class Expense {
       participants: participants ?? this.participants,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      items: items ?? this.items,
+      extras: extras ?? this.extras,
+      allocation: allocation ?? this.allocation,
+      participantAmounts: participantAmounts ?? this.participantAmounts,
+      participantBreakdown: participantBreakdown ?? this.participantBreakdown,
     );
   }
 
