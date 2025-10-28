@@ -1,0 +1,357 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:decimal/decimal.dart';
+import '../../../cubits/itemized_expense_cubit.dart';
+import '../../../cubits/itemized_expense_state.dart';
+import '../../../../domain/models/extras.dart';
+import '../../../../domain/models/tax_extra.dart';
+import '../../../../domain/models/tip_extra.dart';
+import '../../../../domain/models/percent_base.dart';
+import '../../../../../../core/l10n/l10n_extensions.dart';
+
+/// Step 3: Configure tax, tip, fees, and discounts
+class ExtrasStepPage extends StatefulWidget {
+  final VoidCallback onContinue;
+  final VoidCallback onBack;
+
+  const ExtrasStepPage({
+    super.key,
+    required this.onContinue,
+    required this.onBack,
+  });
+
+  @override
+  State<ExtrasStepPage> createState() => _ExtrasStepPageState();
+}
+
+class _ExtrasStepPageState extends State<ExtrasStepPage> {
+  final _taxController = TextEditingController();
+  final _tipController = TextEditingController();
+  bool _hasTax = false;
+  bool _hasTip = false;
+  bool _initialized = false;
+
+  @override
+  void dispose() {
+    _taxController.dispose();
+    _tipController.dispose();
+    super.dispose();
+  }
+
+  void _initializeFromState(ItemizedExpenseState state) {
+    if (_initialized) return;
+
+    final extras = _getExtras(state);
+    if (extras == null) return;
+
+    // Initialize tax
+    if (extras.tax != null) {
+      setState(() {
+        _hasTax = true;
+        if (extras.tax!.type == 'percent') {
+          _taxController.text = extras.tax!.value.toString();
+        }
+      });
+    }
+
+    // Initialize tip
+    if (extras.tip != null) {
+      setState(() {
+        _hasTip = true;
+        if (extras.tip!.type == 'percent') {
+          _tipController.text = extras.tip!.value.toString();
+        }
+      });
+    }
+
+    _initialized = true;
+  }
+
+  Extras? _getExtras(ItemizedExpenseState state) {
+    if (state is ItemizedExpenseEditing) {
+      return state.extras;
+    } else if (state is ItemizedExpenseCalculating) {
+      return state.draft.extras;
+    } else if (state is ItemizedExpenseReady) {
+      return state.draft.extras;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ItemizedExpenseCubit, ItemizedExpenseState>(
+      builder: (context, state) {
+        // Initialize from state if editing
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _initializeFromState(state);
+        });
+
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.itemizedExtrasTitle,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                context.l10n.itemizedExtrasDescription,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildTaxCard(),
+                      const SizedBox(height: 16),
+                      _buildTipCard(),
+                      const SizedBox(height: 24),
+                      _buildInfoCard(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildNavigationButtons(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTaxCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.receipt, color: Colors.blue),
+                const SizedBox(width: 8),
+                Text(
+                  context.l10n.itemizedExtrasTaxCardTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: _hasTax,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasTax = value;
+                      if (!value) {
+                        _taxController.clear();
+                        context.read<ItemizedExpenseCubit>().setTax(null);
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+            if (_hasTax) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _taxController,
+                decoration: InputDecoration(
+                  labelText: context.l10n.itemizedExtrasTaxRateLabel,
+                  hintText: context.l10n.itemizedExtrasTaxRateHint,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.percent),
+                  helperText: context.l10n.itemizedExtrasTaxRateHelper,
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                onChanged: (value) => _updateTax(value),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  ...['8', '8.5', '10'].map(
+                    (rate) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text('$rate%'),
+                        onSelected: (selected) {
+                          if (selected) {
+                            _taxController.text = rate;
+                            _updateTax(rate);
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTipCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.attach_money, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  context.l10n.itemizedExtrasTipCardTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: _hasTip,
+                  onChanged: (value) {
+                    setState(() {
+                      _hasTip = value;
+                      if (!value) {
+                        _tipController.clear();
+                        context.read<ItemizedExpenseCubit>().setTip(null);
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
+            if (_hasTip) ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _tipController,
+                decoration: InputDecoration(
+                  labelText: context.l10n.itemizedExtrasTipRateLabel,
+                  hintText: context.l10n.itemizedExtrasTipRateHint,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.percent),
+                  helperText: context.l10n.itemizedExtrasTipRateHelper,
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                onChanged: (value) => _updateTip(value),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children: ['15', '18', '20', '25']
+                    .map(
+                      (rate) => FilterChip(
+                        label: Text('$rate%'),
+                        onSelected: (selected) {
+                          if (selected) {
+                            _tipController.text = rate;
+                            _updateTip(rate);
+                          }
+                        },
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Card(
+      color: Colors.blue.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.blue.shade700),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                context.l10n.itemizedExtrasInfoMessage,
+                style: TextStyle(color: Colors.blue.shade900, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavigationButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: widget.onBack,
+            style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
+            child: Text(context.l10n.commonBack),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          flex: 2,
+          child: ElevatedButton(
+            onPressed: widget.onContinue,
+            style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
+            child: Text(context.l10n.itemizedExtrasContinueButton),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _updateTax(String value) {
+    if (value.isEmpty) {
+      context.read<ItemizedExpenseCubit>().setTax(null);
+      return;
+    }
+
+    try {
+      final taxValue = Decimal.parse(value);
+      final tax = TaxExtra.percent(
+        value: taxValue,
+        base: PercentBase.preTaxItemSubtotals,
+      );
+      context.read<ItemizedExpenseCubit>().setTax(tax);
+    } catch (e) {
+      // Invalid input, ignore
+    }
+  }
+
+  void _updateTip(String value) {
+    if (value.isEmpty) {
+      context.read<ItemizedExpenseCubit>().setTip(null);
+      return;
+    }
+
+    try {
+      final tipValue = Decimal.parse(value);
+      final tip = TipExtra.percent(
+        value: tipValue,
+        base: PercentBase.preTaxItemSubtotals,
+      );
+      context.read<ItemizedExpenseCubit>().setTip(tip);
+    } catch (e) {
+      // Invalid input, ignore
+    }
+  }
+}

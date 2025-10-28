@@ -7,7 +7,9 @@ import '../models/expense_model.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
-  debugPrint('[${DateTime.now().toIso8601String()}] [ExpenseRepository] $message');
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [ExpenseRepository] $message',
+  );
 }
 
 /// Firestore implementation of ExpenseRepository
@@ -15,7 +17,7 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   final FirestoreService _firestoreService;
 
   ExpenseRepositoryImpl({required FirestoreService firestoreService})
-      : _firestoreService = firestoreService;
+    : _firestoreService = firestoreService;
 
   /// Update trip's lastExpenseModifiedAt timestamp
   /// Used for smart settlement refresh detection
@@ -81,7 +83,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   @override
   Stream<List<Expense>> getExpensesByTrip(String tripId) {
     try {
-      _log('🔍 getExpensesByTrip() called for tripId: $tripId - creating Firestore stream with cache-first strategy');
+      _log(
+        '🔍 getExpensesByTrip() called for tripId: $tripId - creating Firestore stream with cache-first strategy',
+      );
 
       // Use snapshots with metadata changes to get cache data immediately
       // This emits cache data first, then server data when available
@@ -90,16 +94,20 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           .orderBy('date', descending: true)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
-        // Timer starts here when data actually arrives, not when stream is created
-        final mapStart = DateTime.now();
-        final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
-        final expenses = snapshot.docs
-            .map((doc) => ExpenseModel.fromFirestore(doc))
-            .toList();
-        final mapDuration = DateTime.now().difference(mapStart).inMilliseconds;
-        _log('📦 Stream emitted ${expenses.length} expenses from $source (mapping took ${mapDuration}ms)');
-        return expenses;
-      });
+            // Timer starts here when data actually arrives, not when stream is created
+            final mapStart = DateTime.now();
+            final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
+            final expenses = snapshot.docs
+                .map((doc) => ExpenseModel.fromFirestore(doc))
+                .toList();
+            final mapDuration = DateTime.now()
+                .difference(mapStart)
+                .inMilliseconds;
+            _log(
+              '📦 Stream emitted ${expenses.length} expenses from $source (mapping took ${mapDuration}ms)',
+            );
+            return expenses;
+          });
     } catch (e) {
       _log('❌ Error creating expenses stream: $e');
       throw Exception('Failed to get expenses stream: $e');
@@ -169,9 +177,13 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
 
   @override
   Stream<List<Expense>> getExpensesByCategory(
-      String tripId, String categoryId) {
+    String tripId,
+    String categoryId,
+  ) {
     try {
-      _log('🔍 getExpensesByCategory() called for tripId: $tripId, categoryId: $categoryId');
+      _log(
+        '🔍 getExpensesByCategory() called for tripId: $tripId, categoryId: $categoryId',
+      );
       final streamStart = DateTime.now();
 
       return _firestoreService.expenses
@@ -180,13 +192,15 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           .orderBy('date', descending: true)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
-        final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
-        final expenses = snapshot.docs
-            .map((doc) => ExpenseModel.fromFirestore(doc))
-            .toList();
-        _log('📦 Stream emitted ${expenses.length} expenses by category from $source (${DateTime.now().difference(streamStart).inMilliseconds}ms)');
-        return expenses;
-      });
+            final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
+            final expenses = snapshot.docs
+                .map((doc) => ExpenseModel.fromFirestore(doc))
+                .toList();
+            _log(
+              '📦 Stream emitted ${expenses.length} expenses by category from $source (${DateTime.now().difference(streamStart).inMilliseconds}ms)',
+            );
+            return expenses;
+          });
     } catch (e) {
       _log('❌ Error creating expenses by category stream: $e');
       throw Exception('Failed to get expenses by category stream: $e');
@@ -196,7 +210,9 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
   @override
   Stream<List<Expense>> getExpensesByPayer(String tripId, String payerUserId) {
     try {
-      _log('🔍 getExpensesByPayer() called for tripId: $tripId, payerUserId: $payerUserId');
+      _log(
+        '🔍 getExpensesByPayer() called for tripId: $tripId, payerUserId: $payerUserId',
+      );
       final streamStart = DateTime.now();
 
       return _firestoreService.expenses
@@ -205,13 +221,15 @@ class ExpenseRepositoryImpl implements ExpenseRepository {
           .orderBy('date', descending: true)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
-        final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
-        final expenses = snapshot.docs
-            .map((doc) => ExpenseModel.fromFirestore(doc))
-            .toList();
-        _log('📦 Stream emitted ${expenses.length} expenses by payer from $source (${DateTime.now().difference(streamStart).inMilliseconds}ms)');
-        return expenses;
-      });
+            final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
+            final expenses = snapshot.docs
+                .map((doc) => ExpenseModel.fromFirestore(doc))
+                .toList();
+            _log(
+              '📦 Stream emitted ${expenses.length} expenses by payer from $source (${DateTime.now().difference(streamStart).inMilliseconds}ms)',
+            );
+            return expenses;
+          });
     } catch (e) {
       _log('❌ Error creating expenses by payer stream: $e');
       throw Exception('Failed to get expenses by payer stream: $e');

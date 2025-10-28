@@ -1,0 +1,610 @@
+{
+  "@@locale": "en",
+
+
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonContinue": "Continue",
+  "commonBack": "Back",
+  "commonRetry": "Retry",
+  "commonAdd": "Add",
+  "commonEdit": "Edit",
+  "commonRemove": "Remove",
+  "commonUpdate": "Update",
+  "commonGotIt": "Got It",
+  "commonRequired": "Required",
+  "commonLoading": "Loading...",
+  "commonError": "Error",
+
+
+  "validationRequired": "Required",
+  "validationInvalidNumber": "Invalid number",
+  "validationMustBeGreaterThanZero": "Must be > 0",
+  "validationPleaseEnterTripName": "Please enter a trip name",
+  "validationTripNameTooLong": "Trip name must be 100 characters or less",
+  "validationNameRequired": "Name is required",
+  "validationNameTooLong": "Name must be 50 characters or less",
+  "validationPleaseSelectPayer": "Please select a payer",
+  "validationPleaseSelectParticipants": "Please select at least one participant",
+  "validationPleaseFillAllFields": "Please fill in all fields",
+  "validationInvalidInput": "Invalid input: {error}",
+  "@validationInvalidInput": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "validationInvalidPrice": "Invalid price: {error}",
+  "@validationInvalidPrice": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "validationAtLeastOneItemRequired": "At least one item is required",
+  "validationItemsNotAssigned": "{count, plural, =1{1 item not assigned to anyone} other{{count} items not assigned to anyone}}",
+  "@validationItemsNotAssigned": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "validationTaxTooHigh": "Tax percentage is unusually high ({value}%)",
+  "@validationTaxTooHigh": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "validationTipTooHigh": "Tip percentage is unusually high ({value}%)",
+  "@validationTipTooHigh": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "validationParticipantAlreadyExists": "A participant named {name} already exists",
+  "@validationParticipantAlreadyExists": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+
+  "tripCreateTitle": "Create Trip",
+  "tripEditTitle": "Edit Trip",
+  "tripSettingsTitle": "Trip Settings",
+  "tripListTitle": "My Trips",
+  "tripSelectTitle": "Select Trip",
+
+  "tripFieldNameLabel": "Trip Name",
+  "tripFieldBaseCurrencyLabel": "Base Currency",
+  "tripFieldBaseCurrencyHelper": "All settlements will be calculated in this currency",
+  "tripFieldBaseCurrencyEditHelper": "Used for settlement displays. Expense amounts are not converted.",
+  "tripFieldCreatedLabel": "Created",
+
+  "tripCreateButton": "Create Trip",
+  "tripSaveChangesButton": "Save Changes",
+  "tripBackToExpenses": "Back to Expenses",
+  "tripBackToSettings": "Back to Settings",
+
+  "tripCurrencyChangedInfo": "Changing base currency only affects how settlements are displayed. Individual expense amounts remain unchanged.",
+
+  "tripEmptyStateTitle": "No trips yet",
+  "tripLoadError": "Failed to load trips: {error}",
+  "@tripLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tripCreateError": "Failed to create trip: {error}",
+  "@tripCreateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tripUpdateError": "Failed to update trip: {error}",
+  "@tripUpdateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tripDeleteError": "Failed to delete trip: {error}",
+  "@tripDeleteError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "tripSettingsLoadError": "Failed to load trip settings",
+
+  "tripBaseCurrencyPrefix": "Base: ",
+
+
+  "participantSectionTitle": "Participants",
+  "participantAddButton": "Add Participant",
+  "participantAddTitle": "Add Participant",
+  "participantRemoveButton": "Remove",
+  "participantRemoveTooltip": "Remove",
+
+  "participantFieldNameLabel": "Name *",
+  "participantFieldNameHint": "Enter name (e.g., \"Sarah\")",
+  "participantFieldIdLabel": "Participant ID",
+  "participantFieldIdHint": "Auto-generated from name",
+  "participantFieldIdHelper": "Auto-generated from name. Used internally for tracking.",
+
+  "participantEmptyStateTitle": "No participants added yet",
+  "participantEmptyStateDescription": "Tap the + button below to add your first participant",
+
+  "participantAddedSuccess": "{name} added successfully",
+  "@participantAddedSuccess": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "participantAddError": "Failed to add participant: {error}",
+  "@participantAddError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "participantDeleteDialogTitle": "Remove Participant?",
+  "participantDeleteDialogMessage": "Are you sure you want to remove {name} from this trip?\n\nThis action cannot be undone.",
+  "@participantDeleteDialogMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "participantDeleteDialogCannotRemoveTitle": "Cannot Remove Participant",
+  "participantDeleteDialogCannotRemoveMessage": "{name} is used in {count, plural, =1{1 expense} other{{count} expenses}} and cannot be removed.",
+  "@participantDeleteDialogCannotRemoveMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "participantDeleteDialogInstructionsHeader": "To remove this participant:",
+  "participantDeleteDialogInstructions": "1. Delete or reassign their expenses\n2. Try removing them again",
+
+
+  "expenseListTitle": "Expenses",
+  "expenseAddButton": "Add Expense",
+  "expenseAddTooltip": "Add Expense",
+  "expenseAddTitle": "Add Expense",
+  "expenseEditTitle": "Edit Expense",
+  "expenseSaveButton": "Add Expense",
+  "expenseSaveChangesButton": "Save Changes",
+  "expenseUpdateButton": "Update Expense",
+  "expenseDeleteButton": "Delete Expense",
+
+  "expenseEmptyStateTitle": "No expenses yet",
+  "expenseEmptyStateDescription": "Tap + to add your first expense",
+
+  "expenseNoParticipantsTitle": "No participants configured",
+  "expenseNoParticipantsDescription": "Please add participants to this trip first.",
+  "expenseGoBackButton": "Go Back",
+
+  "expenseSectionAmountCurrency": "AMOUNT & CURRENCY",
+  "expenseSectionDescription": "WHAT WAS IT FOR?",
+  "expenseSectionPayerDate": "WHO PAID & WHEN?",
+  "expenseSectionSplit": "HOW TO SPLIT?",
+  "expenseSectionCategory": "CATEGORY",
+  "expenseSectionParticipants": "WHO'S SPLITTING?",
+  "expenseSectionParticipantsRequired": "WHO'S SPLITTING? *",
+
+  "expenseFieldAmountLabel": "Amount",
+  "expenseFieldDescriptionLabel": "Description (optional)",
+  "expenseFieldPayerLabel": "Payer *",
+  "expenseFieldPayerRequired": "Required",
+  "expenseFieldDateLabel": "Date",
+  "expenseFieldCurrencyLabel": "Currency",
+
+  "expenseSplitTypeEqual": "Equal",
+  "expenseSplitTypeWeighted": "Weighted",
+  "expenseSplitTypeItemized": "Itemized (Add Line Items)",
+
+  "expenseParticipantSelectorRequired": "Required - select at least one participant",
+  "expenseParticipantWeightLabel": "Weight",
+  "expenseParticipantWeightHint": "0",
+
+  "expensePaidBy": "Paid by {name}",
+  "@expensePaidBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseParticipantCount": "{count, plural, =1{1 participant} other{{count} participants}}",
+  "@expenseParticipantCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "expenseShowDetails": "Show details",
+  "expenseShowLess": "Show less",
+
+  "expenseDeleteDialogTitle": "Delete Expense?",
+  "expenseDeleteDialogMessage": "This action cannot be undone.",
+
+  "expenseLoadError": "Failed to load expenses: {error}",
+  "@expenseLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseCreateError": "Failed to create expense: {error}",
+  "@expenseCreateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseUpdateError": "Failed to update expense: {error}",
+  "@expenseUpdateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "expenseDeleteError": "Failed to delete expense: {error}",
+  "@expenseDeleteError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "expenseItemizedOpenError": "Error opening itemized expense: {error}",
+  "@expenseItemizedOpenError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+
+  "itemizedWizardTitleNew": "New Itemized Expense",
+  "itemizedWizardTitleEdit": "Edit Itemized Expense",
+  "itemizedWizardSavedSuccess": "Expense saved successfully!",
+  "itemizedWizardUpdatedSuccess": "Expense updated successfully!",
+  "itemizedWizardSaving": "Saving expense...",
+
+  "itemizedWizardStepPeople": "People",
+  "itemizedWizardStepItems": "Items",
+  "itemizedWizardStepExtras": "Extras",
+  "itemizedWizardStepReview": "Review",
+
+  "itemizedPeopleTitle": "Who paid for this expense? *",
+  "itemizedPeopleDescription": "Select the person who paid",
+  "itemizedPeopleDescriptionError": "Required - Select the person who paid",
+  "itemizedPeopleContinueButton": "Continue to Items",
+
+  "itemizedItemsTitle": "Add items from receipt",
+  "itemizedItemsDescription": "Add each item and assign who ordered it",
+  "itemizedItemsEmptyTitle": "No items yet",
+  "itemizedItemsEmptyDescription": "Add items from the form below",
+  "itemizedItemsNotAssigned": "Not assigned",
+  "itemizedItemsAssignTooltip": "Assign",
+  "itemizedItemsEditTooltip": "Edit",
+  "itemizedItemsRemoveTooltip": "Remove",
+  "itemizedItemsAddCardTitle": "Add New Item",
+  "itemizedItemsEditCardTitle": "Edit Item",
+  "itemizedItemsFieldNameLabel": "Item name",
+  "itemizedItemsFieldNameHint": "e.g., Caesar Salad",
+  "itemizedItemsFieldQtyLabel": "Qty",
+  "itemizedItemsFieldPriceLabel": "Price",
+  "itemizedItemsFieldPriceHint": "0.00",
+  "itemizedItemsAddButton": "Add Item",
+  "itemizedItemsUpdateButton": "Update Item",
+  "itemizedItemsContinueButton": "Continue to Extras",
+  "itemizedItemsAssignDialogTitle": "Assign: {itemName}",
+  "@itemizedItemsAssignDialogTitle": {
+    "placeholders": {
+      "itemName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "itemizedExtrasTitle": "Add tax & tip",
+  "itemizedExtrasDescription": "Optional - leave blank if not applicable",
+  "itemizedExtrasTaxCardTitle": "Sales Tax",
+  "itemizedExtrasTaxRateLabel": "Tax Rate (%)",
+  "itemizedExtrasTaxRateHint": "e.g., 8.875",
+  "itemizedExtrasTaxRateHelper": "Applies to all taxable items",
+  "itemizedExtrasTipCardTitle": "Tip / Gratuity",
+  "itemizedExtrasTipRateLabel": "Tip Rate (%)",
+  "itemizedExtrasTipRateHint": "e.g., 18",
+  "itemizedExtrasTipRateHelper": "Calculated on pre-tax subtotal",
+  "itemizedExtrasInfoMessage": "Tax and tip will be split proportionally based on each person's item subtotal",
+  "itemizedExtrasContinueButton": "Continue to Review",
+
+  "itemizedReviewTitle": "Review & Save",
+  "itemizedReviewDescription": "Check the breakdown before saving",
+  "itemizedReviewCannotSaveTitle": "Cannot Save",
+  "itemizedReviewWarningTitle": "Warning",
+  "itemizedReviewGrandTotal": "Grand Total",
+  "itemizedReviewPeopleSplitting": "{count, plural, =1{1 person splitting} other{{count} people splitting}}",
+  "@itemizedReviewPeopleSplitting": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "itemizedReviewPerPersonBreakdown": "Per Person Breakdown",
+  "itemizedReviewPaidBadge": "PAID",
+  "itemizedReviewItemsSubtotal": "Items Subtotal",
+  "itemizedReviewRounding": "Rounding",
+  "itemizedReviewTotal": "Total",
+  "itemizedReviewItemDetails": "Item Details",
+  "itemizedReviewSaveButton": "Save Expense",
+  "itemizedReviewUpdateButton": "Update Expense",
+
+  "itemizedExpenseCannotEditNotItemized": "Cannot edit: expense is not itemized",
+  "itemizedExpenseCannotEditNoItems": "Cannot edit: expense has no items",
+  "itemizedExpenseCannotSaveNotReady": "Cannot save: expense not ready",
+  "itemizedExpenseCannotSaveValidationErrors": "Cannot save: validation errors exist",
+  "itemizedExpenseCannotSaveNoPayerSelected": "Cannot save: payer not selected",
+  "itemizedExpenseSaveError": "Failed to save expense: {error}",
+  "@itemizedExpenseSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "itemizedExpenseCalculationError": "Calculation error: {error}",
+  "@itemizedExpenseCalculationError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "itemizedExpenseGeneratedDescriptionNoItems": "Itemized expense",
+  "itemizedExpenseGeneratedDescriptionMultiple": "{item1}, {item2}, and {count} more",
+  "@itemizedExpenseGeneratedDescriptionMultiple": {
+    "placeholders": {
+      "item1": {
+        "type": "String"
+      },
+      "item2": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+
+  "expenseCardNoItemizedDetails": "No itemized details available",
+  "expenseCardLineItemsTitle": "Line Items",
+  "expenseCardExtrasTitle": "Extras",
+  "expenseCardExtrasTaxLabel": "Tax",
+  "expenseCardExtrasTipLabel": "Tip",
+  "expenseCardPerPersonBreakdown": "Per-Person Breakdown",
+
+
+  "settlementTitle": "Settlement",
+  "settlementViewTooltip": "View Settlement",
+  "settlementRecomputeTooltip": "Recompute Settlement",
+  "settlementComputing": "Computing settlement...",
+  "settlementLoading": "Loading settlement...",
+  "settlementLoadingData": "Loading settlement data...",
+  "settlementLastUpdated": "Last updated: {timestamp}",
+  "@settlementLastUpdated": {
+    "placeholders": {
+      "timestamp": {
+        "type": "String"
+      }
+    }
+  },
+
+  "settlementCalculateError": "Failed to calculate settlement: {error}",
+  "@settlementCalculateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementLoadError": "Failed to load settlement: {error}",
+  "@settlementLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementMarkSettledError": "Failed to mark transfer as settled: {error}",
+  "@settlementMarkSettledError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settlementTripNotFoundError": "Trip not found: {tripId}",
+  "@settlementTripNotFoundError": {
+    "placeholders": {
+      "tripId": {
+        "type": "String"
+      }
+    }
+  },
+
+  "transfersAllSettledTitle": "All Settled!",
+  "transfersAllSettledDescription": "Everyone is even, no transfers needed.",
+  "transfersCardTitle": "Settlement Transfers",
+  "transfersCountTotal": "{count} total",
+  "@transfersCountTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transfersHintTapToSettle": "Tap a transfer to mark as settled",
+  "transfersPendingTitle": "Pending Transfers",
+  "transfersSettledTitle": "Settled Transfers",
+
+  "transferCopiedFormat": "{fromName} pays {toName} {amount}",
+  "@transferCopiedFormat": {
+    "placeholders": {
+      "fromName": {
+        "type": "String"
+      },
+      "toName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "transferCopiedMessage": "Copied: {text}",
+  "@transferCopiedMessage": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+
+  "transferMarkSettledDialogTitle": "Mark as Settled",
+  "transferMarkSettledDialogMessage": "Mark this transfer as settled?\n\n{fromName} → {toName}: {amount}",
+  "@transferMarkSettledDialogMessage": {
+    "placeholders": {
+      "fromName": {
+        "type": "String"
+      },
+      "toName": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "transferBreakdownTitle": "Transfer Breakdown",
+  "transferBreakdownViewTooltip": "View Breakdown",
+  "transferBreakdownNoData": "No data available",
+  "transferBreakdownLoadError": "Error loading breakdown: {error}",
+  "@transferBreakdownLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "transferBreakdownNoExpenses": "No expenses found that contribute to this transfer.",
+  "transferBreakdownSummaryTitle": "Summary",
+  "transferBreakdownSummaryDescription": "This shows all expenses that created debts between {fromName} and {toName}. The amounts shown are the exact debts from each expense, after pairwise netting.",
+  "@transferBreakdownSummaryDescription": {
+    "placeholders": {
+      "fromName": {
+        "type": "String"
+      },
+      "toName": {
+        "type": "String"
+      }
+    }
+  },
+  "transferBreakdownExpenseCount": "{count, plural, =1{1 expense between these two people} other{{count} expenses between these two people}}",
+  "@transferBreakdownExpenseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transferBreakdownContributingExpenses": "Contributing Expenses",
+  "transferBreakdownNoDescription": "No description",
+  "transferBreakdownExpenseMetadata": "Paid by {payerName} • {date}",
+  "@transferBreakdownExpenseMetadata": {
+    "placeholders": {
+      "payerName": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "transferBreakdownPaidLabel": "Paid",
+  "transferBreakdownOwesLabel": "Owes",
+  "transferBreakdownPaidPrefix": "Paid: ",
+  "transferBreakdownOwesPrefix": "Owes: ",
+
+  "summaryTableTitle": "Everyone's Summary",
+  "summaryTableColumnPerson": "Person",
+  "summaryTableColumnToReceive": "To Receive",
+  "summaryTableColumnToPay": "To Pay",
+  "summaryTableColumnNet": "Net",
+  "summaryTableLegendWillReceive": "Will receive money",
+  "summaryTableLegendNeedsToPay": "Needs to pay",
+  "summaryTableLegendEven": "Even",
+
+
+  "dateToday": "Today",
+  "dateYesterday": "Yesterday",
+  "dateDaysAgo": "{days}d ago",
+  "@dateDaysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+
+  "currencyUSD": "US Dollar",
+  "currencyVND": "Vietnamese Dong",
+
+
+  "categoryMeals": "Meals",
+  "categoryTransport": "Transport",
+  "categoryAccommodation": "Accommodation",
+  "categoryActivities": "Activities",
+  "categoryShopping": "Shopping",
+  "categoryOther": "Other"
+}

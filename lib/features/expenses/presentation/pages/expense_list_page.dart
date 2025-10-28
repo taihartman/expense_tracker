@@ -9,44 +9,39 @@ import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Page displaying list of expenses for a trip
 class ExpenseListPage extends StatelessWidget {
   final String tripId;
 
-  const ExpenseListPage({
-    required this.tripId,
-    super.key,
-  });
+  const ExpenseListPage({required this.tripId, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expenses'),
+        title: Text(context.l10n.expenseListTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: 'Trip Settings',
+            tooltip: context.l10n.tripSettingsTitle,
             onPressed: () {
               context.push('/trips/$tripId/settings');
             },
           ),
           IconButton(
             icon: const Icon(Icons.account_balance_wallet),
-            tooltip: 'View Settlement',
+            tooltip: context.l10n.settlementViewTooltip,
             onPressed: () {
               context.push('/trips/$tripId/settlement');
             },
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: 'Add Expense',
+            tooltip: context.l10n.expenseAddTooltip,
             onPressed: () {
-              showExpenseFormBottomSheet(
-                context: context,
-                tripId: tripId,
-              );
+              showExpenseFormBottomSheet(context: context, tripId: tripId);
             },
           ),
         ],
@@ -54,9 +49,7 @@ class ExpenseListPage extends StatelessWidget {
       body: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
           if (state is ExpenseLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is ExpenseError) {
@@ -80,7 +73,7 @@ class ExpenseListPage extends StatelessWidget {
                     onPressed: () {
                       context.read<ExpenseCubit>().loadExpenses(tripId);
                     },
-                    child: const Text('Retry'),
+                    child: Text(context.l10n.commonRetry),
                   ),
                 ],
               ),
@@ -100,15 +93,15 @@ class ExpenseListPage extends StatelessWidget {
                     ),
                     const SizedBox(height: AppTheme.spacing2),
                     Text(
-                      'No expenses yet',
+                      context.l10n.expenseEmptyStateTitle,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: AppTheme.spacing1),
                     Text(
-                      'Tap + to add your first expense',
+                      context.l10n.expenseEmptyStateDescription,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -120,15 +113,17 @@ class ExpenseListPage extends StatelessWidget {
                 // Get trip participants
                 final List<Participant> participants = tripState is TripLoaded
                     ? tripState.trips
-                        .firstWhere(
-                          (t) => t.id == tripId,
-                          orElse: () => tripState.selectedTrip!,
-                        )
-                        .participants
+                          .firstWhere(
+                            (t) => t.id == tripId,
+                            orElse: () => tripState.selectedTrip!,
+                          )
+                          .participants
                     : <Participant>[];
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: AppTheme.spacing1),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppTheme.spacing1,
+                  ),
                   itemCount: state.expenses.length,
                   itemBuilder: (context, index) {
                     final expense = state.expenses[index];

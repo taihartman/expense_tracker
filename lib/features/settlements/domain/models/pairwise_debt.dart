@@ -5,8 +5,8 @@ import 'package:equatable/equatable.dart';
 class PairwiseDebt extends Equatable {
   final String id;
   final String tripId;
-  final String fromUserId;  // Who owes
-  final String toUserId;    // Who is owed
+  final String fromUserId; // Who owes
+  final String toUserId; // Who is owed
   final Decimal nettedBase; // Amount owed in base currency
   final DateTime computedAt;
 
@@ -20,5 +20,12 @@ class PairwiseDebt extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, tripId, fromUserId, toUserId, nettedBase, computedAt];
+  List<Object?> get props => [
+    id,
+    tripId,
+    fromUserId,
+    toUserId,
+    nettedBase,
+    computedAt,
+  ];
 }

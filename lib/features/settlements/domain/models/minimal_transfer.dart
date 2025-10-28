@@ -5,11 +5,11 @@ import 'package:equatable/equatable.dart';
 class MinimalTransfer extends Equatable {
   final String id;
   final String tripId;
-  final String fromUserId;  // Who pays
-  final String toUserId;    // Who receives
+  final String fromUserId; // Who pays
+  final String toUserId; // Who receives
   final Decimal amountBase; // Transfer amount in base currency
   final DateTime computedAt;
-  final bool isSettled;     // Whether this transfer has been marked as settled
+  final bool isSettled; // Whether this transfer has been marked as settled
   final DateTime? settledAt; // When this transfer was marked as settled
 
   const MinimalTransfer({
@@ -24,7 +24,16 @@ class MinimalTransfer extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, tripId, fromUserId, toUserId, amountBase, computedAt, isSettled, settledAt];
+  List<Object?> get props => [
+    id,
+    tripId,
+    fromUserId,
+    toUserId,
+    amountBase,
+    computedAt,
+    isSettled,
+    settledAt,
+  ];
 
   /// Create a copy with updated fields
   MinimalTransfer copyWith({

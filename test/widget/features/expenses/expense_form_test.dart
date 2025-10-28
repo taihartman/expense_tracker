@@ -44,12 +44,13 @@ void main() {
       );
 
       // Setup mock trip cubit to return loaded state with test trip
-      when(mockTripCubit.state).thenReturn(
-        TripLoaded(trips: [testTrip], selectedTrip: testTrip),
+      when(
+        mockTripCubit.state,
+      ).thenReturn(TripLoaded(trips: [testTrip], selectedTrip: testTrip));
+      when(mockTripCubit.stream).thenAnswer(
+        (_) =>
+            Stream.value(TripLoaded(trips: [testTrip], selectedTrip: testTrip)),
       );
-      when(mockTripCubit.stream).thenAnswer((_) => Stream.value(
-        TripLoaded(trips: [testTrip], selectedTrip: testTrip),
-      ));
     });
 
     Widget createWidgetUnderTest() {
@@ -64,7 +65,9 @@ void main() {
       );
     }
 
-    testWidgets('displays all required form fields', (WidgetTester tester) async {
+    testWidgets('displays all required form fields', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -77,8 +80,9 @@ void main() {
       expect(find.text('Date'), findsOneWidget);
     });
 
-    testWidgets('shows currency selector with USD and VND options',
-        (WidgetTester tester) async {
+    testWidgets('shows currency selector with USD and VND options', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -91,8 +95,9 @@ void main() {
       expect(find.text('VND'), findsOneWidget);
     });
 
-    testWidgets('shows payer selector with all participants',
-        (WidgetTester tester) async {
+    testWidgets('shows payer selector with all participants', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -106,8 +111,9 @@ void main() {
       }
     });
 
-    testWidgets('shows split type selector with Equal and Weighted options',
-        (WidgetTester tester) async {
+    testWidgets('shows split type selector with Equal and Weighted options', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -120,8 +126,9 @@ void main() {
       expect(find.text('Weighted'), findsOneWidget);
     });
 
-    testWidgets('shows checkboxes for Equal split type',
-        (WidgetTester tester) async {
+    testWidgets('shows checkboxes for Equal split type', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -135,8 +142,9 @@ void main() {
       expect(find.byType(Checkbox), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('shows weight input fields for Weighted split type',
-        (WidgetTester tester) async {
+    testWidgets('shows weight input fields for Weighted split type', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -150,8 +158,9 @@ void main() {
       expect(find.text('Weight'), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('validates amount field is required',
-        (WidgetTester tester) async {
+    testWidgets('validates amount field is required', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -163,14 +172,14 @@ void main() {
       expect(find.text('Amount is required'), findsOneWidget);
     });
 
-    testWidgets('validates amount must be positive',
-        (WidgetTester tester) async {
+    testWidgets('validates amount must be positive', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Act - Enter negative amount
-      await tester.enterText(
-          find.widgetWithText(TextField, 'Amount'), '-10');
+      await tester.enterText(find.widgetWithText(TextField, 'Amount'), '-10');
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
@@ -178,32 +187,39 @@ void main() {
       expect(find.text('Amount must be positive'), findsOneWidget);
     });
 
-    testWidgets('validates at least one participant must be selected',
-        (WidgetTester tester) async {
+    testWidgets('validates at least one participant must be selected', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Act - Fill in amount but don't select participants
-      await tester.enterText(
-          find.widgetWithText(TextField, 'Amount'), '100');
+      await tester.enterText(find.widgetWithText(TextField, 'Amount'), '100');
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
       // Assert - Should show validation error
       expect(
-          find.text('At least one participant must be selected'), findsOneWidget);
+        find.text('At least one participant must be selected'),
+        findsOneWidget,
+      );
     });
 
-    testWidgets('submits form with valid equal split data',
-        (WidgetTester tester) async {
+    testWidgets('submits form with valid equal split data', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Act - Fill in all required fields for equal split
       await tester.enterText(
-          find.widgetWithText(TextField, 'Amount'), '100.00');
+        find.widgetWithText(TextField, 'Amount'),
+        '100.00',
+      );
       await tester.enterText(
-          find.widgetWithText(TextField, 'Description'), 'Test Expense');
+        find.widgetWithText(TextField, 'Description'),
+        'Test Expense',
+      );
 
       // Select payer
       await tester.tap(find.text('Payer'));
@@ -235,16 +251,21 @@ void main() {
       verify(mockExpenseCubit.createExpense(any)).called(1);
     });
 
-    testWidgets('submits form with valid weighted split data',
-        (WidgetTester tester) async {
+    testWidgets('submits form with valid weighted split data', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
       // Act - Fill in all required fields for weighted split
       await tester.enterText(
-          find.widgetWithText(TextField, 'Amount'), '100.00');
+        find.widgetWithText(TextField, 'Amount'),
+        '100.00',
+      );
       await tester.enterText(
-          find.widgetWithText(TextField, 'Description'), 'Test Weighted Expense');
+        find.widgetWithText(TextField, 'Description'),
+        'Test Weighted Expense',
+      );
 
       // Select payer
       await tester.tap(find.text('Payer'));
@@ -277,8 +298,9 @@ void main() {
       verify(mockExpenseCubit.createExpense(any)).called(1);
     });
 
-    testWidgets('displays date picker when date field is tapped',
-        (WidgetTester tester) async {
+    testWidgets('displays date picker when date field is tapped', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -290,8 +312,9 @@ void main() {
       expect(find.byType(DatePickerDialog), findsOneWidget);
     });
 
-    testWidgets('updates form state when split type changes',
-        (WidgetTester tester) async {
+    testWidgets('updates form state when split type changes', (
+      WidgetTester tester,
+    ) async {
       // Arrange
       await tester.pumpWidget(createWidgetUnderTest());
 

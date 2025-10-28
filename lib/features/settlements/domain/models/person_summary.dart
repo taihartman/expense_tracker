@@ -4,9 +4,9 @@ import 'package:equatable/equatable.dart';
 /// Summary of a person's financial activity in a trip
 class PersonSummary extends Equatable {
   final String userId;
-  final Decimal totalPaidBase;  // Sum of expenses where user is payer
-  final Decimal totalOwedBase;  // Sum of shares where user is participant
-  final Decimal netBase;        // totalPaidBase - totalOwedBase
+  final Decimal totalPaidBase; // Sum of expenses where user is payer
+  final Decimal totalOwedBase; // Sum of shares where user is participant
+  final Decimal netBase; // totalPaidBase - totalOwedBase
 
   const PersonSummary({
     required this.userId,

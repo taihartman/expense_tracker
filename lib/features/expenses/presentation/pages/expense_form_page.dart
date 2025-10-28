@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/expense.dart';
+import '../../domain/repositories/expense_repository.dart';
 import '../cubits/expense_cubit.dart';
+import '../cubits/itemized_expense_cubit.dart';
 import '../widgets/participant_selector.dart';
 import '../../../categories/presentation/widgets/category_selector.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
@@ -12,20 +14,18 @@ import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/split_type.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/utils/currency_input_formatter.dart';
+import 'itemized/itemized_expense_wizard.dart';
 
 /// Page for creating or editing an expense
 class ExpenseFormPage extends StatefulWidget {
   final String tripId;
   final Expense? expense; // null for create, populated for edit
 
-  const ExpenseFormPage({
-    required this.tripId,
-    this.expense,
-    super.key,
-  });
+  const ExpenseFormPage({required this.tripId, this.expense, super.key});
 
   @override
   State<ExpenseFormPage> createState() => _ExpenseFormPageState();
@@ -50,7 +50,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
     if (widget.expense != null) {
       // Editing existing expense - format the amount with commas
       final formatter = NumberFormat('#,##0.##', 'en_US');
-      _amountController.text = formatter.format(widget.expense!.amount.toDouble());
+      _amountController.text = formatter.format(
+        widget.expense!.amount.toDouble(),
+      );
       _descriptionController.text = widget.expense!.description ?? '';
       _selectedCurrency = widget.expense!.currency;
       _selectedPayer = widget.expense!.payerUserId;
@@ -73,14 +75,16 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
     if (_formKey.currentState!.validate()) {
       if (_selectedPayer == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a payer')),
+          SnackBar(content: Text(context.l10n.validationPleaseSelectPayer)),
         );
         return;
       }
 
       if (_participants.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select at least one participant')),
+          SnackBar(
+            content: Text(context.l10n.validationPleaseSelectParticipants),
+          ),
         );
         return;
       }
@@ -92,7 +96,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
         payerUserId: _selectedPayer!,
         currency: _selectedCurrency,
         amount: Decimal.parse(stripCurrencyFormatting(_amountController.text)),
-        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        description: _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text,
         categoryId: _selectedCategory,
         splitType: _selectedSplitType,
         participants: _participants,
@@ -116,12 +122,18 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.expense == null ? 'Add Expense' : 'Edit Expense'),
+        title: Text(
+          widget.expense == null
+              ? context.l10n.expenseAddTitle
+              : context.l10n.expenseEditTitle,
+        ),
       ),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, tripState) {
           // Get trip participants
           List<Participant> tripParticipants = [];
+
+          CurrencyCode? tripBaseCurrency;
 
           if (tripState is TripLoaded) {
             final trip = tripState.trips.firstWhere(
@@ -129,6 +141,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
               orElse: () => tripState.selectedTrip!,
             );
             tripParticipants = trip.participants;
+            tripBaseCurrency = trip.baseCurrency;
           }
 
           // Show error if no participants configured
@@ -139,17 +152,24 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.people_outline, size: 64, color: Colors.grey),
+                    const Icon(
+                      Icons.people_outline,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'No participants configured',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      context.l10n.expenseNoParticipantsTitle,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Please add participants to this trip first.',
+                    Text(
+                      context.l10n.expenseNoParticipantsDescription,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
@@ -157,7 +177,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                         Navigator.of(context).pop();
                       },
                       icon: const Icon(Icons.arrow_back),
-                      label: const Text('Go Back'),
+                      label: Text(context.l10n.expenseGoBackButton),
                     ),
                   ],
                 ),
@@ -165,13 +185,17 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
             );
           }
 
-          // Initialize defaults if needed (only for new expenses)
-          if (widget.expense == null && _selectedPayer == null && tripParticipants.isNotEmpty) {
+          // Initialize currency default for new expenses
+          if (widget.expense == null &&
+              tripBaseCurrency != null &&
+              _selectedCurrency == CurrencyCode.usd) {
+            final baseCurrency =
+                tripBaseCurrency; // Capture for use in callback
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 setState(() {
-                  _selectedPayer = tripParticipants.first.id;
-                  _participants = {tripParticipants.first.id: 1};
+                  // Set currency to trip's base currency for new expenses
+                  _selectedCurrency = baseCurrency;
                 });
               }
             });
@@ -204,16 +228,109 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                 _selectedCategory = value;
               });
             },
-            onSplitTypeChanged: (value) {
-              setState(() {
-                _selectedSplitType = value;
-                // Reset participants when changing split type
-                if (value == SplitType.equal) {
-                  _participants = {
-                    for (var id in _participants.keys) id: 1,
-                  };
+            onSplitTypeChanged: (value) async {
+              debugPrint('🟣 [Handler] onSplitTypeChanged called with: $value');
+              // Handle itemized split type by navigating to wizard
+              if (value == SplitType.itemized) {
+                debugPrint('🔵 [ExpenseForm] ITEMIZED BUTTON PRESSED');
+                debugPrint('🔵 [ExpenseForm] Trip ID: ${widget.tripId}');
+                debugPrint(
+                  '🔵 [ExpenseForm] Participants: ${tripParticipants.map((p) => p.id).toList()}',
+                );
+                debugPrint('🔵 [ExpenseForm] Payer: $_selectedPayer');
+                debugPrint('🔵 [ExpenseForm] Currency: $_selectedCurrency');
+
+                // Capture navigator and context before async operation
+                final navigator = Navigator.of(context);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final l10n = context.l10n;
+                debugPrint('🔵 [ExpenseForm] Navigator captured');
+
+                try {
+                  debugPrint(
+                    '🔵 [ExpenseForm] Creating ItemizedExpenseCubit...',
+                  );
+                  final expenseRepository = context.read<ExpenseRepository>();
+                  debugPrint(
+                    '🔵 [ExpenseForm] ExpenseRepository obtained: ${expenseRepository.runtimeType}',
+                  );
+
+                  debugPrint('🔵 [ExpenseForm] Pushing wizard route...');
+                  // Navigate to itemized expense wizard
+                  final result = await navigator.push<bool>(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        debugPrint(
+                          '🔵 [ExpenseForm] Building wizard widget...',
+                        );
+                        return BlocProvider(
+                          create: (context) {
+                            debugPrint(
+                              '🔵 [ExpenseForm] Creating cubit in BlocProvider...',
+                            );
+                            return ItemizedExpenseCubit(
+                              expenseRepository: expenseRepository,
+                            );
+                          },
+                          child: ItemizedExpenseWizard(
+                            tripId: widget.tripId,
+                            participants: tripParticipants
+                                .map((p) => p.id)
+                                .toList(),
+                            participantNames: {
+                              for (var p in tripParticipants) p.id: p.name,
+                            },
+                            initialPayerUserId: _selectedPayer,
+                            currency: _selectedCurrency,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+
+                  debugPrint(
+                    '🔵 [ExpenseForm] Wizard returned with result: $result',
+                  );
+
+                  // Only pop expense form if wizard saved successfully
+                  if (mounted && result == true) {
+                    debugPrint(
+                      '🔵 [ExpenseForm] Wizard saved successfully - closing expense form',
+                    );
+                    navigator.pop();
+                  } else if (mounted) {
+                    debugPrint(
+                      '🔵 [ExpenseForm] Wizard cancelled or failed - keeping expense form open',
+                    );
+                  } else {
+                    debugPrint('🔵 [ExpenseForm] Widget no longer mounted');
+                  }
+                } catch (e, stackTrace) {
+                  debugPrint(
+                    '🔴 [ExpenseForm] ERROR in itemized navigation: $e',
+                  );
+                  debugPrint('🔴 [ExpenseForm] Stack trace: $stackTrace');
+                  if (mounted) {
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          l10n.expenseItemizedOpenError(e.toString()),
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
-              });
+              } else {
+                // Handle equal/weighted split types normally
+                setState(() {
+                  _selectedSplitType = value;
+                  // Reset participants when changing split type
+                  if (value == SplitType.equal) {
+                    _participants = {for (var id in _participants.keys) id: 1};
+                  }
+                });
+              }
             },
             onDateChanged: (value) {
               setState(() {
@@ -249,7 +366,7 @@ class ExpenseFormContent extends StatelessWidget {
   final ValueChanged<CurrencyCode> onCurrencyChanged;
   final ValueChanged<String?> onPayerChanged;
   final ValueChanged<String?> onCategoryChanged;
-  final ValueChanged<SplitType> onSplitTypeChanged;
+  final Future<void> Function(SplitType) onSplitTypeChanged;
   final ValueChanged<DateTime> onDateChanged;
   final ValueChanged<Map<String, num>> onParticipantsChanged;
   final VoidCallback onSubmit;
@@ -302,55 +419,62 @@ class ExpenseFormContent extends StatelessWidget {
         padding: const EdgeInsets.all(AppTheme.spacing2),
         children: [
           // Section 1: AMOUNT & CURRENCY
-          _buildSectionHeader(context, 'AMOUNT & CURRENCY'),
+          _buildSectionHeader(
+            context,
+            context.l10n.expenseSectionAmountCurrency,
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Amount field
               Expanded(
                 flex: 2,
-                child: CustomTextField(
-                  controller: amountController,
-                  label: 'Amount',
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [CurrencyInputFormatter()],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Required';
-                    }
-                    try {
-                      final cleanValue = stripCurrencyFormatting(value);
-                      final amount = Decimal.parse(cleanValue);
-                      if (amount <= Decimal.zero) {
-                        return 'Must be > 0';
+                child: Builder(
+                  builder: (context) => CustomTextField(
+                    controller: amountController,
+                    label: context.l10n.expenseFieldAmountLabel,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [CurrencyInputFormatter()],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return context.l10n.validationRequired;
                       }
-                    } catch (e) {
-                      return 'Invalid number';
-                    }
-                    return null;
-                  },
+                      try {
+                        final cleanValue = stripCurrencyFormatting(value);
+                        final amount = Decimal.parse(cleanValue);
+                        if (amount <= Decimal.zero) {
+                          return context.l10n.validationMustBeGreaterThanZero;
+                        }
+                      } catch (e) {
+                        return context.l10n.validationInvalidNumber;
+                      }
+                      return null;
+                    },
+                  ),
                 ),
               ),
               const SizedBox(width: AppTheme.spacing1),
               // Currency selector
               Expanded(
                 flex: 1,
-                child: DropdownButtonFormField<CurrencyCode>(
-                  initialValue: selectedCurrency,
-                  decoration: const InputDecoration(
-                    labelText: 'Currency',
+                child: Builder(
+                  builder: (context) => DropdownButtonFormField<CurrencyCode>(
+                    initialValue: selectedCurrency,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.expenseFieldCurrencyLabel,
+                    ),
+                    items: CurrencyCode.values.map((currency) {
+                      return DropdownMenuItem(
+                        value: currency,
+                        child: Text(currency.code),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        onCurrencyChanged(value);
+                      }
+                    },
                   ),
-                  items: CurrencyCode.values.map((currency) {
-                    return DropdownMenuItem(
-                      value: currency,
-                      child: Text(currency.code),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      onCurrencyChanged(value);
-                    }
-                  },
                 ),
               ),
             ],
@@ -358,11 +482,13 @@ class ExpenseFormContent extends StatelessWidget {
           const SizedBox(height: AppTheme.spacing3),
 
           // Section 2: WHAT WAS IT FOR?
-          _buildSectionHeader(context, 'WHAT WAS IT FOR?'),
-          CustomTextField(
-            controller: descriptionController,
-            label: 'Description (optional)',
-            maxLength: 200,
+          _buildSectionHeader(context, context.l10n.expenseSectionDescription),
+          Builder(
+            builder: (context) => CustomTextField(
+              controller: descriptionController,
+              label: context.l10n.expenseFieldDescriptionLabel,
+              maxLength: 200,
+            ),
           ),
           const SizedBox(height: AppTheme.spacing3),
 
@@ -374,52 +500,80 @@ class ExpenseFormContent extends StatelessWidget {
           const SizedBox(height: AppTheme.spacing3),
 
           // Section 4: WHO PAID & WHEN?
-          _buildSectionHeader(context, 'WHO PAID & WHEN?'),
+          _buildSectionHeader(context, context.l10n.expenseSectionPayerDate),
           Row(
             children: [
               // Payer selector
               Expanded(
-                child: DropdownButtonFormField<String>(
-                  initialValue: selectedPayer,
-                  decoration: const InputDecoration(
-                    labelText: 'Payer',
-                    prefixIcon: Icon(Icons.person),
+                child: Builder(
+                  builder: (context) => DropdownButtonFormField<String>(
+                    initialValue: selectedPayer,
+                    decoration: InputDecoration(
+                      labelText: context.l10n.expenseFieldPayerLabel,
+                      prefixIcon: const Icon(Icons.person),
+                      border: selectedPayer == null && !isEditMode
+                          ? OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.error.withValues(
+                                  alpha: 0.5,
+                                ),
+                                width: 1.5,
+                              ),
+                            )
+                          : null,
+                      enabledBorder: selectedPayer == null && !isEditMode
+                          ? OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: theme.colorScheme.error.withValues(
+                                  alpha: 0.5,
+                                ),
+                                width: 1.5,
+                              ),
+                            )
+                          : null,
+                      helperText: selectedPayer == null && !isEditMode
+                          ? context.l10n.expenseFieldPayerRequired
+                          : null,
+                      helperStyle: TextStyle(color: theme.colorScheme.error),
+                    ),
+                    items: availableParticipants.map((participant) {
+                      return DropdownMenuItem(
+                        value: participant.id,
+                        child: Text(participant.name),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      onPayerChanged(value);
+                    },
                   ),
-                  items: availableParticipants.map((participant) {
-                    return DropdownMenuItem(
-                      value: participant.id,
-                      child: Text(participant.name),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    onPayerChanged(value);
-                  },
                 ),
               ),
               const SizedBox(width: AppTheme.spacing1),
               // Date selector
               Expanded(
-                child: InkWell(
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                    );
-                    if (date != null) {
-                      onDateChanged(date);
-                    }
-                  },
-                  child: InputDecorator(
-                    decoration: const InputDecoration(
-                      labelText: 'Date',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(),
-                    ),
-                    child: Text(
-                      DateFormat('MMM dd, yyyy').format(selectedDate),
-                      style: theme.textTheme.bodyLarge,
+                child: Builder(
+                  builder: (context) => InkWell(
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+                      if (date != null) {
+                        onDateChanged(date);
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: context.l10n.expenseFieldDateLabel,
+                        prefixIcon: const Icon(Icons.calendar_today),
+                        border: const OutlineInputBorder(),
+                      ),
+                      child: Text(
+                        DateFormat('MMM dd, yyyy').format(selectedDate),
+                        style: theme.textTheme.bodyLarge,
+                      ),
                     ),
                   ),
                 ),
@@ -429,56 +583,86 @@ class ExpenseFormContent extends StatelessWidget {
           const SizedBox(height: AppTheme.spacing3),
 
           // Section 5: HOW TO SPLIT?
-          _buildSectionHeader(context, 'HOW TO SPLIT?'),
-          SegmentedButton<SplitType>(
-            segments: const [
-              ButtonSegment(
-                value: SplitType.equal,
-                label: Text('Split Equally'),
-                icon: Icon(Icons.people),
+          _buildSectionHeader(context, context.l10n.expenseSectionSplit),
+          Builder(
+            builder: (context) => SegmentedButton<SplitType>(
+              segments: [
+                ButtonSegment(
+                  value: SplitType.equal,
+                  label: Text(context.l10n.expenseSplitTypeEqual),
+                  icon: const Icon(Icons.people),
+                ),
+                ButtonSegment(
+                  value: SplitType.weighted,
+                  label: Text(context.l10n.expenseSplitTypeWeighted),
+                  icon: const Icon(Icons.balance),
+                ),
+              ],
+              selected: {
+                selectedSplitType == SplitType.itemized
+                    ? SplitType.equal
+                    : selectedSplitType,
+              },
+              onSelectionChanged: (Set<SplitType> newSelection) {
+                onSplitTypeChanged(newSelection.first);
+              },
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing1),
+          // Itemized option as separate button
+          Builder(
+            builder: (context) => SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  debugPrint('🟣 [UI] Itemized button CLICKED');
+                  onSplitTypeChanged(SplitType.itemized);
+                },
+                icon: const Icon(Icons.receipt_long),
+                label: Text(context.l10n.expenseSplitTypeItemized),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
               ),
-              ButtonSegment(
-                value: SplitType.weighted,
-                label: Text('By Weight'),
-                icon: Icon(Icons.balance),
-              ),
-            ],
-            selected: {selectedSplitType},
-            onSelectionChanged: (Set<SplitType> newSelection) {
-              onSplitTypeChanged(newSelection.first);
-            },
+            ),
           ),
           const SizedBox(height: AppTheme.spacing2),
 
-          // Section 6: Participants
-          ParticipantSelector(
-            splitType: selectedSplitType,
-            selectedParticipants: participants,
-            onParticipantsChanged: onParticipantsChanged,
-            availableParticipants: availableParticipants,
-          ),
+          // Section 6: Participants (only for equal/weighted splits)
+          if (selectedSplitType != SplitType.itemized)
+            ParticipantSelector(
+              splitType: selectedSplitType,
+              selectedParticipants: participants,
+              onParticipantsChanged: onParticipantsChanged,
+              availableParticipants: availableParticipants,
+              showRequired: !isEditMode && participants.isEmpty,
+            ),
 
           const SizedBox(height: AppTheme.spacing3),
           const Divider(),
           const SizedBox(height: AppTheme.spacing2),
 
           // Submit button
-          CustomButton(
-            text: isEditMode ? 'Save Changes' : 'Add Expense',
-            onPressed: onSubmit,
+          Builder(
+            builder: (context) => CustomButton(
+              text: isEditMode
+                  ? context.l10n.expenseSaveChangesButton
+                  : context.l10n.expenseSaveButton,
+              onPressed: onSubmit,
+            ),
           ),
 
           // Delete button (only in edit mode)
           if (isEditMode && onDelete != null) ...[
             const SizedBox(height: AppTheme.spacing2),
-            OutlinedButton.icon(
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete),
-              label: const Text('Delete Expense'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: theme.colorScheme.error,
-                side: BorderSide(
-                  color: theme.colorScheme.error,
+            Builder(
+              builder: (context) => OutlinedButton.icon(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete),
+                label: Text(context.l10n.expenseDeleteButton),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: theme.colorScheme.error,
+                  side: BorderSide(color: theme.colorScheme.error),
                 ),
               ),
             ),

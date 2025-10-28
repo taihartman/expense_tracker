@@ -5,13 +5,14 @@ import '../../../../core/models/participant.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Summary data for a person based on settlement transfers
 class _PersonTransferSummary {
   final String userId;
-  final Decimal totalToReceive;  // Sum of transfers where user receives
-  final Decimal totalToPay;      // Sum of transfers where user pays
-  final Decimal netBalance;      // totalToReceive - totalToPay
+  final Decimal totalToReceive; // Sum of transfers where user receives
+  final Decimal totalToPay; // Sum of transfers where user pays
+  final Decimal netBalance; // totalToReceive - totalToPay
 
   _PersonTransferSummary({
     required this.userId,
@@ -91,7 +92,7 @@ class AllPeopleSummaryTable extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Everyone\'s Summary',
+              context.l10n.summaryTableTitle,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: AppTheme.spacing2),
@@ -102,11 +103,22 @@ class AllPeopleSummaryTable extends StatelessWidget {
                 headingRowColor: WidgetStateProperty.all(
                   Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
-                columns: const [
-                  DataColumn(label: Text('Person')),
-                  DataColumn(label: Text('To Receive'), numeric: true),
-                  DataColumn(label: Text('To Pay'), numeric: true),
-                  DataColumn(label: Text('Net'), numeric: true),
+                columns: [
+                  DataColumn(
+                    label: Text(context.l10n.summaryTableColumnPerson),
+                  ),
+                  DataColumn(
+                    label: Text(context.l10n.summaryTableColumnToReceive),
+                    numeric: true,
+                  ),
+                  DataColumn(
+                    label: Text(context.l10n.summaryTableColumnToPay),
+                    numeric: true,
+                  ),
+                  DataColumn(
+                    label: Text(context.l10n.summaryTableColumnNet),
+                    numeric: true,
+                  ),
                 ],
                 rows: sortedEntries.map((entry) {
                   final userId = entry.key;
@@ -119,8 +131,8 @@ class AllPeopleSummaryTable extends StatelessWidget {
                   final balanceColor = isPositive
                       ? Colors.green.shade700
                       : isNegative
-                          ? Colors.red.shade700
-                          : Theme.of(context).colorScheme.onSurface;
+                      ? Colors.red.shade700
+                      : Theme.of(context).colorScheme.onSurface;
 
                   return DataRow(
                     cells: [
@@ -168,8 +180,8 @@ class AllPeopleSummaryTable extends StatelessWidget {
                               isPositive
                                   ? Icons.arrow_upward
                                   : isNegative
-                                      ? Icons.arrow_downward
-                                      : Icons.remove,
+                                  ? Icons.arrow_downward
+                                  : Icons.remove,
                               size: 16,
                               color: balanceColor,
                             ),
@@ -200,19 +212,19 @@ class AllPeopleSummaryTable extends StatelessWidget {
                 _buildLegendItem(
                   context,
                   Icons.arrow_upward,
-                  'Will receive money',
+                  context.l10n.summaryTableLegendWillReceive,
                   Colors.green.shade700,
                 ),
                 _buildLegendItem(
                   context,
                   Icons.arrow_downward,
-                  'Needs to pay',
+                  context.l10n.summaryTableLegendNeedsToPay,
                   Colors.red.shade700,
                 ),
                 _buildLegendItem(
                   context,
                   Icons.remove,
-                  'Even',
+                  context.l10n.summaryTableLegendEven,
                   Theme.of(context).colorScheme.onSurface,
                 ),
               ],
@@ -234,10 +246,7 @@ class AllPeopleSummaryTable extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: color),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

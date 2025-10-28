@@ -7,7 +7,9 @@ import '../models/minimal_transfer_model.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
-  debugPrint('[${DateTime.now().toIso8601String()}] [SettledTransferRepository] $message');
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [SettledTransferRepository] $message',
+  );
 }
 
 /// Firestore implementation of SettledTransferRepository
@@ -17,7 +19,7 @@ class SettledTransferRepositoryImpl implements SettledTransferRepository {
   final FirestoreService _firestoreService;
 
   SettledTransferRepositoryImpl({required FirestoreService firestoreService})
-      : _firestoreService = firestoreService;
+    : _firestoreService = firestoreService;
 
   @override
   Stream<List<MinimalTransfer>> getSettledTransfers(String tripId) {
@@ -31,13 +33,13 @@ class SettledTransferRepositoryImpl implements SettledTransferRepository {
           .orderBy('settledAt', descending: true)
           .snapshots()
           .map((snapshot) {
-        final transfers = snapshot.docs
-            .map((doc) => MinimalTransferModel.fromFirestore(doc))
-            .toList();
+            final transfers = snapshot.docs
+                .map((doc) => MinimalTransferModel.fromFirestore(doc))
+                .toList();
 
-        _log('📦 Received ${transfers.length} settled transfers');
-        return transfers;
-      });
+            _log('📦 Received ${transfers.length} settled transfers');
+            return transfers;
+          });
     } catch (e) {
       _log('❌ Error watching settled transfers: $e');
       throw Exception('Failed to watch settled transfers: $e');
@@ -52,7 +54,9 @@ class SettledTransferRepositoryImpl implements SettledTransferRepository {
     String amountBase,
   ) async {
     try {
-      _log('✅ Marking transfer as settled: $fromUserId → $toUserId ($amountBase)');
+      _log(
+        '✅ Marking transfer as settled: $fromUserId → $toUserId ($amountBase)',
+      );
 
       // Create document reference with auto-generated ID
       final docRef = _firestoreService.firestore
@@ -121,9 +125,9 @@ class SettledTransferRepositoryImpl implements SettledTransferRepository {
       }
 
       // Also delete the trip document
-      batch.delete(_firestoreService.firestore
-          .collection('settledTransfers')
-          .doc(tripId));
+      batch.delete(
+        _firestoreService.firestore.collection('settledTransfers').doc(tripId),
+      );
 
       await batch.commit();
 

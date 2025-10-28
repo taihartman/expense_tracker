@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -36,7 +37,7 @@ class _TripListPageState extends State<TripListPage> {
     _log('🎨 Building TripListPage');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Trips')),
+      appBar: AppBar(title: Text(context.l10n.tripListTitle)),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
           _log('🔄 BlocBuilder rebuilding with state: ${state.runtimeType}');
@@ -67,13 +68,13 @@ class _TripListPageState extends State<TripListPage> {
           if (state is TripLoaded) {
             if (state.trips.isEmpty) {
               _log('📭 No trips to display');
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.flight_takeoff, size: 64),
-                    SizedBox(height: AppTheme.spacing2),
-                    Text('No trips yet'),
+                    const Icon(Icons.flight_takeoff, size: 64),
+                    const SizedBox(height: AppTheme.spacing2),
+                    Text(context.l10n.tripEmptyStateTitle),
                   ],
                 ),
               );
@@ -97,7 +98,7 @@ class _TripListPageState extends State<TripListPage> {
                     ),
                     title: Text(trip.name),
                     subtitle: Text(
-                      'Base: ${trip.baseCurrency.name.toUpperCase()}',
+                      '${context.l10n.tripBaseCurrencyPrefix}${trip.baseCurrency.name.toUpperCase()}',
                     ),
                     trailing: isSelected
                         ? Icon(

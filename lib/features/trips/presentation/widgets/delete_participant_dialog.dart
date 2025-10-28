@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Dialog for confirming participant deletion
 ///
@@ -29,21 +30,21 @@ class DeleteParticipantDialog extends StatelessWidget {
 
   Widget _buildConfirmationDialog(BuildContext context) {
     return AlertDialog(
-      title: const Text('Remove Participant?'),
+      title: Text(context.l10n.participantDeleteDialogTitle),
       content: Text(
-        'Are you sure you want to remove $participantName from this trip?\n\nThis action cannot be undone.',
+        context.l10n.participantDeleteDialogMessage(participantName),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.commonCancel),
         ),
         TextButton(
           onPressed: onConfirm,
           style: TextButton.styleFrom(
             foregroundColor: Theme.of(context).colorScheme.error,
           ),
-          child: const Text('Remove'),
+          child: Text(context.l10n.participantRemoveButton),
         ),
       ],
     );
@@ -59,22 +60,25 @@ class DeleteParticipantDialog extends StatelessWidget {
         color: colorScheme.error,
         size: 48,
       ),
-      title: const Text('Cannot Remove Participant'),
+      title: Text(context.l10n.participantDeleteDialogCannotRemoveTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$participantName is used in $expenseCount ${expenseCount == 1 ? 'expense' : 'expenses'} and cannot be removed.',
+            context.l10n.participantDeleteDialogCannotRemoveMessage(
+              participantName,
+              expenseCount,
+            ),
           ),
           const SizedBox(height: AppTheme.spacing2),
           Container(
             padding: const EdgeInsets.all(AppTheme.spacing2),
             decoration: BoxDecoration(
               color: Color.fromRGBO(
-                colorScheme.errorContainer.red,
-                colorScheme.errorContainer.green,
-                colorScheme.errorContainer.blue,
+                (colorScheme.errorContainer.r * 255.0).round() & 0xff,
+                (colorScheme.errorContainer.g * 255.0).round() & 0xff,
+                (colorScheme.errorContainer.b * 255.0).round() & 0xff,
                 0.3,
               ),
               borderRadius: BorderRadius.circular(8),
@@ -83,12 +87,12 @@ class DeleteParticipantDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'To remove this participant:',
+                  context.l10n.participantDeleteDialogInstructionsHeader,
                   style: theme.textTheme.labelLarge,
                 ),
                 const SizedBox(height: AppTheme.spacing1),
                 Text(
-                  '1. Delete or reassign their expenses\n2. Try removing them again',
+                  context.l10n.participantDeleteDialogInstructions,
                   style: theme.textTheme.bodyMedium,
                 ),
               ],
@@ -99,7 +103,7 @@ class DeleteParticipantDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Got It'),
+          child: Text(context.l10n.commonGotIt),
         ),
       ],
     );

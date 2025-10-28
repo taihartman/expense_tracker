@@ -4,11 +4,13 @@ import '../cubits/settlement_cubit.dart';
 import '../cubits/settlement_state.dart';
 import '../widgets/all_people_summary_table.dart';
 import '../widgets/minimal_transfers_view.dart';
+import '../widgets/person_dashboard_card.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Page displaying settlement summary with transfers
 ///
@@ -42,14 +44,14 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settlement'),
+        title: Text(context.l10n.settlementTitle),
         actions: [
           BlocBuilder<SettlementCubit, SettlementState>(
             builder: (context, state) {
               if (state is SettlementLoaded) {
                 return IconButton(
                   icon: const Icon(Icons.refresh),
-                  tooltip: 'Recompute Settlement',
+                  tooltip: context.l10n.settlementRecomputeTooltip,
                   onPressed: () {
                     context.read<SettlementCubit>().computeSettlement(
                       widget.tripId,
@@ -73,8 +75,8 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                   const SizedBox(height: AppTheme.spacing2),
                   Text(
                     state is SettlementComputing
-                        ? 'Computing settlement...'
-                        : 'Loading settlement...',
+                        ? context.l10n.settlementComputing
+                        : context.l10n.settlementLoading,
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                 ],
@@ -113,7 +115,7 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                       );
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(context.l10n.commonRetry),
                   ),
                 ],
               ),
@@ -158,7 +160,11 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                               ),
                               const SizedBox(width: AppTheme.spacing1),
                               Text(
-                                'Last updated: ${_formatTimestamp(state.summary.lastComputedAt)}',
+                                context.l10n.settlementLastUpdated(
+                                  _formatTimestamp(
+                                    state.summary.lastComputedAt,
+                                  ),
+                                ),
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
@@ -184,6 +190,44 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                         participants: participants,
                         expenseRepository: expenseRepository,
                       ),
+                      const SizedBox(height: AppTheme.spacing3),
+
+                      // Individual Dashboards (if category spending available)
+                      if (state.personCategorySpending != null &&
+                          state.personCategorySpending!.isNotEmpty) ...[
+                        Text(
+                          'Individual Dashboards',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: AppTheme.spacing2),
+                        // Build dashboard cards
+                        ...state.personCategorySpending!.entries.map((entry) {
+                          final userId = entry.key;
+                          final personSpending = entry.value;
+
+                          // Find participant
+                          try {
+                            final participant = participants.firstWhere(
+                              (p) => p.id == userId,
+                            );
+
+                            return Padding(
+                              padding: const EdgeInsets.only(
+                                bottom: AppTheme.spacing2,
+                              ),
+                              child: PersonDashboardCard(
+                                person: personSpending,
+                                participant: participant,
+                                baseCurrency: state.summary.baseCurrency,
+                              ),
+                            );
+                          } catch (e) {
+                            // Skip if participant not found
+                            return const SizedBox.shrink();
+                          }
+                        }),
+                      ],
                     ],
                   ),
                 );
@@ -205,11 +249,11 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                 ),
                 const SizedBox(height: AppTheme.spacing2),
                 Text(
-                  'Settlement',
+                  context.l10n.settlementTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: AppTheme.spacing1),
-                const Text('Loading settlement data...'),
+                Text(context.l10n.settlementLoadingData),
               ],
             ),
           );

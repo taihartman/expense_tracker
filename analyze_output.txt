@@ -1,0 +1,162 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 85.0.0 (92.0.0 available)
+  _flutterfire_internals 1.3.59 (1.3.63 available)
+  analyzer 7.7.1 (9.0.0 available)
+  bloc 8.1.4 (9.1.0 available)
+  bloc_test 9.1.7 (10.0.0 available)
+  build 3.1.0 (4.0.2 available)
+  build_resolvers 3.0.3 (3.0.4 available)
+  build_runner 2.7.1 (2.10.1 available)
+  build_runner_core 9.3.1 (9.3.2 available)
+  characters 1.4.0 (1.4.1 available)
+  cloud_firestore 5.6.12 (6.0.3 available)
+  cloud_firestore_platform_interface 6.6.12 (7.0.3 available)
+  cloud_firestore_web 4.4.12 (5.0.3 available)
+  cloud_functions 5.6.2 (6.0.3 available)
+  cloud_functions_platform_interface 5.8.2 (5.8.6 available)
+  cloud_functions_web 4.11.5 (5.0.3 available)
+  dart_style 3.1.1 (3.1.2 available)
+  decimal 2.3.3 (3.2.4 available)
+  firebase_auth 5.7.0 (6.1.1 available)
+  firebase_auth_platform_interface 7.7.3 (8.1.3 available)
+  firebase_auth_web 5.15.3 (6.0.4 available)
+  firebase_core 3.15.2 (4.2.0 available)
+  firebase_core_web 2.24.1 (3.2.0 available)
+  fl_chart 0.66.2 (1.1.1 available)
+  flutter_bloc 8.1.6 (9.1.1 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  go_router 12.1.3 (16.3.0 available)
+  lints 5.1.1 (6.0.0 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.17.0 available)
+  mockito 5.5.0 (5.5.1 available)
+  source_gen 3.1.0 (4.0.2 available)
+  test 1.26.2 (1.26.3 available)
+  test_api 0.7.6 (0.7.7 available)
+  test_core 0.6.11 (0.6.12 available)
+Got dependencies!
+35 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing expense_tracker...                                    
+
+   info • 'dart:html' is deprecated and shouldn't be used. Use package:web and dart:js_interop instead • lib/core/services/local_storage_service.dart:5:1 • deprecated_member_use
+   info • The imported package 'bloc' isn't a dependency of the importing package • lib/features/expenses/presentation/cubits/itemized_expense_cubit.dart:1:8 • depend_on_referenced_packages
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/features/expenses/presentation/cubits/itemized_expense_cubit.dart:80:16 • prefer_const_literals_to_create_immutables
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/expenses/presentation/pages/expense_form_page.dart:312:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/expenses/presentation/pages/expense_form_page.dart:315:27 • use_build_context_synchronously
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/features/expenses/presentation/pages/itemized/itemized_expense_wizard.dart:221:33 • deprecated_member_use
+   info • Parameter 'key' could be a super parameter • lib/features/expenses/presentation/pages/itemized_expense_page.dart:22:9 • use_super_parameters
+   info • Unnecessary use of 'toList' in a spread • lib/features/expenses/presentation/pages/itemized_expense_page.dart:289:16 • unnecessary_to_list_in_spreads
+   info • Missing an 'await' for the 'Future' computed by this expression • lib/features/expenses/presentation/widgets/expense_form_bottom_sheet.dart:163:40 • unawaited_futures
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/features/expenses/presentation/widgets/expense_form_bottom_sheet.dart:426:44 • use_build_context_synchronously
+warning • Unused import: 'package:rxdart/rxdart.dart' • lib/features/settlements/presentation/cubits/settlement_cubit_simplified.dart:4:8 • unused_import
+warning • Unused import: '../../domain/models/settlement_summary.dart' • lib/features/settlements/presentation/cubits/settlement_cubit_simplified.dart:6:8 • unused_import
+   info • 'red' is deprecated and shouldn't be used. Use (*.r * 255.0).round() & 0xff • lib/features/trips/presentation/pages/trip_settings_page.dart:294:25 • deprecated_member_use
+   info • 'green' is deprecated and shouldn't be used. Use (*.g * 255.0).round() & 0xff • lib/features/trips/presentation/pages/trip_settings_page.dart:295:25 • deprecated_member_use
+   info • 'blue' is deprecated and shouldn't be used. Use (*.b * 255.0).round() & 0xff • lib/features/trips/presentation/pages/trip_settings_page.dart:296:25 • deprecated_member_use
+   info • 'red' is deprecated and shouldn't be used. Use (*.r * 255.0).round() & 0xff • lib/features/trips/presentation/widgets/delete_participant_dialog.dart:79:44 • deprecated_member_use
+   info • 'green' is deprecated and shouldn't be used. Use (*.g * 255.0).round() & 0xff • lib/features/trips/presentation/widgets/delete_participant_dialog.dart:80:44 • deprecated_member_use
+   info • 'blue' is deprecated and shouldn't be used. Use (*.b * 255.0).round() & 0xff • lib/features/trips/presentation/widgets/delete_participant_dialog.dart:81:44 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/main.dart:37:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:38:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:39:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:40:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:41:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:43:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:44:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:45:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:47:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:48:3 • avoid_print
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/expense_model_itemized_test.dart:64:24 • prefer_const_literals_to_create_immutables
+  error • The constructor being called isn't a const constructor • test/unit/expenses/data/models/expense_model_itemized_test.dart:366:18 • const_with_non_const
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/data/models/expense_model_itemized_test.dart:426:29 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/expense_model_itemized_test.dart:428:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/data/models/expense_model_itemized_test.dart:474:27 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/expense_model_itemized_test.dart:476:24 • prefer_const_literals_to_create_immutables
+  error • The constructor being called isn't a const constructor • test/unit/expenses/data/models/expense_model_itemized_test.dart:555:20 • const_with_non_const
+  error • The constructor being called isn't a const constructor • test/unit/expenses/data/models/expense_model_itemized_test.dart:559:20 • const_with_non_const
+warning • The class 'DocumentSnapshot' shouldn't be extended, mixed in, or implemented because it's sealed • test/unit/expenses/data/models/expense_model_itemized_test.dart:679:1 • subtype_of_sealed_class
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:67:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/data/models/itemized_models_serialization_test.dart:124:21 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:124:70 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:215:17 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:216:22 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:248:17 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:249:22 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:274:15 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:275:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:311:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:333:15 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:560:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:591:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/data/models/itemized_models_serialization_test.dart:619:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:76:58 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:76:73 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:151:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:196:57 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:196:72 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:207:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:219:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:536:60 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:536:75 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:538:60 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:538:75 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:629:28 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:632:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:638:28 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/expense_test.dart:641:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:28:58 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:28:73 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:42:58 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:42:73 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:70:22 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:100:17 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:122:57 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:122:72 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:196:22 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:228:17 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:283:57 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:283:72 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:312:22 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:341:17 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:397:58 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:397:73 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:448:57 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:448:72 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:468:57 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:468:72 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:494:76 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:520:15 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/domain/models/extras_test.dart:539:22 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:539:57 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:539:72 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:557:55 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/extras_test.dart:557:70 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/domain/models/item_assignment_test.dart:22:17 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:22:66 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:31:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:46:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/domain/models/item_assignment_test.dart:60:17 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:62:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:72:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:87:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:100:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:113:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:127:20 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/domain/models/item_assignment_test.dart:139:27 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:141:16 • prefer_const_literals_to_create_immutables
+   info • Use 'const' with the constructor to improve performance • test/unit/expenses/domain/models/item_assignment_test.dart:144:27 • prefer_const_constructors
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/item_assignment_test.dart:146:16 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/line_item_test.dart:305:16 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:71:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:95:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:160:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:181:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:348:18 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:470:26 • prefer_const_literals_to_create_immutables
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • test/unit/expenses/domain/models/participant_breakdown_test.dart:479:26 • prefer_const_literals_to_create_immutables
+   info • Function literals shouldn't be passed to 'forEach' • test/unit/expenses/domain/services/rounding_service_test.dart:122:23 • avoid_function_literals_in_foreach_calls
+   info • Function literals shouldn't be passed to 'forEach' • test/unit/expenses/domain/services/rounding_service_test.dart:502:23 • avoid_function_literals_in_foreach_calls
+
+118 issues found. (ran in 2.5s)

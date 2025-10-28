@@ -17,5 +17,10 @@ class SettlementSummary extends Equatable {
   });
 
   @override
-  List<Object?> get props => [tripId, baseCurrency, personSummaries, lastComputedAt];
+  List<Object?> get props => [
+    tripId,
+    baseCurrency,
+    personSummaries,
+    lastComputedAt,
+  ];
 }

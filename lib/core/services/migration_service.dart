@@ -9,7 +9,9 @@ import '../../features/expenses/data/models/expense_model.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
-  debugPrint('[${DateTime.now().toIso8601String()}] [MigrationService] $message');
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [MigrationService] $message',
+  );
 }
 
 /// Service to handle data migrations
@@ -33,8 +35,8 @@ class MigrationService {
   MigrationService({
     required FirestoreService firestoreService,
     required SharedPreferences prefs,
-  })  : _firestoreService = firestoreService,
-        _prefs = prefs;
+  }) : _firestoreService = firestoreService,
+       _prefs = prefs;
 
   /// Run all necessary migrations
   Future<void> runMigrations() async {
@@ -126,7 +128,9 @@ class MigrationService {
             }
           }
 
-          _log('  🔍 Found ${uniqueExpenseParticipants.length} unique participant IDs in expenses');
+          _log(
+            '  🔍 Found ${uniqueExpenseParticipants.length} unique participant IDs in expenses',
+          );
 
           // Add missing participants from expenses
           for (final participantId in uniqueExpenseParticipants) {
@@ -136,11 +140,13 @@ class MigrationService {
               // Create participant with ID as name (best we can do)
               // The ID is often a lowercase version of the name
               final name = _capitalizeFirstLetter(participantId);
-              participants.add(Participant(
-                id: participantId,
-                name: name,
-                createdAt: DateTime.now(),
-              ));
+              participants.add(
+                Participant(
+                  id: participantId,
+                  name: name,
+                  createdAt: DateTime.now(),
+                ),
+              );
               participantIds.add(participantId);
               needsUpdate = true;
             }
@@ -167,7 +173,9 @@ class MigrationService {
         }
       }
 
-      _log('🎉 Migration v1 complete: $migratedCount trips migrated, $skippedCount skipped');
+      _log(
+        '🎉 Migration v1 complete: $migratedCount trips migrated, $skippedCount skipped',
+      );
     } catch (e) {
       _log('❌ Fatal error in migration v1: $e');
       rethrow;

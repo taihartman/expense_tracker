@@ -8,6 +8,7 @@ import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Bottom sheet showing detailed breakdown of a transfer
 ///
@@ -79,7 +80,7 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Transfer Breakdown',
+                      context.l10n.transferBreakdownTitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -124,7 +125,9 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.all(AppTheme.spacing3),
                           child: Text(
-                            'Error loading breakdown: ${snapshot.error}',
+                            context.l10n.transferBreakdownLoadError(
+                              snapshot.error.toString(),
+                            ),
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.error,
                             ),
@@ -136,7 +139,9 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
 
                     final breakdown = snapshot.data;
                     if (breakdown == null) {
-                      return const Center(child: Text('No data available'));
+                      return Center(
+                        child: Text(context.l10n.transferBreakdownNoData),
+                      );
                     }
 
                     return _buildBreakdownContent(
@@ -184,7 +189,7 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(AppTheme.spacing3),
           child: Text(
-            'No expenses found that contribute to this transfer.',
+            context.l10n.transferBreakdownNoExpenses,
             style: Theme.of(context).textTheme.bodyLarge,
             textAlign: TextAlign.center,
           ),
@@ -205,7 +210,7 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Summary',
+                  context.l10n.transferBreakdownSummaryTitle,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -213,14 +218,19 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: AppTheme.spacing1),
                 Text(
-                  'This shows all expenses that created debts between $fromName and $toName. The amounts shown are the exact debts from each expense, after pairwise netting.',
+                  context.l10n.transferBreakdownSummaryDescription(
+                    fromName,
+                    toName,
+                  ),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
                 ),
                 const SizedBox(height: AppTheme.spacing1),
                 Text(
-                  '${relevantBreakdowns.length} expense${relevantBreakdowns.length == 1 ? '' : 's'} between these two people',
+                  context.l10n.transferBreakdownExpenseCount(
+                    relevantBreakdowns.length,
+                  ),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -235,7 +245,7 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
 
         // Expense list
         Text(
-          'Contributing Expenses',
+          context.l10n.transferBreakdownContributingExpenses,
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
@@ -274,14 +284,18 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        expense.description ?? 'No description',
+                        expense.description ??
+                            context.l10n.transferBreakdownNoDescription,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Paid by $payerName • ${_formatDate(expense.date)}',
+                        context.l10n.transferBreakdownExpenseMetadata(
+                          payerName,
+                          _formatDate(expense.date),
+                        ),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -306,18 +320,18 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
             _buildPersonRow(
               context,
               fromName,
-              'Paid',
+              context.l10n.transferBreakdownPaidLabel,
               expenseBreakdown.fromPaid,
-              'Owes',
+              context.l10n.transferBreakdownOwesLabel,
               expenseBreakdown.fromOwes,
             ),
             const SizedBox(height: AppTheme.spacing1),
             _buildPersonRow(
               context,
               toName,
-              'Paid',
+              context.l10n.transferBreakdownPaidLabel,
               expenseBreakdown.toPaid,
-              'Owes',
+              context.l10n.transferBreakdownOwesLabel,
               expenseBreakdown.toOwes,
             ),
 

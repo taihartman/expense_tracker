@@ -67,7 +67,8 @@ class Trip {
       baseCurrency: baseCurrency ?? this.baseCurrency,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      lastExpenseModifiedAt: lastExpenseModifiedAt ?? this.lastExpenseModifiedAt,
+      lastExpenseModifiedAt:
+          lastExpenseModifiedAt ?? this.lastExpenseModifiedAt,
       participants: participants ?? this.participants,
     );
   }
@@ -75,9 +76,7 @@ class Trip {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Trip &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
+      other is Trip && runtimeType == other.runtimeType && id == other.id;
 
   @override
   int get hashCode => id.hashCode;

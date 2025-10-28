@@ -3,15 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../domain/models/minimal_transfer.dart';
+import '../../domain/models/category_spending.dart';
 import '../../domain/repositories/settlement_repository.dart';
 import '../../domain/repositories/settled_transfer_repository.dart';
+import '../../domain/services/settlement_calculator.dart';
 import 'settlement_state.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
-  debugPrint('[${DateTime.now().toIso8601String()}] [SettlementCubit] $message');
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [SettlementCubit] $message',
+  );
 }
 
 /// Settlement Cubit using Pure Derived State Pattern
@@ -29,6 +34,8 @@ class SettlementCubit extends Cubit<SettlementState> {
   final ExpenseRepository _expenseRepository;
   final TripRepository _tripRepository;
   final SettledTransferRepository _settledTransferRepository;
+  final CategoryRepository _categoryRepository;
+  final SettlementCalculator _settlementCalculator;
 
   StreamSubscription? _combinedSubscription;
   String? _currentTripId;
@@ -38,14 +45,19 @@ class SettlementCubit extends Cubit<SettlementState> {
     required ExpenseRepository expenseRepository,
     required TripRepository tripRepository,
     required SettledTransferRepository settledTransferRepository,
-  })  : _settlementRepository = settlementRepository,
-        _expenseRepository = expenseRepository,
-        _tripRepository = tripRepository,
-        _settledTransferRepository = settledTransferRepository,
-        super(const SettlementInitial());
+    required CategoryRepository categoryRepository,
+    SettlementCalculator? settlementCalculator,
+  }) : _settlementRepository = settlementRepository,
+       _expenseRepository = expenseRepository,
+       _tripRepository = tripRepository,
+       _settledTransferRepository = settledTransferRepository,
+       _categoryRepository = categoryRepository,
+       _settlementCalculator = settlementCalculator ?? SettlementCalculator(),
+       super(const SettlementInitial());
 
   /// Separate transfers into active and settled lists
-  ({List<MinimalTransfer> active, List<MinimalTransfer> settled}) _separateTransfers(
+  ({List<MinimalTransfer> active, List<MinimalTransfer> settled})
+  _separateTransfers(
     List<MinimalTransfer> calculatedTransfers,
     List<MinimalTransfer> settledTransfers,
   ) {
@@ -53,9 +65,11 @@ class SettlementCubit extends Cubit<SettlementState> {
 
     for (final transfer in calculatedTransfers) {
       // Check if this transfer matches any settled transfer
-      final isSettled = settledTransfers.any((settled) =>
-          settled.fromUserId == transfer.fromUserId &&
-          settled.toUserId == transfer.toUserId);
+      final isSettled = settledTransfers.any(
+        (settled) =>
+            settled.fromUserId == transfer.fromUserId &&
+            settled.toUserId == transfer.toUserId,
+      );
 
       if (!isSettled) {
         active.add(transfer);
@@ -87,50 +101,92 @@ class SettlementCubit extends Cubit<SettlementState> {
 
       // Combine expense stream with settled transfer stream
       // Recalculate whenever EITHER changes
-      _combinedSubscription = CombineLatestStream.combine2(
-        _expenseRepository.getExpensesByTrip(tripId),
-        _settledTransferRepository.getSettledTransfers(tripId),
-        (expenses, settledTransfers) => (expenses: expenses, settled: settledTransfers),
-      ).listen(
-        (data) async {
-          _log('📦 Received ${data.expenses.length} expenses, ${data.settled.length} settled transfers');
+      _combinedSubscription =
+          CombineLatestStream.combine2(
+            _expenseRepository.getExpensesByTrip(tripId),
+            _settledTransferRepository.getSettledTransfers(tripId),
+            (expenses, settledTransfers) =>
+                (expenses: expenses, settled: settledTransfers),
+          ).listen(
+            (data) async {
+              _log(
+                '📦 Received ${data.expenses.length} expenses, ${data.settled.length} settled transfers',
+              );
 
-          try {
-            // Calculate settlement from current expenses
-            final summary = await _settlementRepository.computeSettlement(tripId);
+              try {
+                // Calculate settlement from current expenses
+                final summary = await _settlementRepository.computeSettlement(
+                  tripId,
+                );
 
-            _log('✅ Settlement calculated: ${summary.personSummaries.length} people');
+                _log(
+                  '✅ Settlement calculated: ${summary.personSummaries.length} people',
+                );
 
-            // Get calculated transfers
-            final calculatedTransfers = await _settlementRepository
-                .getMinimalTransfers(tripId)
-                .first;
+                // Get calculated transfers
+                final calculatedTransfers = await _settlementRepository
+                    .getMinimalTransfers(tripId)
+                    .first;
 
-            // Separate active from settled
-            final separated = _separateTransfers(calculatedTransfers, data.settled);
-            _log('📊 ${separated.active.length} active, ${separated.settled.length} settled');
+                // Separate active from settled
+                final separated = _separateTransfers(
+                  calculatedTransfers,
+                  data.settled,
+                );
+                _log(
+                  '📊 ${separated.active.length} active, ${separated.settled.length} settled',
+                );
 
-            if (!isClosed) {
-              emit(SettlementLoaded(
-                summary: summary,
-                activeTransfers: separated.active,
-                settledTransfers: separated.settled,
-              ));
-            }
-          } catch (e) {
-            _log('❌ Error calculating settlement: $e');
-            if (!isClosed) {
-              emit(SettlementError('Failed to calculate settlement: ${e.toString()}'));
-            }
-          }
-        },
-        onError: (error) {
-          _log('❌ Error in combined stream: $error');
-          if (!isClosed) {
-            emit(SettlementError('Failed to load data: ${error.toString()}'));
-          }
-        },
-      );
+                // Calculate category spending breakdown
+                Map<String, PersonCategorySpending>? categorySpending;
+                try {
+                  final categories = await _categoryRepository
+                      .getCategoriesByTrip(tripId)
+                      .first;
+                  categorySpending = _settlementCalculator
+                      .calculatePersonCategorySpending(
+                        expenses: data.expenses,
+                        categories: categories,
+                        baseCurrency: trip.baseCurrency,
+                      );
+                  _log(
+                    '✅ Category spending calculated for ${categorySpending.length} people',
+                  );
+                } catch (e) {
+                  _log('⚠️ Failed to calculate category spending: $e');
+                  // Continue without category spending if it fails
+                }
+
+                if (!isClosed) {
+                  emit(
+                    SettlementLoaded(
+                      summary: summary,
+                      activeTransfers: separated.active,
+                      settledTransfers: separated.settled,
+                      personCategorySpending: categorySpending,
+                    ),
+                  );
+                }
+              } catch (e) {
+                _log('❌ Error calculating settlement: $e');
+                if (!isClosed) {
+                  emit(
+                    SettlementError(
+                      'Failed to calculate settlement: ${e.toString()}',
+                    ),
+                  );
+                }
+              }
+            },
+            onError: (error) {
+              _log('❌ Error in combined stream: $error');
+              if (!isClosed) {
+                emit(
+                  SettlementError('Failed to load data: ${error.toString()}'),
+                );
+              }
+            },
+          );
     } catch (e) {
       _log('❌ Error in loadSettlement: $e');
       if (!isClosed) {
@@ -154,10 +210,14 @@ class SettlementCubit extends Cubit<SettlementState> {
       }
 
       // Find the transfer to settle
-      final transfer = currentState.activeTransfers
-          .firstWhere((t) => t.id == transferId, orElse: () => throw Exception('Transfer not found'));
+      final transfer = currentState.activeTransfers.firstWhere(
+        (t) => t.id == transferId,
+        orElse: () => throw Exception('Transfer not found'),
+      );
 
-      _log('✅ Marking transfer as settled: ${transfer.fromUserId} → ${transfer.toUserId} (${transfer.amountBase})');
+      _log(
+        '✅ Marking transfer as settled: ${transfer.fromUserId} → ${transfer.toUserId} (${transfer.amountBase})',
+      );
 
       await _settledTransferRepository.markTransferAsSettled(
         _currentTripId!,
@@ -171,7 +231,11 @@ class SettlementCubit extends Cubit<SettlementState> {
     } catch (e) {
       _log('❌ Error marking transfer as settled: $e');
       if (!isClosed) {
-        emit(SettlementError('Failed to mark transfer as settled: ${e.toString()}'));
+        emit(
+          SettlementError(
+            'Failed to mark transfer as settled: ${e.toString()}',
+          ),
+        );
       }
     }
   }

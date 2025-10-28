@@ -13,7 +13,9 @@ import '../models/minimal_transfer_model.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
-  debugPrint('[${DateTime.now().toIso8601String()}] [SettlementRepository] $message');
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [SettlementRepository] $message',
+  );
 }
 
 /// Firestore implementation of SettlementRepository
@@ -31,10 +33,10 @@ class SettlementRepositoryImpl implements SettlementRepository {
     required ExpenseRepository expenseRepository,
     required TripRepository tripRepository,
     SettlementCalculator? calculator,
-  })  : _firestoreService = firestoreService,
-        _expenseRepository = expenseRepository,
-        _tripRepository = tripRepository,
-        _calculator = calculator ?? SettlementCalculator();
+  }) : _firestoreService = firestoreService,
+       _expenseRepository = expenseRepository,
+       _tripRepository = tripRepository,
+       _calculator = calculator ?? SettlementCalculator();
 
   /// Apply adjustments to person summaries based on settled transfers
   ///
@@ -99,10 +101,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
   @override
   Stream<SettlementSummary?> watchSettlementSummary(String tripId) {
     try {
-      return _firestoreService.settlements
-          .doc(tripId)
-          .snapshots()
-          .map((doc) {
+      return _firestoreService.settlements.doc(tripId).snapshots().map((doc) {
         if (!doc.exists) {
           return null;
         }
@@ -122,10 +121,10 @@ class SettlementRepositoryImpl implements SettlementRepository {
           .orderBy('amountBase', descending: true)
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => MinimalTransferModel.fromFirestore(doc))
-            .toList();
-      });
+            return snapshot.docs
+                .map((doc) => MinimalTransferModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       throw Exception('Failed to get minimal transfers: $e');
     }
@@ -144,9 +143,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
       _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
 
       // Get all expenses for the trip (await first value from stream)
-      final expenses = await _expenseRepository
-          .getExpensesByTrip(tripId)
-          .first;
+      final expenses = await _expenseRepository.getExpensesByTrip(tripId).first;
 
       _log('📦 Retrieved ${expenses.length} expenses from Firestore');
 
@@ -168,25 +165,30 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
       // Build list of settled transfers to apply as adjustments
       final settledTransfersToApply = <MinimalTransfer>[];
-      final settledMap = <String, ({bool isSettled, DateTime? settledAt, })>{};
+      final settledMap = <String, ({bool isSettled, DateTime? settledAt})>{};
 
       for (final doc in existingTransfers.docs) {
         final existingTransfer = MinimalTransferModel.fromFirestore(doc);
         if (existingTransfer.isSettled) {
           settledTransfersToApply.add(existingTransfer);
-          final key = '${existingTransfer.fromUserId}-${existingTransfer.toUserId}';
+          final key =
+              '${existingTransfer.fromUserId}-${existingTransfer.toUserId}';
           settledMap[key] = (
             isSettled: existingTransfer.isSettled,
             settledAt: existingTransfer.settledAt,
           );
-          _log('✅ Settled transfer found: ${existingTransfer.fromUserId} -> ${existingTransfer.toUserId} (${existingTransfer.amountBase})');
+          _log(
+            '✅ Settled transfer found: ${existingTransfer.fromUserId} -> ${existingTransfer.toUserId} (${existingTransfer.amountBase})',
+          );
         }
       }
 
       // Apply adjustments to person summaries based on settled transfers BEFORE calculating new transfers
       _log('\n=== APPLYING SETTLED TRANSFER ADJUSTMENTS ===');
       if (settledTransfersToApply.isNotEmpty) {
-        _log('Applying ${settledTransfersToApply.length} settled transfer adjustments');
+        _log(
+          'Applying ${settledTransfersToApply.length} settled transfer adjustments',
+        );
         for (final t in settledTransfersToApply) {
           _log('  ${t.fromUserId} -> ${t.toUserId}: ${t.amountBase}');
         }
@@ -219,8 +221,13 @@ class SettlementRepositoryImpl implements SettlementRepository {
       final settledAmounts = <String, ({Decimal amount, DateTime settledAt})>{};
       for (final settled in settledTransfersToApply) {
         final key = '${settled.fromUserId}-${settled.toUserId}';
-        settledAmounts[key] = (amount: settled.amountBase, settledAt: settled.settledAt!);
-        _log('  Settled: ${settled.fromUserId} -> ${settled.toUserId}: ${settled.amountBase}');
+        settledAmounts[key] = (
+          amount: settled.amountBase,
+          settledAt: settled.settledAt!,
+        );
+        _log(
+          '  Settled: ${settled.fromUserId} -> ${settled.toUserId}: ${settled.amountBase}',
+        );
       }
 
       for (final transfer in rawTransfers) {
@@ -230,34 +237,40 @@ class SettlementRepositoryImpl implements SettlementRepository {
         if (settledInfo != null) {
           // Subtract settled amount from raw debt
           final remainingAmount = transfer.amountBase - settledInfo.amount;
-          _log('  ${transfer.fromUserId} -> ${transfer.toUserId}: ${transfer.amountBase} - ${settledInfo.amount} = $remainingAmount');
+          _log(
+            '  ${transfer.fromUserId} -> ${transfer.toUserId}: ${transfer.amountBase} - ${settledInfo.amount} = $remainingAmount',
+          );
 
           if (remainingAmount > Decimal.parse('0.01')) {
             // Still have remaining debt
-            transfersWithSettledStatus.add(MinimalTransfer(
-              id: '',
-              tripId: transfer.tripId,
-              fromUserId: transfer.fromUserId,
-              toUserId: transfer.toUserId,
-              amountBase: remainingAmount,
-              computedAt: transfer.computedAt,
-              isSettled: false, // Remaining debt is not settled
-              settledAt: null,
-            ));
+            transfersWithSettledStatus.add(
+              MinimalTransfer(
+                id: '',
+                tripId: transfer.tripId,
+                fromUserId: transfer.fromUserId,
+                toUserId: transfer.toUserId,
+                amountBase: remainingAmount,
+                computedAt: transfer.computedAt,
+                isSettled: false, // Remaining debt is not settled
+                settledAt: null,
+              ),
+            );
           }
           // If remainingAmount <= 0, the debt is fully settled, don't add a transfer
         } else {
           // No settled amount, use full raw amount
-          transfersWithSettledStatus.add(MinimalTransfer(
-            id: '',
-            tripId: transfer.tripId,
-            fromUserId: transfer.fromUserId,
-            toUserId: transfer.toUserId,
-            amountBase: transfer.amountBase,
-            computedAt: transfer.computedAt,
-            isSettled: false,
-            settledAt: null,
-          ));
+          transfersWithSettledStatus.add(
+            MinimalTransfer(
+              id: '',
+              tripId: transfer.tripId,
+              fromUserId: transfer.fromUserId,
+              toUserId: transfer.toUserId,
+              amountBase: transfer.amountBase,
+              computedAt: transfer.computedAt,
+              isSettled: false,
+              settledAt: null,
+            ),
+          );
         }
       }
 
@@ -361,10 +374,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
           .doc(tripId)
           .collection('transfers')
           .doc(transferId)
-          .update({
-        'isSettled': true,
-        'settledAt': _firestoreService.now,
-      });
+          .update({'isSettled': true, 'settledAt': _firestoreService.now});
 
       // Fetch the transfer to get its details (needed for summary adjustment)
       final transferDoc = await _firestoreService.settlements
@@ -380,7 +390,9 @@ class SettlementRepositoryImpl implements SettlementRepository {
       final transfer = MinimalTransferModel.fromFirestore(transferDoc);
 
       // Fetch current settlement summary
-      final settlementDoc = await _firestoreService.settlements.doc(tripId).get();
+      final settlementDoc = await _firestoreService.settlements
+          .doc(tripId)
+          .get();
 
       if (!settlementDoc.exists) {
         throw Exception('Settlement not found');

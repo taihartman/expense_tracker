@@ -14,11 +14,7 @@ class Participant {
   /// When this participant was added (for per-trip participants)
   final DateTime? createdAt;
 
-  const Participant({
-    required this.id,
-    required this.name,
-    this.createdAt,
-  });
+  const Participant({required this.id, required this.name, this.createdAt});
 
   /// Create a participant from a name, auto-generating the ID
   ///
@@ -38,10 +34,10 @@ class Participant {
 
   /// Generate a participant ID from a name
   static String _generateId(String name) {
-    final cleaned = name
-        .toLowerCase()
-        .trim()
-        .replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final cleaned = name.toLowerCase().trim().replaceAll(
+      RegExp(r'[^a-z0-9]'),
+      '',
+    );
 
     if (cleaned.isEmpty) {
       // Fallback for names with no alphanumeric characters
@@ -52,11 +48,7 @@ class Participant {
   }
 
   /// Create a copy with updated fields
-  Participant copyWith({
-    String? id,
-    String? name,
-    DateTime? createdAt,
-  }) {
+  Participant copyWith({String? id, String? name, DateTime? createdAt}) {
     return Participant(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -95,5 +87,6 @@ class Participant {
   int get hashCode => id.hashCode;
 
   @override
-  String toString() => 'Participant(id: $id, name: $name, createdAt: $createdAt)';
+  String toString() =>
+      'Participant(id: $id, name: $name, createdAt: $createdAt)';
 }

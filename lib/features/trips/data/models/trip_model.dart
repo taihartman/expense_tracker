@@ -28,14 +28,18 @@ class TripModel {
     // Parse participants array (defaults to empty list if not present for backward compatibility)
     final participantsList = data['participants'] as List<dynamic>?;
     final participants = participantsList != null
-        ? List<Participant>.from(participantsList
-            .map((p) => Participant.fromJson(p as Map<String, dynamic>)))
+        ? List<Participant>.from(
+            participantsList.map(
+              (p) => Participant.fromJson(p as Map<String, dynamic>),
+            ),
+          )
         : <Participant>[];
 
     return Trip(
       id: doc.id,
       name: data['name'] as String,
-      baseCurrency: CurrencyCode.fromString(data['baseCurrency'] as String) ??
+      baseCurrency:
+          CurrencyCode.fromString(data['baseCurrency'] as String) ??
           CurrencyCode.usd,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),

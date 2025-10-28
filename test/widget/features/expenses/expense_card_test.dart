@@ -33,12 +33,7 @@ void main() {
         description: 'Lunch at restaurant',
         categoryId: 'meals',
         splitType: SplitType.equal,
-        participants: {
-          'tai': 1,
-          'khiet': 1,
-          'bob': 1,
-          'ethan': 1,
-        },
+        participants: {'tai': 1, 'khiet': 1, 'bob': 1, 'ethan': 1},
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -53,11 +48,7 @@ void main() {
         description: 'Hotel accommodation',
         categoryId: 'accommodation',
         splitType: SplitType.weighted,
-        participants: {
-          'tai': 2,
-          'khiet': 1,
-          'bob': 1,
-        },
+        participants: {'tai': 2, 'khiet': 1, 'bob': 1},
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -72,11 +63,7 @@ void main() {
         description: 'Taxi fare',
         categoryId: 'transport',
         splitType: SplitType.equal,
-        participants: {
-          'tai': 1,
-          'khiet': 1,
-          'bob': 1,
-        },
+        participants: {'tai': 1, 'khiet': 1, 'bob': 1},
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -85,16 +72,14 @@ void main() {
     Widget createWidgetUnderTest(Expense expense) {
       return MaterialApp(
         home: Scaffold(
-          body: ExpenseCard(
-            expense: expense,
-            participants: testParticipants,
-          ),
+          body: ExpenseCard(expense: expense, participants: testParticipants),
         ),
       );
     }
 
-    testWidgets('displays expense amount with currency symbol',
-        (WidgetTester tester) async {
+    testWidgets('displays expense amount with currency symbol', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -102,8 +87,9 @@ void main() {
       expect(find.text('\$100.00'), findsOneWidget);
     });
 
-    testWidgets('displays VND amount with no decimal places',
-        (WidgetTester tester) async {
+    testWidgets('displays VND amount with no decimal places', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseVND));
 
@@ -111,8 +97,7 @@ void main() {
       expect(find.text('₫500,000'), findsOneWidget);
     });
 
-    testWidgets('displays expense description',
-        (WidgetTester tester) async {
+    testWidgets('displays expense description', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -133,14 +118,15 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
       // Assert
-      final expectedDate = DateFormat('MMM dd, yyyy').format(
-        DateTime(2025, 10, 21),
-      );
+      final expectedDate = DateFormat(
+        'MMM dd, yyyy',
+      ).format(DateTime(2025, 10, 21));
       expect(find.text(expectedDate), findsOneWidget);
     });
 
-    testWidgets('displays split type for equal split',
-        (WidgetTester tester) async {
+    testWidgets('displays split type for equal split', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -148,8 +134,9 @@ void main() {
       expect(find.text('Equal split'), findsOneWidget);
     });
 
-    testWidgets('displays split type for weighted split',
-        (WidgetTester tester) async {
+    testWidgets('displays split type for weighted split', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseWeightedSplit));
 
@@ -157,8 +144,9 @@ void main() {
       expect(find.text('Weighted split'), findsOneWidget);
     });
 
-    testWidgets('displays participant count for equal split',
-        (WidgetTester tester) async {
+    testWidgets('displays participant count for equal split', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -166,8 +154,9 @@ void main() {
       expect(find.text('4 participants'), findsOneWidget);
     });
 
-    testWidgets('displays participant count for weighted split',
-        (WidgetTester tester) async {
+    testWidgets('displays participant count for weighted split', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseWeightedSplit));
 
@@ -175,8 +164,9 @@ void main() {
       expect(find.text('3 participants'), findsOneWidget);
     });
 
-    testWidgets('displays category icon if available',
-        (WidgetTester tester) async {
+    testWidgets('displays category icon if available', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -184,8 +174,9 @@ void main() {
       expect(find.byType(Icon), findsAtLeastNWidgets(1));
     });
 
-    testWidgets('displays share amount for equal split',
-        (WidgetTester tester) async {
+    testWidgets('displays share amount for equal split', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -217,8 +208,9 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('displays all participant names in expanded view',
-        (WidgetTester tester) async {
+    testWidgets('displays all participant names in expanded view', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -233,8 +225,9 @@ void main() {
       expect(find.text('Ethan'), findsOneWidget);
     });
 
-    testWidgets('displays individual shares in expanded view',
-        (WidgetTester tester) async {
+    testWidgets('displays individual shares in expanded view', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -246,8 +239,9 @@ void main() {
       expect(find.text('\$25.00'), findsNWidgets(4));
     });
 
-    testWidgets('displays weighted shares correctly in expanded view',
-        (WidgetTester tester) async {
+    testWidgets('displays weighted shares correctly in expanded view', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseWeightedSplit));
 
@@ -260,8 +254,9 @@ void main() {
       expect(find.text('\$50.00'), findsNWidgets(2)); // Khiet and Bob
     });
 
-    testWidgets('card has elevation and rounded corners',
-        (WidgetTester tester) async {
+    testWidgets('card has elevation and rounded corners', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 
@@ -271,8 +266,7 @@ void main() {
       expect(card.shape, isA<RoundedRectangleBorder>());
     });
 
-    testWidgets('displays currency code as badge',
-        (WidgetTester tester) async {
+    testWidgets('displays currency code as badge', (WidgetTester tester) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseVND));
 
@@ -280,8 +274,9 @@ void main() {
       expect(find.text('VND'), findsOneWidget);
     });
 
-    testWidgets('highlights payer in participant list',
-        (WidgetTester tester) async {
+    testWidgets('highlights payer in participant list', (
+      WidgetTester tester,
+    ) async {
       // Arrange & Act
       await tester.pumpWidget(createWidgetUnderTest(testExpenseEqualSplit));
 

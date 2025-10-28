@@ -23,7 +23,14 @@
       "Bash(fi)",
       "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_84MUDk/**)",
       "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_PWssmo/**)",
-      "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_hdTumD/**)"
+      "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_hdTumD/**)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "SlashCommand(/speckit.plan)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)",
+      "Bash(.specify/scripts/bash/update-feature-docs.sh:*)",
+      "SlashCommand(/docs.log \"Set up comprehensive localization infrastructure with Flutter l10n system. Created app_en.arb with 250+ extracted strings organized by category (common UI, validation, trips, expenses, settlements). Added l10n.yaml config, helper extensions, and updated main.dart with localization delegates. Updated CLAUDE.md with detailed localization guidelines and best practices.\")",
+      "Bash(dart format:*)"
     ],
     "deny": [],
     "ask": []

@@ -93,13 +93,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('99.99'),
           splitType: SplitType.equal,
-          participants: {
-            'tai': 1,
-            'khiet': 1,
-            'bob': 1,
-            'ethan': 1,
-            'ryan': 1,
-          },
+          participants: {'tai': 1, 'khiet': 1, 'bob': 1, 'ethan': 1, 'ryan': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -111,8 +105,11 @@ void main() {
         final sum = shares.values.fold(Decimal.zero, (a, b) => a + b);
         // Sum should be within 0.05 of original amount (allow for rounding)
         final difference = (sum - expense.amount).abs();
-        expect(difference <= Decimal.parse('0.05'), isTrue,
-            reason: 'Sum $sum should be close to ${expense.amount}');
+        expect(
+          difference <= Decimal.parse('0.05'),
+          isTrue,
+          reason: 'Sum $sum should be close to ${expense.amount}',
+        );
       });
     });
 
@@ -185,11 +182,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('123.45'),
           splitType: SplitType.weighted,
-          participants: {
-            'tai': 3,
-            'khiet': 2,
-            'bob': 1,
-          },
+          participants: {'tai': 3, 'khiet': 2, 'bob': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -201,8 +194,11 @@ void main() {
         final sum = shares.values.fold(Decimal.zero, (a, b) => a + b);
         // Sum should be within 0.05 of original amount
         final difference = (sum - expense.amount).abs();
-        expect(difference <= Decimal.parse('0.05'), isTrue,
-            reason: 'Sum $sum should be close to ${expense.amount}');
+        expect(
+          difference <= Decimal.parse('0.05'),
+          isTrue,
+          reason: 'Sum $sum should be close to ${expense.amount}',
+        );
       });
     });
   });

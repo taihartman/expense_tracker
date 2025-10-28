@@ -10,9 +10,9 @@ void main() {
     final localStorageService = await LocalStorageService.init();
 
     // Build our app and trigger a frame.
-    await tester.pumpWidget(ExpenseTrackerApp(
-      localStorageService: localStorageService,
-    ));
+    await tester.pumpWidget(
+      ExpenseTrackerApp(localStorageService: localStorageService),
+    );
 
     // Verify app builds successfully
     expect(find.byType(MaterialApp), findsOneWidget);

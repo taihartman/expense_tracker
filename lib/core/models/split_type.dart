@@ -1,17 +1,31 @@
+import 'package:flutter/widgets.dart';
+import '../l10n/l10n_extensions.dart';
+
 /// How an expense should be split among participants
 enum SplitType {
   /// Divide evenly among all participants
   /// All participants have weight = 1
-  equal('Equal'),
+  equal,
 
   /// Divide proportionally by custom weights
   /// Each participant has a custom weight > 0
-  weighted('Weighted');
+  weighted,
 
-  /// Display name for UI
-  final String displayName;
+  /// Itemized receipt splitting
+  /// Line items assigned to people with calculated per-person amounts
+  itemized;
 
-  const SplitType(this.displayName);
+  /// Get localized display name for this split type
+  String displayName(BuildContext context) {
+    switch (this) {
+      case SplitType.equal:
+        return context.l10n.expenseSplitTypeEqual;
+      case SplitType.weighted:
+        return context.l10n.expenseSplitTypeWeighted;
+      case SplitType.itemized:
+        return context.l10n.expenseSplitTypeItemized;
+    }
+  }
 
   /// Parse split type from string
   /// Returns null if not found
@@ -21,11 +35,13 @@ enum SplitType {
         return SplitType.equal;
       case 'weighted':
         return SplitType.weighted;
+      case 'itemized':
+        return SplitType.itemized;
       default:
         return null;
     }
   }
 
   @override
-  String toString() => displayName;
+  String toString() => name;
 }

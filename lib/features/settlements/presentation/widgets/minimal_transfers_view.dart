@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../cubits/settlement_cubit.dart';
 import 'transfer_breakdown_bottom_sheet.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// View showing minimal transfers to settle all debts
 ///
@@ -48,12 +49,12 @@ class MinimalTransfersView extends StatelessWidget {
               ),
               const SizedBox(height: AppTheme.spacing2),
               Text(
-                'All Settled!',
+                context.l10n.transfersAllSettledTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: AppTheme.spacing1),
               Text(
-                'Everyone is even, no transfers needed.',
+                context.l10n.transfersAllSettledDescription,
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -74,11 +75,13 @@ class MinimalTransfersView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Settlement Transfers',
+                  context.l10n.transfersCardTitle,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 Text(
-                  '${activeTransfers.length + settledTransfers.length} total',
+                  context.l10n.transfersCountTotal(
+                    activeTransfers.length + settledTransfers.length,
+                  ),
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     fontWeight: FontWeight.bold,
@@ -88,7 +91,7 @@ class MinimalTransfersView extends StatelessWidget {
             ),
             const SizedBox(height: AppTheme.spacing1),
             Text(
-              'Tap a transfer to mark as settled',
+              context.l10n.transfersHintTapToSettle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -108,7 +111,7 @@ class MinimalTransfersView extends StatelessWidget {
                   ),
                   const SizedBox(width: AppTheme.spacing1),
                   Text(
-                    'Pending Transfers',
+                    context.l10n.transfersPendingTitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -162,7 +165,7 @@ class MinimalTransfersView extends StatelessWidget {
                   ),
                   const SizedBox(width: AppTheme.spacing1),
                   Text(
-                    'Settled Transfers',
+                    context.l10n.transfersSettledTitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.green.shade700,
@@ -249,13 +252,13 @@ class _TransferCardState extends State<_TransferCard> {
       widget.baseCurrency,
     );
 
-    final text = '$fromName pays $toName $amount';
+    final text = context.l10n.transferCopiedFormat(fromName, toName, amount);
 
     Clipboard.setData(ClipboardData(text: text));
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Copied: $text'),
+        content: Text(context.l10n.transferCopiedMessage(text)),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
@@ -272,19 +275,23 @@ class _TransferCardState extends State<_TransferCard> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Mark as Settled'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(dialogContext.l10n.transferMarkSettledDialogTitle),
         content: Text(
-          'Mark this transfer as settled?\n\n$fromName → $toName: $amount',
+          dialogContext.l10n.transferMarkSettledDialogMessage(
+            fromName,
+            toName,
+            amount,
+          ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Mark as Settled'),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(dialogContext.l10n.transferMarkSettledDialogTitle),
           ),
         ],
       ),
@@ -401,7 +408,7 @@ class _TransferCardState extends State<_TransferCard> {
                           size: 20,
                           color: Theme.of(context).colorScheme.primary,
                         ),
-                        tooltip: 'View Breakdown',
+                        tooltip: context.l10n.transferBreakdownViewTooltip,
                         onPressed: () => _showBreakdown(context),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -435,13 +442,14 @@ class _TransferCardState extends State<_TransferCard> {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
+    final context = this.context;
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return context.l10n.dateToday;
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return context.l10n.dateYesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return context.l10n.dateDaysAgo(difference.inDays);
     } else {
       return '${date.month}/${date.day}';
     }

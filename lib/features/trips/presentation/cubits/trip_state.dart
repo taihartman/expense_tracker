@@ -20,18 +20,12 @@ class TripLoaded extends TripState {
   final List<Trip> trips;
   final Trip? selectedTrip;
 
-  const TripLoaded({
-    required this.trips,
-    this.selectedTrip,
-  });
+  const TripLoaded({required this.trips, this.selectedTrip});
 
   @override
   List<Object?> get props => [trips, selectedTrip];
 
-  TripLoaded copyWith({
-    List<Trip>? trips,
-    Trip? selectedTrip,
-  }) {
+  TripLoaded copyWith({List<Trip>? trips, Trip? selectedTrip}) {
     return TripLoaded(
       trips: trips ?? this.trips,
       selectedTrip: selectedTrip ?? this.selectedTrip,

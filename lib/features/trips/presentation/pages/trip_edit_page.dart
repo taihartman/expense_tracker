@@ -7,15 +7,13 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../domain/models/trip.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Page for editing an existing trip
 class TripEditPage extends StatefulWidget {
   final Trip trip;
 
-  const TripEditPage({
-    super.key,
-    required this.trip,
-  });
+  const TripEditPage({super.key, required this.trip});
 
   @override
   State<TripEditPage> createState() => _TripEditPageState();
@@ -42,10 +40,10 @@ class _TripEditPageState extends State<TripEditPage> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       context.read<TripCubit>().updateTripDetails(
-            tripId: widget.trip.id,
-            name: _nameController.text.trim(),
-            baseCurrency: _selectedCurrency,
-          );
+        tripId: widget.trip.id,
+        name: _nameController.text.trim(),
+        baseCurrency: _selectedCurrency,
+      );
       context.go('/trips/${widget.trip.id}/settings');
     }
   }
@@ -54,10 +52,10 @@ class _TripEditPageState extends State<TripEditPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Trip'),
+        title: Text(context.l10n.tripEditTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back to Settings',
+          tooltip: context.l10n.tripBackToSettings,
           onPressed: () {
             context.go('/trips/${widget.trip.id}/settings');
           },
@@ -70,13 +68,13 @@ class _TripEditPageState extends State<TripEditPage> {
           children: [
             CustomTextField(
               controller: _nameController,
-              label: 'Trip Name',
+              label: context.l10n.tripFieldNameLabel,
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a trip name';
+                  return context.l10n.validationPleaseEnterTripName;
                 }
                 if (value.trim().length > 100) {
-                  return 'Trip name must be 100 characters or less';
+                  return context.l10n.validationTripNameTooLong;
                 }
                 return null;
               },
@@ -84,14 +82,16 @@ class _TripEditPageState extends State<TripEditPage> {
             const SizedBox(height: AppTheme.spacing2),
             DropdownButtonFormField<CurrencyCode>(
               initialValue: _selectedCurrency,
-              decoration: const InputDecoration(
-                labelText: 'Base Currency',
-                helperText: 'Used for settlement displays. Expense amounts are not converted.',
+              decoration: InputDecoration(
+                labelText: context.l10n.tripFieldBaseCurrencyLabel,
+                helperText: context.l10n.tripFieldBaseCurrencyEditHelper,
               ),
               items: CurrencyCode.values.map((currency) {
                 return DropdownMenuItem(
                   value: currency,
-                  child: Text('${currency.name.toUpperCase()} - ${_getCurrencyName(currency)}'),
+                  child: Text(
+                    '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
+                  ),
                 );
               }).toList(),
               onChanged: (value) {
@@ -113,11 +113,15 @@ class _TripEditPageState extends State<TripEditPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, size: 20, color: Colors.blue.shade700),
+                  Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Colors.blue.shade700,
+                  ),
                   const SizedBox(width: AppTheme.spacing1),
                   Expanded(
                     child: Text(
-                      'Changing base currency only affects how settlements are displayed. Individual expense amounts remain unchanged.',
+                      context.l10n.tripCurrencyChangedInfo,
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.blue.shade900,
@@ -129,21 +133,12 @@ class _TripEditPageState extends State<TripEditPage> {
             ),
             const SizedBox(height: AppTheme.spacing3),
             CustomButton(
-              text: 'Save Changes',
+              text: context.l10n.tripSaveChangesButton,
               onPressed: _submit,
             ),
           ],
         ),
       ),
     );
-  }
-
-  String _getCurrencyName(CurrencyCode currency) {
-    switch (currency) {
-      case CurrencyCode.usd:
-        return 'US Dollar';
-      case CurrencyCode.vnd:
-        return 'Vietnamese Dong';
-    }
   }
 }
