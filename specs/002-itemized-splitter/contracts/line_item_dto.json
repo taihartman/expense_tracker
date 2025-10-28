@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://expense-tracker.app/schemas/line_item_dto.json",
+  "title": "LineItem Firestore DTO",
+  "description": "Line item from a receipt with assignment to participants",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "quantity",
+    "unitPrice",
+    "taxable",
+    "serviceChargeable",
+    "assignment"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique item identifier within expense",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["item_001", "line_abc123"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Item name/description",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["Ribeye Steak", "House Wine Glass", "Spring Rolls"]
+    },
+    "quantity": {
+      "type": "string",
+      "description": "Quantity as decimal string (supports fractional quantities)",
+      "pattern": "^\\d+(\\.\\d{1,4})?$",
+      "examples": ["1", "2", "0.5", "1.5"]
+    },
+    "unitPrice": {
+      "type": "string",
+      "description": "Price per unit as decimal string",
+      "pattern": "^\\d+(\\.\\d+)?$",
+      "examples": ["25.00", "12.50", "8.99"]
+    },
+    "taxable": {
+      "type": "boolean",
+      "description": "Whether this item is subject to sales tax",
+      "default": true,
+      "examples": [true, false]
+    },
+    "serviceChargeable": {
+      "type": "boolean",
+      "description": "Whether this item is subject to service charges/fees",
+      "default": true,
+      "examples": [true, false]
+    },
+    "assignment": {
+      "type": "object",
+      "description": "How this item is assigned to participants",
+      "required": ["mode", "assignedUserIds"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "description": "Assignment mode",
+          "enum": ["even", "custom"],
+          "examples": ["even", "custom"]
+        },
+        "assignedUserIds": {
+          "type": "array",
+          "description": "User IDs assigned to this item (at least 1 required)",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "examples": [
+            ["alice", "bob"],
+            ["alice"]
+          ]
+        },
+        "customShares": {
+          "type": "object",
+          "description": "Custom share percentages (required if mode=custom, must sum to 1.0)",
+          "patternProperties": {
+            "^[a-zA-Z0-9_-]+$": {
+              "type": "string",
+              "pattern": "^0(\\.\\d+)?|1(\\.0+)?$",
+              "description": "Share as decimal string (0.0 to 1.0)"
+            }
+          },
+          "examples": [
+            {
+              "alice": "0.6667",
+              "bob": "0.3333"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "custom"
+              }
+            }
+          },
+          "then": {
+            "required": ["customShares"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "even"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "customShares": {
+                "not": {}
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "id": "item_001",
+      "name": "Ribeye Steak",
+      "quantity": "2",
+      "unitPrice": "25.00",
+      "taxable": true,
+      "serviceChargeable": true,
+      "assignment": {
+        "mode": "even",
+        "assignedUserIds": ["alice", "bob"]
+      }
+    },
+    {
+      "id": "item_002",
+      "name": "Wine Bottle",
+      "quantity": "1",
+      "unitPrice": "50.00",
+      "taxable": true,
+      "serviceChargeable": true,
+      "assignment": {
+        "mode": "custom",
+        "assignedUserIds": ["alice", "bob", "charlie"],
+        "customShares": {
+          "alice": "0.5",
+          "bob": "0.3",
+          "charlie": "0.2"
+        }
+      }
+    },
+    {
+      "id": "item_003",
+      "name": "Non-Taxable Milk",
+      "quantity": "1",
+      "unitPrice": "3.99",
+      "taxable": false,
+      "serviceChargeable": false,
+      "assignment": {
+        "mode": "even",
+        "assignedUserIds": ["alice"]
+      }
+    }
+  ]
+}

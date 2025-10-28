@@ -1,0 +1,407 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://expense-tracker.app/schemas/expense_dto.json",
+  "title": "Expense Firestore DTO",
+  "description": "Extended Expense document schema for Firestore with optional itemized split fields",
+  "type": "object",
+  "required": [
+    "id",
+    "tripId",
+    "date",
+    "payerUserId",
+    "currency",
+    "amount",
+    "splitType",
+    "createdAt",
+    "updatedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique expense identifier",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["exp_abc123", "expense_001"]
+    },
+    "tripId": {
+      "type": "string",
+      "description": "Parent trip reference",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["trip_xyz789"]
+    },
+    "date": {
+      "type": "string",
+      "description": "Expense date in ISO 8601 format",
+      "format": "date-time",
+      "examples": ["2025-10-28T14:30:00.000Z"]
+    },
+    "payerUserId": {
+      "type": "string",
+      "description": "User ID of person who paid",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["alice", "user_bob"]
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code",
+      "enum": ["USD", "VND"],
+      "examples": ["USD"]
+    },
+    "amount": {
+      "type": "string",
+      "description": "Grand total as decimal string (to preserve precision)",
+      "pattern": "^\\d+(\\.\\d+)?$",
+      "examples": ["125.50", "1500000"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional user note",
+      "maxLength": 200,
+      "examples": ["Dinner at Restaurant Pho 24"]
+    },
+    "categoryId": {
+      "type": "string",
+      "description": "Optional category reference",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "examples": ["cat_food"]
+    },
+    "splitType": {
+      "type": "string",
+      "description": "How expense is split among participants",
+      "enum": ["equal", "weighted", "itemized"],
+      "examples": ["itemized"]
+    },
+    "participants": {
+      "type": "object",
+      "description": "Map of userId to weight (legacy for equal/weighted splits, null for itemized)",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "examples": [
+        {
+          "alice": 1,
+          "bob": 1,
+          "charlie": 1
+        }
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "description": "Timestamp when expense was created",
+      "format": "date-time",
+      "examples": ["2025-10-28T14:30:00.000Z"]
+    },
+    "updatedAt": {
+      "type": "string",
+      "description": "Timestamp when expense was last modified",
+      "format": "date-time",
+      "examples": ["2025-10-28T15:45:00.000Z"]
+    },
+    "items": {
+      "type": "array",
+      "description": "Line items from receipt (required if splitType=itemized, null otherwise)",
+      "minItems": 1,
+      "maxItems": 300,
+      "items": {
+        "$ref": "line_item_dto.json"
+      },
+      "examples": [
+        [
+          {
+            "id": "item_001",
+            "name": "Steak",
+            "quantity": "2",
+            "unitPrice": "25.00",
+            "taxable": true,
+            "serviceChargeable": true,
+            "assignment": {
+              "mode": "even",
+              "assignedUserIds": ["alice", "bob"]
+            }
+          }
+        ]
+      ]
+    },
+    "extras": {
+      "type": "object",
+      "description": "Tax/tip/fees/discounts configuration (required if splitType=itemized)",
+      "$ref": "extras_dto.json",
+      "examples": [
+        {
+          "tax": {
+            "percentValue": "8.875",
+            "base": "preTaxItemSubtotals"
+          },
+          "tip": {
+            "percentValue": "20",
+            "base": "postTaxSubtotals"
+          },
+          "fees": [],
+          "discounts": []
+        }
+      ]
+    },
+    "allocation": {
+      "type": "object",
+      "description": "Allocation and rounding configuration (required if splitType=itemized)",
+      "$ref": "allocation_rule_dto.json",
+      "examples": [
+        {
+          "rounding": {
+            "precision": 2,
+            "mode": "roundHalfUp",
+            "distributeRemainderTo": "largestShare"
+          }
+        }
+      ]
+    },
+    "participantAmounts": {
+      "type": "object",
+      "description": "Map of userId to final amount owed (required if splitType=itemized, sum must equal amount)",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?$",
+          "description": "Amount as decimal string"
+        }
+      },
+      "examples": [
+        {
+          "alice": "75.30",
+          "bob": "50.20"
+        }
+      ]
+    },
+    "participantBreakdown": {
+      "type": "object",
+      "description": "Detailed per-person audit trail (optional, for display purposes)",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "object",
+          "required": [
+            "userId",
+            "itemSubtotal",
+            "taxAllocated",
+            "tipAllocated",
+            "feesAllocated",
+            "discountsAllocated",
+            "roundingAdjustment",
+            "total"
+          ],
+          "properties": {
+            "userId": {
+              "type": "string",
+              "examples": ["alice"]
+            },
+            "itemSubtotal": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Sum of assigned item shares",
+              "examples": ["66.67"]
+            },
+            "taxAllocated": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Allocated tax amount",
+              "examples": ["5.92"]
+            },
+            "tipAllocated": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Allocated tip amount",
+              "examples": ["14.52"]
+            },
+            "feesAllocated": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Sum of allocated fees",
+              "examples": ["2.50"]
+            },
+            "discountsAllocated": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Sum of allocated discounts (typically negative)",
+              "examples": ["-5.00"]
+            },
+            "roundingAdjustment": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Rounding remainder adjustment",
+              "examples": ["0.01", "-0.02"]
+            },
+            "total": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?$",
+              "description": "Final amount (must match participantAmounts[userId])",
+              "examples": ["87.12"]
+            },
+            "itemContributions": {
+              "type": "array",
+              "description": "Per-item breakdown for audit trail",
+              "items": {
+                "type": "object",
+                "required": ["itemId", "itemName", "amount"],
+                "properties": {
+                  "itemId": {
+                    "type": "string",
+                    "examples": ["item_001"]
+                  },
+                  "itemName": {
+                    "type": "string",
+                    "examples": ["Steak"]
+                  },
+                  "amount": {
+                    "type": "string",
+                    "pattern": "^-?\\d+(\\.\\d+)?$",
+                    "examples": ["50.00"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "examples": [
+        {
+          "alice": {
+            "userId": "alice",
+            "itemSubtotal": "66.67",
+            "taxAllocated": "5.92",
+            "tipAllocated": "14.52",
+            "feesAllocated": "0.00",
+            "discountsAllocated": "0.00",
+            "roundingAdjustment": "0.01",
+            "total": "87.12",
+            "itemContributions": [
+              {
+                "itemId": "item_001",
+                "itemName": "Steak",
+                "amount": "50.00"
+              },
+              {
+                "itemId": "item_002",
+                "itemName": "Wine",
+                "amount": "16.67"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "splitType": {
+            "const": "itemized"
+          }
+        }
+      },
+      "then": {
+        "required": ["items", "participantAmounts"],
+        "properties": {
+          "items": {
+            "minItems": 1
+          },
+          "participantAmounts": {
+            "minProperties": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "splitType": {
+            "enum": ["equal", "weighted"]
+          }
+        }
+      },
+      "then": {
+        "required": ["participants"],
+        "properties": {
+          "participants": {
+            "minProperties": 1
+          }
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "id": "exp_abc123",
+      "tripId": "trip_xyz789",
+      "date": "2025-10-28T14:30:00.000Z",
+      "payerUserId": "alice",
+      "currency": "USD",
+      "amount": "125.50",
+      "description": "Dinner at Restaurant",
+      "categoryId": "cat_food",
+      "splitType": "itemized",
+      "createdAt": "2025-10-28T14:30:00.000Z",
+      "updatedAt": "2025-10-28T14:30:00.000Z",
+      "items": [
+        {
+          "id": "item_001",
+          "name": "Steak",
+          "quantity": "2",
+          "unitPrice": "25.00",
+          "taxable": true,
+          "serviceChargeable": true,
+          "assignment": {
+            "mode": "even",
+            "assignedUserIds": ["alice", "bob"]
+          }
+        },
+        {
+          "id": "item_002",
+          "name": "Wine",
+          "quantity": "1",
+          "unitPrice": "25.00",
+          "taxable": true,
+          "serviceChargeable": true,
+          "assignment": {
+            "mode": "custom",
+            "assignedUserIds": ["alice", "bob"],
+            "customShares": {
+              "alice": "0.6667",
+              "bob": "0.3333"
+            }
+          }
+        }
+      ],
+      "extras": {
+        "tax": {
+          "percentValue": "8.875",
+          "base": "preTaxItemSubtotals"
+        },
+        "tip": {
+          "percentValue": "20",
+          "base": "postTaxSubtotals"
+        },
+        "fees": [],
+        "discounts": []
+      },
+      "allocation": {
+        "rounding": {
+          "precision": 2,
+          "mode": "roundHalfUp",
+          "distributeRemainderTo": "largestShare"
+        }
+      },
+      "participantAmounts": {
+        "alice": "75.30",
+        "bob": "50.20"
+      }
+    }
+  ]
+}
