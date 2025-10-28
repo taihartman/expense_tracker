@@ -23,7 +23,11 @@
       "Bash(fi)",
       "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_84MUDk/**)",
       "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_PWssmo/**)",
-      "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_hdTumD/**)"
+      "Read(//var/folders/wx/n39fzw_j7731wxflz0ptq44r0000gp/T/TemporaryItems/NSIRD_screencaptureui_hdTumD/**)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "SlashCommand(/speckit.plan)",
+      "Bash(.specify/scripts/bash/setup-plan.sh:*)"
     ],
     "deny": [],
     "ask": []
