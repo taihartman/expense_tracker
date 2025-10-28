@@ -9,7 +9,7 @@ void main() {
       test('creates valid even assignment', () {
         final assignment = const ItemAssignment(
           mode: AssignmentMode.even,
-          users: const ['user1', 'user2', 'user3'],
+          users: ['user1', 'user2', 'user3'],
         );
 
         expect(assignment.mode, AssignmentMode.even);
@@ -19,8 +19,7 @@ void main() {
 
       test('validates at least one user required', () {
         expect(
-          () =>
-              const ItemAssignment(mode: AssignmentMode.even, users: const []),
+          () => const ItemAssignment(mode: AssignmentMode.even, users: []),
           throwsArgumentError,
         );
       });
@@ -60,7 +59,7 @@ void main() {
         expect(
           () => const ItemAssignment(
             mode: AssignmentMode.custom,
-            users: const ['user1', 'user2'],
+            users: ['user1', 'user2'],
           ),
           throwsArgumentError,
         );
@@ -139,12 +138,12 @@ void main() {
     test('supports equality comparison', () {
       final assignment1 = const ItemAssignment(
         mode: AssignmentMode.even,
-        users: const ['user1', 'user2'],
+        users: ['user1', 'user2'],
       );
 
       final assignment2 = const ItemAssignment(
         mode: AssignmentMode.even,
-        users: const ['user1', 'user2'],
+        users: ['user1', 'user2'],
       );
 
       expect(assignment1, equals(assignment2));
@@ -153,7 +152,7 @@ void main() {
     test('supports copyWith', () {
       final assignment = const ItemAssignment(
         mode: AssignmentMode.even,
-        users: const ['user1', 'user2'],
+        users: ['user1', 'user2'],
       );
 
       final updated = assignment.copyWith(

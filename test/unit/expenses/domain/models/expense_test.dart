@@ -33,7 +33,7 @@ void main() {
 
     final validAssignment = const ItemAssignment(
       mode: AssignmentMode.even,
-      users: const ['user1', 'user2'],
+      users: ['user1', 'user2'],
     );
 
     group('creation with itemized fields', () {

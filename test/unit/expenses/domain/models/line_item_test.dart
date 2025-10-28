@@ -8,7 +8,7 @@ void main() {
   group('LineItem', () {
     final validAssignment = const ItemAssignment(
       mode: AssignmentMode.even,
-      users: const ['user1', 'user2'],
+      users: ['user1', 'user2'],
     );
 
     test('creates valid line item', () {

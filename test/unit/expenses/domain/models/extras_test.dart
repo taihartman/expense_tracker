@@ -14,8 +14,8 @@ void main() {
         final extras = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         expect(extras.tax, isNull);
@@ -258,8 +258,8 @@ void main() {
         final extras = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         expect(extras.tax, isNull);
@@ -269,8 +269,8 @@ void main() {
         final extras = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         expect(extras.tip, isNull);
@@ -280,8 +280,8 @@ void main() {
         final extras = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         expect(extras.fees, isEmpty);
@@ -291,8 +291,8 @@ void main() {
         final extras = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         expect(extras.discounts, isEmpty);
@@ -304,15 +304,15 @@ void main() {
         final extras1 = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         final extras2 = const Extras(
           tax: null,
           tip: null,
-          fees: const [],
-          discounts: const [],
+          fees: [],
+          discounts: [],
         );
 
         expect(extras1, equals(extras2));
@@ -634,8 +634,8 @@ void main() {
       final extras = const Extras(
         tax: null,
         tip: null,
-        fees: const [],
-        discounts: const [],
+        fees: [],
+        discounts: [],
       );
 
       final updated = extras.copyWith(tax: tax, tip: tip);

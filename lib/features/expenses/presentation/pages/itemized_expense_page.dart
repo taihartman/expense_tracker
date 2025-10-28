@@ -346,10 +346,7 @@ class _ItemizedExpensePageState extends State<ItemizedExpensePage> {
         unitPrice: price,
         taxable: true,
         serviceChargeable: false,
-        assignment: const ItemAssignment(
-          mode: AssignmentMode.even,
-          users: const [],
-        ),
+        assignment: const ItemAssignment(mode: AssignmentMode.even, users: []),
       );
 
       context.read<ItemizedExpenseCubit>().addItem(item);

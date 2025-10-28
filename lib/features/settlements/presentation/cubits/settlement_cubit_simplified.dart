@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:rxdart/rxdart.dart';
 import '../../domain/models/minimal_transfer.dart';
-import '../../domain/models/settlement_summary.dart';
 import '../../domain/repositories/settlement_repository.dart';
 import 'settlement_state.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';

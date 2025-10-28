@@ -71,8 +71,8 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     final emptyExtras = const Extras(
       tax: null,
       tip: null,
-      fees: const [],
-      discounts: const [],
+      fees: [],
+      discounts: [],
     );
 
     debugPrint('🟡 [Cubit] Emitting ItemizedExpenseEditing state...');
@@ -135,7 +135,7 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     // Use existing extras or create empty
     final extras =
         expense.extras ??
-        const Extras(tax: null, tip: null, fees: const [], discounts: const []);
+        const Extras(tax: null, tip: null, fees: [], discounts: []);
 
     debugPrint(
       '🟡 [Cubit] Emitting ItemizedExpenseEditing state (edit mode)...',

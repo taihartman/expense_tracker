@@ -145,7 +145,7 @@ void main() {
         serviceChargeable: true,
         assignment: const ItemAssignment(
           mode: AssignmentMode.even,
-          users: const ['user1'],
+          users: ['user1'],
         ),
       );
 
