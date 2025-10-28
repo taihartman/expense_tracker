@@ -20,13 +20,13 @@ class ItemizedExpensePage extends StatefulWidget {
   final CurrencyCode currency;
 
   const ItemizedExpensePage({
-    Key? key,
+    super.key,
     required this.tripId,
     required this.participants,
     required this.participantNames,
     required this.payerUserId,
     required this.currency,
-  }) : super(key: key);
+  });
 
   @override
   State<ItemizedExpensePage> createState() => _ItemizedExpensePageState();
@@ -286,7 +286,7 @@ class _ItemizedExpensePageState extends State<ItemizedExpensePage> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
@@ -346,7 +346,10 @@ class _ItemizedExpensePageState extends State<ItemizedExpensePage> {
         unitPrice: price,
         taxable: true,
         serviceChargeable: false,
-        assignment: ItemAssignment(mode: AssignmentMode.even, users: []),
+        assignment: const ItemAssignment(
+          mode: AssignmentMode.even,
+          users: const [],
+        ),
       );
 
       context.read<ItemizedExpenseCubit>().addItem(item);

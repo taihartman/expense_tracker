@@ -119,9 +119,9 @@ void main() {
         expect(total, Decimal.parse('10001'));
 
         // All amounts should be whole numbers
-        result.values.forEach((amount) {
+        for (final amount in result.values) {
           expect(amount.scale, 0);
-        });
+        }
       });
     });
 
@@ -499,9 +499,9 @@ void main() {
         expect(total, Decimal.parse('5.000'));
 
         // All amounts should have 3 decimal places
-        result.values.forEach((amount) {
+        for (final amount in result.values) {
           expect(amount.scale, lessThanOrEqualTo(3));
-        });
+        }
       });
 
       test('handles very small remainders that round to zero', () {

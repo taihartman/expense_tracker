@@ -31,9 +31,9 @@ void main() {
       rounding: defaultRounding,
     );
 
-    final validAssignment = ItemAssignment(
+    final validAssignment = const ItemAssignment(
       mode: AssignmentMode.even,
-      users: ['user1', 'user2'],
+      users: const ['user1', 'user2'],
     );
 
     group('creation with itemized fields', () {
@@ -56,7 +56,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('12.50'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
@@ -73,7 +73,12 @@ void main() {
           base: PercentBase.preTaxItemSubtotals,
         );
 
-        final extras = Extras(tax: tax, tip: null, fees: [], discounts: []);
+        final extras = Extras(
+          tax: tax,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         final expense = Expense(
           id: 'exp2',
@@ -83,7 +88,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('10.89'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           extras: extras,
@@ -102,7 +107,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           allocation: defaultAllocation,
@@ -126,7 +131,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('25.75'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participantAmounts: participantAmounts,
@@ -148,7 +153,7 @@ void main() {
           },
           roundedAdjustment: Decimal.zero,
           total: Decimal.parse('32.22'),
-          items: [],
+          items: const [],
         );
 
         final participantBreakdown = {'user1': breakdown};
@@ -161,7 +166,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('32.22'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participantBreakdown: participantBreakdown,
@@ -193,7 +198,12 @@ void main() {
           base: PercentBase.postTaxSubtotals,
         );
 
-        final extras = Extras(tax: tax, tip: tip, fees: [], discounts: []);
+        final extras = Extras(
+          tax: tax,
+          tip: tip,
+          fees: const [],
+          discounts: const [],
+        );
 
         final breakdown1 = ParticipantBreakdown(
           userId: 'user1',
@@ -204,7 +214,7 @@ void main() {
           },
           roundedAdjustment: Decimal.zero,
           total: Decimal.parse('8.16'),
-          items: [],
+          items: const [],
         );
 
         final breakdown2 = ParticipantBreakdown(
@@ -216,7 +226,7 @@ void main() {
           },
           roundedAdjustment: Decimal.zero,
           total: Decimal.parse('8.17'),
-          items: [],
+          items: const [],
         );
 
         final expense = Expense(
@@ -227,7 +237,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('16.33'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
@@ -258,7 +268,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: null, // Missing items
@@ -291,7 +301,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('12.50'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
@@ -314,10 +324,10 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          items: [], // Empty items list
+          items: const [], // Empty items list
           participantAmounts: {'user1': Decimal.parse('100.00')},
         );
 
@@ -347,7 +357,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('12.50'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
@@ -373,7 +383,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.equal,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -395,7 +405,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.weighted,
-          participants: {'user1': 2, 'user2': 1},
+          participants: const {'user1': 2, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -427,7 +437,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.equal,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem], // Ignored for equal split
@@ -460,7 +470,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.weighted,
-          participants: {'user1': 3, 'user2': 1},
+          participants: const {'user1': 3, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem], // Ignored for weighted split
@@ -505,7 +515,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('12.50'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem1],
@@ -533,9 +543,19 @@ void main() {
           base: PercentBase.preTaxItemSubtotals,
         );
 
-        final extras1 = Extras(tax: tax1, tip: null, fees: [], discounts: []);
+        final extras1 = Extras(
+          tax: tax1,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
-        final extras2 = Extras(tax: tax2, tip: null, fees: [], discounts: []);
+        final extras2 = Extras(
+          tax: tax2,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         final expense = Expense(
           id: 'exp16',
@@ -545,7 +565,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('10.89'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           extras: extras1,
@@ -578,7 +598,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           allocation: allocation1,
@@ -609,7 +629,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1, 'user2': 1},
+          participants: const {'user1': 1, 'user2': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participantAmounts: amounts1,
@@ -626,19 +646,19 @@ void main() {
         final breakdown1 = ParticipantBreakdown(
           userId: 'user1',
           itemsSubtotal: Decimal.parse('50.00'),
-          extrasAllocated: {},
+          extrasAllocated: const {},
           roundedAdjustment: Decimal.zero,
           total: Decimal.parse('50.00'),
-          items: [],
+          items: const [],
         );
 
         final breakdown2 = ParticipantBreakdown(
           userId: 'user1',
           itemsSubtotal: Decimal.parse('60.00'),
-          extrasAllocated: {},
+          extrasAllocated: const {},
           roundedAdjustment: Decimal.zero,
           total: Decimal.parse('60.00'),
-          items: [],
+          items: const [],
         );
 
         final expense = Expense(
@@ -649,7 +669,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('50.00'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participantBreakdown: {'user1': breakdown1},
@@ -684,7 +704,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('12.50'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
@@ -699,7 +719,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('12.50'),
           splitType: SplitType.itemized,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
@@ -719,7 +739,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.equal,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -732,7 +752,7 @@ void main() {
           currency: CurrencyCode.usd,
           amount: Decimal.parse('100.00'),
           splitType: SplitType.equal,
-          participants: {'user1': 1},
+          participants: const {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );

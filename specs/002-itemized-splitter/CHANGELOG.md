@@ -26,6 +26,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <!-- Add entries below in reverse chronological order (newest first) -->
 
+## 2025-10-28 - Complete Itemized Expense Wizard UI Implementation
+
+**Summary**: Completed full 4-step wizard UI with state management, Firestore serialization, and comprehensive code quality improvements.
+
+**Added**:
+- Complete 4-step wizard flow (People/Items/Extras/Review)
+- `ItemizedExpenseCubit` for draft state management with calculation and validation
+- All wizard step pages:
+  - `people_step_page.dart` - Participant and payer selection
+  - `items_step_page.dart` - Line item entry and assignment
+  - `extras_step_page.dart` - Tax/tip/fees configuration
+  - `review_step_page.dart` - Per-person breakdown and save
+- Full Firestore serialization models:
+  - `LineItemModel` - Line item persistence
+  - `ExtrasModel` - Tax/tip/fees DTO
+  - `AllocationRuleModel` - Allocation rules DTO
+  - `ParticipantBreakdownModel` - Audit trail DTO
+- Localization support for all wizard strings (250+ entries in app_en.arb)
+
+**Changed**:
+- Fixed 176+ linter issues across codebase:
+  - 29 `prefer_const_constructors` warnings
+  - 117 `prefer_const_literals_to_create_immutables` warnings
+  - 10 `avoid_print` (replaced with debugPrint)
+  - 7 `deprecated_member_use` (updated Color API, withOpacity→withValues)
+  - 3 `use_build_context_synchronously` (captured context before async)
+  - 2 `avoid_function_literals_in_foreach_calls` (converted to for-in loops)
+  - 1 `use_super_parameters`, 1 `unnecessary_to_list_in_spreads`, 1 `unawaited_futures`, 1 `depend_on_referenced_packages`
+- Resolved unnecessary cast warning in `review_step_page.dart`
+
+**Technical Details**:
+- All wizard pages production-ready with proper state integration
+- Full BlocBuilder/BlocListener pattern for reactive UI
+- Proper error handling and validation banners
+- Complete audit trail with expandable per-person breakdowns
+- Currency-aware formatting (USD 2 decimals, VND 0 decimals)
+
+**Status**: Wizard UI complete and ready for integration testing. Next phase: end-to-end testing and edge case validation.
+
 ## 2025-10-28 - Complete Localization System Implementation
 
 ### Added

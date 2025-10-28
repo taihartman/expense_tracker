@@ -47,7 +47,7 @@ void main() {
               unitPrice: Decimal.parse('15.99'),
               taxable: true,
               serviceChargeable: true,
-              assignment: ItemAssignment(
+              assignment: const ItemAssignment(
                 mode: AssignmentMode.even,
                 users: ['alice', 'bob'],
               ),
@@ -61,7 +61,7 @@ void main() {
               serviceChargeable: false,
               assignment: ItemAssignment(
                 mode: AssignmentMode.custom,
-                users: ['alice', 'bob', 'charlie'],
+                users: const ['alice', 'bob', 'charlie'],
                 shares: {
                   'alice': Decimal.parse('0.5'),
                   'bob': Decimal.parse('0.3'),
@@ -219,7 +219,7 @@ void main() {
     group('Backward Compatibility', () {
       test('should deserialize old expense without itemized fields', () {
         // Arrange - Old expense JSON without itemized fields
-        final json = {
+        final json = <String, dynamic>{
           'tripId': 'trip1',
           'date': Timestamp.fromDate(testDate),
           'payerUserId': 'alice',
@@ -252,7 +252,7 @@ void main() {
 
       test('should handle null itemized fields in Firestore document', () {
         // Arrange - Document with explicit null values
-        final json = {
+        final json = <String, dynamic>{
           'tripId': 'trip1',
           'date': Timestamp.fromDate(testDate),
           'payerUserId': 'alice',
@@ -296,7 +296,7 @@ void main() {
             unitPrice: Decimal.parse('3.50'),
             taxable: false,
             serviceChargeable: false,
-            assignment: ItemAssignment(
+            assignment: const ItemAssignment(
               mode: AssignmentMode.even,
               users: ['alice'],
             ),
@@ -356,7 +356,7 @@ void main() {
               unitPrice: Decimal.parse('10.00'),
               taxable: false,
               serviceChargeable: false,
-              assignment: ItemAssignment(
+              assignment: const ItemAssignment(
                 mode: AssignmentMode.even,
                 users: ['alice', 'bob'],
               ),
@@ -368,8 +368,8 @@ void main() {
               base: PercentBase.preTaxItemSubtotals,
             ),
             tip: null,
-            fees: [],
-            discounts: [],
+            fees: const [],
+            discounts: const [],
           ),
           allocation: AllocationRule(
             percentBase: PercentBase.preTaxItemSubtotals,
@@ -423,7 +423,7 @@ void main() {
                 unitPrice: Decimal.parse('10.606060'),
                 taxable: false,
                 serviceChargeable: false,
-                assignment: ItemAssignment(
+                assignment: const ItemAssignment(
                   mode: AssignmentMode.even,
                   users: ['alice'],
                 ),
@@ -471,7 +471,7 @@ void main() {
               unitPrice: Decimal.parse('25000'),
               taxable: false,
               serviceChargeable: false,
-              assignment: ItemAssignment(
+              assignment: const ItemAssignment(
                 mode: AssignmentMode.even,
                 users: ['alice', 'bob'],
               ),
@@ -545,7 +545,7 @@ void main() {
                 unitPrice: Decimal.parse('50.00'),
                 taxable: true,
                 serviceChargeable: true,
-                assignment: ItemAssignment(
+                assignment: const ItemAssignment(
                   mode: AssignmentMode.even,
                   users: ['alice', 'bob'],
                 ),

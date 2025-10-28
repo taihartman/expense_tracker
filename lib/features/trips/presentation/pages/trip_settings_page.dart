@@ -291,9 +291,9 @@ class TripSettingsPage extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: Color.fromRGBO(
-            avatarColor.red,
-            avatarColor.green,
-            avatarColor.blue,
+            (avatarColor.r * 255.0).round() & 0xff,
+            (avatarColor.g * 255.0).round() & 0xff,
+            (avatarColor.b * 255.0).round() & 0xff,
             0.2,
           ),
           foregroundColor: avatarColor,

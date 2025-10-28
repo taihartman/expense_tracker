@@ -7,9 +7,9 @@ void main() {
   group('ItemAssignment', () {
     group('even mode', () {
       test('creates valid even assignment', () {
-        final assignment = ItemAssignment(
+        final assignment = const ItemAssignment(
           mode: AssignmentMode.even,
-          users: ['user1', 'user2', 'user3'],
+          users: const ['user1', 'user2', 'user3'],
         );
 
         expect(assignment.mode, AssignmentMode.even);
@@ -19,7 +19,8 @@ void main() {
 
       test('validates at least one user required', () {
         expect(
-          () => ItemAssignment(mode: AssignmentMode.even, users: []),
+          () =>
+              const ItemAssignment(mode: AssignmentMode.even, users: const []),
           throwsArgumentError,
         );
       });
@@ -28,7 +29,7 @@ void main() {
         expect(
           () => ItemAssignment(
             mode: AssignmentMode.even,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
             shares: {
               'user1': Decimal.parse('0.5'),
               'user2': Decimal.parse('0.5'),
@@ -43,7 +44,7 @@ void main() {
       test('creates valid custom assignment', () {
         final assignment = ItemAssignment(
           mode: AssignmentMode.custom,
-          users: ['user1', 'user2'],
+          users: const ['user1', 'user2'],
           shares: {
             'user1': Decimal.parse('0.6667'),
             'user2': Decimal.parse('0.3333'),
@@ -57,9 +58,9 @@ void main() {
 
       test('validates shares must be provided for custom mode', () {
         expect(
-          () => ItemAssignment(
+          () => const ItemAssignment(
             mode: AssignmentMode.custom,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
           ),
           throwsArgumentError,
         );
@@ -69,7 +70,7 @@ void main() {
         expect(
           () => ItemAssignment(
             mode: AssignmentMode.custom,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
             shares: {
               'user1': Decimal.parse('0.5'),
               'user3': Decimal.parse('0.5'), // Wrong user!
@@ -84,7 +85,7 @@ void main() {
         expect(
           () => ItemAssignment(
             mode: AssignmentMode.custom,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
             shares: {
               'user1': Decimal.parse('0.5'),
               'user2': Decimal.parse('0.5'),
@@ -97,7 +98,7 @@ void main() {
         expect(
           () => ItemAssignment(
             mode: AssignmentMode.custom,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
             shares: {
               'user1': Decimal.parse('0.5001'),
               'user2': Decimal.parse('0.5'),
@@ -110,7 +111,7 @@ void main() {
         expect(
           () => ItemAssignment(
             mode: AssignmentMode.custom,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
             shares: {
               'user1': Decimal.parse('0.5'),
               'user2': Decimal.parse('0.4'),
@@ -124,7 +125,7 @@ void main() {
         expect(
           () => ItemAssignment(
             mode: AssignmentMode.custom,
-            users: ['user1', 'user2'],
+            users: const ['user1', 'user2'],
             shares: {
               'user1': Decimal.parse('0.5'),
               'user2': Decimal.parse('-0.5'),
@@ -136,26 +137,28 @@ void main() {
     });
 
     test('supports equality comparison', () {
-      final assignment1 = ItemAssignment(
+      final assignment1 = const ItemAssignment(
         mode: AssignmentMode.even,
-        users: ['user1', 'user2'],
+        users: const ['user1', 'user2'],
       );
 
-      final assignment2 = ItemAssignment(
+      final assignment2 = const ItemAssignment(
         mode: AssignmentMode.even,
-        users: ['user1', 'user2'],
+        users: const ['user1', 'user2'],
       );
 
       expect(assignment1, equals(assignment2));
     });
 
     test('supports copyWith', () {
-      final assignment = ItemAssignment(
+      final assignment = const ItemAssignment(
         mode: AssignmentMode.even,
-        users: ['user1', 'user2'],
+        users: const ['user1', 'user2'],
       );
 
-      final updated = assignment.copyWith(users: ['user1', 'user2', 'user3']);
+      final updated = assignment.copyWith(
+        users: const ['user1', 'user2', 'user3'],
+      );
 
       expect(updated.users, ['user1', 'user2', 'user3']);
       expect(updated.mode, AssignmentMode.even);

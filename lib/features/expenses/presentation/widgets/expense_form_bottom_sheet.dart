@@ -124,8 +124,10 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
     debugPrint('🔵 [BottomSheet] Opening itemized wizard for edit mode');
     debugPrint('🔵 [BottomSheet] Expense ID: ${expense.id}');
 
-    // Capture navigator before async operation
+    // Capture navigator, cubit, and l10n before async operation
     final navigator = Navigator.of(context);
+    final expenseCubit = context.read<ExpenseCubit>();
+    final l10n = context.l10n;
 
     try {
       final expenseRepository = context.read<ExpenseRepository>();
@@ -160,7 +162,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         if (result == true) {
           debugPrint('🔵 [BottomSheet] Expense updated - reloading list');
           // Force reload to get latest data from Firestore
-          context.read<ExpenseCubit>().loadExpenses(widget.tripId);
+          await expenseCubit.loadExpenses(widget.tripId);
           // Small delay to ensure stream emits
           await Future.delayed(const Duration(milliseconds: 150));
           debugPrint('🔵 [BottomSheet] Reload complete - closing bottom sheet');
@@ -175,7 +177,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.expenseItemizedOpenError(e.toString())),
+            content: Text(l10n.expenseItemizedOpenError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -351,9 +353,10 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                     debugPrint('🔵 [BottomSheet] Payer: $_selectedPayer');
                     debugPrint('🔵 [BottomSheet] Currency: $_selectedCurrency');
 
-                    // Capture navigator and messenger before async operation
+                    // Capture navigator, messenger, and l10n before async operation
                     final navigator = Navigator.of(context);
                     final messenger = ScaffoldMessenger.of(context);
+                    final l10n = context.l10n;
                     debugPrint('🔵 [BottomSheet] Navigator captured');
 
                     try {
@@ -423,8 +426,9 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                       );
                       debugPrint('🔴 [BottomSheet] Stack trace: $stackTrace');
                       if (!mounted) return;
-                      final errorMessage = context.l10n
-                          .expenseItemizedOpenError(e.toString());
+                      final errorMessage = l10n.expenseItemizedOpenError(
+                        e.toString(),
+                      );
                       messenger.showSnackBar(
                         SnackBar(
                           content: Text(errorMessage),

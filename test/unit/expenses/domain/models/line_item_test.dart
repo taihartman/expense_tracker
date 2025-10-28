@@ -6,9 +6,9 @@ import 'package:expense_tracker/features/expenses/domain/models/assignment_mode.
 
 void main() {
   group('LineItem', () {
-    final validAssignment = ItemAssignment(
+    final validAssignment = const ItemAssignment(
       mode: AssignmentMode.even,
-      users: ['user1', 'user2'],
+      users: const ['user1', 'user2'],
     );
 
     test('creates valid line item', () {
@@ -302,7 +302,7 @@ void main() {
     test('supports copyWith for all properties', () {
       final assignment2 = ItemAssignment(
         mode: AssignmentMode.custom,
-        users: ['user1', 'user2'],
+        users: const ['user1', 'user2'],
         shares: {'user1': Decimal.parse('0.7'), 'user2': Decimal.parse('0.3')},
       );
 

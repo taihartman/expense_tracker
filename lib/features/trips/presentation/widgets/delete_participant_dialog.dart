@@ -76,9 +76,9 @@ class DeleteParticipantDialog extends StatelessWidget {
             padding: const EdgeInsets.all(AppTheme.spacing2),
             decoration: BoxDecoration(
               color: Color.fromRGBO(
-                colorScheme.errorContainer.red,
-                colorScheme.errorContainer.green,
-                colorScheme.errorContainer.blue,
+                (colorScheme.errorContainer.r * 255.0).round() & 0xff,
+                (colorScheme.errorContainer.g * 255.0).round() & 0xff,
+                (colorScheme.errorContainer.b * 255.0).round() & 0xff,
                 0.3,
               ),
               borderRadius: BorderRadius.circular(8),

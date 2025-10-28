@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/models/line_item.dart';
@@ -68,7 +68,12 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     );
 
     // Create empty extras
-    final emptyExtras = Extras(tax: null, tip: null, fees: [], discounts: []);
+    final emptyExtras = const Extras(
+      tax: null,
+      tip: null,
+      fees: const [],
+      discounts: const [],
+    );
 
     debugPrint('🟡 [Cubit] Emitting ItemizedExpenseEditing state...');
     emit(
@@ -77,7 +82,7 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
         participants: participants,
         payerUserId: payerUserId,
         currencyCode: currencyCode,
-        items: [],
+        items: const [],
         extras: emptyExtras,
         allocation: defaultAllocation,
       ),
@@ -129,7 +134,8 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
 
     // Use existing extras or create empty
     final extras =
-        expense.extras ?? Extras(tax: null, tip: null, fees: [], discounts: []);
+        expense.extras ??
+        const Extras(tax: null, tip: null, fees: const [], discounts: const []);
 
     debugPrint(
       '🟡 [Cubit] Emitting ItemizedExpenseEditing state (edit mode)...',

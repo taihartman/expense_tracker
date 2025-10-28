@@ -240,8 +240,10 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                 debugPrint('🔵 [ExpenseForm] Payer: $_selectedPayer');
                 debugPrint('🔵 [ExpenseForm] Currency: $_selectedCurrency');
 
-                // Capture navigator before async operation
+                // Capture navigator and context before async operation
                 final navigator = Navigator.of(context);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final l10n = context.l10n;
                 debugPrint('🔵 [ExpenseForm] Navigator captured');
 
                 try {
@@ -309,10 +311,10 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                   );
                   debugPrint('🔴 [ExpenseForm] Stack trace: $stackTrace');
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    scaffoldMessenger.showSnackBar(
                       SnackBar(
                         content: Text(
-                          context.l10n.expenseItemizedOpenError(e.toString()),
+                          l10n.expenseItemizedOpenError(e.toString()),
                         ),
                         backgroundColor: Colors.red,
                       ),

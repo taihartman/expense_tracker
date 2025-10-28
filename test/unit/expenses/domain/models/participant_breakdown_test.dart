@@ -68,7 +68,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('19.50'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('19.50'),
         items: [item1, item2, item3],
@@ -92,7 +92,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('12.50'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('12.50'),
         items: [item1],
@@ -157,7 +157,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('10.00'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.parse('-0.01'),
         total: Decimal.parse('9.99'),
         items: [item1],
@@ -178,7 +178,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('10.00'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.parse('0.02'),
         total: Decimal.parse('10.02'),
         items: [item1],
@@ -345,7 +345,7 @@ void main() {
           },
           roundedAdjustment: Decimal.zero,
           total: Decimal.parse('2.00'),
-          items: [],
+          items: const [],
         );
 
         expect(breakdown.items, isEmpty);
@@ -467,7 +467,7 @@ void main() {
       final breakdown1 = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('12.50'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('12.50'),
         items: [item],
@@ -476,7 +476,7 @@ void main() {
       final breakdown2 = ParticipantBreakdown(
         userId: 'user2',
         itemsSubtotal: Decimal.parse('12.50'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('12.50'),
         items: [item],

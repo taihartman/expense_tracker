@@ -31,7 +31,7 @@ void main() {
         unitPrice: Decimal.parse('15.99'),
         taxable: true,
         serviceChargeable: true,
-        assignment: ItemAssignment(
+        assignment: const ItemAssignment(
           mode: AssignmentMode.even,
           users: ['user1', 'user2', 'user3'],
         ),
@@ -64,7 +64,7 @@ void main() {
         serviceChargeable: true,
         assignment: ItemAssignment(
           mode: AssignmentMode.custom,
-          users: ['user1', 'user2'],
+          users: const ['user1', 'user2'],
           shares: {
             'user1': Decimal.parse('0.6'),
             'user2': Decimal.parse('0.4'),
@@ -94,7 +94,10 @@ void main() {
         unitPrice: Decimal.parse('15.99'),
         taxable: true,
         serviceChargeable: false,
-        assignment: ItemAssignment(mode: AssignmentMode.even, users: ['user1']),
+        assignment: const ItemAssignment(
+          mode: AssignmentMode.even,
+          users: ['user1'],
+        ),
       );
 
       // Serialize
@@ -121,7 +124,10 @@ void main() {
         unitPrice: Decimal.parse('10.00'),
         taxable: true,
         serviceChargeable: false,
-        assignment: ItemAssignment(mode: AssignmentMode.even, users: ['user1']),
+        assignment: const ItemAssignment(
+          mode: AssignmentMode.even,
+          users: ['user1'],
+        ),
       );
 
       final json1 = LineItemModel.toJson(lineItem1);
@@ -137,7 +143,10 @@ void main() {
         unitPrice: Decimal.parse('10.00'),
         taxable: false,
         serviceChargeable: true,
-        assignment: ItemAssignment(mode: AssignmentMode.even, users: ['user1']),
+        assignment: const ItemAssignment(
+          mode: AssignmentMode.even,
+          users: const ['user1'],
+        ),
       );
 
       final json2 = LineItemModel.toJson(lineItem2);
@@ -212,8 +221,8 @@ void main() {
             base: PercentBase.preTaxItemSubtotals,
           ),
           tip: null,
-          fees: [],
-          discounts: [],
+          fees: const [],
+          discounts: const [],
         );
 
         // Serialize
@@ -245,8 +254,8 @@ void main() {
             base: PercentBase.preTaxItemSubtotals,
           ),
           tip: null,
-          fees: [],
-          discounts: [],
+          fees: const [],
+          discounts: const [],
         );
 
         // Serialize
@@ -271,8 +280,8 @@ void main() {
       final extras = Extras(
         tax: null,
         tip: TipExtra.amount(value: Decimal.parse('5.00')),
-        fees: [],
-        discounts: [],
+        fees: const [],
+        discounts: const [],
       );
 
       // Serialize
@@ -308,7 +317,7 @@ void main() {
             base: PercentBase.preTaxItemSubtotals,
           ),
         ],
-        discounts: [],
+        discounts: const [],
       );
 
       // Serialize
@@ -330,7 +339,7 @@ void main() {
       final extras = Extras(
         tax: null,
         tip: null,
-        fees: [],
+        fees: const [],
         discounts: [
           DiscountExtra(
             id: 'disc1',
@@ -557,7 +566,7 @@ void main() {
           },
           roundedAdjustment: Decimal.parse('0.00'),
           total: Decimal.parse('31.625'),
-          items: [],
+          items: const [],
         );
 
         // Serialize
@@ -588,7 +597,7 @@ void main() {
           extrasAllocated: {'tax': Decimal.parse('8.50')},
           roundedAdjustment: Decimal.parse('-0.01'),
           total: Decimal.parse('108.49'),
-          items: [],
+          items: const [],
         );
 
         // Serialize
@@ -616,7 +625,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user4',
         itemsSubtotal: Decimal.parse('31.98'),
-        extrasAllocated: {},
+        extrasAllocated: const {},
         roundedAdjustment: Decimal.parse('0.00'),
         total: Decimal.parse('31.98'),
         items: [

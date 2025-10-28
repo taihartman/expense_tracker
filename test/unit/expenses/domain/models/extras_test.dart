@@ -11,7 +11,12 @@ void main() {
   group('Extras', () {
     group('creation with various combinations', () {
       test('creates empty extras with all fields null/empty', () {
-        final extras = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, isNull);
         expect(extras.tip, isNull);
@@ -25,7 +30,12 @@ void main() {
           base: PercentBase.preTaxItemSubtotals,
         );
 
-        final extras = Extras(tax: tax, tip: null, fees: [], discounts: []);
+        final extras = Extras(
+          tax: tax,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, tax);
         expect(extras.tip, isNull);
@@ -39,7 +49,12 @@ void main() {
           base: PercentBase.postTaxSubtotals,
         );
 
-        final extras = Extras(tax: null, tip: tip, fees: [], discounts: []);
+        final extras = Extras(
+          tax: null,
+          tip: tip,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, isNull);
         expect(extras.tip, tip);
@@ -67,7 +82,7 @@ void main() {
           tax: null,
           tip: null,
           fees: [fee1, fee2],
-          discounts: [],
+          discounts: const [],
         );
 
         expect(extras.tax, isNull);
@@ -97,7 +112,7 @@ void main() {
         final extras = Extras(
           tax: null,
           tip: null,
-          fees: [],
+          fees: const [],
           discounts: [discount1, discount2],
         );
 
@@ -119,7 +134,12 @@ void main() {
           base: PercentBase.postTaxSubtotals,
         );
 
-        final extras = Extras(tax: tax, tip: tip, fees: [], discounts: []);
+        final extras = Extras(
+          tax: tax,
+          tip: tip,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, tax);
         expect(extras.tip, tip);
@@ -193,7 +213,7 @@ void main() {
           tax: null,
           tip: null,
           fees: [fee1, fee2, fee3],
-          discounts: [],
+          discounts: const [],
         );
 
         expect(extras.fees, hasLength(3));
@@ -225,7 +245,7 @@ void main() {
         final extras = Extras(
           tax: null,
           tip: null,
-          fees: [],
+          fees: const [],
           discounts: [discount1, discount2, discount3],
         );
 
@@ -235,25 +255,45 @@ void main() {
 
     group('optional fields behavior', () {
       test('allows null tax', () {
-        final extras = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, isNull);
       });
 
       test('allows null tip', () {
-        final extras = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tip, isNull);
       });
 
       test('allows empty fees list', () {
-        final extras = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.fees, isEmpty);
       });
 
       test('allows empty discounts list', () {
-        final extras = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.discounts, isEmpty);
       });
@@ -261,9 +301,19 @@ void main() {
       test('treats empty list and null consistently', () {
         // Note: fees and discounts should be lists, not null
         // But we test that empty list works correctly
-        final extras1 = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras1 = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
-        final extras2 = Extras(tax: null, tip: null, fees: [], discounts: []);
+        final extras2 = const Extras(
+          tax: null,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras1, equals(extras2));
       });
@@ -280,7 +330,12 @@ void main() {
           base: PercentBase.postTaxSubtotals,
         );
 
-        final extras = Extras(tax: tax, tip: tip, fees: [], discounts: []);
+        final extras = Extras(
+          tax: tax,
+          tip: tip,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, isNotNull);
         expect(extras.tip, isNotNull);
@@ -309,7 +364,7 @@ void main() {
           tax: tax,
           tip: tip,
           fees: [deliveryFee],
-          discounts: [],
+          discounts: const [],
         );
 
         expect(extras.tax, isNotNull);
@@ -338,7 +393,7 @@ void main() {
         final extras = Extras(
           tax: tax,
           tip: tip,
-          fees: [],
+          fees: const [],
           discounts: [happyHour],
         );
 
@@ -394,7 +449,12 @@ void main() {
           base: PercentBase.preTaxItemSubtotals,
         );
 
-        final extras = Extras(tax: tax, tip: null, fees: [], discounts: []);
+        final extras = Extras(
+          tax: tax,
+          tip: null,
+          fees: const [],
+          discounts: const [],
+        );
 
         expect(extras.tax, isNotNull);
         expect(extras.tip, isNull);
@@ -411,9 +471,19 @@ void main() {
         base: PercentBase.postTaxSubtotals,
       );
 
-      final extras1 = Extras(tax: tax, tip: tip, fees: [], discounts: []);
+      final extras1 = Extras(
+        tax: tax,
+        tip: tip,
+        fees: const [],
+        discounts: const [],
+      );
 
-      final extras2 = Extras(tax: tax, tip: tip, fees: [], discounts: []);
+      final extras2 = Extras(
+        tax: tax,
+        tip: tip,
+        fees: const [],
+        discounts: const [],
+      );
 
       expect(extras1, equals(extras2));
     });
@@ -428,9 +498,19 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final extras1 = Extras(tax: tax1, tip: null, fees: [], discounts: []);
+      final extras1 = Extras(
+        tax: tax1,
+        tip: null,
+        fees: const [],
+        discounts: const [],
+      );
 
-      final extras2 = Extras(tax: tax2, tip: null, fees: [], discounts: []);
+      final extras2 = Extras(
+        tax: tax2,
+        tip: null,
+        fees: const [],
+        discounts: const [],
+      );
 
       expect(extras1, isNot(equals(extras2)));
     });
@@ -445,7 +525,12 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final extras = Extras(tax: tax1, tip: null, fees: [], discounts: []);
+      final extras = Extras(
+        tax: tax1,
+        tip: null,
+        fees: const [],
+        discounts: const [],
+      );
 
       final updated = extras.copyWith(tax: tax2);
 
@@ -465,7 +550,12 @@ void main() {
         base: PercentBase.postTaxSubtotals,
       );
 
-      final extras = Extras(tax: null, tip: tip1, fees: [], discounts: []);
+      final extras = Extras(
+        tax: null,
+        tip: tip1,
+        fees: const [],
+        discounts: const [],
+      );
 
       final updated = extras.copyWith(tip: tip2);
 
@@ -491,7 +581,12 @@ void main() {
         base: null,
       );
 
-      final extras = Extras(tax: null, tip: null, fees: [fee1], discounts: []);
+      final extras = Extras(
+        tax: null,
+        tip: null,
+        fees: [fee1],
+        discounts: const [],
+      );
 
       final updated = extras.copyWith(fees: [fee1, fee2]);
 
@@ -517,7 +612,7 @@ void main() {
       final extras = Extras(
         tax: null,
         tip: null,
-        fees: [],
+        fees: const [],
         discounts: [discount1],
       );
 
@@ -536,7 +631,12 @@ void main() {
         base: PercentBase.postTaxSubtotals,
       );
 
-      final extras = Extras(tax: null, tip: null, fees: [], discounts: []);
+      final extras = const Extras(
+        tax: null,
+        tip: null,
+        fees: const [],
+        discounts: const [],
+      );
 
       final updated = extras.copyWith(tax: tax, tip: tip);
 
@@ -554,7 +654,12 @@ void main() {
         base: PercentBase.postTaxSubtotals,
       );
 
-      final extras = Extras(tax: tax, tip: tip, fees: [], discounts: []);
+      final extras = Extras(
+        tax: tax,
+        tip: tip,
+        fees: const [],
+        discounts: const [],
+      );
 
       final updated = extras.copyWith(tax: null, tip: null);
 
@@ -585,7 +690,7 @@ void main() {
         discounts: [discount],
       );
 
-      final updated = extras.copyWith(fees: [], discounts: []);
+      final updated = extras.copyWith(fees: const [], discounts: const []);
 
       expect(updated.fees, isEmpty);
       expect(updated.discounts, isEmpty);
