@@ -43,10 +43,7 @@ class CustomButton extends StatelessWidget {
     };
 
     if (fullWidth) {
-      button = SizedBox(
-        width: double.infinity,
-        child: button,
-      );
+      button = SizedBox(width: double.infinity, child: button);
     }
 
     return button;
@@ -85,11 +82,7 @@ class CustomButton extends StatelessWidget {
     if (icon != null) {
       return Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 20),
-          const SizedBox(width: 8),
-          Text(text),
-        ],
+        children: [Icon(icon, size: 20), const SizedBox(width: 8), Text(text)],
       );
     }
 

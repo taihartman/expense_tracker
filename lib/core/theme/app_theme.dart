@@ -135,10 +135,7 @@ class AppTheme {
         ),
       ),
 
-      appBarTheme: const AppBarTheme(
-        centerTitle: true,
-        elevation: 0,
-      ),
+      appBarTheme: const AppBarTheme(centerTitle: true, elevation: 0),
 
       // List tile theme (mobile-friendly spacing)
       listTileTheme: const ListTileThemeData(
@@ -152,9 +149,7 @@ class AppTheme {
       // Bottom sheet theme (mobile-optimized)
       bottomSheetTheme: const BottomSheetThemeData(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(spacing2),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(spacing2)),
         ),
       ),
     );

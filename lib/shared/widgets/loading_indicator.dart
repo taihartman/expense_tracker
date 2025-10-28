@@ -10,11 +10,7 @@ class LoadingIndicator extends StatelessWidget {
   /// Size of the spinner
   final double size;
 
-  const LoadingIndicator({
-    super.key,
-    this.message,
-    this.size = 40,
-  });
+  const LoadingIndicator({super.key, this.message, this.size = 40});
 
   @override
   Widget build(BuildContext context) {
@@ -53,10 +49,7 @@ class LoadingOverlay extends StatelessWidget {
   /// Message to display
   final String? message;
 
-  const LoadingOverlay({
-    super.key,
-    this.message,
-  });
+  const LoadingOverlay({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {

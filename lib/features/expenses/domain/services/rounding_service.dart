@@ -57,9 +57,7 @@ class RoundingService {
         );
       }
       if (!amounts.containsKey(payerId)) {
-        throw ArgumentError(
-          'payerId "$payerId" not found in amounts map',
-        );
+        throw ArgumentError('payerId "$payerId" not found in amounts map');
       }
     }
 
@@ -98,7 +96,8 @@ class RoundingService {
     final remainder = originalTotal - roundedTotal;
 
     // Step 4: If remainder is zero or negligible, return rounded amounts
-    final epsilonRational = config.precision * Decimal.fromInt(1) / Decimal.fromInt(10);
+    final epsilonRational =
+        config.precision * Decimal.fromInt(1) / Decimal.fromInt(10);
     final epsilon = epsilonRational.toDecimal();
     if (remainder.abs() < epsilon) {
       return roundedAmounts;

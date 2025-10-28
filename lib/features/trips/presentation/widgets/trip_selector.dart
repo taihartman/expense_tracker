@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Widget for selecting the current trip
-/// 
+///
 /// Shows current trip name and base currency, allows switching trips
 class TripSelectorWidget extends StatelessWidget {
   const TripSelectorWidget({super.key});
@@ -17,7 +18,7 @@ class TripSelectorWidget extends StatelessWidget {
       builder: (context, state) {
         if (state is TripLoaded && state.selectedTrip != null) {
           final trip = state.selectedTrip!;
-          
+
           return InkWell(
             onTap: () {
               _showTripSelector(context, state.trips);
@@ -52,13 +53,18 @@ class TripSelectorWidget extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             trip.baseCurrency.code,
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
                                 ),
                           ),
                         ),
@@ -93,7 +99,7 @@ class TripSelectorWidget extends StatelessWidget {
             context.push('/trips/create');
           },
           icon: const Icon(Icons.add),
-          label: const Text('Create Trip'),
+          label: Text(context.l10n.tripCreateButton),
         );
       },
     );
@@ -114,7 +120,7 @@ class TripSelectorWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Select Trip',
+                    context.l10n.tripSelectTitle,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   IconButton(

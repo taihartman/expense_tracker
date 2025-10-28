@@ -57,10 +57,140 @@ flutter format --set-exit-if-changed .
 ### Project Structure
 
 - `lib/main.dart` - Application entry point
+- `lib/l10n/` - Localization files (ARB format)
+- `lib/core/l10n/` - Localization utilities and extensions
 - `test/` - Test files (currently minimal)
 - `web/` - Web-specific files (index.html, icons, manifest)
 - `specs/` - Feature specifications managed by Spec-Kit
 - `.specify/` - Spec-Kit configuration and templates
+
+### Localization & String Management
+
+The app uses **Flutter's built-in localization system** (`flutter_localizations` + `intl`) for all user-facing strings.
+
+**Key Files**:
+- `lib/l10n/app_en.arb` - English strings (250+ entries)
+- `l10n.yaml` - Localization configuration
+- `lib/core/l10n/l10n_extensions.dart` - Helper extension for easy access
+- Generated files: `.dart_tool/flutter_gen/gen_l10n/app_localizations.dart` (auto-generated)
+
+**Configuration** (`pubspec.yaml`):
+```yaml
+dependencies:
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+
+flutter:
+  generate: true  # Enables automatic l10n generation
+```
+
+#### How to Use Localization
+
+**1. Accessing strings in widgets:**
+
+```dart
+import 'package:expense_tracker/core/l10n/l10n_extensions.dart';
+
+// In any widget with BuildContext:
+Text(context.l10n.commonCancel)  // Simple string
+Text(context.l10n.expensePaidBy(payerName))  // With parameter
+Text(context.l10n.expenseParticipantCount(count))  // With pluralization
+```
+
+**2. Adding new strings:**
+
+Edit `lib/l10n/app_en.arb` and add your string:
+
+```json
+{
+  "myNewString": "Hello World",
+  "myStringWithParam": "Hello {name}!",
+  "@myStringWithParam": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "myPluralString": "{count, plural, =1{1 item} other{{count} items}}",
+  "@myPluralString": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}
+```
+
+**3. Regenerating localization files:**
+
+Files are automatically regenerated when you:
+- Run `flutter pub get`
+- Build the app (`flutter build web`)
+- Run the app (`flutter run`)
+
+Or manually: `flutter gen-l10n`
+
+#### String Naming Conventions
+
+Strings in `app_en.arb` follow these conventions:
+
+- **Common UI**: `commonCancel`, `commonSave`, `commonDelete`
+- **Validation**: `validationRequired`, `validationInvalidNumber`
+- **Feature-specific**: `{feature}{Component}{Property}`
+  - `tripCreateTitle` - Trip feature, Create page, title
+  - `expenseFieldAmountLabel` - Expense feature, field label
+  - `settlementLoadError` - Settlement feature, error message
+- **Dialogs**: `{feature}{Action}DialogTitle`, `{feature}{Action}DialogMessage`
+- **Buttons**: `{feature}{Action}Button`
+- **Errors**: `{feature}{Action}Error`
+
+#### String Categories in ARB File
+
+1. **Common UI** - Buttons, actions used across features
+2. **Validation** - Form validation messages
+3. **Trips** - Trip management strings
+4. **Participants** - Participant management strings
+5. **Expenses** - Expense management strings
+6. **Itemized Expenses** - Wizard-specific strings
+7. **Expense Card** - Detail display strings
+8. **Settlements** - Transfer and settlement strings
+9. **Date/Time** - Relative date formatting
+10. **Currency** - Currency display names
+11. **Categories** - Expense category names
+
+#### Best Practices
+
+**DO**:
+- ✅ Always use `context.l10n.stringKey` for user-facing text
+- ✅ Use parameters for dynamic content: `context.l10n.expensePaidBy(name)`
+- ✅ Use pluralization for counts: `context.l10n.expenseParticipantCount(count)`
+- ✅ Group related strings with common prefixes
+- ✅ Add `@stringKey` metadata for parameters and placeholders
+
+**DON'T**:
+- ❌ Never hardcode user-facing strings in widgets
+- ❌ Don't use string concatenation for translated text
+- ❌ Don't create one-off strings - reuse common strings when possible
+- ❌ Don't add comment keys to ARB (e.g., `"_COMMENT_": "..."`) - they break generation
+
+#### Adding New Languages
+
+To add a new language (e.g., Vietnamese):
+
+1. Create `lib/l10n/app_vi.arb` with translated strings
+2. Update `main.dart`:
+   ```dart
+   supportedLocales: const [
+     Locale('en'), // English
+     Locale('vi'), // Vietnamese
+   ],
+   ```
+3. Run `flutter pub get` to regenerate localization files
+
+The system will automatically use the user's device locale.
 
 ### Spec-Driven Development Workflow
 

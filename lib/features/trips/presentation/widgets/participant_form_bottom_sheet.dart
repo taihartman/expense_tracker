@@ -4,6 +4,7 @@ import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Bottom sheet for adding a new participant to a trip
 ///
@@ -49,15 +50,18 @@ class _ParticipantFormBottomSheetState
   void _updateGeneratedId() {
     setState(() {
       final name = _nameController.text;
-      final cleaned = name
-          .toLowerCase()
-          .trim()
-          .replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final cleaned = name.toLowerCase().trim().replaceAll(
+        RegExp(r'[^a-z0-9]'),
+        '',
+      );
 
       if (cleaned.isEmpty) {
         _generatedId = 'participant_...';
       } else {
-        _generatedId = cleaned.substring(0, cleaned.length > 20 ? 20 : cleaned.length);
+        _generatedId = cleaned.substring(
+          0,
+          cleaned.length > 20 ? 20 : cleaned.length,
+        );
       }
     });
   }
@@ -82,7 +86,7 @@ class _ParticipantFormBottomSheetState
           children: [
             // Title
             Text(
-              'Add Participant',
+              context.l10n.participantAddTitle,
               style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: AppTheme.spacing3),
@@ -92,28 +96,32 @@ class _ParticipantFormBottomSheetState
               controller: _nameController,
               autofocus: true,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(
-                labelText: 'Name *',
-                hintText: 'Enter name (e.g., "Sarah")',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: context.l10n.participantFieldNameLabel,
+                hintText: context.l10n.participantFieldNameHint,
+                border: const OutlineInputBorder(),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Name is required';
+                  return context.l10n.validationNameRequired;
                 }
                 if (value.trim().length > 50) {
-                  return 'Name must be 50 characters or less';
+                  return context.l10n.validationNameTooLong;
                 }
 
                 // Check for duplicate names
                 final state = context.read<TripCubit>().state;
                 if (state is TripLoaded) {
-                  final trip = state.trips.firstWhere((t) => t.id == widget.tripId);
+                  final trip = state.trips.firstWhere(
+                    (t) => t.id == widget.tripId,
+                  );
                   final isDuplicate = trip.participants.any(
                     (p) => p.name.toLowerCase() == value.trim().toLowerCase(),
                   );
                   if (isDuplicate) {
-                    return 'A participant named ${value.trim()} already exists';
+                    return context.l10n.validationParticipantAlreadyExists(
+                      value.trim(),
+                    );
                   }
                 }
 
@@ -126,12 +134,12 @@ class _ParticipantFormBottomSheetState
             TextFormField(
               enabled: false,
               decoration: InputDecoration(
-                labelText: 'Participant ID',
-                hintText: 'Auto-generated from name',
+                labelText: context.l10n.participantFieldIdLabel,
+                hintText: context.l10n.participantFieldIdHint,
                 border: const OutlineInputBorder(),
                 filled: true,
                 fillColor: colorScheme.surfaceContainerHighest,
-                helperText: 'Auto-generated from name. Used internally for tracking.',
+                helperText: context.l10n.participantFieldIdHelper,
                 helperMaxLines: 2,
               ),
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -150,7 +158,7 @@ class _ParticipantFormBottomSheetState
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Add Participant'),
+                  : Text(context.l10n.participantAddButton),
             ),
           ],
         ),
@@ -179,7 +187,9 @@ class _ParticipantFormBottomSheetState
       final newParticipant = Participant.fromName(_nameController.text.trim());
 
       // Check for duplicate IDs (unlikely but possible)
-      final isDuplicateId = trip.participants.any((p) => p.id == newParticipant.id);
+      final isDuplicateId = trip.participants.any(
+        (p) => p.id == newParticipant.id,
+      );
       if (isDuplicateId) {
         // Add timestamp suffix to make it unique
         final uniqueParticipant = Participant(
@@ -198,7 +208,7 @@ class _ParticipantFormBottomSheetState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to add participant: $e'),
+            content: Text(context.l10n.participantAddError(e.toString())),
             backgroundColor: Theme.of(context).colorScheme.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -214,7 +224,10 @@ class _ParticipantFormBottomSheetState
   }
 
   Future<void> _addParticipantToTrip(trip, Participant participant) async {
-    final List<Participant> updatedParticipants = [...trip.participants, participant];
+    final List<Participant> updatedParticipants = [
+      ...trip.participants,
+      participant,
+    ];
     final updatedTrip = trip.copyWith(
       participants: updatedParticipants,
       updatedAt: DateTime.now(),

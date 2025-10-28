@@ -15,7 +15,10 @@ void main() {
 
       expect(config.precision, Decimal.parse('0.01'));
       expect(config.mode, RoundingMode.roundHalfUp);
-      expect(config.distributeRemainderTo, RemainderDistributionMode.largestShare);
+      expect(
+        config.distributeRemainderTo,
+        RemainderDistributionMode.largestShare,
+      );
     });
 
     test('creates valid config with VND precision (1)', () {
@@ -71,13 +74,14 @@ void main() {
         distributeRemainderTo: RemainderDistributionMode.largestShare,
       );
 
-      final updated = config.copyWith(
-        mode: RoundingMode.roundHalfEven,
-      );
+      final updated = config.copyWith(mode: RoundingMode.roundHalfEven);
 
       expect(updated.precision, Decimal.parse('0.01'));
       expect(updated.mode, RoundingMode.roundHalfEven);
-      expect(updated.distributeRemainderTo, RemainderDistributionMode.largestShare);
+      expect(
+        updated.distributeRemainderTo,
+        RemainderDistributionMode.largestShare,
+      );
     });
   });
 }

@@ -33,7 +33,9 @@ class TripCubit extends Cubit<TripState> {
     // Load saved selected trip ID from storage
     _log('🔄 TripCubit constructor called - loading saved trip ID...');
     _selectedTripId = _localStorageService.getSelectedTripId();
-    _log('🔄 Initialized with saved trip ID: ${_selectedTripId ?? "null (no saved trip)"}');
+    _log(
+      '🔄 Initialized with saved trip ID: ${_selectedTripId ?? "null (no saved trip)"}',
+    );
   }
 
   /// Load all trips for the user
@@ -82,12 +84,18 @@ class TripCubit extends Cubit<TripState> {
             if (_selectedTripId != null) {
               _log('🔎 Attempting to restore trip with ID: $_selectedTripId');
               // Try to find the trip with the persisted ID
-              selectedTrip = trips.where((t) => t.id == _selectedTripId).firstOrNull;
+              selectedTrip = trips
+                  .where((t) => t.id == _selectedTripId)
+                  .firstOrNull;
 
               if (selectedTrip != null) {
-                _log('✅ Restored selected trip from storage: ${selectedTrip.name} (ID: ${selectedTrip.id})');
+                _log(
+                  '✅ Restored selected trip from storage: ${selectedTrip.name} (ID: ${selectedTrip.id})',
+                );
               } else {
-                _log('⚠️ Saved trip ID $_selectedTripId not found in trips list');
+                _log(
+                  '⚠️ Saved trip ID $_selectedTripId not found in trips list',
+                );
                 _log('⚠️ Clearing invalid trip ID from storage');
                 _selectedTripId = null;
                 await _localStorageService.clearSelectedTripId();
@@ -100,7 +108,9 @@ class TripCubit extends Cubit<TripState> {
             if (selectedTrip == null && trips.isNotEmpty) {
               selectedTrip = trips.first;
               _selectedTripId = selectedTrip.id;
-              _log('🎯 Auto-selecting first trip: ${selectedTrip.name} (ID: ${selectedTrip.id})');
+              _log(
+                '🎯 Auto-selecting first trip: ${selectedTrip.name} (ID: ${selectedTrip.id})',
+              );
               await _localStorageService.saveSelectedTripId(selectedTrip.id);
               _log('💾 Auto-selected trip saved to storage');
             }
@@ -185,7 +195,9 @@ class TripCubit extends Cubit<TripState> {
       _log('✅ Trip selection complete - emitting new state');
       emit(currentState.copyWith(selectedTrip: trip));
     } else {
-      _log('⚠️ Cannot select trip - state is not TripLoaded (current state: ${state.runtimeType})');
+      _log(
+        '⚠️ Cannot select trip - state is not TripLoaded (current state: ${state.runtimeType})',
+      );
     }
   }
 
@@ -232,7 +244,9 @@ class TripCubit extends Cubit<TripState> {
     required CurrencyCode baseCurrency,
   }) async {
     try {
-      _log('✏️ Updating trip $tripId: name="$name", baseCurrency=${baseCurrency.name}');
+      _log(
+        '✏️ Updating trip $tripId: name="$name", baseCurrency=${baseCurrency.name}',
+      );
 
       // Get the current trip to preserve other fields
       final currentTrip = await _tripRepository.getTripById(tripId);

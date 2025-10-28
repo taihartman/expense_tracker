@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/categories.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Horizontal scrollable category selector with icons and colors
 class CategorySelector extends StatelessWidget {
@@ -48,7 +49,7 @@ class CategorySelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CATEGORY',
+          context.l10n.expenseSectionCategory,
           style: theme.textTheme.labelLarge?.copyWith(
             color: theme.colorScheme.primary,
             fontWeight: FontWeight.bold,
@@ -60,7 +61,8 @@ class CategorySelector extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: DefaultCategories.all.length,
-            separatorBuilder: (context, index) => const SizedBox(width: AppTheme.spacing1),
+            separatorBuilder: (context, index) =>
+                const SizedBox(width: AppTheme.spacing1),
             itemBuilder: (context, index) {
               final category = DefaultCategories.all[index];
               final categoryName = category['name']!;
@@ -70,6 +72,10 @@ class CategorySelector extends StatelessWidget {
               final isSelected = selectedCategoryId == categoryName;
               final color = _getColor(colorHex);
               final icon = _getIconData(iconName);
+              final localizedName = DefaultCategories.getLocalizedName(
+                context,
+                categoryName,
+              );
 
               return FilterChip(
                 selected: isSelected,
@@ -84,7 +90,7 @@ class CategorySelector extends StatelessWidget {
                           : color,
                     ),
                     const SizedBox(width: 6),
-                    Text(categoryName),
+                    Text(localizedName),
                   ],
                 ),
                 onSelected: (selected) {

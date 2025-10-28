@@ -73,12 +73,7 @@ void main() {
           base: PercentBase.preTaxItemSubtotals,
         );
 
-        final extras = Extras(
-          tax: tax,
-          tip: null,
-          fees: [],
-          discounts: [],
-        );
+        final extras = Extras(tax: tax, tip: null, fees: [], discounts: []);
 
         final expense = Expense(
           id: 'exp2',
@@ -156,9 +151,7 @@ void main() {
           items: [],
         );
 
-        final participantBreakdown = {
-          'user1': breakdown,
-        };
+        final participantBreakdown = {'user1': breakdown};
 
         final expense = Expense(
           id: 'exp5',
@@ -200,12 +193,7 @@ void main() {
           base: PercentBase.postTaxSubtotals,
         );
 
-        final extras = Extras(
-          tax: tax,
-          tip: tip,
-          fees: [],
-          discounts: [],
-        );
+        final extras = Extras(tax: tax, tip: tip, fees: [], discounts: []);
 
         final breakdown1 = ParticipantBreakdown(
           userId: 'user1',
@@ -249,10 +237,7 @@ void main() {
             'user1': Decimal.parse('8.16'),
             'user2': Decimal.parse('8.17'),
           },
-          participantBreakdown: {
-            'user1': breakdown1,
-            'user2': breakdown2,
-          },
+          participantBreakdown: {'user1': breakdown1, 'user2': breakdown2},
         );
 
         expect(expense.items, isNotNull);
@@ -277,9 +262,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: null, // Missing items
-          participantAmounts: {
-            'user1': Decimal.parse('100.00'),
-          },
+          participantAmounts: {'user1': Decimal.parse('100.00')},
         );
 
         final error = expense.validate();
@@ -335,9 +318,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [], // Empty items list
-          participantAmounts: {
-            'user1': Decimal.parse('100.00'),
-          },
+          participantAmounts: {'user1': Decimal.parse('100.00')},
         );
 
         final error = expense.validate();
@@ -534,9 +515,7 @@ void main() {
           },
         );
 
-        final updated = expense.copyWith(
-          items: [lineItem1, lineItem2],
-        );
+        final updated = expense.copyWith(items: [lineItem1, lineItem2]);
 
         expect(updated.items, hasLength(2));
         expect(updated.items![0], lineItem1);
@@ -554,19 +533,9 @@ void main() {
           base: PercentBase.preTaxItemSubtotals,
         );
 
-        final extras1 = Extras(
-          tax: tax1,
-          tip: null,
-          fees: [],
-          discounts: [],
-        );
+        final extras1 = Extras(tax: tax1, tip: null, fees: [], discounts: []);
 
-        final extras2 = Extras(
-          tax: tax2,
-          tip: null,
-          fees: [],
-          discounts: [],
-        );
+        final extras2 = Extras(tax: tax2, tip: null, fees: [], discounts: []);
 
         final expense = Expense(
           id: 'exp16',
@@ -580,14 +549,10 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           extras: extras1,
-          participantAmounts: {
-            'user1': Decimal.parse('10.89'),
-          },
+          participantAmounts: {'user1': Decimal.parse('10.89')},
         );
 
-        final updated = expense.copyWith(
-          extras: extras2,
-        );
+        final updated = expense.copyWith(extras: extras2);
 
         expect(updated.extras, extras2);
       });
@@ -617,14 +582,10 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           allocation: allocation1,
-          participantAmounts: {
-            'user1': Decimal.parse('100.00'),
-          },
+          participantAmounts: {'user1': Decimal.parse('100.00')},
         );
 
-        final updated = expense.copyWith(
-          allocation: allocation2,
-        );
+        final updated = expense.copyWith(allocation: allocation2);
 
         expect(updated.allocation, allocation2);
       });
@@ -654,9 +615,7 @@ void main() {
           participantAmounts: amounts1,
         );
 
-        final updated = expense.copyWith(
-          participantAmounts: amounts2,
-        );
+        final updated = expense.copyWith(participantAmounts: amounts2);
 
         expect(updated.participantAmounts, amounts2);
         expect(updated.participantAmounts!['user1'], Decimal.parse('60.00'));
@@ -693,18 +652,12 @@ void main() {
           participants: {'user1': 1},
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          participantBreakdown: {
-            'user1': breakdown1,
-          },
-          participantAmounts: {
-            'user1': Decimal.parse('50.00'),
-          },
+          participantBreakdown: {'user1': breakdown1},
+          participantAmounts: {'user1': Decimal.parse('50.00')},
         );
 
         final updated = expense.copyWith(
-          participantBreakdown: {
-            'user1': breakdown2,
-          },
+          participantBreakdown: {'user1': breakdown2},
         );
 
         expect(updated.participantBreakdown!['user1'], breakdown2);
@@ -735,9 +688,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
-          participantAmounts: {
-            'user1': Decimal.parse('12.50'),
-          },
+          participantAmounts: {'user1': Decimal.parse('12.50')},
         );
 
         final expense2 = Expense(
@@ -752,9 +703,7 @@ void main() {
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           items: [lineItem],
-          participantAmounts: {
-            'user1': Decimal.parse('12.50'),
-          },
+          participantAmounts: {'user1': Decimal.parse('12.50')},
         );
 
         // Note: Expense equality is based on ID only, per the existing implementation

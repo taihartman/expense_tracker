@@ -95,14 +95,14 @@ class LineItem extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        quantity,
-        unitPrice,
-        taxable,
-        serviceChargeable,
-        assignment,
-      ];
+    id,
+    name,
+    quantity,
+    unitPrice,
+    taxable,
+    serviceChargeable,
+    assignment,
+  ];
 
   @override
   String toString() {

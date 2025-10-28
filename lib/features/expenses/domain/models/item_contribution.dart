@@ -37,12 +37,12 @@ class ItemContribution extends Equatable {
 
   @override
   List<Object?> get props => [
-        itemId,
-        itemName,
-        quantity,
-        unitPrice,
-        assignedShare,
-      ];
+    itemId,
+    itemName,
+    quantity,
+    unitPrice,
+    assignedShare,
+  ];
 
   @override
   String toString() {

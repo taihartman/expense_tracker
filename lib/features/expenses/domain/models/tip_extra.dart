@@ -21,11 +21,7 @@ class TipExtra extends Equatable {
   /// Examples: preTaxItemSubtotals, postTaxSubtotals, postFeesSubtotals
   final PercentBase? base;
 
-  const TipExtra._({
-    required this.type,
-    required this.value,
-    this.base,
-  });
+  const TipExtra._({required this.type, required this.value, this.base});
 
   /// Create a percentage-based tip
   ///
@@ -37,27 +33,17 @@ class TipExtra extends Equatable {
     if (value < Decimal.zero) {
       throw ArgumentError('Tip value cannot be negative');
     }
-    return TipExtra._(
-      type: 'percent',
-      value: value,
-      base: base,
-    );
+    return TipExtra._(type: 'percent', value: value, base: base);
   }
 
   /// Create an absolute amount tip
   ///
   /// Throws [ArgumentError] if value < 0
-  factory TipExtra.amount({
-    required Decimal value,
-  }) {
+  factory TipExtra.amount({required Decimal value}) {
     if (value < Decimal.zero) {
       throw ArgumentError('Tip value cannot be negative');
     }
-    return TipExtra._(
-      type: 'amount',
-      value: value,
-      base: null,
-    );
+    return TipExtra._(type: 'amount', value: value, base: null);
   }
 
   /// Raw constructor for deserialization
@@ -88,11 +74,7 @@ class TipExtra extends Equatable {
       throw ArgumentError('Amount-based tip cannot have a base');
     }
 
-    return TipExtra._(
-      type: type,
-      value: value,
-      base: base,
-    );
+    return TipExtra._(type: type, value: value, base: base);
   }
 
   /// Validate tip configuration
@@ -123,11 +105,7 @@ class TipExtra extends Equatable {
   }
 
   /// Create a copy with updated fields
-  TipExtra copyWith({
-    String? type,
-    Decimal? value,
-    PercentBase? base,
-  }) {
+  TipExtra copyWith({String? type, Decimal? value, PercentBase? base}) {
     return TipExtra._(
       type: type ?? this.type,
       value: value ?? this.value,

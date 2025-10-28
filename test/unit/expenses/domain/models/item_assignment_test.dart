@@ -19,10 +19,7 @@ void main() {
 
       test('validates at least one user required', () {
         expect(
-          () => ItemAssignment(
-            mode: AssignmentMode.even,
-            users: [],
-          ),
+          () => ItemAssignment(mode: AssignmentMode.even, users: []),
           throwsArgumentError,
         );
       });
@@ -32,7 +29,10 @@ void main() {
           () => ItemAssignment(
             mode: AssignmentMode.even,
             users: ['user1', 'user2'],
-            shares: {'user1': Decimal.parse('0.5'), 'user2': Decimal.parse('0.5')},
+            shares: {
+              'user1': Decimal.parse('0.5'),
+              'user2': Decimal.parse('0.5'),
+            },
           ),
           throwsArgumentError,
         );
@@ -155,9 +155,7 @@ void main() {
         users: ['user1', 'user2'],
       );
 
-      final updated = assignment.copyWith(
-        users: ['user1', 'user2', 'user3'],
-      );
+      final updated = assignment.copyWith(users: ['user1', 'user2', 'user3']);
 
       expect(updated.users, ['user1', 'user2', 'user3']);
       expect(updated.mode, AssignmentMode.even);

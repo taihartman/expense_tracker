@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/models/settlement_summary.dart';
 import '../../domain/models/minimal_transfer.dart';
+import '../../domain/models/category_spending.dart';
 
 /// Base state for SettlementCubit
 abstract class SettlementState extends Equatable {
@@ -30,28 +31,41 @@ class SettlementLoaded extends SettlementState {
   final SettlementSummary summary;
   final List<MinimalTransfer> activeTransfers;
   final List<MinimalTransfer> settledTransfers;
+  final Map<String, PersonCategorySpending>? personCategorySpending;
 
   const SettlementLoaded({
     required this.summary,
     required this.activeTransfers,
     required this.settledTransfers,
+    this.personCategorySpending,
   });
 
   @override
-  List<Object?> get props => [summary, activeTransfers, settledTransfers];
+  List<Object?> get props => [
+    summary,
+    activeTransfers,
+    settledTransfers,
+    personCategorySpending,
+  ];
 
   /// Get all transfers (active + settled)
-  List<MinimalTransfer> get allTransfers => [...activeTransfers, ...settledTransfers];
+  List<MinimalTransfer> get allTransfers => [
+    ...activeTransfers,
+    ...settledTransfers,
+  ];
 
   SettlementLoaded copyWith({
     SettlementSummary? summary,
     List<MinimalTransfer>? activeTransfers,
     List<MinimalTransfer>? settledTransfers,
+    Map<String, PersonCategorySpending>? personCategorySpending,
   }) {
     return SettlementLoaded(
       summary: summary ?? this.summary,
       activeTransfers: activeTransfers ?? this.activeTransfers,
       settledTransfers: settledTransfers ?? this.settledTransfers,
+      personCategorySpending:
+          personCategorySpending ?? this.personCategorySpending,
     );
   }
 }

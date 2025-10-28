@@ -7,6 +7,7 @@ import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../widgets/participant_form_bottom_sheet.dart';
 import '../widgets/delete_participant_dialog.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Trip Settings Page
 ///
@@ -17,20 +18,17 @@ import '../widgets/delete_participant_dialog.dart';
 class TripSettingsPage extends StatelessWidget {
   final String tripId;
 
-  const TripSettingsPage({
-    super.key,
-    required this.tripId,
-  });
+  const TripSettingsPage({super.key, required this.tripId});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trip Settings'),
+        title: Text(context.l10n.tripSettingsTitle),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          tooltip: 'Back to Expenses',
+          tooltip: context.l10n.tripBackToExpenses,
           onPressed: () {
             context.pop();
           },
@@ -38,7 +36,7 @@ class TripSettingsPage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            tooltip: 'Edit Trip',
+            tooltip: context.l10n.commonEdit,
             onPressed: () {
               context.push('/trips/$tripId/edit');
             },
@@ -63,7 +61,7 @@ class TripSettingsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppTheme.spacing2),
                   Text(
-                    'Failed to load trip settings',
+                    context.l10n.tripSettingsLoadError,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: AppTheme.spacing1),
@@ -78,7 +76,7 @@ class TripSettingsPage extends StatelessWidget {
                       context.read<TripCubit>().loadTrips();
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    label: Text(context.l10n.commonRetry),
                   ),
                 ],
               ),
@@ -105,7 +103,7 @@ class TripSettingsPage extends StatelessWidget {
                   // Participants Section
                   _buildSectionHeader(
                     context,
-                    'Participants (${trip.participants.length})',
+                    '${context.l10n.participantSectionTitle} (${trip.participants.length})',
                   ),
                   const SizedBox(height: AppTheme.spacing2),
 
@@ -127,7 +125,7 @@ class TripSettingsPage extends StatelessWidget {
             return FloatingActionButton.extended(
               onPressed: () => _showAddParticipantSheet(context),
               icon: const Icon(Icons.person_add),
-              label: const Text('Add Participant'),
+              label: Text(context.l10n.participantAddButton),
             );
           }
           return const SizedBox.shrink();
@@ -140,9 +138,9 @@ class TripSettingsPage extends StatelessWidget {
     return Text(
       title,
       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 
@@ -155,21 +153,21 @@ class TripSettingsPage extends StatelessWidget {
             _buildDetailRow(
               context,
               icon: Icons.trip_origin,
-              label: 'Trip Name',
+              label: context.l10n.tripFieldNameLabel,
               value: trip.name,
             ),
             const Divider(height: AppTheme.spacing3),
             _buildDetailRow(
               context,
               icon: Icons.attach_money,
-              label: 'Base Currency',
+              label: context.l10n.tripFieldBaseCurrencyLabel,
               value: trip.baseCurrency.code,
             ),
             const Divider(height: AppTheme.spacing3),
             _buildDetailRow(
               context,
               icon: Icons.calendar_today,
-              label: 'Created',
+              label: context.l10n.tripFieldCreatedLabel,
               value: _formatDate(trip.createdAt),
             ),
           ],
@@ -186,11 +184,7 @@ class TripSettingsPage extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: AppTheme.spacing2),
         Expanded(
           child: Column(
@@ -199,14 +193,11 @@ class TripSettingsPage extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 4),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
+              Text(value, style: Theme.of(context).textTheme.bodyLarge),
             ],
           ),
         ),
@@ -227,15 +218,15 @@ class TripSettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: AppTheme.spacing2),
             Text(
-              'No participants added yet',
+              context.l10n.participantEmptyStateTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppTheme.spacing1),
             Text(
-              'Tap the + button below to add your first participant',
+              context.l10n.participantEmptyStateDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -253,7 +244,8 @@ class TripSettingsPage extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: trip.participants.length,
-        separatorBuilder: (context, index) => const SizedBox(height: AppTheme.spacing1),
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: AppTheme.spacing1),
         itemBuilder: (context, index) {
           return _buildParticipantCard(context, trip, trip.participants[index]);
         },
@@ -276,7 +268,11 @@ class TripSettingsPage extends StatelessWidget {
     }
   }
 
-  Widget _buildParticipantCard(BuildContext context, trip, Participant participant) {
+  Widget _buildParticipantCard(
+    BuildContext context,
+    trip,
+    Participant participant,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Generate avatar color based on participant ID
@@ -309,14 +305,14 @@ class TripSettingsPage extends StatelessWidget {
         title: Text(participant.name),
         subtitle: Text(
           participant.id,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline),
           color: colorScheme.error,
-          tooltip: 'Remove ${participant.name}',
+          tooltip: context.l10n.participantRemoveTooltip,
           onPressed: () => _handleDeleteParticipant(context, trip, participant),
         ),
       ),
@@ -337,7 +333,9 @@ class TripSettingsPage extends StatelessWidget {
             Navigator.of(sheetContext).pop();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('✓ ${participant.name} added successfully'),
+                content: Text(
+                  context.l10n.participantAddedSuccess(participant.name),
+                ),
                 behavior: SnackBarBehavior.floating,
               ),
             );

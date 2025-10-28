@@ -74,13 +74,16 @@ class ItemizedCalculator {
     // Step 6: Sum up totals before rounding
     final unroundedTotals = <String, Decimal>{};
     for (final participantId in participantData.keys) {
-      final itemSubtotal = participantData[participantId]!['subtotal'] as Decimal;
+      final itemSubtotal =
+          participantData[participantId]!['subtotal'] as Decimal;
       final tax = taxAmounts[participantId] ?? Decimal.zero;
       final tip = tipAmounts[participantId] ?? Decimal.zero;
       final fees = feeResults['amounts']![participantId] ?? Decimal.zero;
-      final discounts = discountResults['amounts']![participantId] ?? Decimal.zero;
+      final discounts =
+          discountResults['amounts']![participantId] ?? Decimal.zero;
 
-      unroundedTotals[participantId] = itemSubtotal + tax + tip + fees - discounts;
+      unroundedTotals[participantId] =
+          itemSubtotal + tax + tip + fees - discounts;
     }
 
     // Step 7: Apply rounding with remainder distribution
@@ -93,8 +96,11 @@ class ItemizedCalculator {
     // Step 8: Build ParticipantBreakdown objects
     final breakdowns = <String, ParticipantBreakdown>{};
     for (final participantId in participantData.keys) {
-      final contributions = participantData[participantId]!['contributions'] as List<ItemContribution>;
-      final itemSubtotal = participantData[participantId]!['subtotal'] as Decimal;
+      final contributions =
+          participantData[participantId]!['contributions']
+              as List<ItemContribution>;
+      final itemSubtotal =
+          participantData[participantId]!['subtotal'] as Decimal;
 
       // Build extrasAllocated map
       final extrasAllocated = <String, Decimal>{};
@@ -105,12 +111,14 @@ class ItemizedCalculator {
         extrasAllocated['tip'] = tipAmounts[participantId]!;
       }
       // Add individual fees
-      final participantFees = feeResults['breakdowns']![participantId] ?? <String, Decimal>{};
+      final participantFees =
+          feeResults['breakdowns']![participantId] ?? <String, Decimal>{};
       for (final entry in participantFees.entries) {
         extrasAllocated['fee_${entry.key}'] = entry.value;
       }
       // Add individual discounts
-      final participantDiscounts = discountResults['breakdowns']![participantId] ?? <String, Decimal>{};
+      final participantDiscounts =
+          discountResults['breakdowns']![participantId] ?? <String, Decimal>{};
       for (final entry in participantDiscounts.entries) {
         extrasAllocated['discount_${entry.key}'] = entry.value;
       }
@@ -134,7 +142,9 @@ class ItemizedCalculator {
   }
 
   /// Calculate item subtotals per person with contribution audit trail
-  Map<String, Map<String, dynamic>> _calculateItemSubtotals(List<LineItem> items) {
+  Map<String, Map<String, dynamic>> _calculateItemSubtotals(
+    List<LineItem> items,
+  ) {
     final participantData = <String, Map<String, dynamic>>{};
 
     for (final item in items) {
@@ -147,12 +157,11 @@ class ItemizedCalculator {
       if (assignment.mode == AssignmentMode.even) {
         // Even split - may produce infinite precision rational
         // Convert via double to handle infinite precision
-        final shareRational = itemTotal / Decimal.fromInt(assignment.users.length);
+        final shareRational =
+            itemTotal / Decimal.fromInt(assignment.users.length);
         final shareDouble = shareRational.toDouble();
         final shareAmount = Decimal.parse(shareDouble.toStringAsFixed(10));
-        shares = {
-          for (final userId in assignment.users) userId: shareAmount,
-        };
+        shares = {for (final userId in assignment.users) userId: shareAmount};
       } else {
         // Custom shares
         shares = {
@@ -182,8 +191,11 @@ class ItemizedCalculator {
         final Decimal assignedShare;
         if (assignment.mode == AssignmentMode.even) {
           // May produce infinite precision (e.g., 1/3) - convert via double
-          final shareRational = Decimal.one / Decimal.fromInt(assignment.users.length);
-          assignedShare = Decimal.parse(shareRational.toDouble().toStringAsFixed(10));
+          final shareRational =
+              Decimal.one / Decimal.fromInt(assignment.users.length);
+          assignedShare = Decimal.parse(
+            shareRational.toDouble().toStringAsFixed(10),
+          );
         } else {
           assignedShare = assignment.shares![userId]!;
         }
@@ -196,7 +208,8 @@ class ItemizedCalculator {
           assignedShare: assignedShare,
         );
 
-        (participantData[userId]!['contributions'] as List<ItemContribution>).add(contribution);
+        (participantData[userId]!['contributions'] as List<ItemContribution>)
+            .add(contribution);
       }
     }
 
@@ -219,7 +232,10 @@ class ItemizedCalculator {
     Decimal totalTaxAmount;
     if (tax.type == 'percent') {
       // Calculate base for percentage
-      final base = _calculatePercentageBase(participantData, allocation.percentBase);
+      final base = _calculatePercentageBase(
+        participantData,
+        allocation.percentBase,
+      );
       totalTaxAmount = (base * tax.value / Decimal.fromInt(100)).toDecimal();
     } else {
       // Flat amount
@@ -250,7 +266,10 @@ class ItemizedCalculator {
     Decimal totalTipAmount;
     if (tip.type == 'percent') {
       // Calculate base for percentage
-      final base = _calculatePercentageBase(participantData, allocation.percentBase);
+      final base = _calculatePercentageBase(
+        participantData,
+        allocation.percentBase,
+      );
       totalTipAmount = (base * tip.value / Decimal.fromInt(100)).toDecimal();
     } else {
       // Flat amount
@@ -305,10 +324,7 @@ class ItemizedCalculator {
       }
     }
 
-    return {
-      'amounts': feeAmounts,
-      'breakdowns': feeBreakdowns,
-    };
+    return {'amounts': feeAmounts, 'breakdowns': feeBreakdowns};
   }
 
   /// Calculate discounts per person with breakdown
@@ -332,7 +348,8 @@ class ItemizedCalculator {
       Decimal totalDiscountAmount;
       if (discount.type == 'percent') {
         final base = _calculatePercentageBase(participantData, discount.base!);
-        totalDiscountAmount = (base * discount.value / Decimal.fromInt(100)).toDecimal();
+        totalDiscountAmount = (base * discount.value / Decimal.fromInt(100))
+            .toDecimal();
       } else {
         totalDiscountAmount = discount.value;
       }
@@ -351,10 +368,7 @@ class ItemizedCalculator {
       }
     }
 
-    return {
-      'amounts': discountAmounts,
-      'breakdowns': discountBreakdowns,
-    };
+    return {'amounts': discountAmounts, 'breakdowns': discountBreakdowns};
   }
 
   /// Calculate percentage base according to PercentBase configuration
@@ -379,7 +393,8 @@ class ItemizedCalculator {
   }) {
     if (splitMode == AbsoluteSplitMode.evenAcrossAssignedPeople) {
       // Split evenly among all participants
-      final perPersonRational = totalAmount / Decimal.fromInt(participantData.length);
+      final perPersonRational =
+          totalAmount / Decimal.fromInt(participantData.length);
       final perPerson = perPersonRational.toDecimal();
       return {
         for (final participantId in participantData.keys)
@@ -394,7 +409,8 @@ class ItemizedCalculator {
 
       if (totalSubtotal == Decimal.zero) {
         // If no items, split evenly
-        final perPersonRational = totalAmount / Decimal.fromInt(participantData.length);
+        final perPersonRational =
+            totalAmount / Decimal.fromInt(participantData.length);
         final perPerson = perPersonRational.toDecimal();
         return {
           for (final participantId in participantData.keys)

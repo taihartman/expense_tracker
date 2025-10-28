@@ -1,8 +1,10 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import '../../../expenses/domain/models/expense.dart';
+import '../../../categories/domain/models/category.dart' as cat;
 import '../models/person_summary.dart';
 import '../models/minimal_transfer.dart';
+import '../models/category_spending.dart';
 import '../../../../core/models/currency_code.dart';
 
 /// Helper function to log with timestamps
@@ -51,8 +53,18 @@ class SettlementCalculator {
       _log('  → ${expense.payerUserId} paid: $amountInBase');
 
       // Calculate and distribute shares
-      final shares = expense.calculateShares();
-      _log('  Calculated shares:');
+      // For itemized expenses, use pre-calculated participantAmounts
+      // For equal/weighted expenses, calculate shares
+      final Map<String, Decimal> shares;
+      if (expense.participantAmounts != null &&
+          expense.participantAmounts!.isNotEmpty) {
+        shares = expense.participantAmounts!;
+        _log('  Using pre-calculated participantAmounts (itemized):');
+      } else {
+        shares = expense.calculateShares();
+        _log('  Calculated shares (equal/weighted):');
+      }
+
       for (final entry in shares.entries) {
         final userId = entry.key;
         final shareAmount = entry.value;
@@ -104,6 +116,141 @@ class SettlementCalculator {
     return result;
   }
 
+  /// Calculate per-person category spending breakdown
+  ///
+  /// Returns map of userId -> PersonCategorySpending with category breakdown
+  /// Requires category list to attach names/colors to spending
+  Map<String, PersonCategorySpending> calculatePersonCategorySpending({
+    required List<Expense> expenses,
+    required List<cat.Category> categories,
+    required CurrencyCode baseCurrency,
+  }) {
+    _log(
+      '\n📊 calculatePersonCategorySpending() called with ${expenses.length} expenses, ${categories.length} categories',
+    );
+
+    // Build category lookup map for quick access
+    final categoryMap = <String, cat.Category>{};
+    for (final category in categories) {
+      categoryMap[category.id] = category;
+    }
+
+    // Track spending: userId -> categoryId -> amount
+    final userCategorySpending = <String, Map<String, Decimal>>{};
+
+    // Track totals: userId -> (totalPaid, totalOwed)
+    final userTotals = <String, _MutablePersonSummary>{};
+
+    for (int i = 0; i < expenses.length; i++) {
+      final expense = expenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+      _log('  Description: ${expense.description ?? "No description"}');
+      _log('  Category: ${expense.categoryId ?? "Uncategorized"}');
+      _log('  Amount: ${expense.amount} ${expense.currency.code}');
+
+      // Convert amount to base currency (TODO: FX conversion in Phase 5)
+      final amountInBase = expense.amount;
+
+      // Update payer's total paid
+      userTotals.putIfAbsent(
+        expense.payerUserId,
+        () => _MutablePersonSummary(userId: expense.payerUserId),
+      );
+      userTotals[expense.payerUserId]!.totalPaidBase += amountInBase;
+
+      // Calculate shares for participants
+      final Map<String, Decimal> shares;
+      if (expense.participantAmounts != null &&
+          expense.participantAmounts!.isNotEmpty) {
+        shares = expense.participantAmounts!;
+        _log('  Using pre-calculated participantAmounts (itemized)');
+      } else {
+        shares = expense.calculateShares();
+        _log('  Calculated shares (equal/weighted)');
+      }
+
+      // Distribute spending to categories per user
+      final categoryId = expense.categoryId ?? 'uncategorized';
+
+      for (final entry in shares.entries) {
+        final userId = entry.key;
+        final shareAmount = entry.value;
+        _log('    → $userId owes: $shareAmount for category: $categoryId');
+
+        // Update total owed
+        userTotals.putIfAbsent(
+          userId,
+          () => _MutablePersonSummary(userId: userId),
+        );
+        userTotals[userId]!.totalOwedBase += shareAmount;
+
+        // Update category spending
+        userCategorySpending.putIfAbsent(userId, () => <String, Decimal>{});
+        userCategorySpending[userId]!.update(
+          categoryId,
+          (current) => current + shareAmount,
+          ifAbsent: () => shareAmount,
+        );
+      }
+    }
+
+    _log('\n💰 Building PersonCategorySpending results:');
+
+    // Build final PersonCategorySpending objects
+    final result = <String, PersonCategorySpending>{};
+
+    for (final entry in userTotals.entries) {
+      final userId = entry.key;
+      final totals = entry.value;
+      final netBase = totals.totalPaidBase - totals.totalOwedBase;
+
+      // Build category breakdown list
+      final categoryBreakdown = <CategorySpending>[];
+      final userCategories = userCategorySpending[userId] ?? {};
+
+      for (final categoryEntry in userCategories.entries) {
+        final categoryId = categoryEntry.key;
+        final amount = categoryEntry.value;
+
+        // Get category metadata
+        final category = categoryMap[categoryId];
+        final categoryName =
+            category?.name ??
+            (categoryId == 'uncategorized' ? 'Uncategorized' : categoryId);
+        final color = category?.color;
+        final icon = category?.icon;
+
+        categoryBreakdown.add(
+          CategorySpending(
+            categoryId: categoryId,
+            categoryName: categoryName,
+            amount: amount,
+            color: color,
+            icon: icon,
+          ),
+        );
+
+        _log('  $userId - $categoryName: $amount');
+      }
+
+      // Sort by amount descending
+      categoryBreakdown.sort((a, b) => b.amount.compareTo(a.amount));
+
+      result[userId] = PersonCategorySpending(
+        userId: userId,
+        totalPaidBase: totals.totalPaidBase,
+        totalOwedBase: totals.totalOwedBase,
+        netBase: netBase,
+        categoryBreakdown: categoryBreakdown,
+      );
+    }
+
+    _log(
+      '\n✅ Category spending calculation complete for ${result.length} users',
+    );
+    return result;
+  }
+
   /// Calculate pairwise netted transfers
   ///
   /// For each pair of people, calculates the direct debt between them
@@ -130,7 +277,18 @@ class SettlementCalculator {
       _log('  Payer: ${expense.payerUserId}');
       _log('  Amount: ${expense.amount} ${expense.currency.code}');
 
-      final shares = expense.calculateShares();
+      // For itemized expenses, use pre-calculated participantAmounts
+      // For equal/weighted expenses, calculate shares
+      final Map<String, Decimal> shares;
+      if (expense.participantAmounts != null &&
+          expense.participantAmounts!.isNotEmpty) {
+        shares = expense.participantAmounts!;
+        _log('  Using pre-calculated participantAmounts (itemized)');
+      } else {
+        shares = expense.calculateShares();
+        _log('  Calculated shares (equal/weighted)');
+      }
+
       final payerId = expense.payerUserId;
 
       // For each participant who owes money
@@ -176,7 +334,9 @@ class SettlementCalculator {
       _log('\n🔀 Netting debt between $userA and $userB:');
       _log('  $userA owes $userB: $aOwesB');
       _log('  $userB owes $userA: $bOwesA');
-      _log('  Net: ${netDebt > Decimal.zero ? "$userA owes $userB $netDebt" : "$userB owes $userA ${netDebt.abs()}"}');
+      _log(
+        '  Net: ${netDebt > Decimal.zero ? "$userA owes $userB $netDebt" : "$userB owes $userA ${netDebt.abs()}"}',
+      );
 
       if (netDebt.abs() >= Decimal.parse('0.01')) {
         // Create transfer for net debt
@@ -218,7 +378,9 @@ class SettlementCalculator {
       );
     }
 
-    _log('\n✅ Pairwise transfers calculation complete: ${transfers.length} transfers');
+    _log(
+      '\n✅ Pairwise transfers calculation complete: ${transfers.length} transfers',
+    );
     return transfers;
   }
 

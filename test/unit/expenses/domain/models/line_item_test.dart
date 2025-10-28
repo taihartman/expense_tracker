@@ -303,10 +303,7 @@ void main() {
       final assignment2 = ItemAssignment(
         mode: AssignmentMode.custom,
         users: ['user1', 'user2'],
-        shares: {
-          'user1': Decimal.parse('0.7'),
-          'user2': Decimal.parse('0.3'),
-        },
+        shares: {'user1': Decimal.parse('0.7'), 'user2': Decimal.parse('0.3')},
       );
 
       final lineItem = LineItem(
@@ -348,9 +345,7 @@ void main() {
         assignment: validAssignment,
       );
 
-      final updated = lineItem.copyWith(
-        quantity: Decimal.parse('5'),
-      );
+      final updated = lineItem.copyWith(quantity: Decimal.parse('5'));
 
       expect(updated.id, 'item1');
       expect(updated.name, 'Burger');

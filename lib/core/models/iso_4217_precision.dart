@@ -22,7 +22,6 @@ class Iso4217Precision {
     'XAF': 0, // Central African CFA Franc
     'XOF': 0, // West African CFA Franc
     'XPF': 0, // CFP Franc
-
     // Three decimal currencies
     'BHD': 3, // Bahraini Dinar
     'IQD': 3, // Iraqi Dinar
@@ -31,7 +30,6 @@ class Iso4217Precision {
     'LYD': 3, // Libyan Dinar
     'OMR': 3, // Omani Rial
     'TND': 3, // Tunisian Dinar
-
     // Standard two decimal currencies (most common)
     'USD': 2, // United States Dollar
     'EUR': 2, // Euro

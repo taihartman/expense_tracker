@@ -113,9 +113,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('10.00'),
-        extrasAllocated: {
-          'tax': Decimal.parse('0.89'),
-        },
+        extrasAllocated: {'tax': Decimal.parse('0.89')},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('10.89'),
         items: [item1],
@@ -138,9 +136,7 @@ void main() {
       final breakdown = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('30.00'),
-        extrasAllocated: {
-          'discounts': Decimal.parse('-5.00'),
-        },
+        extrasAllocated: {'discounts': Decimal.parse('-5.00')},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('25.00'),
         items: [item1],
@@ -359,39 +355,43 @@ void main() {
     });
 
     group('audit trail verification', () {
-      test('verifies total equals itemsSubtotal + sum of extras + adjustment', () {
-        final item = ItemContribution(
-          itemId: 'item1',
-          itemName: 'Item',
-          quantity: Decimal.parse('1'),
-          unitPrice: Decimal.parse('100.00'),
-          assignedShare: Decimal.parse('1'),
-        );
+      test(
+        'verifies total equals itemsSubtotal + sum of extras + adjustment',
+        () {
+          final item = ItemContribution(
+            itemId: 'item1',
+            itemName: 'Item',
+            quantity: Decimal.parse('1'),
+            unitPrice: Decimal.parse('100.00'),
+            assignedShare: Decimal.parse('1'),
+          );
 
-        final breakdown = ParticipantBreakdown(
-          userId: 'user1',
-          itemsSubtotal: Decimal.parse('100.00'),
-          extrasAllocated: {
-            'tax': Decimal.parse('8.88'),
-            'tip': Decimal.parse('21.78'),
-            'fees': Decimal.parse('3.00'),
-            'discounts': Decimal.parse('-10.00'),
-          },
-          roundedAdjustment: Decimal.parse('0.01'),
-          total: Decimal.parse('123.67'),
-          items: [item],
-        );
+          final breakdown = ParticipantBreakdown(
+            userId: 'user1',
+            itemsSubtotal: Decimal.parse('100.00'),
+            extrasAllocated: {
+              'tax': Decimal.parse('8.88'),
+              'tip': Decimal.parse('21.78'),
+              'fees': Decimal.parse('3.00'),
+              'discounts': Decimal.parse('-10.00'),
+            },
+            roundedAdjustment: Decimal.parse('0.01'),
+            total: Decimal.parse('123.67'),
+            items: [item],
+          );
 
-        // Verify: 100 + 8.88 + 21.78 + 3.00 - 10.00 + 0.01 = 123.67
-        final calculatedTotal = breakdown.itemsSubtotal +
-            (breakdown.extrasAllocated['tax'] ?? Decimal.zero) +
-            (breakdown.extrasAllocated['tip'] ?? Decimal.zero) +
-            (breakdown.extrasAllocated['fees'] ?? Decimal.zero) +
-            (breakdown.extrasAllocated['discounts'] ?? Decimal.zero) +
-            breakdown.roundedAdjustment;
+          // Verify: 100 + 8.88 + 21.78 + 3.00 - 10.00 + 0.01 = 123.67
+          final calculatedTotal =
+              breakdown.itemsSubtotal +
+              (breakdown.extrasAllocated['tax'] ?? Decimal.zero) +
+              (breakdown.extrasAllocated['tip'] ?? Decimal.zero) +
+              (breakdown.extrasAllocated['fees'] ?? Decimal.zero) +
+              (breakdown.extrasAllocated['discounts'] ?? Decimal.zero) +
+              breakdown.roundedAdjustment;
 
-        expect(calculatedTotal, breakdown.total);
-      });
+          expect(calculatedTotal, breakdown.total);
+        },
+      );
 
       test('verifies extras can be individually traced', () {
         final item = ItemContribution(
@@ -437,9 +437,7 @@ void main() {
       final breakdown1 = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('12.50'),
-        extrasAllocated: {
-          'tax': Decimal.parse('1.11'),
-        },
+        extrasAllocated: {'tax': Decimal.parse('1.11')},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('13.61'),
         items: [item],
@@ -448,9 +446,7 @@ void main() {
       final breakdown2 = ParticipantBreakdown(
         userId: 'user1',
         itemsSubtotal: Decimal.parse('12.50'),
-        extrasAllocated: {
-          'tax': Decimal.parse('1.11'),
-        },
+        extrasAllocated: {'tax': Decimal.parse('1.11')},
         roundedAdjustment: Decimal.zero,
         total: Decimal.parse('13.61'),
         items: [item],

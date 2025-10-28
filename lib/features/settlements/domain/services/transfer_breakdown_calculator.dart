@@ -50,14 +50,16 @@ class TransferBreakdownCalculator {
         toOwes: toOwes,
       );
 
-      expenseBreakdowns.add(ExpenseBreakdown(
-        expense: expense,
-        fromPaid: fromPaid,
-        fromOwes: fromOwes,
-        toPaid: toPaid,
-        toOwes: toOwes,
-        netContribution: netContribution,
-      ));
+      expenseBreakdowns.add(
+        ExpenseBreakdown(
+          expense: expense,
+          fromPaid: fromPaid,
+          fromOwes: fromOwes,
+          toPaid: toPaid,
+          toOwes: toOwes,
+          netContribution: netContribution,
+        ),
+      );
     }
 
     return TransferBreakdown(

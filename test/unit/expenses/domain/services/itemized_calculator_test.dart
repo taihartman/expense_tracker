@@ -129,14 +129,8 @@ void main() {
         );
 
         // Each person should have $15.00 item subtotal
-        expect(
-          result['alice']!.itemsSubtotal,
-          Decimal.parse('15.00'),
-        );
-        expect(
-          result['bob']!.itemsSubtotal,
-          Decimal.parse('15.00'),
-        );
+        expect(result['alice']!.itemsSubtotal, Decimal.parse('15.00'));
+        expect(result['bob']!.itemsSubtotal, Decimal.parse('15.00'));
       });
 
       test('calculates correct tax allocation', () {
@@ -208,9 +202,9 @@ void main() {
         expect(result['bob']!.items.length, 2);
 
         // Verify pizza contribution
-        final alicePizza = result['alice']!
-            .items
-            .firstWhere((c) => c.itemId == 'item1');
+        final alicePizza = result['alice']!.items.firstWhere(
+          (c) => c.itemId == 'item1',
+        );
         expect(alicePizza.itemName, 'Pizza');
         expect(alicePizza.assignedShare, Decimal.parse('0.5'));
         expect(alicePizza.contributionAmount, Decimal.parse('9.00'));
@@ -319,7 +313,8 @@ void main() {
         // Alice pays: 18/33 * $3.00 = $1.636... → rounds
         // Bob pays: 7.5/33 * $3.00 = $0.681... → rounds
         // Charlie pays: 7.5/33 * $3.00 = $0.681... → rounds
-        final totalTax = result['alice']!.taxAmount +
+        final totalTax =
+            result['alice']!.taxAmount +
             result['bob']!.taxAmount +
             result['charlie']!.taxAmount;
 
@@ -335,7 +330,8 @@ void main() {
         );
 
         // Total tip: $33.00 * 0.18 = $5.94
-        final totalTip = result['alice']!.tipAmount +
+        final totalTip =
+            result['alice']!.tipAmount +
             result['bob']!.tipAmount +
             result['charlie']!.tipAmount;
 
@@ -600,9 +596,7 @@ void main() {
           ),
         ];
 
-        final extras = Extras(
-          tip: TipExtra.amount(value: Decimal.zero),
-        );
+        final extras = Extras(tip: TipExtra.amount(value: Decimal.zero));
 
         final allocationRule = AllocationRule(
           percentBase: PercentBase.preTaxItemSubtotals,
@@ -680,10 +674,7 @@ void main() {
           ),
         ];
 
-        final extras = const Extras(
-          fees: [],
-          discounts: [],
-        );
+        final extras = const Extras(fees: [], discounts: []);
 
         final allocationRule = AllocationRule(
           percentBase: PercentBase.preTaxItemSubtotals,
@@ -794,7 +785,8 @@ void main() {
 
         // $10.01 / 3 = $3.336... with floor should be $3.33, $3.33, $3.33
         // But remainder $0.02 distributed to largest share
-        final totalFloor = resultFloor['alice']!.total +
+        final totalFloor =
+            resultFloor['alice']!.total +
             resultFloor['bob']!.total +
             resultFloor['charlie']!.total;
         expect(totalFloor, Decimal.parse('10.01'));

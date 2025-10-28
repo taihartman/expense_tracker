@@ -37,11 +37,7 @@ class ResponsiveValue<T> {
   final T? tablet;
   final T? desktop;
 
-  const ResponsiveValue({
-    required this.mobile,
-    this.tablet,
-    this.desktop,
-  });
+  const ResponsiveValue({required this.mobile, this.tablet, this.desktop});
 
   T getValue(BuildContext context) {
     if (AppTheme.isDesktop(context)) {
@@ -55,7 +51,8 @@ class ResponsiveValue<T> {
 }
 
 /// Helper for responsive font sizes
-double responsiveFontSize(BuildContext context, {
+double responsiveFontSize(
+  BuildContext context, {
   required double mobile,
   double? tablet,
   double? desktop,
@@ -68,7 +65,8 @@ double responsiveFontSize(BuildContext context, {
 }
 
 /// Helper for responsive spacing
-double responsiveSpacing(BuildContext context, {
+double responsiveSpacing(
+  BuildContext context, {
   required double mobile,
   double? tablet,
   double? desktop,
@@ -102,8 +100,9 @@ class ResponsiveGrid extends StatelessWidget {
       runSpacing: runSpacing,
       children: children.map((child) {
         return SizedBox(
-          width: (MediaQuery.of(context).size.width -
-                  (spacing * (columns + 1))) / columns,
+          width:
+              (MediaQuery.of(context).size.width - (spacing * (columns + 1))) /
+              columns,
           child: child,
         );
       }).toList(),

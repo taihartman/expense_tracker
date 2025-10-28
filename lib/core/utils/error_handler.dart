@@ -72,8 +72,7 @@ class ErrorHandler {
       return await operation();
     } catch (error, stackTrace) {
       final message = getUserFriendlyMessage(error);
-      final contextMessage =
-          context != null ? '$context: $message' : message;
+      final contextMessage = context != null ? '$context: $message' : message;
 
       logError(error, stackTrace);
 

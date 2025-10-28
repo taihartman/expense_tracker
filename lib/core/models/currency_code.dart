@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import '../l10n/l10n_extensions.dart';
+
 /// Supported currency codes for the expense tracker
 ///
 /// MVP supports USD (United States Dollar) and VND (Vietnamese Dong)
@@ -26,6 +29,26 @@ enum CurrencyCode {
         return CurrencyCode.vnd;
       default:
         return null;
+    }
+  }
+
+  /// Get localized display name for this currency
+  String displayName(BuildContext context) {
+    switch (this) {
+      case CurrencyCode.usd:
+        return context.l10n.currencyUSD;
+      case CurrencyCode.vnd:
+        return context.l10n.currencyVND;
+    }
+  }
+
+  /// Get currency symbol for display
+  String get symbol {
+    switch (this) {
+      case CurrencyCode.usd:
+        return '\$';
+      case CurrencyCode.vnd:
+        return '₫';
     }
   }
 

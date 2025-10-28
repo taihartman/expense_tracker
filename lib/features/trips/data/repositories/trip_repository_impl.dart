@@ -14,7 +14,7 @@ class TripRepositoryImpl implements TripRepository {
   final FirestoreService _firestoreService;
 
   TripRepositoryImpl({required FirestoreService firestoreService})
-      : _firestoreService = firestoreService;
+    : _firestoreService = firestoreService;
 
   @override
   Future<Trip> createTrip(Trip trip) async {
@@ -63,7 +63,9 @@ class TripRepositoryImpl implements TripRepository {
   @override
   Stream<List<Trip>> getAllTrips() {
     try {
-      _log('🔍 getAllTrips() called - creating Firestore stream with cache-first strategy');
+      _log(
+        '🔍 getAllTrips() called - creating Firestore stream with cache-first strategy',
+      );
 
       // Use snapshots with metadata changes to get cache data immediately
       // This emits cache data first, then server data when available
@@ -71,14 +73,20 @@ class TripRepositoryImpl implements TripRepository {
           .orderBy('createdAt', descending: true)
           .snapshots(includeMetadataChanges: true)
           .map((snapshot) {
-        // Timer starts here when data actually arrives, not when stream is created
-        final mapStart = DateTime.now();
-        final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
-        final trips = snapshot.docs.map((doc) => TripModel.fromFirestore(doc)).toList();
-        final mapDuration = DateTime.now().difference(mapStart).inMilliseconds;
-        _log('📦 Stream emitted ${trips.length} trips from $source (mapping took ${mapDuration}ms)');
-        return trips;
-      });
+            // Timer starts here when data actually arrives, not when stream is created
+            final mapStart = DateTime.now();
+            final source = snapshot.metadata.isFromCache ? 'cache' : 'server';
+            final trips = snapshot.docs
+                .map((doc) => TripModel.fromFirestore(doc))
+                .toList();
+            final mapDuration = DateTime.now()
+                .difference(mapStart)
+                .inMilliseconds;
+            _log(
+              '📦 Stream emitted ${trips.length} trips from $source (mapping took ${mapDuration}ms)',
+            );
+            return trips;
+          });
     } catch (e) {
       _log('❌ Error creating trips stream: $e');
       throw Exception('Failed to get trips stream: $e');

@@ -6,6 +6,7 @@ import '../../../../core/models/currency_code.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Page for creating a new trip
 class TripCreatePage extends StatefulWidget {
@@ -29,9 +30,9 @@ class _TripCreatePageState extends State<TripCreatePage> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       context.read<TripCubit>().createTrip(
-            name: _nameController.text.trim(),
-            baseCurrency: _selectedCurrency,
-          );
+        name: _nameController.text.trim(),
+        baseCurrency: _selectedCurrency,
+      );
       context.go('/');
     }
   }
@@ -39,9 +40,7 @@ class _TripCreatePageState extends State<TripCreatePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Trip'),
-      ),
+      appBar: AppBar(title: Text(context.l10n.tripCreateTitle)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -49,14 +48,14 @@ class _TripCreatePageState extends State<TripCreatePage> {
           children: [
             CustomTextField(
               controller: _nameController,
-              label: 'Trip Name',
+              label: context.l10n.tripFieldNameLabel,
               // e.g., Vietnam 2025
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a trip name';
+                  return context.l10n.validationPleaseEnterTripName;
                 }
                 if (value.trim().length > 100) {
-                  return 'Trip name must be 100 characters or less';
+                  return context.l10n.validationTripNameTooLong;
                 }
                 return null;
               },
@@ -64,14 +63,16 @@ class _TripCreatePageState extends State<TripCreatePage> {
             const SizedBox(height: AppTheme.spacing2),
             DropdownButtonFormField<CurrencyCode>(
               initialValue: _selectedCurrency,
-              decoration: const InputDecoration(
-                labelText: 'Base Currency',
-                helperText: 'All settlements will be calculated in this currency',
+              decoration: InputDecoration(
+                labelText: context.l10n.tripFieldBaseCurrencyLabel,
+                helperText: context.l10n.tripFieldBaseCurrencyHelper,
               ),
               items: CurrencyCode.values.map((currency) {
                 return DropdownMenuItem(
                   value: currency,
-                  child: Text('${currency.name.toUpperCase()} - ${_getCurrencyName(currency)}'),
+                  child: Text(
+                    '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
+                  ),
                 );
               }).toList(),
               onChanged: (value) {
@@ -84,21 +85,12 @@ class _TripCreatePageState extends State<TripCreatePage> {
             ),
             const SizedBox(height: AppTheme.spacing3),
             CustomButton(
-              text: 'Create Trip',
+              text: context.l10n.tripCreateButton,
               onPressed: _submit,
             ),
           ],
         ),
       ),
     );
-  }
-
-  String _getCurrencyName(CurrencyCode currency) {
-    switch (currency) {
-      case CurrencyCode.usd:
-        return 'US Dollar';
-      case CurrencyCode.vnd:
-        return 'Vietnamese Dong';
-    }
   }
 }

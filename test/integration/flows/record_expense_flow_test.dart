@@ -8,14 +8,14 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Record Expense Flow -', () {
-    testWidgets(
-        'User can create a trip and add an expense with equal split',
-        (WidgetTester tester) async {
+    testWidgets('User can create a trip and add an expense with equal split', (
+      WidgetTester tester,
+    ) async {
       // Arrange - Initialize LocalStorageService and launch app
       final localStorageService = await LocalStorageService.init();
-      await tester.pumpWidget(ExpenseTrackerApp(
-        localStorageService: localStorageService,
-      ));
+      await tester.pumpWidget(
+        ExpenseTrackerApp(localStorageService: localStorageService),
+      );
       await tester.pumpAndSettle();
 
       // Step 1: Create a new trip
@@ -26,10 +26,7 @@ void main() {
 
       // Fill in trip name
       expect(find.byType(TextField), findsWidgets);
-      await tester.enterText(
-        find.byType(TextField).first,
-        'Vietnam 2025',
-      );
+      await tester.enterText(find.byType(TextField).first, 'Vietnam 2025');
 
       // Select base currency (USD)
       await tester.tap(find.text('USD'));
@@ -70,11 +67,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Select participants (checkboxes for Equal split)
-      await tester.tap(find.byWidgetPredicate(
-        (widget) =>
-            widget is Checkbox &&
-            widget.value == false,
-      ));
+      await tester.tap(
+        find.byWidgetPredicate(
+          (widget) => widget is Checkbox && widget.value == false,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Submit expense
@@ -86,13 +83,14 @@ void main() {
       expect(find.text('\$100.00'), findsOneWidget);
     });
 
-    testWidgets('User can add expense with weighted split',
-        (WidgetTester tester) async {
+    testWidgets('User can add expense with weighted split', (
+      WidgetTester tester,
+    ) async {
       // Arrange - Initialize LocalStorageService and launch app with existing trip
       final localStorageService = await LocalStorageService.init();
-      await tester.pumpWidget(ExpenseTrackerApp(
-        localStorageService: localStorageService,
-      ));
+      await tester.pumpWidget(
+        ExpenseTrackerApp(localStorageService: localStorageService),
+      );
       await tester.pumpAndSettle();
 
       // Assume trip already exists, navigate to add expense
@@ -141,9 +139,9 @@ void main() {
     testWidgets('User can view expense list', (WidgetTester tester) async {
       // Arrange - Initialize LocalStorageService and launch app
       final localStorageService = await LocalStorageService.init();
-      await tester.pumpWidget(ExpenseTrackerApp(
-        localStorageService: localStorageService,
-      ));
+      await tester.pumpWidget(
+        ExpenseTrackerApp(localStorageService: localStorageService),
+      );
       await tester.pumpAndSettle();
 
       // Navigate to expense list
@@ -157,13 +155,12 @@ void main() {
       // This would show previously created expenses from other tests
     });
 
-    testWidgets('User can switch between trips',
-        (WidgetTester tester) async {
+    testWidgets('User can switch between trips', (WidgetTester tester) async {
       // Arrange - Initialize LocalStorageService and launch app
       final localStorageService = await LocalStorageService.init();
-      await tester.pumpWidget(ExpenseTrackerApp(
-        localStorageService: localStorageService,
-      ));
+      await tester.pumpWidget(
+        ExpenseTrackerApp(localStorageService: localStorageService),
+      );
       await tester.pumpAndSettle();
 
       // Open trip selector

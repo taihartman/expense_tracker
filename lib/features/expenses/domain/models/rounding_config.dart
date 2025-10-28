@@ -47,7 +47,8 @@ class RoundingConfig extends Equatable {
     return RoundingConfig(
       precision: precision ?? this.precision,
       mode: mode ?? this.mode,
-      distributeRemainderTo: distributeRemainderTo ?? this.distributeRemainderTo,
+      distributeRemainderTo:
+          distributeRemainderTo ?? this.distributeRemainderTo,
     );
   }
 

@@ -8,7 +8,7 @@ class FirestoreService {
   final FirebaseFirestore _firestore;
 
   FirestoreService({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Get Firestore instance (for direct access when needed)
   FirebaseFirestore get firestore => _firestore;
@@ -27,8 +27,7 @@ class FirestoreService {
       _firestore.collection('exchangeRates');
 
   /// Get reference to settlements collection (parent for summaries and transfers)
-  CollectionReference get settlements =>
-      _firestore.collection('settlements');
+  CollectionReference get settlements => _firestore.collection('settlements');
 
   /// Get reference to settlement summaries collection
   CollectionReference get settlementSummaries =>

@@ -44,13 +44,13 @@ class ParticipantBreakdown extends Equatable {
 
   @override
   List<Object?> get props => [
-        userId,
-        itemsSubtotal,
-        extrasAllocated,
-        roundedAdjustment,
-        total,
-        items,
-      ];
+    userId,
+    itemsSubtotal,
+    extrasAllocated,
+    roundedAdjustment,
+    total,
+    items,
+  ];
 
   @override
   String toString() {

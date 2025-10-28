@@ -66,11 +66,8 @@ void main() {
 
       test('validates base is required for percent type', () {
         expect(
-          () => TipExtra(
-            type: 'percent',
-            value: Decimal.parse('15'),
-            base: null,
-          ),
+          () =>
+              TipExtra(type: 'percent', value: Decimal.parse('15'), base: null),
           throwsArgumentError,
         );
       });
@@ -120,9 +117,7 @@ void main() {
 
     group('amount type', () {
       test('creates valid amount tip', () {
-        final tip = TipExtra.amount(
-          value: Decimal.parse('10.00'),
-        );
+        final tip = TipExtra.amount(value: Decimal.parse('10.00'));
 
         expect(tip.type, 'amount');
         expect(tip.value, Decimal.parse('10.00'));
@@ -130,27 +125,18 @@ void main() {
       });
 
       test('allows zero tip for amount type', () {
-        final tip = TipExtra.amount(
-          value: Decimal.zero,
-        );
+        final tip = TipExtra.amount(value: Decimal.zero);
 
         expect(tip.value, Decimal.zero);
       });
 
       test('validates value is non-negative for amount type', () {
         // Zero is allowed
-        expect(
-          () => TipExtra.amount(
-            value: Decimal.zero,
-          ),
-          returnsNormally,
-        );
+        expect(() => TipExtra.amount(value: Decimal.zero), returnsNormally);
 
         // Negative is not allowed
         expect(
-          () => TipExtra.amount(
-            value: Decimal.parse('-5.00'),
-          ),
+          () => TipExtra.amount(value: Decimal.parse('-5.00')),
           throwsArgumentError,
         );
       });
@@ -167,17 +153,13 @@ void main() {
       });
 
       test('allows large amount values', () {
-        final tip = TipExtra.amount(
-          value: Decimal.parse('500.00'),
-        );
+        final tip = TipExtra.amount(value: Decimal.parse('500.00'));
 
         expect(tip.value, Decimal.parse('500.00'));
       });
 
       test('allows small amount values', () {
-        final tip = TipExtra.amount(
-          value: Decimal.parse('0.50'),
-        );
+        final tip = TipExtra.amount(value: Decimal.parse('0.50'));
 
         expect(tip.value, Decimal.parse('0.50'));
       });
@@ -186,11 +168,8 @@ void main() {
     group('validation', () {
       test('validates type is either percent or amount', () {
         expect(
-          () => TipExtra(
-            type: 'invalid',
-            value: Decimal.parse('15'),
-            base: null,
-          ),
+          () =>
+              TipExtra(type: 'invalid', value: Decimal.parse('15'), base: null),
           throwsArgumentError,
         );
       });
@@ -206,11 +185,8 @@ void main() {
         );
 
         expect(
-          () => TipExtra(
-            type: 'amount',
-            value: Decimal.parse('-1'),
-            base: null,
-          ),
+          () =>
+              TipExtra(type: 'amount', value: Decimal.parse('-1'), base: null),
           throwsArgumentError,
         );
       });
@@ -227,12 +203,7 @@ void main() {
           returnsNormally,
         );
 
-        expect(
-          () => TipExtra.amount(
-            value: Decimal.zero,
-          ),
-          returnsNormally,
-        );
+        expect(() => TipExtra.amount(value: Decimal.zero), returnsNormally);
       });
     });
 
@@ -270,9 +241,7 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final tip2 = TipExtra.amount(
-        value: Decimal.parse('15'),
-      );
+      final tip2 = TipExtra.amount(value: Decimal.parse('15'));
 
       expect(tip1, isNot(equals(tip2)));
     });
@@ -297,9 +266,7 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final tip2 = TipExtra.amount(
-        value: Decimal.zero,
-      );
+      final tip2 = TipExtra.amount(value: Decimal.zero);
 
       expect(tip1, isNot(equals(tip2)));
     });
@@ -321,13 +288,9 @@ void main() {
     });
 
     test('supports copyWith for amount tip', () {
-      final tip = TipExtra.amount(
-        value: Decimal.parse('10.00'),
-      );
+      final tip = TipExtra.amount(value: Decimal.parse('10.00'));
 
-      final updated = tip.copyWith(
-        value: Decimal.parse('15.00'),
-      );
+      final updated = tip.copyWith(value: Decimal.parse('15.00'));
 
       expect(updated.type, 'amount');
       expect(updated.value, Decimal.parse('15.00'));
@@ -340,9 +303,7 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final updated = tip.copyWith(
-        base: PercentBase.postTaxSubtotals,
-      );
+      final updated = tip.copyWith(base: PercentBase.postTaxSubtotals);
 
       expect(updated.type, 'percent');
       expect(updated.value, Decimal.parse('18'));
@@ -367,9 +328,7 @@ void main() {
     });
 
     test('supports changing type from amount to percent', () {
-      final tip = TipExtra.amount(
-        value: Decimal.parse('10.00'),
-      );
+      final tip = TipExtra.amount(value: Decimal.parse('10.00'));
 
       final updated = tip.copyWith(
         type: 'percent',
@@ -388,9 +347,7 @@ void main() {
         base: PercentBase.postTaxSubtotals,
       );
 
-      final noTip = tip.copyWith(
-        value: Decimal.zero,
-      );
+      final noTip = tip.copyWith(value: Decimal.zero);
 
       expect(noTip.value, Decimal.zero);
     });

@@ -23,11 +23,7 @@ class DecimalService {
   /// DecimalService.round(Decimal.parse('1000.7'), 'VND', RoundingMode.roundHalfUp)
   /// // Returns Decimal.parse('1001')
   /// ```
-  static Decimal round(
-    Decimal value,
-    String currencyCode,
-    RoundingMode mode,
-  ) {
+  static Decimal round(Decimal value, String currencyCode, RoundingMode mode) {
     final decimalPlaces = Iso4217Precision.getDecimalPlaces(currencyCode);
     return roundToPlaces(value, decimalPlaces, mode);
   }

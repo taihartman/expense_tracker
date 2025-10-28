@@ -24,7 +24,10 @@ void main() {
         );
 
         expect(rule.percentBase, PercentBase.preTaxItemSubtotals);
-        expect(rule.absoluteSplit, AbsoluteSplitMode.proportionalToItemsSubtotal);
+        expect(
+          rule.absoluteSplit,
+          AbsoluteSplitMode.proportionalToItemsSubtotal,
+        );
         expect(rule.rounding, defaultRounding);
       });
 
@@ -86,7 +89,10 @@ void main() {
 
         expect(rule.rounding.precision, Decimal.parse('1'));
         expect(rule.rounding.mode, RoundingMode.roundHalfUp);
-        expect(rule.rounding.distributeRemainderTo, RemainderDistributionMode.payer);
+        expect(
+          rule.rounding.distributeRemainderTo,
+          RemainderDistributionMode.payer,
+        );
       });
 
       test('creates allocation rule with round half even mode', () {
@@ -105,11 +111,11 @@ void main() {
         expect(rule.rounding.mode, RoundingMode.roundHalfEven);
       });
 
-      test('creates allocation rule with round down mode', () {
+      test('creates allocation rule with floor mode', () {
         final customRounding = RoundingConfig(
           precision: Decimal.parse('0.01'),
-          mode: RoundingMode.roundDown,
-          distributeRemainderTo: RemainderDistributionMode.smallestShare,
+          mode: RoundingMode.floor,
+          distributeRemainderTo: RemainderDistributionMode.firstListed,
         );
 
         final rule = AllocationRule(
@@ -118,8 +124,11 @@ void main() {
           rounding: customRounding,
         );
 
-        expect(rule.rounding.mode, RoundingMode.roundDown);
-        expect(rule.rounding.distributeRemainderTo, RemainderDistributionMode.smallestShare);
+        expect(rule.rounding.mode, RoundingMode.floor);
+        expect(
+          rule.rounding.distributeRemainderTo,
+          RemainderDistributionMode.firstListed,
+        );
       });
     });
 
@@ -141,7 +150,10 @@ void main() {
           rounding: defaultRounding,
         );
 
-        expect(rule.absoluteSplit, AbsoluteSplitMode.proportionalToItemsSubtotal);
+        expect(
+          rule.absoluteSplit,
+          AbsoluteSplitMode.proportionalToItemsSubtotal,
+        );
       });
     });
 
@@ -159,7 +171,10 @@ void main() {
         );
 
         expect(rule.percentBase, PercentBase.preTaxItemSubtotals);
-        expect(rule.absoluteSplit, AbsoluteSplitMode.proportionalToItemsSubtotal);
+        expect(
+          rule.absoluteSplit,
+          AbsoluteSplitMode.proportionalToItemsSubtotal,
+        );
         expect(rule.rounding.precision, Decimal.parse('0.01'));
       });
 
@@ -292,12 +307,13 @@ void main() {
         rounding: defaultRounding,
       );
 
-      final updated = rule.copyWith(
-        percentBase: PercentBase.postTaxSubtotals,
-      );
+      final updated = rule.copyWith(percentBase: PercentBase.postTaxSubtotals);
 
       expect(updated.percentBase, PercentBase.postTaxSubtotals);
-      expect(updated.absoluteSplit, AbsoluteSplitMode.proportionalToItemsSubtotal);
+      expect(
+        updated.absoluteSplit,
+        AbsoluteSplitMode.proportionalToItemsSubtotal,
+      );
       expect(updated.rounding, defaultRounding);
     });
 
@@ -330,12 +346,13 @@ void main() {
         rounding: defaultRounding,
       );
 
-      final updated = rule.copyWith(
-        rounding: newRounding,
-      );
+      final updated = rule.copyWith(rounding: newRounding);
 
       expect(updated.percentBase, PercentBase.preTaxItemSubtotals);
-      expect(updated.absoluteSplit, AbsoluteSplitMode.proportionalToItemsSubtotal);
+      expect(
+        updated.absoluteSplit,
+        AbsoluteSplitMode.proportionalToItemsSubtotal,
+      );
       expect(updated.rounding, newRounding);
     });
 

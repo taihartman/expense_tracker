@@ -11,7 +11,9 @@ import '../../../trips/domain/repositories/trip_repository.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
-  debugPrint('[${DateTime.now().toIso8601String()}] [SettlementCubit] $message');
+  debugPrint(
+    '[${DateTime.now().toIso8601String()}] [SettlementCubit] $message',
+  );
 }
 
 /// Simplified SettlementCubit using Pure Derived State Pattern
@@ -33,14 +35,14 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
     required SettlementRepository settlementRepository,
     required ExpenseRepository expenseRepository,
     required TripRepository tripRepository,
-  })  : _settlementRepository = settlementRepository,
-        _expenseRepository = expenseRepository,
-        _tripRepository = tripRepository,
-        super(const SettlementInitial());
+  }) : _settlementRepository = settlementRepository,
+       _expenseRepository = expenseRepository,
+       _tripRepository = tripRepository,
+       super(const SettlementInitial());
 
   /// Separate transfers into active and settled lists
-  ({List<MinimalTransfer> active, List<MinimalTransfer> settled}) _separateTransfers(
-      List<MinimalTransfer> allTransfers) {
+  ({List<MinimalTransfer> active, List<MinimalTransfer> settled})
+  _separateTransfers(List<MinimalTransfer> allTransfers) {
     final active = <MinimalTransfer>[];
     final settled = <MinimalTransfer>[];
 
@@ -82,50 +84,66 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
       _combinedSubscription = _expenseRepository
           .getExpensesByTrip(tripId)
           .listen(
-        (expenses) async {
-          _log('📦 Received ${expenses.length} expenses, recalculating settlement...');
+            (expenses) async {
+              _log(
+                '📦 Received ${expenses.length} expenses, recalculating settlement...',
+              );
 
-          try {
-            // Calculate settlement summary from current expenses
-            // This is FAST (< 5ms for 200 expenses)
-            final summary = await _settlementRepository.computeSettlement(tripId);
+              try {
+                // Calculate settlement summary from current expenses
+                // This is FAST (< 5ms for 200 expenses)
+                final summary = await _settlementRepository.computeSettlement(
+                  tripId,
+                );
 
-            _log('✅ Settlement calculated successfully');
-            _log('   ${summary.personSummaries.length} person summaries');
+                _log('✅ Settlement calculated successfully');
+                _log('   ${summary.personSummaries.length} person summaries');
 
-            // Get transfers from the repository
-            // In the simplified version, these are calculated fresh, not stored
-            final allTransfers = await _settlementRepository
-                .getMinimalTransfers(tripId)
-                .first;
+                // Get transfers from the repository
+                // In the simplified version, these are calculated fresh, not stored
+                final allTransfers = await _settlementRepository
+                    .getMinimalTransfers(tripId)
+                    .first;
 
-            _log('📦 Received ${allTransfers.length} transfers');
+                _log('📦 Received ${allTransfers.length} transfers');
 
-            // Separate active and settled transfers
-            final separated = _separateTransfers(allTransfers);
-            _log('📊 ${separated.active.length} active, ${separated.settled.length} settled');
+                // Separate active and settled transfers
+                final separated = _separateTransfers(allTransfers);
+                _log(
+                  '📊 ${separated.active.length} active, ${separated.settled.length} settled',
+                );
 
-            if (!isClosed) {
-              emit(SettlementLoaded(
-                summary: summary,
-                activeTransfers: separated.active,
-                settledTransfers: separated.settled,
-              ));
-            }
-          } catch (e) {
-            _log('❌ Error calculating settlement: $e');
-            if (!isClosed) {
-              emit(SettlementError('Failed to calculate settlement: ${e.toString()}'));
-            }
-          }
-        },
-        onError: (error) {
-          _log('❌ Error in expense stream: $error');
-          if (!isClosed) {
-            emit(SettlementError('Failed to load expenses: ${error.toString()}'));
-          }
-        },
-      );
+                if (!isClosed) {
+                  emit(
+                    SettlementLoaded(
+                      summary: summary,
+                      activeTransfers: separated.active,
+                      settledTransfers: separated.settled,
+                    ),
+                  );
+                }
+              } catch (e) {
+                _log('❌ Error calculating settlement: $e');
+                if (!isClosed) {
+                  emit(
+                    SettlementError(
+                      'Failed to calculate settlement: ${e.toString()}',
+                    ),
+                  );
+                }
+              }
+            },
+            onError: (error) {
+              _log('❌ Error in expense stream: $error');
+              if (!isClosed) {
+                emit(
+                  SettlementError(
+                    'Failed to load expenses: ${error.toString()}',
+                  ),
+                );
+              }
+            },
+          );
     } catch (e) {
       _log('❌ Error in loadSettlement: $e');
       if (!isClosed) {
@@ -145,7 +163,10 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
 
     try {
       _log('✅ Marking transfer $transferId as settled');
-      await _settlementRepository.markTransferAsSettled(_currentTripId!, transferId);
+      await _settlementRepository.markTransferAsSettled(
+        _currentTripId!,
+        transferId,
+      );
       _log('✅ Transfer marked as settled');
 
       // The expense stream listener will automatically recalculate and update UI
@@ -153,7 +174,11 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
     } catch (e) {
       _log('❌ Error marking transfer as settled: $e');
       if (!isClosed) {
-        emit(SettlementError('Failed to mark transfer as settled: ${e.toString()}'));
+        emit(
+          SettlementError(
+            'Failed to mark transfer as settled: ${e.toString()}',
+          ),
+        );
       }
     }
   }

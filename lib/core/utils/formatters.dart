@@ -7,20 +7,14 @@ class CurrencyFormatters {
   /// Format USD with 2 decimal places and $ symbol
   /// Example: formatUSD(Decimal.parse("123.45")) -> "$123.45"
   static String formatUSD(Decimal amount) {
-    final formatter = NumberFormat.currency(
-      symbol: '\$',
-      decimalDigits: 2,
-    );
+    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     return formatter.format(double.parse(DecimalHelpers.toFixed(amount, 2)));
   }
 
   /// Format VND with 0 decimal places and ₫ symbol
   /// Example: formatVND(Decimal.parse("500000")) -> "₫500,000"
   static String formatVND(Decimal amount) {
-    final formatter = NumberFormat.currency(
-      symbol: '₫',
-      decimalDigits: 0,
-    );
+    final formatter = NumberFormat.currency(symbol: '₫', decimalDigits: 0);
     return formatter.format(double.parse(DecimalHelpers.toFixed(amount, 0)));
   }
 

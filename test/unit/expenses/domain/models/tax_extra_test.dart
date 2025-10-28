@@ -55,11 +55,8 @@ void main() {
 
       test('validates base is required for percent type', () {
         expect(
-          () => TaxExtra(
-            type: 'percent',
-            value: Decimal.parse('10'),
-            base: null,
-          ),
+          () =>
+              TaxExtra(type: 'percent', value: Decimal.parse('10'), base: null),
           throwsArgumentError,
         );
       });
@@ -85,9 +82,7 @@ void main() {
 
     group('amount type', () {
       test('creates valid amount tax', () {
-        final tax = TaxExtra.amount(
-          value: Decimal.parse('5.00'),
-        );
+        final tax = TaxExtra.amount(value: Decimal.parse('5.00'));
 
         expect(tax.type, 'amount');
         expect(tax.value, Decimal.parse('5.00'));
@@ -96,16 +91,12 @@ void main() {
 
       test('validates value is positive for amount type', () {
         expect(
-          () => TaxExtra.amount(
-            value: Decimal.parse('0'),
-          ),
+          () => TaxExtra.amount(value: Decimal.parse('0')),
           throwsArgumentError,
         );
 
         expect(
-          () => TaxExtra.amount(
-            value: Decimal.parse('-10.00'),
-          ),
+          () => TaxExtra.amount(value: Decimal.parse('-10.00')),
           throwsArgumentError,
         );
       });
@@ -122,17 +113,13 @@ void main() {
       });
 
       test('allows large amount values', () {
-        final tax = TaxExtra.amount(
-          value: Decimal.parse('1000.00'),
-        );
+        final tax = TaxExtra.amount(value: Decimal.parse('1000.00'));
 
         expect(tax.value, Decimal.parse('1000.00'));
       });
 
       test('allows small amount values', () {
-        final tax = TaxExtra.amount(
-          value: Decimal.parse('0.01'),
-        );
+        final tax = TaxExtra.amount(value: Decimal.parse('0.01'));
 
         expect(tax.value, Decimal.parse('0.01'));
       });
@@ -141,11 +128,8 @@ void main() {
     group('validation', () {
       test('validates type is either percent or amount', () {
         expect(
-          () => TaxExtra(
-            type: 'invalid',
-            value: Decimal.parse('10'),
-            base: null,
-          ),
+          () =>
+              TaxExtra(type: 'invalid', value: Decimal.parse('10'), base: null),
           throwsArgumentError,
         );
       });
@@ -161,11 +145,8 @@ void main() {
         );
 
         expect(
-          () => TaxExtra(
-            type: 'amount',
-            value: Decimal.parse('-1'),
-            base: null,
-          ),
+          () =>
+              TaxExtra(type: 'amount', value: Decimal.parse('-1'), base: null),
           throwsArgumentError,
         );
       });
@@ -205,9 +186,7 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final tax2 = TaxExtra.amount(
-        value: Decimal.parse('10'),
-      );
+      final tax2 = TaxExtra.amount(value: Decimal.parse('10'));
 
       expect(tax1, isNot(equals(tax2)));
     });
@@ -243,13 +222,9 @@ void main() {
     });
 
     test('supports copyWith for amount tax', () {
-      final tax = TaxExtra.amount(
-        value: Decimal.parse('5.00'),
-      );
+      final tax = TaxExtra.amount(value: Decimal.parse('5.00'));
 
-      final updated = tax.copyWith(
-        value: Decimal.parse('7.50'),
-      );
+      final updated = tax.copyWith(value: Decimal.parse('7.50'));
 
       expect(updated.type, 'amount');
       expect(updated.value, Decimal.parse('7.50'));
@@ -262,9 +237,7 @@ void main() {
         base: PercentBase.preTaxItemSubtotals,
       );
 
-      final updated = tax.copyWith(
-        base: PercentBase.taxableItemSubtotalsOnly,
-      );
+      final updated = tax.copyWith(base: PercentBase.taxableItemSubtotalsOnly);
 
       expect(updated.type, 'percent');
       expect(updated.value, Decimal.parse('8.875'));
@@ -289,9 +262,7 @@ void main() {
     });
 
     test('supports changing type from amount to percent', () {
-      final tax = TaxExtra.amount(
-        value: Decimal.parse('5.00'),
-      );
+      final tax = TaxExtra.amount(value: Decimal.parse('5.00'));
 
       final updated = tax.copyWith(
         type: 'percent',

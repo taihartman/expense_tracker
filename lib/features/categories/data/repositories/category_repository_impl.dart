@@ -9,7 +9,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   final FirestoreService _firestoreService;
 
   CategoryRepositoryImpl({required FirestoreService firestoreService})
-      : _firestoreService = firestoreService;
+    : _firestoreService = firestoreService;
 
   @override
   Future<Category> createCategory(Category category) async {
@@ -58,10 +58,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
           .orderBy('name')
           .snapshots()
           .map((snapshot) {
-        return snapshot.docs
-            .map((doc) => CategoryModel.fromFirestore(doc))
-            .toList();
-      });
+            return snapshot.docs
+                .map((doc) => CategoryModel.fromFirestore(doc))
+                .toList();
+          });
     } catch (e) {
       throw Exception('Failed to get categories stream: $e');
     }

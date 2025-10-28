@@ -19,14 +19,10 @@ import '../../features/settlements/presentation/pages/settlement_summary_page.da
 /// Note: BLoC providers are now managed at the app root level in main.dart
 /// This ensures singleton cubit instances across all routes for proper caching
 class AppRouter {
-
   static final GoRouter router = GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const HomePage(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const HomePage()),
       GoRoute(
         path: '/trips',
         builder: (context, state) => const TripListPage(),
@@ -80,10 +76,7 @@ class AppRouter {
             (e) => e.id == expenseId,
           );
 
-          return ExpenseFormPage(
-            tripId: tripId,
-            expense: expense,
-          );
+          return ExpenseFormPage(tripId: tripId, expense: expense);
         },
       ),
       GoRoute(
@@ -146,10 +139,10 @@ class _HomePageContent extends StatelessWidget {
         builder: (context, state) {
           if (state is TripLoaded && state.selectedTrip != null) {
             final tripId = state.selectedTrip!.id;
-            
+
             // Load expenses for selected trip
             context.read<ExpenseCubit>().loadExpenses(tripId);
-            
+
             return ExpenseListPage(tripId: tripId);
           }
 
@@ -204,9 +197,7 @@ class _ErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Error'),
-      ),
+      appBar: AppBar(title: const Text('Error')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

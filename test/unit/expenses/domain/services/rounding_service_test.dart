@@ -14,76 +14,82 @@ void main() {
     });
 
     group('roundAmounts - largestShare distribution', () {
-      test('distributes remainder to participant with largest unrounded amount', () {
-        // Scenario: $10.00 split among 3 people
-        // Each gets $3.333... → $3.33, $3.33, $3.33 = $9.99
-        // Remainder: $0.01 goes to largest share
-        final amounts = {
-          'alice': Decimal.parse('3.333333'),
-          'bob': Decimal.parse('3.333333'),
-          'charlie': Decimal.parse('3.333333'),
-        };
+      test(
+        'distributes remainder to participant with largest unrounded amount',
+        () {
+          // Scenario: $10.00 split among 3 people
+          // Each gets $3.333... → $3.33, $3.33, $3.33 = $9.99
+          // Remainder: $0.01 goes to largest share
+          final amounts = {
+            'alice': Decimal.parse('3.333333'),
+            'bob': Decimal.parse('3.333333'),
+            'charlie': Decimal.parse('3.333333'),
+          };
 
-        final config = RoundingConfig(
-          precision: Decimal.parse('0.01'),
-          mode: RoundingMode.roundHalfUp,
-          distributeRemainderTo: RemainderDistributionMode.largestShare,
-        );
+          final config = RoundingConfig(
+            precision: Decimal.parse('0.01'),
+            mode: RoundingMode.roundHalfUp,
+            distributeRemainderTo: RemainderDistributionMode.largestShare,
+          );
 
-        final result = service.roundAmounts(
-          amounts: amounts,
-          config: config,
-          currencyCode: 'USD',
-        );
+          final result = service.roundAmounts(
+            amounts: amounts,
+            config: config,
+            currencyCode: 'USD',
+          );
 
-        // Total should be preserved
-        final total = result.values.fold(
-          Decimal.zero,
-          (sum, amount) => sum + amount,
-        );
-        expect(total, Decimal.parse('10.00'));
+          // Total should be preserved
+          final total = result.values.fold(
+            Decimal.zero,
+            (sum, amount) => sum + amount,
+          );
+          expect(total, Decimal.parse('10.00'));
 
-        // One person should get $3.34, two get $3.33
-        final values = result.values.toList()..sort();
-        expect(values[0], Decimal.parse('3.33'));
-        expect(values[1], Decimal.parse('3.33'));
-        expect(values[2], Decimal.parse('3.34'));
-      });
+          // One person should get $3.34, two get $3.33
+          final values = result.values.toList()..sort();
+          expect(values[0], Decimal.parse('3.33'));
+          expect(values[1], Decimal.parse('3.33'));
+          expect(values[2], Decimal.parse('3.34'));
+        },
+      );
 
-      test('handles multiple cents remainder with different original amounts', () {
-        // Scenario: Different shares, multiple cent remainder
-        final amounts = {
-          'alice': Decimal.parse('15.556'), // Largest
-          'bob': Decimal.parse('10.224'),
-          'charlie': Decimal.parse('5.113'),
-        };
+      test(
+        'handles multiple cents remainder with different original amounts',
+        () {
+          // Scenario: Different shares, multiple cent remainder
+          final amounts = {
+            'alice': Decimal.parse('15.556'), // Largest
+            'bob': Decimal.parse('10.224'),
+            'charlie': Decimal.parse('5.113'),
+          };
 
-        final config = RoundingConfig(
-          precision: Decimal.parse('0.01'),
-          mode: RoundingMode.roundHalfUp,
-          distributeRemainderTo: RemainderDistributionMode.largestShare,
-        );
+          final config = RoundingConfig(
+            precision: Decimal.parse('0.01'),
+            mode: RoundingMode.roundHalfUp,
+            distributeRemainderTo: RemainderDistributionMode.largestShare,
+          );
 
-        final result = service.roundAmounts(
-          amounts: amounts,
-          config: config,
-          currencyCode: 'USD',
-        );
+          final result = service.roundAmounts(
+            amounts: amounts,
+            config: config,
+            currencyCode: 'USD',
+          );
 
-        // Original total: $30.893
-        // Rounded individually: $15.56 + $10.22 + $5.11 = $30.89
-        // Remainder: $0.003 (rounds to $0.00, no distribution needed)
-        final total = result.values.fold(
-          Decimal.zero,
-          (sum, amount) => sum + amount,
-        );
+          // Original total: $30.893
+          // Rounded individually: $15.56 + $10.22 + $5.11 = $30.89
+          // Remainder: $0.003 (rounds to $0.00, no distribution needed)
+          final total = result.values.fold(
+            Decimal.zero,
+            (sum, amount) => sum + amount,
+          );
 
-        // Should preserve original total when rounded
-        expect(total, Decimal.parse('30.89'));
+          // Should preserve original total when rounded
+          expect(total, Decimal.parse('30.89'));
 
-        // Alice (largest) should get any remainder
-        expect(result['alice'], Decimal.parse('15.56'));
-      });
+          // Alice (largest) should get any remainder
+          expect(result['alice'], Decimal.parse('15.56'));
+        },
+      );
 
       test('handles VND currency (zero decimal places)', () {
         // Scenario: 10,001 VND split among 3 people
@@ -146,32 +152,31 @@ void main() {
         expect(result['charlie'], Decimal.parse('3.33'));
       });
 
-      test('throws error if payer not specified with payer distribution mode', () {
-        final amounts = {
-          'alice': Decimal.parse('3.333333'),
-        };
+      test(
+        'throws error if payer not specified with payer distribution mode',
+        () {
+          final amounts = {'alice': Decimal.parse('3.333333')};
 
-        final config = RoundingConfig(
-          precision: Decimal.parse('0.01'),
-          mode: RoundingMode.roundHalfUp,
-          distributeRemainderTo: RemainderDistributionMode.payer,
-        );
+          final config = RoundingConfig(
+            precision: Decimal.parse('0.01'),
+            mode: RoundingMode.roundHalfUp,
+            distributeRemainderTo: RemainderDistributionMode.payer,
+          );
 
-        expect(
-          () => service.roundAmounts(
-            amounts: amounts,
-            config: config,
-            currencyCode: 'USD',
-            // Missing payerId
-          ),
-          throwsArgumentError,
-        );
-      });
+          expect(
+            () => service.roundAmounts(
+              amounts: amounts,
+              config: config,
+              currencyCode: 'USD',
+              // Missing payerId
+            ),
+            throwsArgumentError,
+          );
+        },
+      );
 
       test('throws error if payer not in amounts map', () {
-        final amounts = {
-          'alice': Decimal.parse('3.333333'),
-        };
+        final amounts = {'alice': Decimal.parse('3.333333')};
 
         final config = RoundingConfig(
           precision: Decimal.parse('0.01'),
@@ -334,7 +339,7 @@ void main() {
       test('applies roundHalfEven correctly', () {
         final amounts = {
           'alice': Decimal.parse('1.235'), // Should round to 1.24 (even)
-          'bob': Decimal.parse('1.245'),   // Should round to 1.24 (even)
+          'bob': Decimal.parse('1.245'), // Should round to 1.24 (even)
         };
 
         final config = RoundingConfig(
@@ -373,7 +378,10 @@ void main() {
         );
 
         expect(result['alice'], Decimal.parse('1.23'));
-        expect(result['bob'], Decimal.parse('2.00')); // Floor distributes remainder
+        expect(
+          result['bob'],
+          Decimal.parse('2.00'),
+        ); // Floor distributes remainder
       });
 
       test('applies ceil correctly', () {
@@ -394,16 +402,19 @@ void main() {
           currencyCode: 'USD',
         );
 
-        expect(result['alice'], Decimal.parse('1.23')); // Adjusted for remainder
+        // Ceil: 1.231→1.24, 1.001→1.01, sum=2.25 vs original=2.232
+        // Remainder: -0.018, distributed as -2 units to alice: 1.24-0.02=1.22
+        expect(
+          result['alice'],
+          Decimal.parse('1.22'),
+        ); // Adjusted for negative remainder
         expect(result['bob'], Decimal.parse('1.01'));
       });
     });
 
     group('roundAmounts - edge cases', () {
       test('handles single participant (no distribution needed)', () {
-        final amounts = {
-          'alice': Decimal.parse('10.123'),
-        };
+        final amounts = {'alice': Decimal.parse('10.123')};
 
         final config = RoundingConfig(
           precision: Decimal.parse('0.01'),
@@ -443,10 +454,7 @@ void main() {
       });
 
       test('handles zero amounts', () {
-        final amounts = {
-          'alice': Decimal.zero,
-          'bob': Decimal.parse('10.00'),
-        };
+        final amounts = {'alice': Decimal.zero, 'bob': Decimal.parse('10.00')};
 
         final config = RoundingConfig(
           precision: Decimal.parse('0.01'),

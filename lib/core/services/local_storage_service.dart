@@ -31,7 +31,9 @@ class LocalStorageService {
 
     // Log all existing keys for debugging
     final keys = prefs.getKeys();
-    _log('📋 Existing SharedPreferences keys: ${keys.isEmpty ? "none" : keys.join(", ")}');
+    _log(
+      '📋 Existing SharedPreferences keys: ${keys.isEmpty ? "none" : keys.join(", ")}',
+    );
 
     // On web, check browser localStorage directly
     if (kIsWeb) {
@@ -98,7 +100,9 @@ class LocalStorageService {
         _log('🌐 Browser localStorage[$webKey]: ${webValue ?? "null"}');
 
         if (webValue != tripId) {
-          _log('⚠️ MISMATCH: SharedPreferences ($tripId) != localStorage ($webValue)');
+          _log(
+            '⚠️ MISMATCH: SharedPreferences ($tripId) != localStorage ($webValue)',
+          );
         }
       } catch (e) {
         _log('⚠️ Failed to read from browser localStorage: $e');
@@ -118,7 +122,9 @@ class LocalStorageService {
       try {
         final storage = html.window.localStorage;
         final webKey = 'flutter.$_selectedTripIdKey';
-        _log('🌐 Browser localStorage[$webKey] after clear: ${storage[webKey] ?? "null"}');
+        _log(
+          '🌐 Browser localStorage[$webKey] after clear: ${storage[webKey] ?? "null"}',
+        );
       } catch (e) {
         _log('⚠️ Failed to verify clear in browser localStorage: $e');
       }

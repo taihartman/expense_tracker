@@ -20,11 +20,7 @@ class ItemAssignment extends Equatable {
   /// - Must be null for even mode
   final Map<String, Decimal>? shares;
 
-  const ItemAssignment({
-    required this.mode,
-    required this.users,
-    this.shares,
-  });
+  const ItemAssignment({required this.mode, required this.users, this.shares});
 
   /// Validate assignment
   ///

@@ -20,11 +20,7 @@ class TaxExtra extends Equatable {
   /// Examples: preTaxItemSubtotals, taxableItemSubtotalsOnly, postDiscountItemSubtotals
   final PercentBase? base;
 
-  const TaxExtra._({
-    required this.type,
-    required this.value,
-    this.base,
-  });
+  const TaxExtra._({required this.type, required this.value, this.base});
 
   /// Create a percentage-based tax
   ///
@@ -36,27 +32,17 @@ class TaxExtra extends Equatable {
     if (value <= Decimal.zero) {
       throw ArgumentError('Tax value must be greater than 0');
     }
-    return TaxExtra._(
-      type: 'percent',
-      value: value,
-      base: base,
-    );
+    return TaxExtra._(type: 'percent', value: value, base: base);
   }
 
   /// Create an absolute amount tax
   ///
   /// Throws [ArgumentError] if value <= 0
-  factory TaxExtra.amount({
-    required Decimal value,
-  }) {
+  factory TaxExtra.amount({required Decimal value}) {
     if (value <= Decimal.zero) {
       throw ArgumentError('Tax value must be greater than 0');
     }
-    return TaxExtra._(
-      type: 'amount',
-      value: value,
-      base: null,
-    );
+    return TaxExtra._(type: 'amount', value: value, base: null);
   }
 
   /// Raw constructor for deserialization
@@ -87,11 +73,7 @@ class TaxExtra extends Equatable {
       throw ArgumentError('Amount-based tax cannot have a base');
     }
 
-    return TaxExtra._(
-      type: type,
-      value: value,
-      base: base,
-    );
+    return TaxExtra._(type: type, value: value, base: base);
   }
 
   /// Validate tax configuration
@@ -122,11 +104,7 @@ class TaxExtra extends Equatable {
   }
 
   /// Create a copy with updated fields
-  TaxExtra copyWith({
-    String? type,
-    Decimal? value,
-    PercentBase? base,
-  }) {
+  TaxExtra copyWith({String? type, Decimal? value, PercentBase? base}) {
     return TaxExtra._(
       type: type ?? this.type,
       value: value ?? this.value,
