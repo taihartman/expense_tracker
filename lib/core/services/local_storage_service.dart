@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html show window;
+
+// Conditional import for web-specific functionality
+import 'web_storage_stub.dart'
+    if (dart.library.html) 'dart:html' as html;
 
 /// Helper function to log with timestamps
 void _log(String message) {
