@@ -887,4 +887,98 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get tripJoinTitle => 'Join Trip';
+
+  @override
+  String get tripJoinCodeLabel => 'Invite Code';
+
+  @override
+  String get tripJoinCodeHint => 'Enter the trip invite code';
+
+  @override
+  String get tripJoinNameLabel => 'Your Name';
+
+  @override
+  String get tripJoinNameHint => 'How should others see you?';
+
+  @override
+  String get tripJoinButton => 'Join Trip';
+
+  @override
+  String get tripJoinInvalidCode => 'Invalid or non-existent trip code';
+
+  @override
+  String get tripJoinAlreadyMember => 'You\'ve already joined this trip';
+
+  @override
+  String get tripJoinSuccess => 'Successfully joined trip!';
+
+  @override
+  String tripJoinError(String error) {
+    return 'Failed to join trip: $error';
+  }
+
+  @override
+  String get tripInviteTitle => 'Invite Friends';
+
+  @override
+  String get tripInviteCodeLabel => 'Invite Code';
+
+  @override
+  String get tripInviteCodeDescription =>
+      'Share this code with friends to invite them to the trip';
+
+  @override
+  String get tripInviteCopyButton => 'Copy Code';
+
+  @override
+  String get tripInviteShareButton => 'Share Link';
+
+  @override
+  String get tripInviteCodeCopied => 'Invite code copied to clipboard';
+
+  @override
+  String tripInviteShareMessage(String code, String link) {
+    return 'Join my trip on Expense Tracker! Use code: $code or click: $link';
+  }
+
+  @override
+  String get activityLogTitle => 'Activity Log';
+
+  @override
+  String get activityLogEmpty =>
+      'No activities yet. Start by adding expenses or inviting friends!';
+
+  @override
+  String get activityLogLoadMore => 'Load More';
+
+  @override
+  String get activityLogLoading => 'Loading activities...';
+
+  @override
+  String activityTripCreated(String name) {
+    return '$name created the trip';
+  }
+
+  @override
+  String activityMemberJoined(String name) {
+    return '$name joined the trip';
+  }
+
+  @override
+  String activityExpenseAdded(String name, String title) {
+    return '$name added expense: $title';
+  }
+
+  @override
+  String activityExpenseEdited(String name, String title) {
+    return '$name edited expense: $title';
+  }
+
+  @override
+  String activityExpenseDeleted(String name, String title) {
+    return '$name deleted expense: $title';
+  }
 }

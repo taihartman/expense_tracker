@@ -606,5 +606,100 @@
   "categoryAccommodation": "Accommodation",
   "categoryActivities": "Activities",
   "categoryShopping": "Shopping",
-  "categoryOther": "Other"
+  "categoryOther": "Other",
+
+
+  "tripJoinTitle": "Join Trip",
+  "tripJoinCodeLabel": "Invite Code",
+  "tripJoinCodeHint": "Enter the trip invite code",
+  "tripJoinNameLabel": "Your Name",
+  "tripJoinNameHint": "How should others see you?",
+  "tripJoinButton": "Join Trip",
+  "tripJoinInvalidCode": "Invalid or non-existent trip code",
+  "tripJoinAlreadyMember": "You've already joined this trip",
+  "tripJoinSuccess": "Successfully joined trip!",
+  "tripJoinError": "Failed to join trip: {error}",
+  "@tripJoinError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+
+  "tripInviteTitle": "Invite Friends",
+  "tripInviteCodeLabel": "Invite Code",
+  "tripInviteCodeDescription": "Share this code with friends to invite them to the trip",
+  "tripInviteCopyButton": "Copy Code",
+  "tripInviteShareButton": "Share Link",
+  "tripInviteCodeCopied": "Invite code copied to clipboard",
+  "tripInviteShareMessage": "Join my trip on Expense Tracker! Use code: {code} or click: {link}",
+  "@tripInviteShareMessage": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+
+
+  "activityLogTitle": "Activity Log",
+  "activityLogEmpty": "No activities yet. Start by adding expenses or inviting friends!",
+  "activityLogLoadMore": "Load More",
+  "activityLogLoading": "Loading activities...",
+
+
+  "activityTripCreated": "{name} created the trip",
+  "@activityTripCreated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityMemberJoined": "{name} joined the trip",
+  "@activityMemberJoined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "activityExpenseAdded": "{name} added expense: {title}",
+  "@activityExpenseAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "activityExpenseEdited": "{name} edited expense: {title}",
+  "@activityExpenseEdited": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "activityExpenseDeleted": "{name} deleted expense: {title}",
+  "@activityExpenseDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

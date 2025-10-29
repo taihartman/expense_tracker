@@ -11,6 +11,20 @@ service cloud.firestore {
     match /trips/{tripId} {
       allow read, write: if isAuthenticated();
 
+      // Activity Log: Append-only audit trail
+      match /activityLog/{logId} {
+        // Anyone can read activity logs (membership will be enforced client-side initially)
+        allow read: if isAuthenticated();
+
+        // Only allow creating new logs (no updates or deletes to preserve audit trail)
+        allow create: if isAuthenticated()
+                      && request.resource.data.timestamp == request.time
+                      && request.resource.data.tripId == tripId;
+
+        // Deny updates and deletes to maintain log integrity
+        allow update, delete: if false;
+      }
+
       // Categories, fxRates, expenses: Inherit trip permissions
       match /{document=**} {
         allow read, write: if isAuthenticated();

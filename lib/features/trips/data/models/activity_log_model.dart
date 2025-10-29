@@ -1,0 +1,117 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../domain/models/activity_log.dart';
+
+/// Data model for ActivityLog with JSON and Firestore serialization
+///
+/// This model extends the domain ActivityLog with serialization capabilities
+/// for Firestore storage and retrieval.
+class ActivityLogModel extends ActivityLog {
+  const ActivityLogModel({
+    required super.id,
+    required super.tripId,
+    required super.actorName,
+    required super.type,
+    required super.description,
+    required super.timestamp,
+    super.metadata,
+  });
+
+  /// Create ActivityLogModel from domain ActivityLog
+  factory ActivityLogModel.fromDomain(ActivityLog log) {
+    return ActivityLogModel(
+      id: log.id,
+      tripId: log.tripId,
+      actorName: log.actorName,
+      type: log.type,
+      description: log.description,
+      timestamp: log.timestamp,
+      metadata: log.metadata,
+    );
+  }
+
+  /// Create ActivityLogModel from JSON map
+  factory ActivityLogModel.fromJson(Map<String, dynamic> json) {
+    return ActivityLogModel(
+      id: json['id'] as String,
+      tripId: json['tripId'] as String,
+      actorName: json['actorName'] as String,
+      type: _activityTypeFromString(json['type'] as String),
+      description: json['description'] as String,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      metadata: json['metadata'] as Map<String, dynamic>?,
+    );
+  }
+
+  /// Convert to JSON map
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'tripId': tripId,
+      'actorName': actorName,
+      'type': _activityTypeToString(type),
+      'description': description,
+      'timestamp': timestamp.toIso8601String(),
+      if (metadata != null) 'metadata': metadata,
+    };
+  }
+
+  /// Create ActivityLogModel from Firestore DocumentSnapshot
+  factory ActivityLogModel.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return ActivityLogModel(
+      id: doc.id,
+      tripId: data['tripId'] as String,
+      actorName: data['actorName'] as String,
+      type: _activityTypeFromString(data['type'] as String),
+      description: data['description'] as String,
+      timestamp: (data['timestamp'] as Timestamp).toDate(),
+      metadata: data['metadata'] as Map<String, dynamic>?,
+    );
+  }
+
+  /// Convert to Firestore map
+  Map<String, dynamic> toFirestore() {
+    return {
+      'tripId': tripId,
+      'actorName': actorName,
+      'type': _activityTypeToString(type),
+      'description': description,
+      'timestamp': FieldValue.serverTimestamp(),
+      if (metadata != null) 'metadata': metadata,
+    };
+  }
+
+  /// Convert ActivityType enum to string for serialization
+  static String _activityTypeToString(ActivityType type) {
+    switch (type) {
+      case ActivityType.tripCreated:
+        return 'tripCreated';
+      case ActivityType.memberJoined:
+        return 'memberJoined';
+      case ActivityType.expenseAdded:
+        return 'expenseAdded';
+      case ActivityType.expenseEdited:
+        return 'expenseEdited';
+      case ActivityType.expenseDeleted:
+        return 'expenseDeleted';
+    }
+  }
+
+  /// Convert string to ActivityType enum
+  static ActivityType _activityTypeFromString(String type) {
+    switch (type) {
+      case 'tripCreated':
+        return ActivityType.tripCreated;
+      case 'memberJoined':
+        return ActivityType.memberJoined;
+      case 'expenseAdded':
+        return ActivityType.expenseAdded;
+      case 'expenseEdited':
+        return ActivityType.expenseEdited;
+      case 'expenseDeleted':
+        return ActivityType.expenseDeleted;
+      default:
+        throw ArgumentError('Unknown activity type: $type');
+    }
+  }
+}

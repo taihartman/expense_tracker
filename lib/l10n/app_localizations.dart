@@ -1577,6 +1577,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// No description provided for @tripJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Trip'**
+  String get tripJoinTitle;
+
+  /// No description provided for @tripJoinCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Code'**
+  String get tripJoinCodeLabel;
+
+  /// No description provided for @tripJoinCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the trip invite code'**
+  String get tripJoinCodeHint;
+
+  /// No description provided for @tripJoinNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Name'**
+  String get tripJoinNameLabel;
+
+  /// No description provided for @tripJoinNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How should others see you?'**
+  String get tripJoinNameHint;
+
+  /// No description provided for @tripJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Trip'**
+  String get tripJoinButton;
+
+  /// No description provided for @tripJoinInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or non-existent trip code'**
+  String get tripJoinInvalidCode;
+
+  /// No description provided for @tripJoinAlreadyMember.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve already joined this trip'**
+  String get tripJoinAlreadyMember;
+
+  /// No description provided for @tripJoinSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully joined trip!'**
+  String get tripJoinSuccess;
+
+  /// No description provided for @tripJoinError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to join trip: {error}'**
+  String tripJoinError(String error);
+
+  /// No description provided for @tripInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Friends'**
+  String get tripInviteTitle;
+
+  /// No description provided for @tripInviteCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Code'**
+  String get tripInviteCodeLabel;
+
+  /// No description provided for @tripInviteCodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with friends to invite them to the trip'**
+  String get tripInviteCodeDescription;
+
+  /// No description provided for @tripInviteCopyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get tripInviteCopyButton;
+
+  /// No description provided for @tripInviteShareButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get tripInviteShareButton;
+
+  /// No description provided for @tripInviteCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied to clipboard'**
+  String get tripInviteCodeCopied;
+
+  /// No description provided for @tripInviteShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Join my trip on Expense Tracker! Use code: {code} or click: {link}'**
+  String tripInviteShareMessage(String code, String link);
+
+  /// No description provided for @activityLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Log'**
+  String get activityLogTitle;
+
+  /// No description provided for @activityLogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities yet. Start by adding expenses or inviting friends!'**
+  String get activityLogEmpty;
+
+  /// No description provided for @activityLogLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get activityLogLoadMore;
+
+  /// No description provided for @activityLogLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading activities...'**
+  String get activityLogLoading;
+
+  /// No description provided for @activityTripCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} created the trip'**
+  String activityTripCreated(String name);
+
+  /// No description provided for @activityMemberJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} joined the trip'**
+  String activityMemberJoined(String name);
+
+  /// No description provided for @activityExpenseAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added expense: {title}'**
+  String activityExpenseAdded(String name, String title);
+
+  /// No description provided for @activityExpenseEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} edited expense: {title}'**
+  String activityExpenseEdited(String name, String title);
+
+  /// No description provided for @activityExpenseDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} deleted expense: {title}'**
+  String activityExpenseDeleted(String name, String title);
 }
 
 class _AppLocalizationsDelegate

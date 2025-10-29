@@ -14,6 +14,7 @@ void _log(String message) {
 /// Provides persistent storage for user preferences and app state
 class LocalStorageService {
   static const String _selectedTripIdKey = 'selected_trip_id';
+  static const String _joinedTripIdsKey = 'joined_trip_ids';
 
   final SharedPreferences _prefs;
 
@@ -129,5 +130,45 @@ class LocalStorageService {
         _log('⚠️ Failed to verify clear in browser localStorage: $e');
       }
     }
+  }
+
+  /// Add a trip ID to the list of joined trips
+  Future<void> addJoinedTrip(String tripId) async {
+    _log('➕ Adding joined trip ID: $tripId');
+    final currentIds = getJoinedTripIds();
+
+    if (currentIds.contains(tripId)) {
+      _log('ℹ️ Trip ID $tripId already in joined trips list');
+      return;
+    }
+
+    final updatedIds = [...currentIds, tripId];
+    final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
+    _log('✅ Added trip ID to joined trips. Total trips: ${updatedIds.length}. Result: $result');
+  }
+
+  /// Get the list of joined trip IDs
+  ///
+  /// Returns an empty list if no trips have been joined
+  List<String> getJoinedTripIds() {
+    _log('📖 Reading joined trip IDs from key: $_joinedTripIdsKey');
+    final ids = _prefs.getStringList(_joinedTripIdsKey) ?? [];
+    _log('📖 Found ${ids.length} joined trip(s): ${ids.isEmpty ? "none" : ids.join(", ")}');
+    return ids;
+  }
+
+  /// Remove a trip ID from the list of joined trips
+  Future<void> removeJoinedTrip(String tripId) async {
+    _log('➖ Removing joined trip ID: $tripId');
+    final currentIds = getJoinedTripIds();
+
+    if (!currentIds.contains(tripId)) {
+      _log('ℹ️ Trip ID $tripId not found in joined trips list');
+      return;
+    }
+
+    final updatedIds = currentIds.where((id) => id != tripId).toList();
+    final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
+    _log('✅ Removed trip ID from joined trips. Remaining trips: ${updatedIds.length}. Result: $result');
   }
 }

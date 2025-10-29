@@ -22,10 +22,10 @@
 
 **Purpose**: Project initialization and localization strings
 
-- [ ] T001 [P] Add localization strings for trip invite system in lib/l10n/app_en.arb (tripJoinTitle, tripJoinCodeLabel, tripJoinNameLabel, tripJoinButton, tripJoinInvalidCode, tripJoinAlreadyMember, tripInviteTitle, tripInviteCodeLabel, tripInviteCopyButton, tripInviteShareButton, tripInviteCodeCopied, tripInviteShareMessage, activityLogTitle, activityLogEmpty)
-- [ ] T002 [P] Add localization strings for activity log types in lib/l10n/app_en.arb (activityTripCreated, activityMemberJoined, activityExpenseAdded, activityExpenseEdited, activityExpenseDeleted)
-- [ ] T003 [P] Add LocalStorageService methods for joined trip IDs in lib/core/services/local_storage_service.dart (addJoinedTrip, getJoinedTripIds, removeJoinedTrip)
-- [ ] T004 Run flutter pub get to regenerate localization files
+- [X] T001 [P] Add localization strings for trip invite system in lib/l10n/app_en.arb (tripJoinTitle, tripJoinCodeLabel, tripJoinNameLabel, tripJoinButton, tripJoinInvalidCode, tripJoinAlreadyMember, tripInviteTitle, tripInviteCodeLabel, tripInviteCopyButton, tripInviteShareButton, tripInviteCodeCopied, tripInviteShareMessage, activityLogTitle, activityLogEmpty)
+- [X] T002 [P] Add localization strings for activity log types in lib/l10n/app_en.arb (activityTripCreated, activityMemberJoined, activityExpenseAdded, activityExpenseEdited, activityExpenseDeleted)
+- [X] T003 [P] Add LocalStorageService methods for joined trip IDs in lib/core/services/local_storage_service.dart (addJoinedTrip, getJoinedTripIds, removeJoinedTrip)
+- [X] T004 Run flutter pub get to regenerate localization files
 
 ---
 
@@ -35,13 +35,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 [P] Create ActivityType enum in lib/features/trips/domain/models/activity_log.dart (tripCreated, memberJoined, expenseAdded, expenseEdited, expenseDeleted)
-- [ ] T006 [P] Create ActivityLog domain model in lib/features/trips/domain/models/activity_log.dart (id, tripId, actorName, type, description, timestamp, metadata)
-- [ ] T007 [P] Create ActivityLogModel data model with JSON serialization in lib/features/trips/data/models/activity_log_model.dart (fromJson, toJson, fromFirestore, toFirestore)
-- [ ] T008 Create ActivityLogRepository interface in lib/features/trips/domain/repositories/activity_log_repository.dart (addLog, getActivityLogs stream)
-- [ ] T009 Implement ActivityLogRepositoryImpl in lib/features/trips/data/repositories/activity_log_repository_impl.dart (Firestore subcollection operations)
-- [ ] T010 Update Firestore security rules in firestore.rules (add activityLog subcollection rules: allow read for members, allow create for members with server timestamp, deny update/delete)
-- [ ] T011 Deploy Firestore security rules using firebase deploy --only firestore:rules
+- [X] T005 [P] Create ActivityType enum in lib/features/trips/domain/models/activity_log.dart (tripCreated, memberJoined, expenseAdded, expenseEdited, expenseDeleted)
+- [X] T006 [P] Create ActivityLog domain model in lib/features/trips/domain/models/activity_log.dart (id, tripId, actorName, type, description, timestamp, metadata)
+- [X] T007 [P] Create ActivityLogModel data model with JSON serialization in lib/features/trips/data/models/activity_log_model.dart (fromJson, toJson, fromFirestore, toFirestore)
+- [X] T008 Create ActivityLogRepository interface in lib/features/trips/domain/repositories/activity_log_repository.dart (addLog, getActivityLogs stream)
+- [X] T009 Implement ActivityLogRepositoryImpl in lib/features/trips/data/repositories/activity_log_repository_impl.dart (Firestore subcollection operations)
+- [X] T010 Update Firestore security rules in firestore.rules (add activityLog subcollection rules: allow read for members, allow create for members with server timestamp, deny update/delete)
+- [X] T011 Deploy Firestore security rules using firebase deploy --only firestore:rules
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
