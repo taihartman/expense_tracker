@@ -86,14 +86,34 @@ class ActivityLogModel extends ActivityLog {
     switch (type) {
       case ActivityType.tripCreated:
         return 'tripCreated';
+      case ActivityType.tripUpdated:
+        return 'tripUpdated';
+      case ActivityType.tripDeleted:
+        return 'tripDeleted';
       case ActivityType.memberJoined:
         return 'memberJoined';
+      case ActivityType.participantAdded:
+        return 'participantAdded';
+      case ActivityType.participantRemoved:
+        return 'participantRemoved';
       case ActivityType.expenseAdded:
         return 'expenseAdded';
       case ActivityType.expenseEdited:
         return 'expenseEdited';
       case ActivityType.expenseDeleted:
         return 'expenseDeleted';
+      case ActivityType.expenseCategoryChanged:
+        return 'expenseCategoryChanged';
+      case ActivityType.expenseSplitModified:
+        return 'expenseSplitModified';
+      case ActivityType.transferMarkedSettled:
+        return 'transferMarkedSettled';
+      case ActivityType.transferMarkedUnsettled:
+        return 'transferMarkedUnsettled';
+      case ActivityType.deviceVerified:
+        return 'deviceVerified';
+      case ActivityType.recoveryCodeUsed:
+        return 'recoveryCodeUsed';
     }
   }
 
@@ -102,14 +122,34 @@ class ActivityLogModel extends ActivityLog {
     switch (type) {
       case 'tripCreated':
         return ActivityType.tripCreated;
+      case 'tripUpdated':
+        return ActivityType.tripUpdated;
+      case 'tripDeleted':
+        return ActivityType.tripDeleted;
       case 'memberJoined':
         return ActivityType.memberJoined;
+      case 'participantAdded':
+        return ActivityType.participantAdded;
+      case 'participantRemoved':
+        return ActivityType.participantRemoved;
       case 'expenseAdded':
         return ActivityType.expenseAdded;
       case 'expenseEdited':
         return ActivityType.expenseEdited;
       case 'expenseDeleted':
         return ActivityType.expenseDeleted;
+      case 'expenseCategoryChanged':
+        return ActivityType.expenseCategoryChanged;
+      case 'expenseSplitModified':
+        return ActivityType.expenseSplitModified;
+      case 'transferMarkedSettled':
+        return ActivityType.transferMarkedSettled;
+      case 'transferMarkedUnsettled':
+        return ActivityType.transferMarkedUnsettled;
+      case 'deviceVerified':
+        return ActivityType.deviceVerified;
+      case 'recoveryCodeUsed':
+        return ActivityType.recoveryCodeUsed;
       default:
         throw ArgumentError('Unknown activity type: $type');
     }

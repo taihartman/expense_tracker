@@ -1,11 +1,26 @@
 /// Types of activities that can be logged in a trip
 enum ActivityType {
+  // Trip Management Activities
   /// Trip was created
   tripCreated,
 
+  /// Trip details were updated (name, currency, etc.)
+  tripUpdated,
+
+  /// Trip was deleted
+  tripDeleted,
+
+  // Participant Activities
   /// A member joined the trip
   memberJoined,
 
+  /// A participant was added to the trip
+  participantAdded,
+
+  /// A participant was removed from the trip
+  participantRemoved,
+
+  // Expense Activities
   /// An expense was added to the trip
   expenseAdded,
 
@@ -14,6 +29,26 @@ enum ActivityType {
 
   /// An expense was deleted
   expenseDeleted,
+
+  /// Expense category was changed
+  expenseCategoryChanged,
+
+  /// Expense split configuration was modified
+  expenseSplitModified,
+
+  // Settlement Activities
+  /// A transfer was marked as settled
+  transferMarkedSettled,
+
+  /// A settled transfer was marked as unsettled
+  transferMarkedUnsettled,
+
+  // Device Pairing & Security Activities
+  /// A device was successfully verified and joined
+  deviceVerified,
+
+  /// A recovery code was used to join a trip
+  recoveryCodeUsed,
 }
 
 /// Domain model representing an activity log entry for a trip

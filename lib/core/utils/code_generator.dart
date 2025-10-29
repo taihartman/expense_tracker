@@ -27,11 +27,16 @@ class CodeGenerator {
   /// Recovery codes are more secure than device pairing codes due to their length
   /// and the fact that they provide permanent trip access.
   ///
+  /// Note: On web/JavaScript, Random.nextInt() has a max limit of 2^32, so we generate
+  /// three 4-digit segments separately to create the full 12-digit code.
+  ///
   /// Returns a string in format "XXXX-XXXX-XXXX" (e.g., "1234-5678-9012").
   static String generateRecoveryCode() {
-    final code = _random.nextInt(1000000000000); // 0 to 999,999,999,999
-    final codeString = code.toString().padLeft(12, '0');
-    return '${codeString.substring(0, 4)}-${codeString.substring(4, 8)}-${codeString.substring(8)}';
+    // Generate three 4-digit segments to avoid exceeding Random.nextInt() limit on web
+    final segment1 = _random.nextInt(10000).toString().padLeft(4, '0'); // 0000-9999
+    final segment2 = _random.nextInt(10000).toString().padLeft(4, '0'); // 0000-9999
+    final segment3 = _random.nextInt(10000).toString().padLeft(4, '0'); // 0000-9999
+    return '$segment1-$segment2-$segment3';
   }
 
   /// Normalizes a code by removing hyphens and spaces.

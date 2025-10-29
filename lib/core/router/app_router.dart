@@ -12,6 +12,7 @@ import '../../features/trips/presentation/pages/trip_identity_selection_page.dar
 import '../../features/trips/presentation/pages/trip_activity_page.dart';
 import '../../features/trips/presentation/pages/trip_edit_page.dart';
 import '../../features/trips/presentation/pages/trip_settings_page.dart';
+import '../../features/trips/presentation/pages/archived_trips_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
 import '../../features/expenses/presentation/widgets/expense_form_bottom_sheet.dart';
@@ -67,6 +68,10 @@ class AppRouter {
           final inviteCode = state.uri.queryParameters['code'];
           return TripJoinPage(inviteCode: inviteCode);
         },
+      ),
+      GoRoute(
+        path: '/trips/archived',
+        builder: (context, state) => const ArchivedTripsPage(),
       ),
       GoRoute(
         path: '/trips/:tripId/identify',
@@ -206,18 +211,7 @@ class _HomePageContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const TripSelectorWidget(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.list),
-            tooltip: 'All Trips',
-            onPressed: () {
-              context.go('/trips');
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const TripSelectorWidget()),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
           if (state is TripLoaded && state.selectedTrip != null) {
@@ -336,9 +330,9 @@ class _UnauthorizedPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'Ask the trip creator to send you an invite link to join.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),

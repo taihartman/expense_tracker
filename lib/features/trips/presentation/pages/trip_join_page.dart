@@ -17,8 +17,10 @@ import '../../../device_pairing/presentation/cubits/device_pairing_cubit.dart';
 enum JoinStep {
   /// Step 1: Enter trip code and optionally recovery code
   enterCode,
+
   /// Step 2: Select participant identity and verify
   selectIdentity,
+
   /// Step 3: Verifying identity (loading state)
   verifying,
 }
@@ -87,9 +89,9 @@ class _TripJoinPageState extends State<TripJoinPage> {
     });
 
     try {
-      // Get trip from already loaded trips
+      // Fetch trip from Firestore by ID
       final tripCubit = context.read<TripCubit>();
-      final trip = tripCubit.trips.where((t) => t.id == tripId).firstOrNull;
+      final trip = await tripCubit.getTripById(tripId);
 
       if (!mounted) return;
 
@@ -162,7 +164,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
 
     try {
       final tripCubit = context.read<TripCubit>();
-      final trip = tripCubit.trips.where((t) => t.id == tripId).firstOrNull;
+      final trip = await tripCubit.getTripById(tripId);
 
       if (!mounted) return;
 
@@ -339,9 +341,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
       case JoinStep.selectIdentity:
         return _buildSelectIdentityStep();
       case JoinStep.verifying:
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
+        return const Center(child: CircularProgressIndicator());
     }
   }
 
@@ -456,10 +456,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
           // Instructions
           Text(
             context.l10n.tripJoinSelectIdentityPrompt,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
 
           const SizedBox(height: AppTheme.spacing2),

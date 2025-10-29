@@ -17,6 +17,7 @@ void _log(String message) {
 class LocalStorageService {
   static const String _selectedTripIdKey = 'selected_trip_id';
   static const String _joinedTripIdsKey = 'joined_trip_ids';
+  static const String _tripIdentityKeyPrefix = 'trip_identity_';
 
   final SharedPreferences _prefs;
 
@@ -172,5 +173,62 @@ class LocalStorageService {
     final updatedIds = currentIds.where((id) => id != tripId).toList();
     final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
     _log('✅ Removed trip ID from joined trips. Remaining trips: ${updatedIds.length}. Result: $result');
+  }
+
+  /// Save the user's identity (participant ID) for a specific trip
+  ///
+  /// This stores which participant the current user is in a given trip,
+  /// enabling proper attribution of actions to the correct user.
+  Future<void> saveUserIdentityForTrip(
+    String tripId,
+    String participantId,
+  ) async {
+    final key = '$_tripIdentityKeyPrefix$tripId';
+    _log('💾 Saving user identity for trip $tripId: $participantId');
+    _log('💾 Using key: $key');
+
+    final result = await _prefs.setString(key, participantId);
+    _log('✅ User identity saved. Result: $result');
+
+    // Verification
+    final verified = _prefs.getString(key);
+    _log('🔍 Verification: $verified');
+  }
+
+  /// Get the user's identity (participant ID) for a specific trip
+  ///
+  /// Returns null if the user has not selected their identity for this trip.
+  /// This happens when accessing a trip without going through the join flow.
+  String? getUserIdentityForTrip(String tripId) {
+    final key = '$_tripIdentityKeyPrefix$tripId';
+    _log('📖 Reading user identity for trip $tripId from key: $key');
+    final participantId = _prefs.getString(key);
+    _log('📖 User identity: ${participantId ?? "null (not set)"}');
+    return participantId;
+  }
+
+  /// Remove the user's identity for a specific trip
+  ///
+  /// This should be called when leaving a trip or when identity needs to be re-selected.
+  Future<void> removeUserIdentityForTrip(String tripId) async {
+    final key = '$_tripIdentityKeyPrefix$tripId';
+    _log('🗑️ Removing user identity for trip $tripId');
+    await _prefs.remove(key);
+    _log('✅ User identity removed');
+  }
+
+  /// Clear all user identities for all trips
+  ///
+  /// Useful for testing or complete app reset scenarios.
+  Future<void> clearAllUserIdentities() async {
+    _log('🗑️ Clearing all user identities');
+    final keys = _prefs.getKeys();
+    final identityKeys = keys.where((k) => k.startsWith(_tripIdentityKeyPrefix));
+
+    for (final key in identityKeys) {
+      await _prefs.remove(key);
+    }
+
+    _log('✅ Cleared ${identityKeys.length} user identity entries');
   }
 }

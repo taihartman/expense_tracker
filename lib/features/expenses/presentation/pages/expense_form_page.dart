@@ -106,25 +106,21 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
         updatedAt: DateTime.now(),
       );
 
-      // Get payer name for activity logging
-      final payerName = tripParticipants
-          .firstWhere(
-            (p) => p.id == _selectedPayer,
-            orElse: () => const Participant(id: '', name: ''),
-          )
-          .name;
+      // Get current user for activity logging
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final actorName = currentUser?.name;
 
       if (widget.expense != null) {
         // Update existing expense
         context.read<ExpenseCubit>().updateExpense(
           expense,
-          payerName: payerName.isNotEmpty ? payerName : null,
+          actorName: actorName,
         );
       } else {
         // Create new expense
         context.read<ExpenseCubit>().createExpense(
           expense,
-          payerName: payerName.isNotEmpty ? payerName : null,
+          actorName: actorName,
         );
       }
 

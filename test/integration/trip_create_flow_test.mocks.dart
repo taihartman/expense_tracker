@@ -267,4 +267,42 @@ class MockLocalStorageService extends _i1.Mock
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
           as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> saveUserIdentityForTrip(
+    String? tripId,
+    String? participantId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveUserIdentityForTrip, [
+              tripId,
+              participantId,
+            ]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  String? getUserIdentityForTrip(String? tripId) =>
+      (super.noSuchMethod(Invocation.method(#getUserIdentityForTrip, [tripId]))
+          as String?);
+
+  @override
+  _i5.Future<void> removeUserIdentityForTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#removeUserIdentityForTrip, [tripId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> clearAllUserIdentities() =>
+      (super.noSuchMethod(
+            Invocation.method(#clearAllUserIdentities, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 }

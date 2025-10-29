@@ -7,10 +7,32 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Categories: Top-level collection (read/write if authenticated)
+    // TODO: Move to subcollection under trips for better security and data isolation
+    match /categories/{categoryId} {
+      allow read, write: if isAuthenticated();
+    }
+
     // Expenses: Top-level collection (read/write if authenticated)
     // TODO: Move to subcollection under trips for better security and data isolation
     match /expenses/{expenseId} {
       allow read, write: if isAuthenticated();
+    }
+
+    // Settlements: Top-level collection for computed settlement data
+    // Contains settlement summaries and minimal transfers for each trip
+    match /settlements/{tripId} {
+      // Allow reading settlement documents
+      allow read: if isAuthenticated();
+
+      // Allow writing settlement summaries and transfers
+      allow write: if isAuthenticated();
+
+      // Transfers subcollection
+      match /transfers/{transferId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated();
+      }
     }
 
     // Settled Transfers: Top-level collection (read/write if authenticated)
@@ -94,16 +116,21 @@ service cloud.firestore {
 
         // Anyone can create a recovery code for a trip (first member to generate it)
         allow create: if isAuthenticated()
+                      && request.resource.data.code is string
                       && request.resource.data.code.size() == 14  // "XXXX-XXXX-XXXX"
                       && request.resource.data.tripId == tripId
+                      && request.resource.data.createdAt is timestamp
                       && request.resource.data.usedCount is int
-                      && request.resource.data.usedCount >= 0;
+                      && request.resource.data.usedCount >= 0
+                      // lastUsedAt can be null on creation
+                      && (!request.resource.data.keys().hasAny(['lastUsedAt']) || request.resource.data.lastUsedAt == null || request.resource.data.lastUsedAt is timestamp);
 
         // Allow updates to increment usage count and update lastUsedAt
         allow update: if isAuthenticated()
                       && request.resource.data.code == resource.data.code  // Code cannot change
                       && request.resource.data.tripId == resource.data.tripId  // Trip ID cannot change
-                      && request.resource.data.usedCount == resource.data.usedCount + 1;  // Can only increment by 1
+                      && request.resource.data.usedCount == resource.data.usedCount + 1  // Can only increment by 1
+                      && request.resource.data.lastUsedAt is timestamp;
 
         // No deletion (recovery codes are permanent)
         allow delete: if false;

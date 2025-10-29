@@ -9,6 +9,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../cubits/settlement_cubit.dart';
 import 'transfer_breakdown_bottom_sheet.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
+import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
 /// View showing minimal transfers to settle all debts
@@ -298,8 +299,13 @@ class _TransferCardState extends State<_TransferCard> {
     );
 
     if (confirmed == true && context.mounted) {
+      // Get current user for activity logging
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final actorName = currentUser?.name;
+
       await context.read<SettlementCubit>().markTransferAsSettled(
         widget.transfer.id,
+        actorName: actorName,
       );
     }
   }
