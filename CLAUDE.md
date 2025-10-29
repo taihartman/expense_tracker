@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🤖 IMPORTANT: Claude Code Workflow Instructions
+
+**READ THIS FIRST BEFORE EVERY SESSION:**
+
+Claude Code must follow the documentation workflow defined in `.claude-workflow-checklist.md`.
+
+**REQUIRED ACTIONS during development:**
+
+1. **After completing each significant todo item** → Use `/docs.log "description"`
+2. **When creating new files** → Use `/docs.log "added [filename] for [purpose]"`
+3. **When fixing bugs** → Use `/docs.log "fixed [issue]"`
+4. **After architectural changes** → Use `/docs.update` (see checklist for criteria)
+5. **Before marking feature complete** → Use `/docs.update` then `/docs.complete`
+
+**Architectural changes include:** Adding models, repositories, cubits, routes, dependencies, design patterns, or modifying core data structures.
+
+**DO NOT wait for the user to remind you about documentation!** This is YOUR responsibility as the AI assistant.
+
+**Check `.claude-workflow-checklist.md` regularly** to ensure you're following best practices.
+
+---
+
 ## Project Overview
 
 This is a Flutter web application for tracking group expenses on trips with multi-currency support and settlement calculations. The project uses spec-driven development via GitHub Spec-Kit.
@@ -192,6 +214,208 @@ To add a new language (e.g., Vietnamese):
 
 The system will automatically use the user's device locale.
 
+### Activity Tracking & Audit Trail
+
+The app includes a **comprehensive activity tracking system** that logs all user actions for transparency and audit purposes. Every state-changing operation must include activity logging.
+
+**Key Files**:
+- `lib/features/trips/domain/models/activity_log.dart` - ActivityType enum and ActivityLog model
+- `lib/features/trips/domain/repositories/activity_log_repository.dart` - Repository interface
+- `lib/features/trips/presentation/pages/trip_activity_page.dart` - Activity log UI
+- `lib/features/trips/presentation/widgets/activity_log_item.dart` - Activity log item widget
+
+#### Activity Types
+
+The `ActivityType` enum defines all trackable actions:
+
+**Trip Management**: `tripCreated`, `tripUpdated`, `tripDeleted`
+**Participants**: `memberJoined`, `participantAdded`, `participantRemoved`
+**Expenses**: `expenseAdded`, `expenseEdited`, `expenseDeleted`, `expenseCategoryChanged`, `expenseSplitModified`
+**Settlements**: `transferMarkedSettled`, `transferMarkedUnsettled`
+**Security**: `deviceVerified`, `recoveryCodeUsed`
+
+#### How to Add Activity Logging to New Features
+
+**1. Inject ActivityLogRepository in your Cubit:**
+
+```dart
+class MyCubit extends Cubit<MyState> {
+  final MyRepository _myRepository;
+  final ActivityLogRepository? _activityLogRepository; // Make optional
+
+  MyCubit({
+    required MyRepository myRepository,
+    ActivityLogRepository? activityLogRepository, // Optional
+  }) : _myRepository = myRepository,
+       _activityLogRepository = activityLogRepository,
+       super(MyInitialState());
+}
+```
+
+**2. Get the current user for actor attribution:**
+
+```dart
+// In your UI code (page/widget):
+final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
+final actorName = currentUser?.name;
+
+// Pass actorName to cubit methods:
+context.read<MyCubit>().myAction(..., actorName: actorName);
+```
+
+**3. Log the activity after successful operations:**
+
+```dart
+Future<void> myAction(..., {String? actorName}) async {
+  try {
+    // 1. Perform the main operation
+    await _myRepository.doSomething(...);
+
+    // 2. Log activity (non-fatal)
+    if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty) {
+      _log('📝 Logging my_action activity...');
+      try {
+        final activityLog = ActivityLog(
+          id: '', // Firestore auto-generates
+          tripId: tripId,
+          type: ActivityType.myNewActionType, // Add to enum if new
+          actorName: actorName,
+          description: 'Clear description of what happened',
+          timestamp: DateTime.now(),
+          metadata: {
+            // Optional: store relevant details
+            'entityId': entityId,
+            'oldValue': oldValue,
+            'newValue': newValue,
+          },
+        );
+        await _activityLogRepository.addLog(activityLog);
+        _log('✅ Activity logged');
+      } catch (e) {
+        _log('⚠️ Failed to log activity (non-fatal): $e');
+        // Don't fail the main operation if logging fails
+      }
+    }
+
+    // 3. Emit success state
+    emit(MySuccessState());
+  } catch (e) {
+    emit(MyErrorState(e.toString()));
+  }
+}
+```
+
+#### Identity Management
+
+**How Users Are Identified:**
+- When users join a trip, they select their identity from the participant list
+- This identity is stored per-trip in `LocalStorageService` using `saveUserIdentityForTrip()`
+- Retrieved via `TripCubit.getCurrentUserForTrip(tripId)` for activity logging
+
+**Current User Pattern:**
+
+```dart
+// In your UI layer (page/widget with BuildContext):
+final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
+
+if (currentUser == null) {
+  // User hasn't joined this trip or hasn't selected identity
+  // Show error or prompt to join trip
+  return;
+}
+
+// Use currentUser.name for activity logging
+final actorName = currentUser.name;
+```
+
+#### Adding New Activity Types
+
+**1. Add to ActivityType enum** (`lib/features/trips/domain/models/activity_log.dart`):
+
+```dart
+enum ActivityType {
+  // ... existing types ...
+
+  /// My new action was performed
+  myNewAction,
+}
+```
+
+**2. Update serialization** (`lib/features/trips/data/models/activity_log_model.dart`):
+
+```dart
+// In _activityTypeToString():
+case ActivityType.myNewAction:
+  return 'myNewAction';
+
+// In _activityTypeFromString():
+case 'myNewAction':
+  return ActivityType.myNewAction;
+```
+
+**3. Update UI** (`lib/features/trips/presentation/widgets/activity_log_item.dart`):
+
+```dart
+// In _getIconForActivityType():
+case ActivityType.myNewAction:
+  return Icons.my_icon;
+
+// In _getColorForActivityType():
+case ActivityType.myNewAction:
+  return Colors.blue; // Choose appropriate color
+
+// In _getActionText():
+case ActivityType.myNewAction:
+  return 'performed my action';
+```
+
+**4. Run code generation** to regenerate mock files for tests:
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+#### Best Practices
+
+**DO**:
+- ✅ Always inject `ActivityLogRepository` in cubits that perform state changes
+- ✅ Always get `actorName` from `TripCubit.getCurrentUserForTrip()` (not from payer, creator, etc.)
+- ✅ Log AFTER successful operation (so failed operations aren't logged)
+- ✅ Wrap logging in try-catch (logging failures should never break main operations)
+- ✅ Use clear, descriptive text in `description` field
+- ✅ Store relevant details in `metadata` for richer logs (optional but recommended)
+
+**DON'T**:
+- ❌ Don't use payer/creator/participant names as actor - always use current user
+- ❌ Don't fail operations if activity logging fails (it's optional, non-fatal)
+- ❌ Don't log before the operation succeeds (only log successful actions)
+- ❌ Don't require `ActivityLogRepository` (make it optional for testing)
+- ❌ Don't forget to add new ActivityTypes to serialization methods
+
+#### Testing Activity Logging
+
+When writing tests for cubits with activity logging:
+
+```dart
+// Mock the repository as optional
+final mockActivityLogRepo = MockActivityLogRepository();
+
+// Create cubit with mock
+final cubit = MyCubit(
+  myRepository: mockRepository,
+  activityLogRepository: mockActivityLogRepo, // Optional
+);
+
+// Verify activity was logged
+verify(mockActivityLogRepo.addLog(any)).called(1);
+
+// OR test without activity logging
+final cubitWithoutLogging = MyCubit(
+  myRepository: mockRepository,
+  // activityLogRepository: null (omit),
+);
+```
+
 ### Spec-Driven Development Workflow
 
 This project uses **GitHub Spec-Kit** for specification-driven development. Features are developed in branches following this pattern:
@@ -284,6 +508,10 @@ Uses `flutter_lints` package (v5.0.0) with default recommended lints defined in 
 **Documentation Best Practice**: Use `/docs.log` after every significant change to keep a detailed development history. This makes it easy to generate release notes and understand feature evolution.
 
 ### Documentation Workflow
+
+**⚠️ CRITICAL: Claude Code must proactively use these commands during development!**
+
+See `.claude-workflow-checklist.md` for the complete workflow checklist.
 
 Each feature maintains TWO documentation files:
 - **CLAUDE.md** (`specs/{feature-id}/CLAUDE.md`): Architecture, design decisions, and implementation guide
