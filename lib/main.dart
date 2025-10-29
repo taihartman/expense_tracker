@@ -13,6 +13,8 @@ import 'core/services/local_storage_service.dart';
 import 'core/services/migration_service.dart';
 import 'features/trips/data/repositories/trip_repository_impl.dart';
 import 'features/trips/domain/repositories/trip_repository.dart';
+import 'features/trips/data/repositories/activity_log_repository_impl.dart';
+import 'features/trips/domain/repositories/activity_log_repository.dart';
 import 'features/expenses/data/repositories/expense_repository_impl.dart';
 import 'features/expenses/domain/repositories/expense_repository.dart';
 import 'features/categories/data/repositories/category_repository_impl.dart';
@@ -22,8 +24,14 @@ import 'features/settlements/domain/repositories/settlement_repository.dart';
 import 'features/settlements/data/repositories/settled_transfer_repository_impl.dart';
 import 'features/settlements/domain/repositories/settled_transfer_repository.dart';
 import 'features/trips/presentation/cubits/trip_cubit.dart';
+import 'features/trips/presentation/cubits/activity_log_cubit.dart';
 import 'features/expenses/presentation/cubits/expense_cubit.dart';
 import 'features/settlements/presentation/cubits/settlement_cubit.dart';
+import 'features/device_pairing/data/repositories/firestore_device_link_code_repository.dart';
+import 'features/device_pairing/domain/repositories/device_link_code_repository.dart';
+import 'features/device_pairing/presentation/cubits/device_pairing_cubit.dart';
+import 'features/trips/data/repositories/firestore_trip_recovery_code_repository.dart';
+import 'features/trips/domain/repositories/trip_recovery_code_repository.dart';
 import 'l10n/app_localizations.dart';
 import 'shared/services/firestore_service.dart';
 
@@ -185,6 +193,7 @@ class ExpenseTrackerApp extends StatelessWidget {
   static final _tripRepository = TripRepositoryImpl(
     firestoreService: _firestoreService,
   );
+  static final _activityLogRepository = ActivityLogRepositoryImpl();
   static final _expenseRepository = ExpenseRepositoryImpl(
     firestoreService: _firestoreService,
   );
@@ -199,6 +208,12 @@ class ExpenseTrackerApp extends StatelessWidget {
     expenseRepository: _expenseRepository,
     tripRepository: _tripRepository,
   );
+  static final _deviceLinkCodeRepository = FirestoreDeviceLinkCodeRepository(
+    firestore: FirebaseFirestore.instance,
+  );
+  static final _tripRecoveryCodeRepository = FirestoreTripRecoveryCodeRepository(
+    firestore: FirebaseFirestore.instance,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -209,6 +224,9 @@ class ExpenseTrackerApp extends StatelessWidget {
     final widget = MultiRepositoryProvider(
       providers: [
         RepositoryProvider<TripRepository>.value(value: _tripRepository),
+        RepositoryProvider<ActivityLogRepository>.value(
+          value: _activityLogRepository,
+        ),
         RepositoryProvider<ExpenseRepository>.value(value: _expenseRepository),
         RepositoryProvider<CategoryRepository>.value(
           value: _categoryRepository,
@@ -218,6 +236,12 @@ class ExpenseTrackerApp extends StatelessWidget {
         ),
         RepositoryProvider<SettledTransferRepository>.value(
           value: _settledTransferRepository,
+        ),
+        RepositoryProvider<DeviceLinkCodeRepository>.value(
+          value: _deviceLinkCodeRepository,
+        ),
+        RepositoryProvider<TripRecoveryCodeRepository>.value(
+          value: _tripRecoveryCodeRepository,
         ),
       ],
       child: MultiBlocProvider(
@@ -231,7 +255,9 @@ class ExpenseTrackerApp extends StatelessWidget {
               final cubit = TripCubit(
                 tripRepository: _tripRepository,
                 localStorageService: localStorageService,
+                activityLogRepository: _activityLogRepository,
                 categoryRepository: _categoryRepository,
+                recoveryCodeRepository: _tripRecoveryCodeRepository,
               );
               _log(
                 '✅ TripCubit created (${DateTime.now().difference(cubitStart).inMilliseconds}ms)',
@@ -242,8 +268,19 @@ class ExpenseTrackerApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) {
+              _log('🔵 Creating ActivityLogCubit...');
+              return ActivityLogCubit(
+                repository: _activityLogRepository,
+              );
+            },
+          ),
+          BlocProvider(
+            create: (context) {
               _log('🔵 Creating ExpenseCubit...');
-              return ExpenseCubit(expenseRepository: _expenseRepository);
+              return ExpenseCubit(
+                expenseRepository: _expenseRepository,
+                activityLogRepository: _activityLogRepository,
+              );
             },
           ),
           BlocProvider(
@@ -255,6 +292,15 @@ class ExpenseTrackerApp extends StatelessWidget {
                 tripRepository: _tripRepository,
                 settledTransferRepository: _settledTransferRepository,
                 categoryRepository: _categoryRepository,
+              );
+            },
+          ),
+          BlocProvider(
+            create: (context) {
+              _log('🔵 Creating DevicePairingCubit...');
+              return DevicePairingCubit(
+                repository: _deviceLinkCodeRepository,
+                localStorageService: localStorageService,
               );
             },
           ),

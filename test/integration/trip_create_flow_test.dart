@@ -8,6 +8,7 @@ import 'package:expense_tracker/features/trips/domain/models/activity_log.dart';
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart';
 import 'package:expense_tracker/core/services/local_storage_service.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
+import 'package:expense_tracker/core/models/participant.dart';
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart';
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart';
 
@@ -49,6 +50,7 @@ void main() {
       cubit = TripCubit(
         tripRepository: mockTripRepository,
         localStorageService: mockLocalStorageService,
+        activityLogRepository: mockActivityLogRepository,
         categoryRepository: mockCategoryRepository,
       );
     });
@@ -62,14 +64,15 @@ void main() {
       const tripName = 'Tokyo Adventure';
       const baseCurrency = CurrencyCode.usd;
       const creatorName = 'Alice';
-      
+      final creatorParticipant = Participant.fromName(creatorName);
+
       final createdTrip = Trip(
         id: 'trip-tokyo-123',
         name: tripName,
         baseCurrency: baseCurrency,
         createdAt: DateTime(2025, 10, 29, 10, 30),
         updatedAt: DateTime(2025, 10, 29, 10, 30),
-        participants: const ['Alice'],
+        participants: [creatorParticipant],
       );
 
       // Mock repository responses
@@ -98,8 +101,8 @@ void main() {
       final capturedTrip = verify(mockTripRepository.createTrip(captureAny)).captured.single as Trip;
       expect(capturedTrip.name, tripName);
       expect(capturedTrip.baseCurrency, baseCurrency);
-      expect(capturedTrip.participants, contains(creatorName));
       expect(capturedTrip.participants.length, 1);
+      expect(capturedTrip.participants.first.name, creatorName);
 
       // 2. Check activity log was created
       final capturedLog = verify(mockActivityLogRepository.addLog(captureAny)).captured.single as ActivityLog;
@@ -127,22 +130,20 @@ void main() {
       final finalState = cubit.state as TripLoaded;
       expect(finalState.trips, hasLength(1));
       expect(finalState.trips.first.id, createdTrip.id);
-      expect(finalState.trips.first.participants, contains(creatorName));
+      expect(finalState.trips.first.participants.first.name, creatorName);
     });
 
     test('should handle trip creation failure gracefully', () async {
       // Arrange
       const tripName = 'Failed Trip';
       const baseCurrency = CurrencyCode.usd;
-      const creatorName = 'Bob';
-      
+
       when(mockTripRepository.createTrip(any)).thenThrow(Exception('Network error'));
 
       // Act
       await cubit.createTrip(
         name: tripName,
         baseCurrency: baseCurrency,
-        creatorName: creatorName,
       );
 
       // Assert

@@ -37,7 +37,16 @@ class _TripListPageState extends State<TripListPage> {
     _log('🎨 Building TripListPage');
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.tripListTitle)),
+      appBar: AppBar(
+        title: Text(context.l10n.tripListTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.group_add),
+            tooltip: context.l10n.tripJoinTitle,
+            onPressed: () => context.push('/trips/join'),
+          ),
+        ],
+      ),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
           _log('🔄 BlocBuilder rebuilding with state: ${state.runtimeType}');

@@ -16,6 +16,7 @@
   "commonRequired": "Required",
   "commonLoading": "Loading...",
   "commonError": "Error",
+  "commonClose": "Close",
 
 
   "validationRequired": "Required",
@@ -86,6 +87,8 @@
   "tripSelectTitle": "Select Trip",
 
   "tripFieldNameLabel": "Trip Name",
+  "tripFieldCreatorNameLabel": "Your Name",
+  "tripFieldCreatorNameHelper": "Your name will be added as the first member of this trip",
   "tripFieldBaseCurrencyLabel": "Base Currency",
   "tripFieldBaseCurrencyHelper": "All settlements will be calculated in this currency",
   "tripFieldBaseCurrencyEditHelper": "Used for settlement displays. Expense amounts are not converted.",
@@ -699,6 +702,95 @@
       },
       "title": {
         "type": "String"
+      }
+    }
+  },
+
+
+  "devicePairingCodePromptTitle": "Verify Device",
+  "devicePairingCodePromptMessage": "A member named '{name}' already exists. Enter the verification code they provided to access this trip.",
+  "@devicePairingCodePromptMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "devicePairingCodeFieldLabel": "8-Digit Code",
+  "devicePairingCodeFieldHint": "1234-5678",
+  "devicePairingValidateButton": "Verify",
+  "devicePairingGenerateButton": "Generate Code",
+  "devicePairingCopyButton": "Copy Code",
+  "devicePairingCodeCopied": "Code copied to clipboard",
+  "devicePairingErrorInvalid": "Invalid or expired code",
+  "devicePairingErrorExpired": "Code has expired. Request a new one from a member.",
+  "devicePairingErrorUsed": "Code already used",
+  "devicePairingErrorNameMismatch": "Code doesn't match your member name",
+  "devicePairingErrorRateLimit": "Too many attempts. Please wait 60 seconds.",
+  "devicePairingErrorNetwork": "Cannot verify code offline. Check connection.",
+  "devicePairingSuccessMessage": "Device verified!",
+  "devicePairingExpiresIn": "Expires in {minutes}:{seconds}",
+  "@devicePairingExpiresIn": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "devicePairingShareInstructions": "Share this code with the person trying to join on another device. It expires in 15 minutes.",
+
+
+  "identitySelectionTitle": "Join Trip",
+  "identitySelectionPrompt": "This trip already has members. Please select who you are:",
+  "identitySelectionContinue": "Continue & Verify",
+  "identitySelectionNoParticipant": "Please select your identity",
+  "identitySelectionTripName": "Trip: {tripName}",
+  "@identitySelectionTripName": {
+    "placeholders": {
+      "tripName": {
+        "type": "String"
+      }
+    }
+  },
+  "identitySelectionVerifying": "Verifying your identity...",
+  "identitySelectionSuccess": "Identity verified! Welcome to {tripName}",
+  "@identitySelectionSuccess": {
+    "placeholders": {
+      "tripName": {
+        "type": "String"
+      }
+    }
+  },
+
+
+  "tripJoinLoadButton": "Load Trip",
+  "tripJoinSelectIdentityTitle": "Select Your Identity",
+  "tripJoinSelectIdentityPrompt": "Who are you in this trip?",
+  "tripJoinVerifyButton": "Verify Identity",
+  "tripJoinTripNotFound": "Trip not found. Please check the code.",
+  "tripJoinUseRecoveryCode": "Use Recovery Code",
+  "tripJoinRecoveryCodeLabel": "Recovery Code",
+  "tripJoinRecoveryCodeHint": "Enter 12-digit recovery code",
+  "tripJoinRecoveryCodeInvalid": "Invalid recovery code. Please check and try again.",
+
+
+  "tripRecoverySectionTitle": "Recovery Code",
+  "tripRecoveryGenerateButton": "Generate Recovery Code",
+  "tripRecoveryViewButton": "View Recovery Code",
+  "tripRecoveryGenerateDialogTitle": "Generate Recovery Code",
+  "tripRecoveryGenerateDialogMessage": "This will generate a 12-digit recovery code for emergency access to this trip. Keep this code safe - it allows anyone to join this trip as any member.",
+  "tripRecoveryViewDialogTitle": "Recovery Code",
+  "tripRecoveryWarningMessage": "Keep this code safe! Anyone with this code can join this trip as any member.",
+  "tripRecoveryCopyButton": "Copy Code",
+  "tripRecoveryCopiedMessage": "Recovery code copied to clipboard",
+  "tripRecoveryUsedCount": "Used {count} {count, plural, =1{time} other{times}}",
+  "@tripRecoveryUsedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
       }
     }
   }

@@ -18,20 +18,23 @@ class TripCreatePage extends StatefulWidget {
 
 class _TripCreatePageState extends State<TripCreatePage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _tripNameController = TextEditingController();
+  final _creatorNameController = TextEditingController();
   CurrencyCode _selectedCurrency = CurrencyCode.usd;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _tripNameController.dispose();
+    _creatorNameController.dispose();
     super.dispose();
   }
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
       context.read<TripCubit>().createTrip(
-        name: _nameController.text.trim(),
+        name: _tripNameController.text.trim(),
         baseCurrency: _selectedCurrency,
+        creatorName: _creatorNameController.text.trim(),
       );
       context.go('/');
     }
@@ -47,7 +50,7 @@ class _TripCreatePageState extends State<TripCreatePage> {
           padding: const EdgeInsets.all(AppTheme.spacing2),
           children: [
             CustomTextField(
-              controller: _nameController,
+              controller: _tripNameController,
               label: context.l10n.tripFieldNameLabel,
               // e.g., Vietnam 2025
               validator: (value) {
@@ -56,6 +59,21 @@ class _TripCreatePageState extends State<TripCreatePage> {
                 }
                 if (value.trim().length > 100) {
                   return context.l10n.validationTripNameTooLong;
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: AppTheme.spacing2),
+            CustomTextField(
+              controller: _creatorNameController,
+              label: context.l10n.tripFieldCreatorNameLabel,
+              hint: context.l10n.tripFieldCreatorNameHelper,
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return context.l10n.validationNameRequired;
+                }
+                if (value.trim().length > 50) {
+                  return context.l10n.validationNameTooLong;
                 }
                 return null;
               },

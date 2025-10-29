@@ -194,7 +194,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _submitForm(List<Participant> tripParticipants) {
     if (_formKey.currentState!.validate()) {
       if (_selectedPayer == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -229,19 +229,33 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         updatedAt: DateTime.now(),
       );
 
+      // Get payer name for activity logging
+      final payerName = tripParticipants
+          .firstWhere(
+            (p) => p.id == _selectedPayer,
+            orElse: () => const Participant(id: '', name: ''),
+          )
+          .name;
+
       if (widget.expense != null) {
         // Update existing expense
-        context.read<ExpenseCubit>().updateExpense(expense);
+        context.read<ExpenseCubit>().updateExpense(
+          expense,
+          payerName: payerName.isNotEmpty ? payerName : null,
+        );
       } else {
         // Create new expense
-        context.read<ExpenseCubit>().createExpense(expense);
+        context.read<ExpenseCubit>().createExpense(
+          expense,
+          payerName: payerName.isNotEmpty ? payerName : null,
+        );
       }
 
       Navigator.of(context).pop();
     }
   }
 
-  Future<void> _deleteExpense() async {
+  Future<void> _deleteExpense(List<Participant> tripParticipants) async {
     if (widget.expense == null) return;
 
     // Show confirmation dialog
@@ -267,7 +281,18 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
     );
 
     if (confirmed == true && mounted) {
-      await context.read<ExpenseCubit>().deleteExpense(widget.expense!.id);
+      // Get payer name for activity logging
+      final payerName = tripParticipants
+          .firstWhere(
+            (p) => p.id == widget.expense!.payerUserId,
+            orElse: () => const Participant(id: '', name: ''),
+          )
+          .name;
+
+      await context.read<ExpenseCubit>().deleteExpense(
+        widget.expense!.id,
+        payerName: payerName.isNotEmpty ? payerName : null,
+      );
       if (mounted) {
         Navigator.of(context).pop();
       }
@@ -459,8 +484,10 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                     _participants = value;
                   });
                 },
-                onSubmit: _submitForm,
-                onDelete: widget.expense != null ? _deleteExpense : null,
+                onSubmit: () => _submitForm(availableParticipants),
+                onDelete: widget.expense != null
+                    ? () => _deleteExpense(availableParticipants)
+                    : null,
               ),
             ),
           ],

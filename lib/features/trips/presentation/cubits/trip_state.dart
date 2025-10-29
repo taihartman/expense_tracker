@@ -54,3 +54,16 @@ class TripCreated extends TripState {
   @override
   List<Object?> get props => [trip];
 }
+
+class TripJoining extends TripState {
+  const TripJoining();
+}
+
+class TripJoined extends TripState {
+  final Trip trip;
+
+  const TripJoined(this.trip);
+
+  @override
+  List<Object?> get props => [trip];
+}

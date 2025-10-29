@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/models/participant.dart';
@@ -8,6 +9,8 @@ import '../cubits/trip_state.dart';
 import '../widgets/participant_form_bottom_sheet.dart';
 import '../widgets/delete_participant_dialog.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../device_pairing/presentation/cubits/device_pairing_cubit.dart';
+import '../../../device_pairing/presentation/widgets/code_generation_dialog.dart';
 
 /// Trip Settings Page
 ///
@@ -98,6 +101,40 @@ class TripSettingsPage extends StatelessWidget {
                   _buildSectionHeader(context, 'Trip Details'),
                   const SizedBox(height: AppTheme.spacing2),
                   _buildTripDetailsCard(context, trip),
+                  const SizedBox(height: AppTheme.spacing4),
+
+                  // Recovery Code Section
+                  _buildSectionHeader(context, context.l10n.tripRecoverySectionTitle),
+                  const SizedBox(height: AppTheme.spacing2),
+                  _buildRecoveryCodeCard(context, trip.id),
+                  const SizedBox(height: AppTheme.spacing2),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => context.push('/trips/$tripId/invite'),
+                          icon: const Icon(Icons.person_add_alt_1),
+                          label: Text(context.l10n.tripInviteTitle),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.all(AppTheme.spacing2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.spacing2),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => context.push('/trips/$tripId/activity'),
+                          icon: const Icon(Icons.history),
+                          label: const Text('Activity'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.all(AppTheme.spacing2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: AppTheme.spacing4),
 
                   // Participants Section
@@ -309,11 +346,28 @@ class TripSettingsPage extends StatelessWidget {
             context,
           ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          color: colorScheme.error,
-          tooltip: context.l10n.participantRemoveTooltip,
-          onPressed: () => _handleDeleteParticipant(context, trip, participant),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Generate Code button
+            IconButton(
+              icon: const Icon(Icons.qr_code),
+              color: colorScheme.primary,
+              tooltip: 'Generate Code',
+              onPressed: () => _showGenerateCodeDialog(
+                context,
+                trip.id,
+                participant.name,
+              ),
+            ),
+            // Delete button
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              color: colorScheme.error,
+              tooltip: context.l10n.participantRemoveTooltip,
+              onPressed: () => _handleDeleteParticipant(context, trip, participant),
+            ),
+          ],
         ),
       ),
     );
@@ -340,6 +394,23 @@ class TripSettingsPage extends StatelessWidget {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  void _showGenerateCodeDialog(
+    BuildContext context,
+    String tripId,
+    String memberName,
+  ) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => BlocProvider<DevicePairingCubit>.value(
+        value: context.read<DevicePairingCubit>(),
+        child: CodeGenerationDialog(
+          tripId: tripId,
+          memberName: memberName,
         ),
       ),
     );
@@ -399,5 +470,273 @@ class TripSettingsPage extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Build recovery code card with generate/view options
+  Widget _buildRecoveryCodeCard(BuildContext context, String tripId) {
+    return FutureBuilder<bool>(
+      future: context.read<TripCubit>().hasRecoveryCode(tripId),
+      builder: (context, snapshot) {
+        final hasCode = snapshot.data ?? false;
+        final isLoading = snapshot.connectionState == ConnectionState.waiting;
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spacing2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.shield_outlined,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: AppTheme.spacing2),
+                    Expanded(
+                      child: Text(
+                        'Emergency access for trip recovery',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacing2),
+                if (isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else if (hasCode)
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showRecoveryCodeDialog(context, tripId),
+                      icon: const Icon(Icons.visibility),
+                      label: Text(context.l10n.tripRecoveryViewButton),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _generateRecoveryCode(context, tripId),
+                      icon: const Icon(Icons.add),
+                      label: Text(context.l10n.tripRecoveryGenerateButton),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Generate recovery code for the trip
+  Future<void> _generateRecoveryCode(BuildContext context, String tripId) async {
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.tripRecoveryGenerateDialogTitle),
+        content: Text(context.l10n.tripRecoveryGenerateDialogMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Generate'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      final code = await context.read<TripCubit>().generateRecoveryCode(tripId);
+
+      if (!context.mounted) return;
+
+      // Show the generated code
+      await _showGeneratedCodeDialog(context, code);
+
+      // Refresh the UI
+      if (context.mounted) {
+        // Trigger rebuild by calling setState on parent
+        (context as Element).markNeedsBuild();
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to generate recovery code: $e'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
+  /// Show generated recovery code dialog
+  Future<void> _showGeneratedCodeDialog(BuildContext context, String code) async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.tripRecoveryViewDialogTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Warning message
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber, color: Colors.orange),
+                  const SizedBox(width: AppTheme.spacing2),
+                  Expanded(
+                    child: Text(
+                      context.l10n.tripRecoveryWarningMessage,
+                      style: const TextStyle(color: Colors.orange),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing3),
+
+            // Recovery code
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Theme.of(dialogContext).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: SelectableText(
+                  code,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(context.l10n.commonClose),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: code));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(context.l10n.tripRecoveryCopiedMessage)),
+              );
+            },
+            icon: const Icon(Icons.copy),
+            label: Text(context.l10n.tripRecoveryCopyButton),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Show existing recovery code
+  Future<void> _showRecoveryCodeDialog(BuildContext context, String tripId) async {
+    final recoveryCode = await context.read<TripCubit>().getRecoveryCode(tripId);
+
+    if (!context.mounted || recoveryCode == null) return;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(context.l10n.tripRecoveryViewDialogTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Warning message
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning_amber, color: Colors.orange),
+                  const SizedBox(width: AppTheme.spacing2),
+                  Expanded(
+                    child: Text(
+                      context.l10n.tripRecoveryWarningMessage,
+                      style: const TextStyle(color: Colors.orange),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing3),
+
+            // Recovery code
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Theme.of(dialogContext).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: SelectableText(
+                  recoveryCode.code,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing2),
+
+            // Usage count
+            Text(
+              context.l10n.tripRecoveryUsedCount(recoveryCode.usedCount),
+              style: Theme.of(dialogContext).textTheme.bodySmall?.copyWith(
+                color: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(context.l10n.commonClose),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: recoveryCode.code));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(context.l10n.tripRecoveryCopiedMessage)),
+              );
+            },
+            icon: const Icon(Icons.copy),
+            label: Text(context.l10n.tripRecoveryCopyButton),
+          ),
+        ],
+      ),
+    );
   }
 }

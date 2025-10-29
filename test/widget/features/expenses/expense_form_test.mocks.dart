@@ -91,27 +91,39 @@ class MockExpenseCubit extends _i1.Mock implements _i4.ExpenseCubit {
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> createExpense(_i5.Expense? expense) =>
+  _i6.Future<void> createExpense(_i5.Expense? expense, {String? payerName}) =>
       (super.noSuchMethod(
-            Invocation.method(#createExpense, [expense]),
+            Invocation.method(
+              #createExpense,
+              [expense],
+              {#payerName: payerName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> updateExpense(_i5.Expense? expense) =>
+  _i6.Future<void> updateExpense(_i5.Expense? expense, {String? payerName}) =>
       (super.noSuchMethod(
-            Invocation.method(#updateExpense, [expense]),
+            Invocation.method(
+              #updateExpense,
+              [expense],
+              {#payerName: payerName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> deleteExpense(String? expenseId) =>
+  _i6.Future<void> deleteExpense(String? expenseId, {String? payerName}) =>
       (super.noSuchMethod(
-            Invocation.method(#deleteExpense, [expenseId]),
+            Invocation.method(
+              #deleteExpense,
+              [expenseId],
+              {#payerName: payerName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
@@ -204,11 +216,13 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   _i6.Future<void> createTrip({
     required String? name,
     required _i10.CurrencyCode? baseCurrency,
+    String? creatorName,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#createTrip, [], {
               #name: name,
               #baseCurrency: baseCurrency,
+              #creatorName: creatorName,
             }),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
@@ -258,6 +272,37 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> joinTrip({
+    required String? tripId,
+    required String? userName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#joinTrip, [], {
+              #tripId: tripId,
+              #userName: userName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<bool> hasDuplicateMember(String? tripId, String? memberName) =>
+      (super.noSuchMethod(
+            Invocation.method(#hasDuplicateMember, [tripId, memberName]),
+            returnValue: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  bool isUserMemberOf(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#isUserMemberOf, [tripId]),
+            returnValue: false,
+          )
+          as bool);
 
   @override
   _i6.Future<void> close() =>
