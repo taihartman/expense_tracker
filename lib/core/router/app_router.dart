@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../presentation/pages/splash_page.dart';
 import '../../features/trips/presentation/cubits/trip_cubit.dart';
 import '../../features/trips/presentation/widgets/trip_selector.dart';
 import '../../features/trips/presentation/cubits/trip_state.dart';
@@ -53,9 +54,16 @@ import '../../features/settlements/presentation/pages/settlement_summary_page.da
 /// This ensures singleton cubit instances across all routes for proper caching
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomePage()),
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const HomePage(),
+      ),
       GoRoute(
         path: '/trips',
         builder: (context, state) => const TripListPage(),
@@ -182,17 +190,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
-    // Load trips when home page initializes (lazy loading)
-    Future.microtask(() {
-      if (mounted) {
-        context.read<TripCubit>().loadTrips();
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return const _HomePageContent();
@@ -341,6 +338,12 @@ class _ErrorPage extends StatelessWidget {
               error?.toString() ?? 'Unknown error',
               style: Theme.of(context).textTheme.bodyMedium,
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => context.go('/'),
+              icon: const Icon(Icons.home),
+              label: const Text('Go to Home'),
             ),
           ],
         ),

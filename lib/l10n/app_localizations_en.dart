@@ -54,6 +54,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClose => 'Close';
 
   @override
+  String get splashAppName => 'Expense Tracker';
+
+  @override
+  String get splashLoading => 'Loading...';
+
+  @override
+  String get splashLoadingAccessibility => 'Loading Expense Tracker';
+
+  @override
   String get validationRequired => 'Required';
 
   @override
@@ -1043,12 +1052,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get devicePairingCodePromptTitle => 'Verify Device';
+  String get devicePairingCodePromptTitle => 'Verify Your Device';
 
   @override
   String devicePairingCodePromptMessage(String name) {
-    return 'A member named \'$name\' already exists. Enter the verification code they provided to access this trip.';
+    return 'To access this trip as $name, please enter a verification code.';
   }
+
+  @override
+  String get devicePairingCodePromptHowToGet =>
+      'You can get a code from:\n• Any trip member with verified access\n• Yourself from another device where you\'re already verified';
 
   @override
   String get devicePairingCodeFieldLabel => '8-Digit Code';
@@ -1058,6 +1071,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get devicePairingValidateButton => 'Verify';
+
+  @override
+  String get devicePairingAskForCodeButton => 'Ask for Verification Code';
+
+  @override
+  String devicePairingAskForCodeMessage(String name) {
+    return 'Hi! I\'m trying to join the trip as $name and need a verification code. Could you:\n\n1. Open Trip Settings\n2. Find my name ($name) in the participant list\n3. Tap the QR code icon next to my name\n4. Share the generated code with me\n\nThe code expires in 15 minutes. Thanks!';
+  }
+
+  @override
+  String get devicePairingAskForCodeCopied =>
+      'Message copied! Send it to a trip member to request a code.';
 
   @override
   String get devicePairingGenerateButton => 'Generate Code';

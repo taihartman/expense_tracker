@@ -84,10 +84,10 @@ class TripCubit extends Cubit<TripState> {
             '🔍 User has joined ${joinedTripIds.length} trips: $joinedTripIds',
           );
 
-          // If user has joined trips, filter to those; otherwise show all (backward compatibility)
-          final filteredTrips = joinedTripIds.isEmpty
-              ? trips
-              : trips.where((trip) => joinedTripIds.contains(trip.id)).toList();
+          // Only show trips the user has explicitly joined or created
+          final filteredTrips = trips
+              .where((trip) => joinedTripIds.contains(trip.id))
+              .toList();
 
           // Separate active and archived trips
           final activeTrips = filteredTrips
