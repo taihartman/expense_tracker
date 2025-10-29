@@ -1157,6 +1157,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Invalid recovery code. Please check and try again.';
 
   @override
+  String get tripVerificationPromptTitle => 'Select Your Identity';
+
+  @override
+  String get tripVerificationPromptMessage =>
+      'To view and participate in this trip, please select who you are from the participant list.';
+
+  @override
+  String get tripVerificationPromptButton => 'Select My Identity';
+
+  @override
+  String get tripVerificationPromptBackButton => 'Go Back';
+
+  @override
   String get tripRecoverySectionTitle => 'Recovery Code';
 
   @override

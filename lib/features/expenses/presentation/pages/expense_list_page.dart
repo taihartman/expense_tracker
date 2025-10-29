@@ -7,6 +7,7 @@ import '../widgets/expense_card.dart';
 import '../widgets/expense_form_bottom_sheet.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
+import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
@@ -19,6 +20,17 @@ class ExpenseListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user has verified their identity for this trip
+    final tripCubit = context.read<TripCubit>();
+    if (!tripCubit.isUserMemberOf(tripId)) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(context.l10n.expenseListTitle),
+        ),
+        body: TripVerificationPrompt(tripId: tripId),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.expenseListTitle),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/activity_log_cubit.dart';
+import '../cubits/trip_cubit.dart';
 import '../widgets/activity_log_list.dart';
+import '../widgets/trip_verification_prompt.dart';
 
 /// Page for displaying trip activity log
 class TripActivityPage extends StatefulWidget {
@@ -34,6 +36,18 @@ class _TripActivityPageState extends State<TripActivityPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user has verified their identity for this trip
+    final tripCubit = context.read<TripCubit>();
+    if (!tripCubit.isUserMemberOf(widget.tripId)) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Trip Activity'),
+          elevation: 0,
+        ),
+        body: TripVerificationPrompt(tripId: widget.tripId),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Trip Activity'),

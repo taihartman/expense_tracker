@@ -801,6 +801,12 @@
   "tripJoinRecoveryCodeInvalid": "Invalid recovery code. Please check and try again.",
 
 
+  "tripVerificationPromptTitle": "Select Your Identity",
+  "tripVerificationPromptMessage": "To view and participate in this trip, please select who you are from the participant list.",
+  "tripVerificationPromptButton": "Select My Identity",
+  "tripVerificationPromptBackButton": "Go Back",
+
+
   "tripRecoverySectionTitle": "Recovery Code",
   "tripRecoveryGenerateButton": "Generate Recovery Code",
   "tripRecoveryViewButton": "View Recovery Code",

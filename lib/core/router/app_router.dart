@@ -20,30 +20,32 @@ import '../../features/expenses/presentation/cubits/expense_cubit.dart';
 import '../../features/settlements/presentation/pages/settlement_summary_page.dart';
 
 /// Check if user is a member of the trip (for route guarding)
-String? _checkTripMembership(BuildContext context, GoRouterState state) {
-  final tripId = state.pathParameters['tripId'];
-  if (tripId == null) return null;
-
-  // Get TripCubit to check membership
-  final tripCubit = context.read<TripCubit>();
-
-  // Check if user is a member of this trip
-  if (!tripCubit.isUserMemberOf(tripId)) {
-    // Check if trip exists and has participants
-    final trip = tripCubit.trips.where((t) => t.id == tripId).firstOrNull;
-
-    if (trip != null && trip.participants.isNotEmpty) {
-      // Redirect to identity selection page with return path
-      final returnPath = Uri.encodeComponent(state.uri.toString());
-      return '/trips/$tripId/identify?returnTo=$returnPath';
-    }
-
-    // Fallback to unauthorized for trips without participants
-    return '/unauthorized?tripId=$tripId';
-  }
-
-  return null; // Allow navigation
-}
+/// DEPRECATED: No longer used for route-level blocking.
+/// Identity verification is now handled at the page level.
+// String? _checkTripMembership(BuildContext context, GoRouterState state) {
+//   final tripId = state.pathParameters['tripId'];
+//   if (tripId == null) return null;
+//
+//   // Get TripCubit to check membership
+//   final tripCubit = context.read<TripCubit>();
+//
+//   // Check if user is a member of this trip
+//   if (!tripCubit.isUserMemberOf(tripId)) {
+//     // Check if trip exists and has participants
+//     final trip = tripCubit.trips.where((t) => t.id == tripId).firstOrNull;
+//
+//     if (trip != null && trip.participants.isNotEmpty) {
+//       // Redirect to identity selection page with return path
+//       final returnPath = Uri.encodeComponent(state.uri.toString());
+//       return '/trips/$tripId/identify?returnTo=$returnPath';
+//     }
+//
+//     // Fallback to unauthorized for trips without participants
+//     return '/unauthorized?tripId=$tripId';
+//   }
+//
+//   return null; // Allow navigation
+// }
 
 /// App routing configuration using go_router
 ///
@@ -93,7 +95,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/edit',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
 
@@ -107,7 +108,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/settings',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return TripSettingsPage(tripId: tripId);
@@ -115,7 +115,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/invite',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
 
@@ -129,7 +128,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/activity',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return TripActivityPage(tripId: tripId);
@@ -137,7 +135,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/expenses',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return ExpenseListPage(tripId: tripId);
@@ -145,7 +142,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/expenses/create',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return ExpenseFormPage(tripId: tripId);
@@ -153,7 +149,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/expenses/:expenseId/edit',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           final expenseId = state.pathParameters['expenseId']!;
@@ -168,7 +163,6 @@ class AppRouter {
       ),
       GoRoute(
         path: '/trips/:tripId/settlement',
-        redirect: _checkTripMembership,
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
           return SettlementSummaryPage(tripId: tripId);
@@ -216,42 +210,8 @@ class _HomePageContent extends StatelessWidget {
         builder: (context, state) {
           if (state is TripLoaded && state.selectedTrip != null) {
             final tripId = state.selectedTrip!.id;
-            final tripCubit = context.read<TripCubit>();
 
-            // Check if user is a member of this trip
-            if (!tripCubit.isUserMemberOf(tripId)) {
-              final trip = state.selectedTrip!;
-
-              // If trip has participants, redirect to identity selection
-              if (trip.participants.isNotEmpty) {
-                // Use addPostFrameCallback to avoid navigating during build
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) {
-                    final returnPath = Uri.encodeComponent('/');
-                    context.go('/trips/$tripId/identify?returnTo=$returnPath');
-                  }
-                });
-
-                // Show loading while redirecting
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              // If no participants, show unauthorized page
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.lock_outline, size: 64),
-                    SizedBox(height: 16),
-                    Text('Unauthorized'),
-                    SizedBox(height: 8),
-                    Text('This trip has no participants.'),
-                  ],
-                ),
-              );
-            }
-
-            // User is a member - load expenses for selected trip
+            // Load expenses for selected trip
             context.read<ExpenseCubit>().loadExpenses(tripId);
 
             return ExpenseListPage(tripId: tripId);

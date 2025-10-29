@@ -2040,6 +2040,30 @@ abstract class AppLocalizations {
   /// **'Invalid recovery code. Please check and try again.'**
   String get tripJoinRecoveryCodeInvalid;
 
+  /// No description provided for @tripVerificationPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Your Identity'**
+  String get tripVerificationPromptTitle;
+
+  /// No description provided for @tripVerificationPromptMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'To view and participate in this trip, please select who you are from the participant list.'**
+  String get tripVerificationPromptMessage;
+
+  /// No description provided for @tripVerificationPromptButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Select My Identity'**
+  String get tripVerificationPromptButton;
+
+  /// No description provided for @tripVerificationPromptBackButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get tripVerificationPromptBackButton;
+
   /// No description provided for @tripRecoverySectionTitle.
   ///
   /// In en, this message translates to:
