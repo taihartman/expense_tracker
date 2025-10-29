@@ -17,6 +17,107 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-10-29 - Automated Documentation Workflow
+
+### Added
+- **Automated documentation workflow system** to ensure Claude Code proactively documents changes:
+  - `.claude-workflow-checklist.md` - Detailed checklist for when to use `/docs.log` and `/docs.update`
+  - `.github/CLAUDE_CODE_INSTRUCTIONS.md` - Mandatory workflow instructions for AI
+  - `.github/CLAUDE_WORKFLOW_EXAMPLE.md` - Concrete example showing correct vs incorrect workflow
+- **Updated root CLAUDE.md** with prominent workflow instructions at the top
+  - Added "IMPORTANT: Claude Code Workflow Instructions" section
+  - Explicit triggers for `/docs.log` and `/docs.update`
+  - Strong directive to not wait for user reminders
+
+### Changed
+- Documentation workflow is now AI-enforced, not user-initiated
+- Claude Code will proactively use `/docs.log` after each significant change
+- Claude Code will use `/docs.update` after architectural changes (models, cubits, routes, etc.)
+
+### Impact
+- Development sessions will have real-time changelog updates
+- Feature CLAUDE.md files stay synchronized with code changes
+- Reduces documentation debt and improves project maintainability
+
+## 2025-10-29 - Archive Navigation and Auto-Selection Enhancement
+
+### Fixed
+- **Trip Settings navigation after archive**: Users are now redirected to the home page after successfully archiving a trip, preventing them from being stuck on the archived trip's settings page
+- Added `context.go('/')` after archive success confirmation in `trip_settings_page.dart`
+
+### Enhanced
+- **Auto-selection after archiving current trip**: When archiving the currently selected trip, the system now automatically clears the selection and auto-selects the first available active trip
+- Updated `TripCubit.archiveTrip()` to check if the archived trip is currently selected, clear selection, and trigger auto-selection logic
+- Ensures users always land on a valid trip context after archiving, with seamless transition to another active trip
+
+### Added
+- **"View Archived Trips" button in trip selector modal**: Users can now access archived trips by tapping "My Trips" in the AppBar
+- Button appears at the bottom of the trip selector modal (only when archived trips exist)
+- Shows archived trip count badge: "Archived Trips (3)"
+- Navigates to `/trips/archived` when tapped
+- Modified `trip_selector.dart` to accept and display archived count
+
+## 2025-10-29 - Trip Auto-Focus and Archive System
+
+### Added
+- **Auto-focus for newly created trips**: New trips are now automatically selected after creation for immediate use
+- **Comprehensive trip archiving system**:
+  - Archive/unarchive buttons in Trip Settings page
+  - Dedicated Archived Trips page at `/trips/archived` route
+  - "View Archived Trips" button in Trip List page (shows count)
+  - Archived trips remain fully functional but hidden from main trip selector
+- **Data model updates**:
+  - Added `isArchived` field to Trip domain model (defaults to false)
+  - Updated Trip Firestore model serialization with backward compatibility
+  - Modified TripState to include separate `archivedTrips` list
+- **State management**:
+  - `TripCubit.archiveTrip(tripId)` - Archives a trip
+  - `TripCubit.unarchiveTrip(tripId)` - Restores archived trip
+  - Updated `loadTrips()` to filter and separate active/archived trips
+- **Localization**: Added 10 new strings for archive functionality
+
+### Changed
+- Trip selector modal now filters to show only active (non-archived) trips
+- `loadTrips()` now emits both active and archived trips in separate lists
+- Auto-selection logic prioritizes active trips when no trip is selected
+
+### Files Modified
+- `lib/features/trips/domain/models/trip.dart` - Added isArchived field
+- `lib/features/trips/data/models/trip_model.dart` - Updated serialization
+- `lib/features/trips/presentation/cubits/trip_cubit.dart` - Archive methods and auto-focus
+- `lib/features/trips/presentation/cubits/trip_state.dart` - Added archivedTrips list
+- `lib/features/trips/presentation/pages/trip_settings_page.dart` - Archive UI
+- `lib/features/trips/presentation/pages/trip_list_page.dart` - View archived button
+- `lib/core/router/app_router.dart` - Added /trips/archived route
+- `lib/l10n/app_en.arb` - Archive localization strings
+
+### Files Created
+- `lib/features/trips/presentation/pages/archived_trips_page.dart` - Archived trips management UI
+
+## 2025-10-29 - Activity Tracking Documentation
+
+### Added
+- Comprehensive activity tracking guidelines in root `CLAUDE.md`
+  - Complete section on "Activity Tracking & Audit Trail"
+  - Step-by-step guide for adding activity logging to new features
+  - Identity management patterns documentation
+  - ActivityType enum expansion instructions
+  - Repository injection best practices
+  - Actor attribution guidelines (current user vs payer/creator)
+  - Testing strategies for activity logging
+  - Code examples for all common scenarios
+
+### Changed
+- Updated feature `CLAUDE.md` with activity tracking architecture details
+  - Documented 14 activity types (trip, participant, expense, settlement, security)
+  - Explained per-trip identity storage and retrieval
+  - Documented Firestore subcollection structure
+  - Added integration patterns and implementation details
+  - Marked activity tracking as completed feature
+
+### Documentation
+This ensures all future feature development automatically includes proper activity tracking and audit trails.
+
 ## 2025-10-21 - Performance Optimization
 
 ### Changed

@@ -80,14 +80,26 @@ class TripCubit extends Cubit<TripState> {
 
           // Filter trips to only those the user has joined
           final joinedTripIds = _localStorageService.getJoinedTripIds();
-          _log('🔍 User has joined ${joinedTripIds.length} trips: $joinedTripIds');
+          _log(
+            '🔍 User has joined ${joinedTripIds.length} trips: $joinedTripIds',
+          );
 
           // If user has joined trips, filter to those; otherwise show all (backward compatibility)
           final filteredTrips = joinedTripIds.isEmpty
               ? trips
               : trips.where((trip) => joinedTripIds.contains(trip.id)).toList();
 
-          _log('📦 Filtered to ${filteredTrips.length} trips');
+          // Separate active and archived trips
+          final activeTrips = filteredTrips
+              .where((trip) => !trip.isArchived)
+              .toList();
+          final archivedTrips = filteredTrips
+              .where((trip) => trip.isArchived)
+              .toList();
+
+          _log(
+            '📦 Filtered to ${activeTrips.length} active trips, ${archivedTrips.length} archived trips',
+          );
 
           // Only emit if cubit is not closed
           if (!isClosed) {
@@ -95,24 +107,28 @@ class TripCubit extends Cubit<TripState> {
             Trip? selectedTrip;
 
             _log('🔍 Trip restoration logic:');
-            _log('  - Filtered ${filteredTrips.length} trips');
+            _log('  - Active trips: ${activeTrips.length}');
+            _log('  - Archived trips: ${archivedTrips.length}');
             _log('  - Saved trip ID in memory: ${_selectedTripId ?? "null"}');
 
             // Log all trip IDs for debugging
-            for (var trip in filteredTrips) {
-              _log('  - Available trip: ${trip.name} (ID: ${trip.id})');
+            for (var trip in activeTrips) {
+              _log('  - Active trip: ${trip.name} (ID: ${trip.id})');
+            }
+            for (var trip in archivedTrips) {
+              _log('  - Archived trip: ${trip.name} (ID: ${trip.id})');
             }
 
             if (_selectedTripId != null) {
               _log('🔎 Attempting to restore trip with ID: $_selectedTripId');
-              // Try to find the trip with the persisted ID
+              // Try to find the trip with the persisted ID (can be active or archived)
               selectedTrip = filteredTrips
                   .where((t) => t.id == _selectedTripId)
                   .firstOrNull;
 
               if (selectedTrip != null) {
                 _log(
-                  '✅ Restored selected trip from storage: ${selectedTrip.name} (ID: ${selectedTrip.id})',
+                  '✅ Restored selected trip from storage: ${selectedTrip.name} (ID: ${selectedTrip.id}, archived: ${selectedTrip.isArchived})',
                 );
               } else {
                 _log(
@@ -126,18 +142,24 @@ class TripCubit extends Cubit<TripState> {
               _log('ℹ️ No saved trip ID found in storage');
             }
 
-            // If no trip selected and filtered trips exist, select the first one
-            if (selectedTrip == null && filteredTrips.isNotEmpty) {
-              selectedTrip = filteredTrips.first;
+            // If no trip selected and active trips exist, select the first active one
+            if (selectedTrip == null && activeTrips.isNotEmpty) {
+              selectedTrip = activeTrips.first;
               _selectedTripId = selectedTrip.id;
               _log(
-                '🎯 Auto-selecting first trip: ${selectedTrip.name} (ID: ${selectedTrip.id})',
+                '🎯 Auto-selecting first active trip: ${selectedTrip.name} (ID: ${selectedTrip.id})',
               );
               await _localStorageService.saveSelectedTripId(selectedTrip.id);
               _log('💾 Auto-selected trip saved to storage');
             }
 
-            emit(TripLoaded(trips: filteredTrips, selectedTrip: selectedTrip));
+            emit(
+              TripLoaded(
+                trips: activeTrips,
+                archivedTrips: archivedTrips,
+                selectedTrip: selectedTrip,
+              ),
+            );
             _log(
               '✅ Emitted TripLoaded state with selected trip: ${selectedTrip?.name ?? "none"} (total time: ${DateTime.now().difference(loadStart).inMilliseconds}ms)',
             );
@@ -197,18 +219,26 @@ class TripCubit extends Cubit<TripState> {
       if (_recoveryCodeRepository != null) {
         _log('🔑 Generating recovery code for trip ${createdTrip.id}...');
         try {
-          final recoveryCode = await _recoveryCodeRepository.generateRecoveryCode(createdTrip.id);
+          final recoveryCode = await _recoveryCodeRepository
+              .generateRecoveryCode(createdTrip.id);
           _log('✅ Recovery code generated: ${recoveryCode.code}');
-        } catch (e) {
-          _log('⚠️ Failed to generate recovery code (non-fatal): $e');
+          _log('   Code details: tripId=${recoveryCode.tripId}, usedCount=${recoveryCode.usedCount}, createdAt=${recoveryCode.createdAt}');
+        } catch (e, stackTrace) {
+          _log('❌ Failed to generate recovery code (non-fatal): $e');
+          _log('   Stack trace: ${stackTrace.toString().split('\n').take(3).join('\n   ')}');
           // Don't fail trip creation if recovery code generation fails
+          // User can manually generate recovery code later from trip settings
         }
       } else {
-        _log('⚠️ RecoveryCodeRepository not provided, skipping recovery code generation');
+        _log(
+          '⚠️ RecoveryCodeRepository not provided, skipping recovery code generation',
+        );
       }
 
       // Log trip creation activity if repository is available
-      if (_activityLogRepository != null && creatorName != null && creatorName.isNotEmpty) {
+      if (_activityLogRepository != null &&
+          creatorName != null &&
+          creatorName.isNotEmpty) {
         _log('📝 Logging trip_created activity...');
         try {
           final activityLog = ActivityLog(
@@ -226,7 +256,9 @@ class TripCubit extends Cubit<TripState> {
           // Don't fail trip creation if activity logging fails
         }
       } else {
-        _log('⚠️ ActivityLogRepository not provided or no creator name, skipping activity logging');
+        _log(
+          '⚠️ ActivityLogRepository not provided or no creator name, skipping activity logging',
+        );
       }
 
       // Seed default categories for the new trip
@@ -246,6 +278,11 @@ class TripCubit extends Cubit<TripState> {
       }
 
       emit(TripCreated(createdTrip));
+
+      // Auto-select the newly created trip
+      _selectedTripId = createdTrip.id;
+      await _localStorageService.saveSelectedTripId(createdTrip.id);
+      _log('🎯 Auto-selected newly created trip: ${createdTrip.name}');
 
       // Reload trips to update the list
       await loadTrips();
@@ -366,6 +403,101 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
+  /// Archive a trip (hide from active trip list)
+  Future<void> archiveTrip(String tripId) async {
+    try {
+      _log('📦 Archiving trip: $tripId');
+
+      // Get the current trip
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Check if we're archiving the currently selected trip
+      final isCurrentlySelected = _selectedTripId == tripId;
+
+      // Create updated trip with archived flag
+      final updatedTrip = currentTrip.copyWith(
+        isArchived: true,
+        updatedAt: DateTime.now(),
+      );
+
+      await _tripRepository.updateTrip(updatedTrip);
+      _log('✅ Trip archived successfully');
+
+      // If archiving current trip, clear selection
+      if (isCurrentlySelected) {
+        _selectedTripId = null;
+        await _localStorageService.clearSelectedTripId();
+        _log('🔄 Cleared archived trip selection - will auto-select first active trip');
+      }
+
+      // Reload trips to refresh the list (will auto-select if needed)
+      await loadTrips();
+    } catch (e) {
+      _log('❌ Failed to archive trip: $e');
+      emit(TripError('Failed to archive trip: ${e.toString()}'));
+    }
+  }
+
+  /// Unarchive a trip (restore to active trip list)
+  Future<void> unarchiveTrip(String tripId) async {
+    try {
+      _log('📤 Unarchiving trip: $tripId');
+
+      // Get the current trip
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Create updated trip with archived flag cleared
+      final updatedTrip = currentTrip.copyWith(
+        isArchived: false,
+        updatedAt: DateTime.now(),
+      );
+
+      await _tripRepository.updateTrip(updatedTrip);
+      _log('✅ Trip unarchived successfully');
+
+      // Reload trips to refresh the list
+      await loadTrips();
+    } catch (e) {
+      _log('❌ Failed to unarchive trip: $e');
+      emit(TripError('Failed to unarchive trip: ${e.toString()}'));
+    }
+  }
+
+  /// Leave a trip (remove from local storage, user will need to rejoin)
+  Future<void> leaveTrip(String tripId) async {
+    try {
+      _log('🚪 Leaving trip: $tripId');
+
+      // Remove trip from joined trips list
+      await _localStorageService.removeJoinedTrip(tripId);
+      _log('✅ Trip removed from joined trips list');
+
+      // If left trip was selected, clear selection
+      if (_selectedTripId == tripId) {
+        _selectedTripId = null;
+        await _localStorageService.clearSelectedTripId();
+        _log('🗑️ Cleared selected trip from storage (trip left)');
+      }
+
+      // Clear user identity for this trip
+      await _localStorageService.removeUserIdentityForTrip(tripId);
+      _log('👤 Cleared user identity for trip');
+
+      // Reload trips to refresh the list (will filter out the left trip)
+      await loadTrips();
+      _log('✅ Successfully left trip');
+    } catch (e) {
+      _log('❌ Failed to leave trip: $e');
+      emit(TripError('Failed to leave trip: ${e.toString()}'));
+    }
+  }
+
   /// Join an existing trip by trip ID
   Future<void> joinTrip({
     required String tripId,
@@ -388,13 +520,22 @@ class TripCubit extends Cubit<TripState> {
 
       // Check if user is already a member
       final userParticipant = Participant.fromName(userName);
-      final isAlreadyMember = trip.participants.any((p) => p.id == userParticipant.id);
+      final isAlreadyMember = trip.participants.any(
+        (p) => p.id == userParticipant.id,
+      );
 
       if (isAlreadyMember) {
         _log('ℹ️ User already a member of trip');
         // Still cache the trip ID and reload (idempotent)
         await _localStorageService.addJoinedTrip(tripId);
         _log('💾 Trip ID cached (idempotent)');
+
+        // Save user identity for this trip (idempotent)
+        await _localStorageService.saveUserIdentityForTrip(
+          tripId,
+          userParticipant.id,
+        );
+        _log('👤 User identity saved: ${userParticipant.id}');
 
         emit(TripJoined(trip));
         await loadTrips();
@@ -433,6 +574,20 @@ class TripCubit extends Cubit<TripState> {
       _log('💾 Caching trip ID in local storage...');
       await _localStorageService.addJoinedTrip(tripId);
       _log('✅ Trip ID cached');
+
+      // Save user identity for this trip
+      _log('👤 Saving user identity for trip...');
+      await _localStorageService.saveUserIdentityForTrip(
+        tripId,
+        userParticipant.id,
+      );
+      _log('✅ User identity saved: ${userParticipant.id}');
+
+      // Auto-select the newly joined trip
+      _log('🎯 Auto-selecting newly joined trip...');
+      _selectedTripId = tripId;
+      await _localStorageService.saveSelectedTripId(tripId);
+      _log('✅ Newly joined trip set as selected');
 
       emit(TripJoined(updatedTrip));
 
@@ -473,6 +628,26 @@ class TripCubit extends Cubit<TripState> {
     return joinedTripIds.contains(tripId);
   }
 
+  /// Get a trip by ID from Firestore (does not modify local state)
+  ///
+  /// Used for trip join flow to fetch trip details before joining.
+  /// Returns null if trip doesn't exist.
+  Future<Trip?> getTripById(String tripId) async {
+    try {
+      _log('🔍 Fetching trip by ID: $tripId');
+      final trip = await _tripRepository.getTripById(tripId);
+      if (trip != null) {
+        _log('✅ Trip found: ${trip.name}');
+      } else {
+        _log('❌ Trip not found: $tripId');
+      }
+      return trip;
+    } catch (e) {
+      _log('❌ Error fetching trip: $e');
+      return null;
+    }
+  }
+
   // =========================================================================
   // Recovery Code Methods
   // =========================================================================
@@ -487,7 +662,9 @@ class TripCubit extends Cubit<TripState> {
     }
 
     _log('🔐 Generating recovery code for trip: $tripId');
-    final recoveryCode = await _recoveryCodeRepository.generateRecoveryCode(tripId);
+    final recoveryCode = await _recoveryCodeRepository.generateRecoveryCode(
+      tripId,
+    );
     _log('✅ Recovery code generated: ${recoveryCode.code}');
     return recoveryCode.code;
   }
@@ -555,6 +732,65 @@ class TripCubit extends Cubit<TripState> {
       emit(TripError('Failed to validate recovery code: ${e.toString()}'));
       return false;
     }
+  }
+
+  /// Get the current user's participant for a specific trip.
+  ///
+  /// This retrieves the participant identity that was selected/stored when
+  /// the user joined the trip. Returns null if:
+  /// - The user hasn't joined this trip yet
+  /// - The user hasn't selected their identity for this trip
+  /// - The trip doesn't exist in the loaded trips
+  ///
+  /// This is used for proper attribution of actions in activity logs.
+  Participant? getCurrentUserForTrip(String tripId) {
+    _log('👤 Getting current user for trip $tripId');
+
+    // Get the stored participant ID for this trip
+    final participantId = _localStorageService.getUserIdentityForTrip(tripId);
+
+    if (participantId == null) {
+      _log('⚠️ No user identity found for trip $tripId');
+      return null;
+    }
+
+    _log('🔍 User identity: $participantId');
+
+    // Find the trip in the current state
+    final currentState = state;
+    List<Trip>? trips;
+
+    if (currentState is TripLoaded) {
+      trips = currentState.trips;
+    } else {
+      _log('⚠️ State is not TripLoaded, cannot retrieve trip');
+      return null;
+    }
+
+    // Find the specific trip
+    final trip = trips.cast<Trip?>().firstWhere(
+      (t) => t?.id == tripId,
+      orElse: () => null,
+    );
+
+    if (trip == null) {
+      _log('⚠️ Trip $tripId not found in loaded trips');
+      return null;
+    }
+
+    // Find the participant in the trip
+    final participant = trip.participants.cast<Participant?>().firstWhere(
+      (p) => p?.id == participantId,
+      orElse: () => null,
+    );
+
+    if (participant == null) {
+      _log('⚠️ Participant $participantId not found in trip ${trip.name}');
+      return null;
+    }
+
+    _log('✅ Found current user: ${participant.name} (${participant.id})');
+    return participant;
   }
 
   @override
