@@ -313,7 +313,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripSelectTitle.
   ///
   /// In en, this message translates to:
-  /// **'Select Trip'**
+  /// **'My Trips'**
   String get tripSelectTitle;
 
   /// No description provided for @tripFieldNameLabel.
@@ -382,6 +382,12 @@ abstract class AppLocalizations {
   /// **'Back to Settings'**
   String get tripBackToSettings;
 
+  /// No description provided for @tripLeaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Trip'**
+  String get tripLeaveButton;
+
   /// No description provided for @tripCurrencyChangedInfo.
   ///
   /// In en, this message translates to:
@@ -423,6 +429,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load trip settings'**
   String get tripSettingsLoadError;
+
+  /// No description provided for @tripLeaveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Trip?'**
+  String get tripLeaveDialogTitle;
+
+  /// No description provided for @tripLeaveDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose access to this trip and all its expenses. You\'ll need an invite link to rejoin.'**
+  String get tripLeaveDialogMessage;
+
+  /// No description provided for @tripLeaveDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Trip'**
+  String get tripLeaveDialogConfirm;
+
+  /// No description provided for @tripLeftSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Left {tripName} successfully'**
+  String tripLeftSuccess(String tripName);
+
+  /// No description provided for @tripArchiveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Trip'**
+  String get tripArchiveButton;
+
+  /// No description provided for @tripUnarchiveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive Trip'**
+  String get tripUnarchiveButton;
+
+  /// No description provided for @tripArchiveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Trip?'**
+  String get tripArchiveDialogTitle;
+
+  /// No description provided for @tripArchiveDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will hide the trip from your active trip list. You can restore it later from archived trips.'**
+  String get tripArchiveDialogMessage;
+
+  /// No description provided for @tripArchiveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip archived'**
+  String get tripArchiveSuccess;
+
+  /// No description provided for @tripUnarchiveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip unarchived'**
+  String get tripUnarchiveSuccess;
+
+  /// No description provided for @tripArchivedPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived Trips'**
+  String get tripArchivedPageTitle;
+
+  /// No description provided for @tripViewArchivedButton.
+  ///
+  /// In en, this message translates to:
+  /// **'View Archived Trips'**
+  String get tripViewArchivedButton;
+
+  /// No description provided for @tripArchivedEmptyStateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Archived Trips'**
+  String get tripArchivedEmptyStateTitle;
+
+  /// No description provided for @tripArchivedEmptyStateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Trips you archive will appear here'**
+  String get tripArchivedEmptyStateMessage;
 
   /// No description provided for @tripBaseCurrencyPrefix.
   ///
@@ -2009,6 +2099,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Used {count} {count, plural, =1{time} other{times}}'**
   String tripRecoveryUsedCount(int count);
+
+  /// No description provided for @tripRecoveryTripLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip'**
+  String get tripRecoveryTripLabel;
+
+  /// No description provided for @tripRecoveryTripIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip ID'**
+  String get tripRecoveryTripIdLabel;
+
+  /// No description provided for @tripRecoveryTripIdDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this ID with others to invite them to join this trip.'**
+  String get tripRecoveryTripIdDescription;
+
+  /// No description provided for @tripRecoveryTripIdSafeToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'SAFE TO SHARE'**
+  String get tripRecoveryTripIdSafeToShare;
+
+  /// No description provided for @tripRecoveryCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery Code'**
+  String get tripRecoveryCodeLabel;
+
+  /// No description provided for @tripRecoveryCodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency access code. Use this to regain access if all trip members lose their devices.'**
+  String get tripRecoveryCodeDescription;
+
+  /// No description provided for @tripRecoveryCodePrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'PRIVATE'**
+  String get tripRecoveryCodePrivate;
+
+  /// No description provided for @tripRecoveryFirstTimeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this information now! You can view it later in Trip Settings.'**
+  String get tripRecoveryFirstTimeMessage;
+
+  /// No description provided for @tripRecoveryCodeCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery code copied to clipboard'**
+  String get tripRecoveryCodeCopiedToClipboard;
+
+  /// No description provided for @tripRecoveryCopyCodeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get tripRecoveryCopyCodeButton;
+
+  /// No description provided for @tripRecoveryCopyAllButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy All'**
+  String get tripRecoveryCopyAllButton;
+
+  /// No description provided for @tripRecoveryCopyAllSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip info copied to clipboard'**
+  String get tripRecoveryCopyAllSuccess;
+
+  /// No description provided for @tripRecoveryTripIdCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip ID copied to clipboard'**
+  String get tripRecoveryTripIdCopied;
+
+  /// No description provided for @tripRecoveryPasswordManagerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Save this code in a password manager like 1Password or LastPass for secure storage.'**
+  String get tripRecoveryPasswordManagerHint;
+
+  /// No description provided for @tripRecoveryCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy: {error}'**
+  String tripRecoveryCopyFailed(String error);
 }
 
 class _AppLocalizationsDelegate

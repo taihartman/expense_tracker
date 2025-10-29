@@ -84,7 +84,7 @@
   "tripEditTitle": "Edit Trip",
   "tripSettingsTitle": "Trip Settings",
   "tripListTitle": "My Trips",
-  "tripSelectTitle": "Select Trip",
+  "tripSelectTitle": "My Trips",
 
   "tripFieldNameLabel": "Trip Name",
   "tripFieldCreatorNameLabel": "Your Name",
@@ -98,6 +98,7 @@
   "tripSaveChangesButton": "Save Changes",
   "tripBackToExpenses": "Back to Expenses",
   "tripBackToSettings": "Back to Settings",
+  "tripLeaveButton": "Leave Trip",
 
   "tripCurrencyChangedInfo": "Changing base currency only affects how settlements are displayed. Individual expense amounts remain unchanged.",
 
@@ -135,6 +136,29 @@
     }
   },
   "tripSettingsLoadError": "Failed to load trip settings",
+
+  "tripLeaveDialogTitle": "Leave Trip?",
+  "tripLeaveDialogMessage": "You will lose access to this trip and all its expenses. You'll need an invite link to rejoin.",
+  "tripLeaveDialogConfirm": "Leave Trip",
+  "tripLeftSuccess": "Left {tripName} successfully",
+  "@tripLeftSuccess": {
+    "placeholders": {
+      "tripName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "tripArchiveButton": "Archive Trip",
+  "tripUnarchiveButton": "Unarchive Trip",
+  "tripArchiveDialogTitle": "Archive Trip?",
+  "tripArchiveDialogMessage": "This will hide the trip from your active trip list. You can restore it later from archived trips.",
+  "tripArchiveSuccess": "Trip archived",
+  "tripUnarchiveSuccess": "Trip unarchived",
+  "tripArchivedPageTitle": "Archived Trips",
+  "tripViewArchivedButton": "View Archived Trips",
+  "tripArchivedEmptyStateTitle": "No Archived Trips",
+  "tripArchivedEmptyStateMessage": "Trips you archive will appear here",
 
   "tripBaseCurrencyPrefix": "Base: ",
 
@@ -791,6 +815,28 @@
     "placeholders": {
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "tripRecoveryTripLabel": "Trip",
+  "tripRecoveryTripIdLabel": "Trip ID",
+  "tripRecoveryTripIdDescription": "Share this ID with others to invite them to join this trip.",
+  "tripRecoveryTripIdSafeToShare": "SAFE TO SHARE",
+  "tripRecoveryCodeLabel": "Recovery Code",
+  "tripRecoveryCodeDescription": "Emergency access code. Use this to regain access if all trip members lose their devices.",
+  "tripRecoveryCodePrivate": "PRIVATE",
+  "tripRecoveryFirstTimeMessage": "Save this information now! You can view it later in Trip Settings.",
+  "tripRecoveryCodeCopiedToClipboard": "Recovery code copied to clipboard",
+  "tripRecoveryCopyCodeButton": "Copy Code",
+  "tripRecoveryCopyAllButton": "Copy All",
+  "tripRecoveryCopyAllSuccess": "Trip info copied to clipboard",
+  "tripRecoveryTripIdCopied": "Trip ID copied to clipboard",
+  "tripRecoveryPasswordManagerHint": "Tip: Save this code in a password manager like 1Password or LastPass for secure storage.",
+  "tripRecoveryCopyFailed": "Failed to copy: {error}",
+  "@tripRecoveryCopyFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
       }
     }
   }

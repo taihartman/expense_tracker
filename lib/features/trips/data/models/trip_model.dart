@@ -17,6 +17,7 @@ class TripModel {
       'lastExpenseModifiedAt': trip.lastExpenseModifiedAt != null
           ? Timestamp.fromDate(trip.lastExpenseModifiedAt!)
           : null,
+      'isArchived': trip.isArchived,
       'participants': trip.participants.map((p) => p.toJson()).toList(),
     };
   }
@@ -46,6 +47,7 @@ class TripModel {
       lastExpenseModifiedAt: data['lastExpenseModifiedAt'] != null
           ? (data['lastExpenseModifiedAt'] as Timestamp).toDate()
           : null,
+      isArchived: data['isArchived'] as bool? ?? false,
       participants: participants,
     );
   }

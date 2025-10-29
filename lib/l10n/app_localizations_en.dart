@@ -138,7 +138,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripListTitle => 'My Trips';
 
   @override
-  String get tripSelectTitle => 'Select Trip';
+  String get tripSelectTitle => 'My Trips';
 
   @override
   String get tripFieldNameLabel => 'Trip Name';
@@ -177,6 +177,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripBackToSettings => 'Back to Settings';
 
   @override
+  String get tripLeaveButton => 'Leave Trip';
+
+  @override
   String get tripCurrencyChangedInfo =>
       'Changing base currency only affects how settlements are displayed. Individual expense amounts remain unchanged.';
 
@@ -205,6 +208,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tripSettingsLoadError => 'Failed to load trip settings';
+
+  @override
+  String get tripLeaveDialogTitle => 'Leave Trip?';
+
+  @override
+  String get tripLeaveDialogMessage =>
+      'You will lose access to this trip and all its expenses. You\'ll need an invite link to rejoin.';
+
+  @override
+  String get tripLeaveDialogConfirm => 'Leave Trip';
+
+  @override
+  String tripLeftSuccess(String tripName) {
+    return 'Left $tripName successfully';
+  }
+
+  @override
+  String get tripArchiveButton => 'Archive Trip';
+
+  @override
+  String get tripUnarchiveButton => 'Unarchive Trip';
+
+  @override
+  String get tripArchiveDialogTitle => 'Archive Trip?';
+
+  @override
+  String get tripArchiveDialogMessage =>
+      'This will hide the trip from your active trip list. You can restore it later from archived trips.';
+
+  @override
+  String get tripArchiveSuccess => 'Trip archived';
+
+  @override
+  String get tripUnarchiveSuccess => 'Trip unarchived';
+
+  @override
+  String get tripArchivedPageTitle => 'Archived Trips';
+
+  @override
+  String get tripViewArchivedButton => 'View Archived Trips';
+
+  @override
+  String get tripArchivedEmptyStateTitle => 'No Archived Trips';
+
+  @override
+  String get tripArchivedEmptyStateMessage =>
+      'Trips you archive will appear here';
 
   @override
   String get tripBaseCurrencyPrefix => 'Base: ';
@@ -1144,5 +1194,57 @@ class AppLocalizationsEn extends AppLocalizations {
       one: 'time',
     );
     return 'Used $count $_temp0';
+  }
+
+  @override
+  String get tripRecoveryTripLabel => 'Trip';
+
+  @override
+  String get tripRecoveryTripIdLabel => 'Trip ID';
+
+  @override
+  String get tripRecoveryTripIdDescription =>
+      'Share this ID with others to invite them to join this trip.';
+
+  @override
+  String get tripRecoveryTripIdSafeToShare => 'SAFE TO SHARE';
+
+  @override
+  String get tripRecoveryCodeLabel => 'Recovery Code';
+
+  @override
+  String get tripRecoveryCodeDescription =>
+      'Emergency access code. Use this to regain access if all trip members lose their devices.';
+
+  @override
+  String get tripRecoveryCodePrivate => 'PRIVATE';
+
+  @override
+  String get tripRecoveryFirstTimeMessage =>
+      'Save this information now! You can view it later in Trip Settings.';
+
+  @override
+  String get tripRecoveryCodeCopiedToClipboard =>
+      'Recovery code copied to clipboard';
+
+  @override
+  String get tripRecoveryCopyCodeButton => 'Copy Code';
+
+  @override
+  String get tripRecoveryCopyAllButton => 'Copy All';
+
+  @override
+  String get tripRecoveryCopyAllSuccess => 'Trip info copied to clipboard';
+
+  @override
+  String get tripRecoveryTripIdCopied => 'Trip ID copied to clipboard';
+
+  @override
+  String get tripRecoveryPasswordManagerHint =>
+      'Tip: Save this code in a password manager like 1Password or LastPass for secure storage.';
+
+  @override
+  String tripRecoveryCopyFailed(String error) {
+    return 'Failed to copy: $error';
   }
 }
