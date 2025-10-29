@@ -7,6 +7,7 @@ import '../widgets/minimal_transfers_view.dart';
 import '../widgets/person_dashboard_card.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
+import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -39,6 +40,17 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if user has verified their identity for this trip
+    final tripCubit = context.read<TripCubit>();
+    if (!tripCubit.isUserMemberOf(widget.tripId)) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(context.l10n.settlementTitle),
+        ),
+        body: TripVerificationPrompt(tripId: widget.tripId),
+      );
+    }
+
     // Capture repository here where providers are accessible
     final expenseRepository = context.read<ExpenseRepository>();
 

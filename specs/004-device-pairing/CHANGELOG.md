@@ -77,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed recovery code generation on trip creation by adding missing createdAt timestamp validation to Firestore security rules. Previously, recovery codes were failing silently due to incomplete field validation. Also improved error logging in TripCubit to show detailed error messages and stack traces when generation fails.
 - Fixed recovery code generation on web platform by refactoring `CodeGenerator.generateRecoveryCode()` to generate three 4-digit segments instead of one 12-digit number. The original implementation exceeded JavaScript's `Random.nextInt()` limit of 2^32, causing a RangeError on web.
 - Fixed deprecated `withOpacity()` calls by replacing with `withValues(alpha:)` throughout recovery code dialogs
+- Made device verification non-blocking: removed route-level redirects and replaced with page-level verification prompts. Users can now freely navigate between trips, but unverified trips display an identity selection prompt instead of trip content. Updated ExpenseListPage, SettlementSummaryPage, TripActivityPage, and TripSettingsPage to check isUserMemberOf() and show TripVerificationPrompt widget when needed. Added localization strings tripVerificationPromptTitle, tripVerificationPromptMessage, tripVerificationPromptButton, and tripVerificationPromptBackButton.
 
 ## 2025-10-29 - Initial Device Pairing Implementation
 
