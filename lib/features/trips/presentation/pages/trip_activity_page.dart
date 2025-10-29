@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 import '../cubits/activity_log_cubit.dart';
 import '../cubits/trip_cubit.dart';
 import '../widgets/activity_log_list.dart';
@@ -41,7 +42,7 @@ class _TripActivityPageState extends State<TripActivityPage> {
     if (!tripCubit.isUserMemberOf(widget.tripId)) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Trip Activity'),
+          title: Text(context.l10n.activityLogTitle),
           elevation: 0,
         ),
         body: TripVerificationPrompt(tripId: widget.tripId),
@@ -50,7 +51,7 @@ class _TripActivityPageState extends State<TripActivityPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trip Activity'),
+        title: Text(context.l10n.activityLogTitle),
         elevation: 0,
       ),
       body: ActivityLogList(tripId: widget.tripId),

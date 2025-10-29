@@ -19,6 +19,11 @@
   "commonClose": "Close",
 
 
+  "splashAppName": "Expense Tracker",
+  "splashLoading": "Loading...",
+  "splashLoadingAccessibility": "Loading Expense Tracker",
+
+
   "validationRequired": "Required",
   "validationInvalidNumber": "Invalid number",
   "validationMustBeGreaterThanZero": "Must be > 0",
@@ -731,8 +736,8 @@
   },
 
 
-  "devicePairingCodePromptTitle": "Verify Device",
-  "devicePairingCodePromptMessage": "A member named '{name}' already exists. Enter the verification code they provided to access this trip.",
+  "devicePairingCodePromptTitle": "Verify Your Device",
+  "devicePairingCodePromptMessage": "To access this trip as {name}, please enter a verification code.",
   "@devicePairingCodePromptMessage": {
     "placeholders": {
       "name": {
@@ -740,9 +745,20 @@
       }
     }
   },
+  "devicePairingCodePromptHowToGet": "You can get a code from:\n• Any trip member with verified access\n• Yourself from another device where you're already verified",
   "devicePairingCodeFieldLabel": "8-Digit Code",
   "devicePairingCodeFieldHint": "1234-5678",
   "devicePairingValidateButton": "Verify",
+  "devicePairingAskForCodeButton": "Ask for Verification Code",
+  "devicePairingAskForCodeMessage": "Hi! I'm trying to join the trip as {name} and need a verification code. Could you:\n\n1. Open Trip Settings\n2. Find my name ({name}) in the participant list\n3. Tap the QR code icon next to my name\n4. Share the generated code with me\n\nThe code expires in 15 minutes. Thanks!",
+  "@devicePairingAskForCodeMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "devicePairingAskForCodeCopied": "Message copied! Send it to a trip member to request a code.",
   "devicePairingGenerateButton": "Generate Code",
   "devicePairingCopyButton": "Copy Code",
   "devicePairingCodeCopied": "Code copied to clipboard",

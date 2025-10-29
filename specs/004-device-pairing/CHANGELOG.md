@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed recovery code generation on trip creation by adding missing `createdAt` timestamp validation to Firestore security rules
 - Improved error logging in TripCubit with detailed stack traces for recovery code generation failures
 - Fixed recovery code generation on web platform - refactored to use three 4-digit segments to avoid exceeding JavaScript's Random.nextInt() 2^32 limit
+- Fixed ErrorPage by adding "Go to Home" button to prevent users from being stuck on navigation error screen
+- Updated TripActivityPage to use localized string (context.l10n.activityLogTitle) instead of hardcoded "Trip Activity" text
 
 ### Removed
 - [Removed features or files will be logged here]

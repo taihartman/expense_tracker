@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/utils/code_generator.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
+import '../../utils/verification_code_input_formatter.dart';
 import '../cubits/device_pairing_cubit.dart';
 import '../cubits/device_pairing_state.dart';
-import '../../../../core/utils/code_generator.dart';
 
 /// Dialog prompting user to verify their device with a code.
 ///
@@ -64,6 +66,31 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
     Navigator.of(context).pop(false);
   }
 
+  Future<void> _copyAskForCodeMessage(BuildContext context) async {
+    try {
+      final message = context.l10n.devicePairingAskForCodeMessage(widget.memberName);
+      await Clipboard.setData(ClipboardData(text: message));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.devicePairingAskForCodeCopied),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to copy message to clipboard'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DevicePairingCubit, DevicePairingState>(
@@ -82,16 +109,39 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
         final isValidating = state is CodeValidating;
 
         return AlertDialog(
-          title: const Text('Device Verification Required'),
+          title: Text(context.l10n.devicePairingCodePromptTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Explanation message
-              Text(
-                'A member named "${widget.memberName}" already exists in this trip. '
-                'To verify you are the legitimate device for this member, '
-                'please enter the verification code from your other device.',
+              Text(context.l10n.devicePairingCodePromptMessage(widget.memberName)),
+              const SizedBox(height: 12),
+
+              // How to get code info
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        context.l10n.devicePairingCodePromptHowToGet,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
 
@@ -99,15 +149,14 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
               TextField(
                 controller: _codeController,
                 decoration: InputDecoration(
-                  labelText: 'Verification Code',
-                  hintText: '1234-5678',
+                  labelText: context.l10n.devicePairingCodeFieldLabel,
+                  hintText: context.l10n.devicePairingCodeFieldHint,
                   errorText: _errorMessage,
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9\-]')),
-                  LengthLimitingTextInputFormatter(9), // "XXXX-XXXX"
+                  VerificationCodeInputFormatter(),
                 ],
                 onChanged: (value) {
                   // Clear error when user types
@@ -119,6 +168,17 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
                   // Update button enabled state
                   _updateCodeValidity();
                 },
+              ),
+              const SizedBox(height: 12),
+
+              // Ask for Code button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: isValidating ? null : () => _copyAskForCodeMessage(context),
+                  icon: const Icon(Icons.content_copy, size: 18),
+                  label: Text(context.l10n.devicePairingAskForCodeButton),
+                ),
               ),
               const SizedBox(height: 8),
 
@@ -136,7 +196,7 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
             // Cancel button
             TextButton(
               onPressed: isValidating ? null : () => _handleCancel(context),
-              child: const Text('Cancel'),
+              child: Text(context.l10n.commonCancel),
             ),
 
             // Submit button
@@ -144,7 +204,7 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
               onPressed: (isValidating || !_isCodeValidFlag)
                   ? null
                   : () => _handleSubmit(context),
-              child: const Text('Submit Code'),
+              child: Text(context.l10n.devicePairingValidateButton),
             ),
           ],
         );

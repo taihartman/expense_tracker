@@ -184,6 +184,24 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get commonClose;
 
+  /// No description provided for @splashAppName.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense Tracker'**
+  String get splashAppName;
+
+  /// No description provided for @splashLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get splashLoading;
+
+  /// No description provided for @splashLoadingAccessibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Expense Tracker'**
+  String get splashLoadingAccessibility;
+
   /// No description provided for @validationRequired.
   ///
   /// In en, this message translates to:
@@ -1845,14 +1863,20 @@ abstract class AppLocalizations {
   /// No description provided for @devicePairingCodePromptTitle.
   ///
   /// In en, this message translates to:
-  /// **'Verify Device'**
+  /// **'Verify Your Device'**
   String get devicePairingCodePromptTitle;
 
   /// No description provided for @devicePairingCodePromptMessage.
   ///
   /// In en, this message translates to:
-  /// **'A member named \'{name}\' already exists. Enter the verification code they provided to access this trip.'**
+  /// **'To access this trip as {name}, please enter a verification code.'**
   String devicePairingCodePromptMessage(String name);
+
+  /// No description provided for @devicePairingCodePromptHowToGet.
+  ///
+  /// In en, this message translates to:
+  /// **'You can get a code from:\n• Any trip member with verified access\n• Yourself from another device where you\'re already verified'**
+  String get devicePairingCodePromptHowToGet;
 
   /// No description provided for @devicePairingCodeFieldLabel.
   ///
@@ -1871,6 +1895,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verify'**
   String get devicePairingValidateButton;
+
+  /// No description provided for @devicePairingAskForCodeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask for Verification Code'**
+  String get devicePairingAskForCodeButton;
+
+  /// No description provided for @devicePairingAskForCodeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Hi! I\'m trying to join the trip as {name} and need a verification code. Could you:\n\n1. Open Trip Settings\n2. Find my name ({name}) in the participant list\n3. Tap the QR code icon next to my name\n4. Share the generated code with me\n\nThe code expires in 15 minutes. Thanks!'**
+  String devicePairingAskForCodeMessage(String name);
+
+  /// No description provided for @devicePairingAskForCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied! Send it to a trip member to request a code.'**
+  String get devicePairingAskForCodeCopied;
 
   /// No description provided for @devicePairingGenerateButton.
   ///
