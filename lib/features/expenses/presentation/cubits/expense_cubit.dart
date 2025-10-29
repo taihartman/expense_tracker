@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/expense.dart';
 import '../../domain/repositories/expense_repository.dart';
+import '../../../trips/domain/models/activity_log.dart';
+import '../../../trips/domain/repositories/activity_log_repository.dart';
 import 'expense_state.dart';
 
 /// Helper function to log with timestamps
@@ -13,12 +15,16 @@ void _log(String message) {
 /// Cubit for managing expense state
 class ExpenseCubit extends Cubit<ExpenseState> {
   final ExpenseRepository _expenseRepository;
+  final ActivityLogRepository? _activityLogRepository;
   String? _currentTripId;
   StreamSubscription<List<Expense>>? _expensesSubscription;
 
-  ExpenseCubit({required ExpenseRepository expenseRepository})
-    : _expenseRepository = expenseRepository,
-      super(const ExpenseInitial());
+  ExpenseCubit({
+    required ExpenseRepository expenseRepository,
+    ActivityLogRepository? activityLogRepository,
+  }) : _expenseRepository = expenseRepository,
+       _activityLogRepository = activityLogRepository,
+       super(const ExpenseInitial());
 
   /// Load all expenses for a trip
   Future<void> loadExpenses(String tripId) async {
@@ -98,13 +104,40 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   }
 
   /// Create a new expense
-  Future<void> createExpense(Expense expense) async {
+  ///
+  /// [actorName] is the name of the user performing this action (current user),
+  /// not the payer of the expense. Used for activity logging.
+  Future<void> createExpense(Expense expense, {String? actorName}) async {
     try {
       emit(const ExpenseCreating());
 
       final createdExpense = await _expenseRepository.createExpense(expense);
 
       emit(ExpenseCreated(createdExpense));
+
+      // Log activity
+      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty) {
+        _log('📝 Logging expense_added activity...');
+        try {
+          final description = expense.description != null && expense.description!.isNotEmpty
+              ? expense.description!
+              : '${expense.amount} ${expense.currency.name.toUpperCase()}';
+
+          final activityLog = ActivityLog(
+            id: '', // Firestore will generate this
+            tripId: expense.tripId,
+            type: ActivityType.expenseAdded,
+            actorName: actorName,
+            description: description,
+            timestamp: DateTime.now(),
+          );
+          await _activityLogRepository.addLog(activityLog);
+          _log('✅ Activity logged');
+        } catch (e) {
+          _log('⚠️ Failed to log activity (non-fatal): $e');
+          // Don't fail expense creation if activity logging fails
+        }
+      }
 
       // Reload expenses to update the list
       if (_currentTripId != null) {
@@ -116,13 +149,40 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   }
 
   /// Update an expense
-  Future<void> updateExpense(Expense expense) async {
+  ///
+  /// [actorName] is the name of the user performing this action (current user),
+  /// not the payer of the expense. Used for activity logging.
+  Future<void> updateExpense(Expense expense, {String? actorName}) async {
     try {
       emit(const ExpenseUpdating());
 
       await _expenseRepository.updateExpense(expense);
 
       emit(ExpenseUpdated(expense));
+
+      // Log activity
+      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty) {
+        _log('📝 Logging expense_edited activity...');
+        try {
+          final description = expense.description != null && expense.description!.isNotEmpty
+              ? expense.description!
+              : '${expense.amount} ${expense.currency.name.toUpperCase()}';
+
+          final activityLog = ActivityLog(
+            id: '', // Firestore will generate this
+            tripId: expense.tripId,
+            type: ActivityType.expenseEdited,
+            actorName: actorName,
+            description: description,
+            timestamp: DateTime.now(),
+          );
+          await _activityLogRepository.addLog(activityLog);
+          _log('✅ Activity logged');
+        } catch (e) {
+          _log('⚠️ Failed to log activity (non-fatal): $e');
+          // Don't fail expense update if activity logging fails
+        }
+      }
 
       // Reload expenses to update the list
       if (_currentTripId != null) {
@@ -134,9 +194,50 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   }
 
   /// Delete an expense
-  Future<void> deleteExpense(String expenseId) async {
+  ///
+  /// [actorName] is the name of the user performing this action (current user),
+  /// not the payer of the expense. Used for activity logging.
+  Future<void> deleteExpense(String expenseId, {String? actorName}) async {
     try {
+      // Find the expense to get details before deleting (for activity log)
+      Expense? expenseToDelete;
+      String? tripId;
+      if (state is ExpenseLoaded) {
+        final currentState = state as ExpenseLoaded;
+        expenseToDelete = currentState.expenses.firstWhere(
+          (e) => e.id == expenseId,
+          orElse: () => throw Exception('Expense not found'),
+        );
+        tripId = expenseToDelete.tripId;
+      }
+
       await _expenseRepository.deleteExpense(expenseId);
+
+      // Log activity
+      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty && tripId != null) {
+        _log('📝 Logging expense_deleted activity...');
+        try {
+          final description = expenseToDelete?.description != null && expenseToDelete!.description!.isNotEmpty
+              ? expenseToDelete.description!
+              : expenseToDelete != null
+                  ? '${expenseToDelete.amount} ${expenseToDelete.currency.name.toUpperCase()}'
+                  : 'Expense deleted';
+
+          final activityLog = ActivityLog(
+            id: '', // Firestore will generate this
+            tripId: tripId,
+            type: ActivityType.expenseDeleted,
+            actorName: actorName,
+            description: description,
+            timestamp: DateTime.now(),
+          );
+          await _activityLogRepository.addLog(activityLog);
+          _log('✅ Activity logged');
+        } catch (e) {
+          _log('⚠️ Failed to log activity (non-fatal): $e');
+          // Don't fail expense deletion if activity logging fails
+        }
+      }
 
       // If deleted expense was selected, clear selection
       if (state is ExpenseLoaded) {

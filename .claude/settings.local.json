@@ -30,7 +30,12 @@
       "Bash(.specify/scripts/bash/setup-plan.sh:*)",
       "Bash(.specify/scripts/bash/update-feature-docs.sh:*)",
       "SlashCommand(/docs.log \"Set up comprehensive localization infrastructure with Flutter l10n system. Created app_en.arb with 250+ extracted strings organized by category (common UI, validation, trips, expenses, settlements). Added l10n.yaml config, helper extensions, and updated main.dart with localization delegates. Updated CLAUDE.md with detailed localization guidelines and best practices.\")",
-      "Bash(dart format:*)"
+      "Bash(dart format:*)",
+      "Bash(dart run build_runner build:*)",
+      "Read(//Users/a515138832/flutter_chrome_profile/**)",
+      "Bash(ls:*)",
+      "SlashCommand(/docs.log \"Fixed UX bug: After archiving a trip from Trip Settings, users now navigate to home page instead of remaining stuck on the archived trip's settings page. Added context.go('/') after successful archive confirmation.\")",
+      "SlashCommand(/docs.log \"Enhanced archive UX: When archiving the currently selected trip, system now auto-clears selection and auto-selects the first available active trip, ensuring users land on a valid trip context after archiving.\")"
     ],
     "deny": [],
     "ask": []

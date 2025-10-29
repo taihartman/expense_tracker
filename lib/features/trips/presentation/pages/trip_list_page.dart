@@ -37,7 +37,20 @@ class _TripListPageState extends State<TripListPage> {
     _log('🎨 Building TripListPage');
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.tripListTitle)),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'),
+        ),
+        title: Text(context.l10n.tripListTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.group_add),
+            tooltip: context.l10n.tripJoinTitle,
+            onPressed: () => context.push('/trips/join'),
+          ),
+        ],
+      ),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
           _log('🔄 BlocBuilder rebuilding with state: ${state.runtimeType}');
@@ -81,38 +94,61 @@ class _TripListPageState extends State<TripListPage> {
             }
 
             _log('✅ Rendering ${state.trips.length} trips');
-            return ListView.builder(
-              padding: const EdgeInsets.all(AppTheme.spacing2),
-              itemCount: state.trips.length,
-              itemBuilder: (context, index) {
-                final trip = state.trips[index];
-                final isSelected = state.selectedTrip?.id == trip.id;
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(AppTheme.spacing2),
+                    itemCount: state.trips.length,
+                    itemBuilder: (context, index) {
+                      final trip = state.trips[index];
+                      final isSelected = state.selectedTrip?.id == trip.id;
 
-                return Card(
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.flight_takeoff,
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
-                    ),
-                    title: Text(trip.name),
-                    subtitle: Text(
-                      '${context.l10n.tripBaseCurrencyPrefix}${trip.baseCurrency.name.toUpperCase()}',
-                    ),
-                    trailing: isSelected
-                        ? Icon(
-                            Icons.check_circle,
-                            color: Theme.of(context).colorScheme.primary,
-                          )
-                        : null,
-                    onTap: () {
-                      context.read<TripCubit>().selectTrip(trip);
-                      Navigator.of(context).pop();
+                      return Card(
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.flight_takeoff,
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          title: Text(trip.name),
+                          subtitle: Text(
+                            '${context.l10n.tripBaseCurrencyPrefix}${trip.baseCurrency.name.toUpperCase()}',
+                          ),
+                          trailing: isSelected
+                              ? Icon(
+                                  Icons.check_circle,
+                                  color: Theme.of(context).colorScheme.primary,
+                                )
+                              : null,
+                          onTap: () async {
+                            await context.read<TripCubit>().selectTrip(trip);
+                            if (context.mounted) {
+                              context.go('/');
+                            }
+                          },
+                        ),
+                      );
                     },
                   ),
-                );
-              },
+                ),
+                // View Archived Trips button
+                if (state.archivedTrips.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacing2),
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push('/trips/archived'),
+                      icon: const Icon(Icons.archive),
+                      label: Text(
+                        'View Archived Trips (${state.archivedTrips.length})',
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                  ),
+              ],
             );
           }
 

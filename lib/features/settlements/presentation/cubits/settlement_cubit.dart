@@ -11,6 +11,8 @@ import 'settlement_state.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
+import '../../../trips/domain/repositories/activity_log_repository.dart';
+import '../../../trips/domain/models/activity_log.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -36,6 +38,7 @@ class SettlementCubit extends Cubit<SettlementState> {
   final SettledTransferRepository _settledTransferRepository;
   final CategoryRepository _categoryRepository;
   final SettlementCalculator _settlementCalculator;
+  final ActivityLogRepository? _activityLogRepository;
 
   StreamSubscription? _combinedSubscription;
   String? _currentTripId;
@@ -47,12 +50,14 @@ class SettlementCubit extends Cubit<SettlementState> {
     required SettledTransferRepository settledTransferRepository,
     required CategoryRepository categoryRepository,
     SettlementCalculator? settlementCalculator,
+    ActivityLogRepository? activityLogRepository,
   }) : _settlementRepository = settlementRepository,
        _expenseRepository = expenseRepository,
        _tripRepository = tripRepository,
        _settledTransferRepository = settledTransferRepository,
        _categoryRepository = categoryRepository,
        _settlementCalculator = settlementCalculator ?? SettlementCalculator(),
+       _activityLogRepository = activityLogRepository,
        super(const SettlementInitial());
 
   /// Separate transfers into active and settled lists
@@ -196,7 +201,11 @@ class SettlementCubit extends Cubit<SettlementState> {
   }
 
   /// Mark a specific transfer as settled
-  Future<void> markTransferAsSettled(String transferId) async {
+  /// Mark a transfer as settled
+  ///
+  /// [actorName] is the name of the user performing this action (current user).
+  /// Used for activity logging.
+  Future<void> markTransferAsSettled(String transferId, {String? actorName}) async {
     if (_currentTripId == null) {
       _log('⚠️ Cannot mark transfer as settled: no current trip');
       return;
@@ -227,6 +236,40 @@ class SettlementCubit extends Cubit<SettlementState> {
       );
 
       _log('✅ Transfer marked as settled');
+
+      // Log activity
+      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty) {
+        _log('📝 Logging transfer_marked_settled activity...');
+        try {
+          // Get trip for participant names and base currency
+          final trip = await _tripRepository.getTripById(_currentTripId!);
+          if (trip != null) {
+            final fromUser = trip.participants.firstWhere(
+              (p) => p.id == transfer.fromUserId,
+              orElse: () => throw Exception('From user not found'),
+            );
+            final toUser = trip.participants.firstWhere(
+              (p) => p.id == transfer.toUserId,
+              orElse: () => throw Exception('To user not found'),
+            );
+
+            final description = '${fromUser.name} → ${toUser.name}: ${transfer.amountBase} ${trip.baseCurrency.code}';
+            final activityLog = ActivityLog(
+              id: '', // Firestore will generate this
+              tripId: _currentTripId!,
+              type: ActivityType.transferMarkedSettled,
+              actorName: actorName,
+              description: description,
+              timestamp: DateTime.now(),
+            );
+            await _activityLogRepository.addLog(activityLog);
+            _log('✅ Activity logged');
+          }
+        } catch (e) {
+          _log('⚠️ Failed to log activity (non-fatal): $e');
+        }
+      }
+
       // The combined stream will automatically recalculate and update UI
     } catch (e) {
       _log('❌ Error marking transfer as settled: $e');

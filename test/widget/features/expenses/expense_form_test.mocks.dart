@@ -6,6 +6,7 @@
 import 'dart:async' as _i6;
 
 import 'package:expense_tracker/core/models/currency_code.dart' as _i10;
+import 'package:expense_tracker/core/models/participant.dart' as _i13;
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart'
     as _i5;
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_cubit.dart'
@@ -13,12 +14,15 @@ import 'package:expense_tracker/features/expenses/presentation/cubits/expense_cu
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_state.dart'
     as _i2;
 import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i9;
+import 'package:expense_tracker/features/trips/domain/models/trip_recovery_code.dart'
+    as _i12;
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart'
     as _i8;
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart'
     as _i3;
 import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i11;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -91,27 +95,39 @@ class MockExpenseCubit extends _i1.Mock implements _i4.ExpenseCubit {
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> createExpense(_i5.Expense? expense) =>
+  _i6.Future<void> createExpense(_i5.Expense? expense, {String? actorName}) =>
       (super.noSuchMethod(
-            Invocation.method(#createExpense, [expense]),
+            Invocation.method(
+              #createExpense,
+              [expense],
+              {#actorName: actorName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> updateExpense(_i5.Expense? expense) =>
+  _i6.Future<void> updateExpense(_i5.Expense? expense, {String? actorName}) =>
       (super.noSuchMethod(
-            Invocation.method(#updateExpense, [expense]),
+            Invocation.method(
+              #updateExpense,
+              [expense],
+              {#actorName: actorName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> deleteExpense(String? expenseId) =>
+  _i6.Future<void> deleteExpense(String? expenseId, {String? actorName}) =>
       (super.noSuchMethod(
-            Invocation.method(#deleteExpense, [expenseId]),
+            Invocation.method(
+              #deleteExpense,
+              [expenseId],
+              {#actorName: actorName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
@@ -204,11 +220,13 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   _i6.Future<void> createTrip({
     required String? name,
     required _i10.CurrencyCode? baseCurrency,
+    String? creatorName,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#createTrip, [], {
               #name: name,
               #baseCurrency: baseCurrency,
+              #creatorName: creatorName,
             }),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
@@ -258,6 +276,104 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> leaveTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#leaveTrip, [tripId]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> joinTrip({
+    required String? tripId,
+    required String? userName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#joinTrip, [], {
+              #tripId: tripId,
+              #userName: userName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<bool> hasDuplicateMember(String? tripId, String? memberName) =>
+      (super.noSuchMethod(
+            Invocation.method(#hasDuplicateMember, [tripId, memberName]),
+            returnValue: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  bool isUserMemberOf(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#isUserMemberOf, [tripId]),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  _i6.Future<_i9.Trip?> getTripById(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getTripById, [tripId]),
+            returnValue: _i6.Future<_i9.Trip?>.value(),
+          )
+          as _i6.Future<_i9.Trip?>);
+
+  @override
+  _i6.Future<String> generateRecoveryCode(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#generateRecoveryCode, [tripId]),
+            returnValue: _i6.Future<String>.value(
+              _i11.dummyValue<String>(
+                this,
+                Invocation.method(#generateRecoveryCode, [tripId]),
+              ),
+            ),
+          )
+          as _i6.Future<String>);
+
+  @override
+  _i6.Future<_i12.TripRecoveryCode?> getRecoveryCode(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getRecoveryCode, [tripId]),
+            returnValue: _i6.Future<_i12.TripRecoveryCode?>.value(),
+          )
+          as _i6.Future<_i12.TripRecoveryCode?>);
+
+  @override
+  _i6.Future<bool> hasRecoveryCode(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#hasRecoveryCode, [tripId]),
+            returnValue: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  _i6.Future<bool> validateAndJoinWithRecoveryCode({
+    required String? tripId,
+    required String? code,
+    required String? userName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#validateAndJoinWithRecoveryCode, [], {
+              #tripId: tripId,
+              #code: code,
+              #userName: userName,
+            }),
+            returnValue: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  _i13.Participant? getCurrentUserForTrip(String? tripId) =>
+      (super.noSuchMethod(Invocation.method(#getCurrentUserForTrip, [tripId]))
+          as _i13.Participant?);
 
   @override
   _i6.Future<void> close() =>

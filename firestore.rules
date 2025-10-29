@@ -7,9 +7,134 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Categories: Top-level collection (read/write if authenticated)
+    // TODO: Move to subcollection under trips for better security and data isolation
+    match /categories/{categoryId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Expenses: Top-level collection (read/write if authenticated)
+    // TODO: Move to subcollection under trips for better security and data isolation
+    match /expenses/{expenseId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Settlements: Top-level collection for computed settlement data
+    // Contains settlement summaries and minimal transfers for each trip
+    match /settlements/{tripId} {
+      // Allow reading settlement documents
+      allow read: if isAuthenticated();
+
+      // Allow writing settlement summaries and transfers
+      allow write: if isAuthenticated();
+
+      // Transfers subcollection
+      match /transfers/{transferId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated();
+      }
+    }
+
+    // Settled Transfers: Top-level collection (read/write if authenticated)
+    // TODO: Move to subcollection under trips for better security and data isolation
+    match /settledTransfers/{tripId}/transfers/{transferId} {
+      allow read: if isAuthenticated();
+
+      // Allow creating/updating settled transfers with validation
+      allow create, update: if isAuthenticated()
+                            && request.resource.data.tripId == tripId
+                            && request.resource.data.fromUserId is string
+                            && request.resource.data.fromUserId.size() > 0
+                            && request.resource.data.toUserId is string
+                            && request.resource.data.toUserId.size() > 0
+                            && request.resource.data.amountBase is string
+                            && request.resource.data.isSettled == true
+                            && request.resource.data.settledAt is timestamp;
+
+      // Allow deleting (unmarking) settled transfers
+      allow delete: if isAuthenticated();
+    }
+
     // Trips: Read/write if authenticated
     match /trips/{tripId} {
       allow read, write: if isAuthenticated();
+
+      // Activity Log: Append-only audit trail
+      match /activityLog/{logId} {
+        // Anyone can read activity logs (membership will be enforced client-side initially)
+        allow read: if isAuthenticated();
+
+        // Only allow creating new logs (no updates or deletes to preserve audit trail)
+        allow create: if isAuthenticated()
+                      && request.resource.data.timestamp == request.time
+                      && request.resource.data.tripId == tripId;
+
+        // Deny updates and deletes to maintain log integrity
+        allow update, delete: if false;
+      }
+
+      // Device Link Codes: Temporary codes for device pairing
+      match /deviceLinkCodes/{codeId} {
+        // Anyone can read codes to validate them (brute force protected by rate limiting)
+        allow read: if isAuthenticated();
+
+        // Only trip members can create codes
+        allow create: if isAuthenticated()
+                      && request.resource.data.code.size() == 9  // "XXXX-XXXX"
+                      && request.resource.data.memberName.size() > 0
+                      && request.resource.data.used == false
+                      && request.resource.data.expiresAt > request.time
+                      && request.resource.data.expiresAt <= request.time + duration.value(20, 'm'); // Max 20 min expiry
+
+        // Only allow marking as used (one-way state change)
+        allow update: if isAuthenticated()
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt'])
+                      && request.resource.data.used == true
+                      && resource.data.used == false;
+
+        // Only trip members can delete (revoke codes)
+        allow delete: if isAuthenticated();
+      }
+
+      // Validation Attempts: Rate limiting tracking
+      match /validationAttempts/{attemptId} {
+        // Anyone can read to check rate limits
+        allow read: if isAuthenticated();
+
+        // Anyone can create attempt records
+        allow create: if isAuthenticated()
+                      && request.resource.data.timestamp == request.time;
+
+        // No updates or deletes (cleanup happens client-side or via TTL)
+        allow update, delete: if false;
+      }
+
+      // Recovery Code: Single document for emergency trip access
+      match /recovery/code {
+        // Anyone can read recovery code (needed for validation)
+        allow read: if isAuthenticated();
+
+        // Anyone can create a recovery code for a trip (first member to generate it)
+        allow create: if isAuthenticated()
+                      && request.resource.data.code is string
+                      && request.resource.data.code.size() == 14  // "XXXX-XXXX-XXXX"
+                      && request.resource.data.tripId == tripId
+                      && request.resource.data.createdAt is timestamp
+                      && request.resource.data.usedCount is int
+                      && request.resource.data.usedCount >= 0
+                      // lastUsedAt can be null on creation
+                      && (!request.resource.data.keys().hasAny(['lastUsedAt']) || request.resource.data.lastUsedAt == null || request.resource.data.lastUsedAt is timestamp);
+
+        // Allow updates to increment usage count and update lastUsedAt
+        allow update: if isAuthenticated()
+                      && request.resource.data.code == resource.data.code  // Code cannot change
+                      && request.resource.data.tripId == resource.data.tripId  // Trip ID cannot change
+                      && request.resource.data.usedCount == resource.data.usedCount + 1  // Can only increment by 1
+                      && request.resource.data.lastUsedAt is timestamp;
+
+        // No deletion (recovery codes are permanent)
+        allow delete: if false;
+      }
 
       // Categories, fxRates, expenses: Inherit trip permissions
       match /{document=**} {

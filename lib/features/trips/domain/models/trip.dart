@@ -25,6 +25,9 @@ class Trip {
   /// Used for smart settlement refresh to detect if recomputation is needed
   final DateTime? lastExpenseModifiedAt;
 
+  /// Whether this trip is archived (hidden from main trip list)
+  final bool isArchived;
+
   /// Participants specific to this trip
   /// Empty list means no participants configured yet (needs migration)
   final List<Participant> participants;
@@ -36,6 +39,7 @@ class Trip {
     required this.createdAt,
     required this.updatedAt,
     this.lastExpenseModifiedAt,
+    this.isArchived = false,
     this.participants = const [],
   });
 
@@ -59,6 +63,7 @@ class Trip {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? lastExpenseModifiedAt,
+    bool? isArchived,
     List<Participant>? participants,
   }) {
     return Trip(
@@ -69,6 +74,7 @@ class Trip {
       updatedAt: updatedAt ?? this.updatedAt,
       lastExpenseModifiedAt:
           lastExpenseModifiedAt ?? this.lastExpenseModifiedAt,
+      isArchived: isArchived ?? this.isArchived,
       participants: participants ?? this.participants,
     );
   }
@@ -86,6 +92,7 @@ class Trip {
     return 'Trip(id: $id, name: $name, baseCurrency: $baseCurrency, '
         'createdAt: $createdAt, updatedAt: $updatedAt, '
         'lastExpenseModifiedAt: $lastExpenseModifiedAt, '
+        'isArchived: $isArchived, '
         'participants: ${participants.length} participants)';
   }
 }

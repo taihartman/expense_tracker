@@ -22,8 +22,30 @@ flutter test test/[feature]_test.dart
 
 ### Important Files Modified/Created
 
-- `lib/[path]/[file].dart` - [Description]
-- `test/[path]/[file]_test.dart` - [Description]
+**Activity Tracking System** (Comprehensive audit trail for all user actions):
+- `lib/features/trips/domain/models/activity_log.dart` - ActivityType enum and ActivityLog model (14 activity types)
+- `lib/features/trips/domain/repositories/activity_log_repository.dart` - Repository interface for activity logs
+- `lib/features/trips/data/repositories/activity_log_repository_impl.dart` - Firestore implementation
+- `lib/features/trips/data/models/activity_log_model.dart` - Serialization/deserialization
+- `lib/features/trips/presentation/pages/trip_activity_page.dart` - Activity log UI
+- `lib/features/trips/presentation/widgets/activity_log_list.dart` - List widget for activities
+- `lib/features/trips/presentation/widgets/activity_log_item.dart` - Individual activity display
+- `lib/features/trips/presentation/cubits/activity_log_cubit.dart` - State management for activity logs
+- `lib/core/services/local_storage_service.dart` - Added per-trip identity storage (saveUserIdentityForTrip, getUserIdentityForTrip)
+- `lib/features/trips/presentation/cubits/trip_cubit.dart` - Added getCurrentUserForTrip() helper, stores identity on join
+- `lib/features/expenses/presentation/cubits/expense_cubit.dart` - Updated to use actorName instead of payerName
+- `lib/features/settlements/presentation/cubits/settlement_cubit.dart` - Added activity logging for settlements
+- `lib/features/trips/data/models/activity_log_model.dart` - Serialization for all activity types
+
+**Trip Management Enhancements**:
+- `lib/features/trips/domain/models/trip.dart` - Added isArchived field for trip archiving
+- `lib/features/trips/data/models/trip_model.dart` - Firestore serialization with backward compatibility
+- `lib/features/trips/presentation/cubits/trip_cubit.dart` - Archive/unarchive methods, auto-focus on creation
+- `lib/features/trips/presentation/cubits/trip_state.dart` - Separate archivedTrips list in TripLoaded state
+- `lib/features/trips/presentation/pages/archived_trips_page.dart` - Dedicated archived trips management UI
+- `lib/features/trips/presentation/pages/trip_settings_page.dart` - Archive section with archive/unarchive buttons
+- `lib/features/trips/presentation/pages/trip_list_page.dart` - "View Archived Trips" button
+- `lib/core/router/app_router.dart` - Added /trips/archived route
 
 ## Feature Overview
 
@@ -77,12 +99,49 @@ A comprehensive group expense tracker for trips with multi-currency support and 
   - Properties: from participant, to participant, amount
   - Used by: Settlement recommendations
 
+### Activity Tracking Architecture
+
+**Purpose**: Comprehensive audit trail showing who did what and when in each trip.
+
+**Identity Management**:
+- Users select their identity from the trip's participant list when joining
+- Identity stored per-trip in `LocalStorageService` using `saveUserIdentityForTrip(tripId, participantId)`
+- Retrieved via `TripCubit.getCurrentUserForTrip(tripId)` for activity attribution
+- No global user concept - identity is trip-scoped
+
+**Data Storage**:
+- Firestore subcollection: `/trips/{tripId}/activityLog/{logId}`
+- Append-only (no updates/deletes per security rules)
+- Server timestamp enforced
+- Ordered by timestamp descending (newest first)
+- Real-time updates via streams
+
+**Activity Types** (14 total):
+- **Trip Management**: tripCreated, tripUpdated, tripDeleted
+- **Participants**: memberJoined, participantAdded, participantRemoved
+- **Expenses**: expenseAdded, expenseEdited, expenseDeleted, expenseCategoryChanged, expenseSplitModified
+- **Settlements**: transferMarkedSettled, transferMarkedUnsettled
+- **Security**: deviceVerified, recoveryCodeUsed
+
+**Integration Pattern**:
+1. Inject `ActivityLogRepository?` in cubits (optional for testing)
+2. Get current user: `TripCubit.getCurrentUserForTrip(tripId)` from UI layer
+3. Pass `actorName` parameter to cubit methods
+4. Log after successful operation (non-fatal, wrapped in try-catch)
+5. Activity logs never break main operations
+
+**Key Implementation Detail**:
+Changed ExpenseCubit from using `payerName` to `actorName` - ensures activity logs show WHO performed the action (current user), not who paid for the expense.
+
 ### State Management
 
-- **Approach**: [BLoC/Cubit/Provider/etc.]
+- **Approach**: BLoC/Cubit pattern (flutter_bloc)
 - **State files**:
-  - `lib/[path]/[feature]_cubit.dart`
-  - `lib/[path]/[feature]_state.dart`
+  - `lib/features/trips/presentation/cubits/trip_cubit.dart` - Trip management
+  - `lib/features/expenses/presentation/cubits/expense_cubit.dart` - Expense CRUD
+  - `lib/features/settlements/presentation/cubits/settlement_cubit.dart` - Settlement calculations
+  - `lib/features/trips/presentation/cubits/activity_log_cubit.dart` - Activity log viewing
+  - All cubits with state changes inject `ActivityLogRepository?` for audit trail
 
 ### UI Components
 
@@ -111,6 +170,16 @@ dev_dependencies:
   - Pairwise debt netting (A→B minus B→A)
   - Minimal transfer optimization using creditor/debtor matching
   - Should reduce transfers by ~30% compared to pairwise approach
+
+- **Trip Archiving System**: Soft-delete pattern for trip management
+  - Archived trips remain fully functional (can view, add expenses, edit, etc.)
+  - `isArchived` boolean field in Trip model (defaults to false)
+  - Firestore backward compatible - existing trips without field treated as active
+  - State separation: `TripLoaded` state contains both `trips` (active) and `archivedTrips` lists
+  - UI filtering: Trip selector modal shows only active trips
+  - Dedicated `/trips/archived` route for managing archived trips
+  - Auto-focus: Newly created trips are automatically selected for immediate use
+  - Identity preservation: User's trip identity persists when archiving/unarchiving
 
 ### Performance Considerations
 
@@ -155,6 +224,26 @@ dev_dependencies:
 - Implementation plan: `specs/001-group-expense-tracker/plan.md`
 - Tasks: `specs/001-group-expense-tracker/tasks.md`
 
+## Implemented Features
+
+**✅ Activity Tracking & Audit Trail** (Completed):
+- Comprehensive activity logging for all state-changing operations
+- Per-trip identity management with automatic storage
+- Real-time activity feed with 14 activity types
+- Proper actor attribution (current user, not payer/creator)
+- Color-coded UI with icons and relative timestamps
+- Firestore integration with append-only security
+
+**✅ Trip Management Enhancements** (Completed):
+- **Auto-focus on creation**: Newly created trips are automatically selected
+- **Trip archiving system**:
+  - Archive/unarchive trips from Trip Settings page
+  - Archived trips remain fully functional but hidden from main selector
+  - Dedicated Archived Trips page (`/trips/archived`)
+  - "View Archived Trips" button in Trip List (with count badge)
+  - Backward-compatible Firestore implementation
+  - Separate state management for active vs archived trips
+
 ## Future Improvements
 
 Per spec, the following are out of scope for MVP but potential future enhancements:
@@ -164,17 +253,22 @@ Per spec, the following are out of scope for MVP but potential future enhancemen
 - Real-time exchange rate API integration
 - CSV/Excel import of bulk expenses
 - Receipt photo uploads and OCR
-- Expense edit history and audit trail
+- ~~Expense edit history and audit trail~~ ✅ **Implemented via Activity Tracking**
 - Undo/redo functionality
 - Native mobile apps (iOS/Android)
 - Offline mode support
 - Email/SMS notifications for settlements
-- Payment tracking (marking settlements as paid)
+- ~~Payment tracking (marking settlements as paid)~~ ✅ **Implemented via transferMarkedSettled activity type**
 - Recurring expenses or templates
 - Budget limits and spending alerts
-- Multi-language support
+- Multi-language support (partial: activity log text is English-only)
 - Custom currency support beyond USD/VND
 - Export to accounting software
+- **Activity Log Enhancements**:
+  - Filtering/search within activity log
+  - Export activity history to CSV
+  - Activity log pagination for large trips
+  - Rich metadata display (show old/new values for updates)
 
 ## Migration Notes
 

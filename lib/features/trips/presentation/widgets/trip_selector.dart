@@ -21,7 +21,7 @@ class TripSelectorWidget extends StatelessWidget {
 
           return InkWell(
             onTap: () {
-              _showTripSelector(context, state.trips);
+              _showTripSelector(context, state.trips, state.archivedTrips.length);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(
@@ -105,7 +105,7 @@ class TripSelectorWidget extends StatelessWidget {
     );
   }
 
-  void _showTripSelector(BuildContext context, List trips) {
+  void _showTripSelector(BuildContext context, List trips, int archivedCount) {
     showModalBottomSheet(
       context: context,
       builder: (bottomSheetContext) => BlocProvider.value(
@@ -127,7 +127,7 @@ class TripSelectorWidget extends StatelessWidget {
                     icon: const Icon(Icons.add),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      context.push('/trips/create');
+                      _showTripActionOptions(context);
                     },
                   ),
                 ],
@@ -153,8 +153,53 @@ class TripSelectorWidget extends StatelessWidget {
                   },
                 ),
               ),
+              // Add archived trips button at the bottom
+              if (archivedCount > 0) ...[
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.archive),
+                  title: Text(context.l10n.tripViewArchivedButton),
+                  trailing: Text('($archivedCount)'),
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    context.push('/trips/archived');
+                  },
+                ),
+              ],
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showTripActionOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (bottomSheetContext) => Container(
+        padding: const EdgeInsets.all(AppTheme.spacing2),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_circle_outline),
+              title: Text(context.l10n.tripCreateButton),
+              subtitle: Text(context.l10n.tripCreateTitle),
+              onTap: () {
+                Navigator.of(bottomSheetContext).pop();
+                context.push('/trips/create');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group_add),
+              title: Text(context.l10n.tripJoinButton),
+              subtitle: Text(context.l10n.tripJoinTitle),
+              onTap: () {
+                Navigator.of(bottomSheetContext).pop();
+                context.push('/trips/join');
+              },
+            ),
+          ],
         ),
       ),
     );

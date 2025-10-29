@@ -196,13 +196,41 @@ if [ -f "$TEMPLATE" ]; then cp "$TEMPLATE" "$SPEC_FILE"; else touch "$SPEC_FILE"
 # Set the SPECIFY_FEATURE environment variable for the current session
 export SPECIFY_FEATURE="$BRANCH_NAME"
 
-# Create feature CLAUDE.md using the update-feature-docs.sh script
-# This will happen after spec.md is created by the /speckit.specify command
-# For now, just note that it should be created
+# Automatically create feature documentation files from templates
+CLAUDE_TEMPLATE="$REPO_ROOT/.specify/templates/feature-claude-template.md"
+CHANGELOG_TEMPLATE="$REPO_ROOT/.specify/templates/feature-changelog-template.md"
+CLAUDE_FILE="$FEATURE_DIR/CLAUDE.md"
+CHANGELOG_FILE="$FEATURE_DIR/CHANGELOG.md"
+
+CURRENT_DATE=$(date +%Y-%m-%d)
+
+# Create CLAUDE.md from template with basic substitutions
+if [ -f "$CLAUDE_TEMPLATE" ]; then
+    sed -e "s/\[FEATURE NAME\]/Feature ${FEATURE_NUM}/g" \
+        -e "s/\[###-feature-name\]/${BRANCH_NAME}/g" \
+        -e "s/\[DATE\]/${CURRENT_DATE}/g" \
+        -e "s/\[In Progress \/ Completed \/ Archived\]/In Progress/g" \
+        "$CLAUDE_TEMPLATE" > "$CLAUDE_FILE"
+    >&2 echo "[specify] Created CLAUDE.md from template"
+else
+    >&2 echo "[specify] Warning: feature-claude-template.md not found"
+fi
+
+# Create CHANGELOG.md from template with basic substitutions
+if [ -f "$CHANGELOG_TEMPLATE" ]; then
+    sed -e "s/\[FEATURE NAME\]/Feature ${FEATURE_NUM}/g" \
+        -e "s/\[###-feature-name\]/${BRANCH_NAME}/g" \
+        -e "s/\[DATE\]/${CURRENT_DATE}/g" \
+        "$CHANGELOG_TEMPLATE" > "$CHANGELOG_FILE"
+    >&2 echo "[specify] Created CHANGELOG.md from template"
+else
+    >&2 echo "[specify] Warning: feature-changelog-template.md not found"
+fi
+
+# Note: update-feature-docs.sh can still be used for manual updates
 UPDATE_DOCS_SCRIPT="$SCRIPT_DIR/update-feature-docs.sh"
 if [ -f "$UPDATE_DOCS_SCRIPT" ]; then
-    >&2 echo "[specify] Remember to run: .specify/scripts/bash/update-feature-docs.sh create $BRANCH_NAME"
-    >&2 echo "[specify] after creating the spec.md file"
+    >&2 echo "[specify] Documentation files created. Use .specify/scripts/bash/update-feature-docs.sh to update them during development."
 fi
 
 if $JSON_MODE; then

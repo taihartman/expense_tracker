@@ -178,6 +178,12 @@ abstract class AppLocalizations {
   /// **'Error'**
   String get commonError;
 
+  /// No description provided for @commonClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
   /// No description provided for @validationRequired.
   ///
   /// In en, this message translates to:
@@ -307,7 +313,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripSelectTitle.
   ///
   /// In en, this message translates to:
-  /// **'Select Trip'**
+  /// **'My Trips'**
   String get tripSelectTitle;
 
   /// No description provided for @tripFieldNameLabel.
@@ -315,6 +321,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Trip Name'**
   String get tripFieldNameLabel;
+
+  /// No description provided for @tripFieldCreatorNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Name'**
+  String get tripFieldCreatorNameLabel;
+
+  /// No description provided for @tripFieldCreatorNameHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Your name will be added as the first member of this trip'**
+  String get tripFieldCreatorNameHelper;
 
   /// No description provided for @tripFieldBaseCurrencyLabel.
   ///
@@ -364,6 +382,12 @@ abstract class AppLocalizations {
   /// **'Back to Settings'**
   String get tripBackToSettings;
 
+  /// No description provided for @tripLeaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Trip'**
+  String get tripLeaveButton;
+
   /// No description provided for @tripCurrencyChangedInfo.
   ///
   /// In en, this message translates to:
@@ -405,6 +429,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load trip settings'**
   String get tripSettingsLoadError;
+
+  /// No description provided for @tripLeaveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Trip?'**
+  String get tripLeaveDialogTitle;
+
+  /// No description provided for @tripLeaveDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose access to this trip and all its expenses. You\'ll need an invite link to rejoin.'**
+  String get tripLeaveDialogMessage;
+
+  /// No description provided for @tripLeaveDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave Trip'**
+  String get tripLeaveDialogConfirm;
+
+  /// No description provided for @tripLeftSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Left {tripName} successfully'**
+  String tripLeftSuccess(String tripName);
+
+  /// No description provided for @tripArchiveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Trip'**
+  String get tripArchiveButton;
+
+  /// No description provided for @tripUnarchiveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive Trip'**
+  String get tripUnarchiveButton;
+
+  /// No description provided for @tripArchiveDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Trip?'**
+  String get tripArchiveDialogTitle;
+
+  /// No description provided for @tripArchiveDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will hide the trip from your active trip list. You can restore it later from archived trips.'**
+  String get tripArchiveDialogMessage;
+
+  /// No description provided for @tripArchiveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip archived'**
+  String get tripArchiveSuccess;
+
+  /// No description provided for @tripUnarchiveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip unarchived'**
+  String get tripUnarchiveSuccess;
+
+  /// No description provided for @tripArchivedPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived Trips'**
+  String get tripArchivedPageTitle;
+
+  /// No description provided for @tripViewArchivedButton.
+  ///
+  /// In en, this message translates to:
+  /// **'View Archived Trips'**
+  String get tripViewArchivedButton;
+
+  /// No description provided for @tripArchivedEmptyStateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Archived Trips'**
+  String get tripArchivedEmptyStateTitle;
+
+  /// No description provided for @tripArchivedEmptyStateMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Trips you archive will appear here'**
+  String get tripArchivedEmptyStateMessage;
 
   /// No description provided for @tripBaseCurrencyPrefix.
   ///
@@ -1577,6 +1685,510 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// No description provided for @tripJoinTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Trip'**
+  String get tripJoinTitle;
+
+  /// No description provided for @tripJoinCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Code'**
+  String get tripJoinCodeLabel;
+
+  /// No description provided for @tripJoinCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the trip invite code'**
+  String get tripJoinCodeHint;
+
+  /// No description provided for @tripJoinNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Name'**
+  String get tripJoinNameLabel;
+
+  /// No description provided for @tripJoinNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How should others see you?'**
+  String get tripJoinNameHint;
+
+  /// No description provided for @tripJoinButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Trip'**
+  String get tripJoinButton;
+
+  /// No description provided for @tripJoinInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or non-existent trip code'**
+  String get tripJoinInvalidCode;
+
+  /// No description provided for @tripJoinAlreadyMember.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve already joined this trip'**
+  String get tripJoinAlreadyMember;
+
+  /// No description provided for @tripJoinSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully joined trip!'**
+  String get tripJoinSuccess;
+
+  /// No description provided for @tripJoinError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to join trip: {error}'**
+  String tripJoinError(String error);
+
+  /// No description provided for @tripInviteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Friends'**
+  String get tripInviteTitle;
+
+  /// No description provided for @tripInviteCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite Code'**
+  String get tripInviteCodeLabel;
+
+  /// No description provided for @tripInviteCodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with friends to invite them to the trip'**
+  String get tripInviteCodeDescription;
+
+  /// No description provided for @tripInviteCopyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get tripInviteCopyButton;
+
+  /// No description provided for @tripInviteShareButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get tripInviteShareButton;
+
+  /// No description provided for @tripInviteCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied to clipboard'**
+  String get tripInviteCodeCopied;
+
+  /// No description provided for @tripInviteShareMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Join my trip on Expense Tracker! Use code: {code} or click: {link}'**
+  String tripInviteShareMessage(String code, String link);
+
+  /// No description provided for @activityLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Log'**
+  String get activityLogTitle;
+
+  /// No description provided for @activityLogEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No activities yet. Start by adding expenses or inviting friends!'**
+  String get activityLogEmpty;
+
+  /// No description provided for @activityLogLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load More'**
+  String get activityLogLoadMore;
+
+  /// No description provided for @activityLogLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading activities...'**
+  String get activityLogLoading;
+
+  /// No description provided for @activityTripCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} created the trip'**
+  String activityTripCreated(String name);
+
+  /// No description provided for @activityMemberJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} joined the trip'**
+  String activityMemberJoined(String name);
+
+  /// No description provided for @activityExpenseAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added expense: {title}'**
+  String activityExpenseAdded(String name, String title);
+
+  /// No description provided for @activityExpenseEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} edited expense: {title}'**
+  String activityExpenseEdited(String name, String title);
+
+  /// No description provided for @activityExpenseDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} deleted expense: {title}'**
+  String activityExpenseDeleted(String name, String title);
+
+  /// No description provided for @devicePairingCodePromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Device'**
+  String get devicePairingCodePromptTitle;
+
+  /// No description provided for @devicePairingCodePromptMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A member named \'{name}\' already exists. Enter the verification code they provided to access this trip.'**
+  String devicePairingCodePromptMessage(String name);
+
+  /// No description provided for @devicePairingCodeFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'8-Digit Code'**
+  String get devicePairingCodeFieldLabel;
+
+  /// No description provided for @devicePairingCodeFieldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'1234-5678'**
+  String get devicePairingCodeFieldHint;
+
+  /// No description provided for @devicePairingValidateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get devicePairingValidateButton;
+
+  /// No description provided for @devicePairingGenerateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Code'**
+  String get devicePairingGenerateButton;
+
+  /// No description provided for @devicePairingCopyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get devicePairingCopyButton;
+
+  /// No description provided for @devicePairingCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied to clipboard'**
+  String get devicePairingCodeCopied;
+
+  /// No description provided for @devicePairingErrorInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired code'**
+  String get devicePairingErrorInvalid;
+
+  /// No description provided for @devicePairingErrorExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Code has expired. Request a new one from a member.'**
+  String get devicePairingErrorExpired;
+
+  /// No description provided for @devicePairingErrorUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Code already used'**
+  String get devicePairingErrorUsed;
+
+  /// No description provided for @devicePairingErrorNameMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Code doesn\'t match your member name'**
+  String get devicePairingErrorNameMismatch;
+
+  /// No description provided for @devicePairingErrorRateLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please wait 60 seconds.'**
+  String get devicePairingErrorRateLimit;
+
+  /// No description provided for @devicePairingErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot verify code offline. Check connection.'**
+  String get devicePairingErrorNetwork;
+
+  /// No description provided for @devicePairingSuccessMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Device verified!'**
+  String get devicePairingSuccessMessage;
+
+  /// No description provided for @devicePairingExpiresIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in {minutes}:{seconds}'**
+  String devicePairingExpiresIn(String minutes, String seconds);
+
+  /// No description provided for @devicePairingShareInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this code with the person trying to join on another device. It expires in 15 minutes.'**
+  String get devicePairingShareInstructions;
+
+  /// No description provided for @identitySelectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Trip'**
+  String get identitySelectionTitle;
+
+  /// No description provided for @identitySelectionPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'This trip already has members. Please select who you are:'**
+  String get identitySelectionPrompt;
+
+  /// No description provided for @identitySelectionContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue & Verify'**
+  String get identitySelectionContinue;
+
+  /// No description provided for @identitySelectionNoParticipant.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your identity'**
+  String get identitySelectionNoParticipant;
+
+  /// No description provided for @identitySelectionTripName.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip: {tripName}'**
+  String identitySelectionTripName(String tripName);
+
+  /// No description provided for @identitySelectionVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying your identity...'**
+  String get identitySelectionVerifying;
+
+  /// No description provided for @identitySelectionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verified! Welcome to {tripName}'**
+  String identitySelectionSuccess(String tripName);
+
+  /// No description provided for @tripJoinLoadButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Load Trip'**
+  String get tripJoinLoadButton;
+
+  /// No description provided for @tripJoinSelectIdentityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Your Identity'**
+  String get tripJoinSelectIdentityTitle;
+
+  /// No description provided for @tripJoinSelectIdentityPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Who are you in this trip?'**
+  String get tripJoinSelectIdentityPrompt;
+
+  /// No description provided for @tripJoinVerifyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Identity'**
+  String get tripJoinVerifyButton;
+
+  /// No description provided for @tripJoinTripNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip not found. Please check the code.'**
+  String get tripJoinTripNotFound;
+
+  /// No description provided for @tripJoinUseRecoveryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Recovery Code'**
+  String get tripJoinUseRecoveryCode;
+
+  /// No description provided for @tripJoinRecoveryCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery Code'**
+  String get tripJoinRecoveryCodeLabel;
+
+  /// No description provided for @tripJoinRecoveryCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter 12-digit recovery code'**
+  String get tripJoinRecoveryCodeHint;
+
+  /// No description provided for @tripJoinRecoveryCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid recovery code. Please check and try again.'**
+  String get tripJoinRecoveryCodeInvalid;
+
+  /// No description provided for @tripRecoverySectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery Code'**
+  String get tripRecoverySectionTitle;
+
+  /// No description provided for @tripRecoveryGenerateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Recovery Code'**
+  String get tripRecoveryGenerateButton;
+
+  /// No description provided for @tripRecoveryViewButton.
+  ///
+  /// In en, this message translates to:
+  /// **'View Recovery Code'**
+  String get tripRecoveryViewButton;
+
+  /// No description provided for @tripRecoveryGenerateDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Recovery Code'**
+  String get tripRecoveryGenerateDialogTitle;
+
+  /// No description provided for @tripRecoveryGenerateDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This will generate a 12-digit recovery code for emergency access to this trip. Keep this code safe - it allows anyone to join this trip as any member.'**
+  String get tripRecoveryGenerateDialogMessage;
+
+  /// No description provided for @tripRecoveryViewDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery Code'**
+  String get tripRecoveryViewDialogTitle;
+
+  /// No description provided for @tripRecoveryWarningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep this code safe! Anyone with this code can join this trip as any member.'**
+  String get tripRecoveryWarningMessage;
+
+  /// No description provided for @tripRecoveryCopyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get tripRecoveryCopyButton;
+
+  /// No description provided for @tripRecoveryCopiedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery code copied to clipboard'**
+  String get tripRecoveryCopiedMessage;
+
+  /// No description provided for @tripRecoveryUsedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Used {count} {count, plural, =1{time} other{times}}'**
+  String tripRecoveryUsedCount(int count);
+
+  /// No description provided for @tripRecoveryTripLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip'**
+  String get tripRecoveryTripLabel;
+
+  /// No description provided for @tripRecoveryTripIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip ID'**
+  String get tripRecoveryTripIdLabel;
+
+  /// No description provided for @tripRecoveryTripIdDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this ID with others to invite them to join this trip.'**
+  String get tripRecoveryTripIdDescription;
+
+  /// No description provided for @tripRecoveryTripIdSafeToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'SAFE TO SHARE'**
+  String get tripRecoveryTripIdSafeToShare;
+
+  /// No description provided for @tripRecoveryCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery Code'**
+  String get tripRecoveryCodeLabel;
+
+  /// No description provided for @tripRecoveryCodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency access code. Use this to regain access if all trip members lose their devices.'**
+  String get tripRecoveryCodeDescription;
+
+  /// No description provided for @tripRecoveryCodePrivate.
+  ///
+  /// In en, this message translates to:
+  /// **'PRIVATE'**
+  String get tripRecoveryCodePrivate;
+
+  /// No description provided for @tripRecoveryFirstTimeMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this information now! You can view it later in Trip Settings.'**
+  String get tripRecoveryFirstTimeMessage;
+
+  /// No description provided for @tripRecoveryCodeCopiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery code copied to clipboard'**
+  String get tripRecoveryCodeCopiedToClipboard;
+
+  /// No description provided for @tripRecoveryCopyCodeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Code'**
+  String get tripRecoveryCopyCodeButton;
+
+  /// No description provided for @tripRecoveryCopyAllButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy All'**
+  String get tripRecoveryCopyAllButton;
+
+  /// No description provided for @tripRecoveryCopyAllSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip info copied to clipboard'**
+  String get tripRecoveryCopyAllSuccess;
+
+  /// No description provided for @tripRecoveryTripIdCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip ID copied to clipboard'**
+  String get tripRecoveryTripIdCopied;
+
+  /// No description provided for @tripRecoveryPasswordManagerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Save this code in a password manager like 1Password or LastPass for secure storage.'**
+  String get tripRecoveryPasswordManagerHint;
+
+  /// No description provided for @tripRecoveryCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy: {error}'**
+  String tripRecoveryCopyFailed(String error);
 }
 
 class _AppLocalizationsDelegate

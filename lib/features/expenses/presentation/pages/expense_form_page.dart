@@ -71,7 +71,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _submitForm(List<Participant> tripParticipants) {
     if (_formKey.currentState!.validate()) {
       if (_selectedPayer == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -106,12 +106,22 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
         updatedAt: DateTime.now(),
       );
 
+      // Get current user for activity logging
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final actorName = currentUser?.name;
+
       if (widget.expense != null) {
         // Update existing expense
-        context.read<ExpenseCubit>().updateExpense(expense);
+        context.read<ExpenseCubit>().updateExpense(
+          expense,
+          actorName: actorName,
+        );
       } else {
         // Create new expense
-        context.read<ExpenseCubit>().createExpense(expense);
+        context.read<ExpenseCubit>().createExpense(
+          expense,
+          actorName: actorName,
+        );
       }
 
       Navigator.of(context).pop();
@@ -342,7 +352,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                 _participants = value;
               });
             },
-            onSubmit: _submitForm,
+            onSubmit: () => _submitForm(tripParticipants),
           );
         },
       ),

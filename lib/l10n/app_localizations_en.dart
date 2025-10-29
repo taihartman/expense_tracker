@@ -51,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonError => 'Error';
 
   @override
+  String get commonClose => 'Close';
+
+  @override
   String get validationRequired => 'Required';
 
   @override
@@ -135,10 +138,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripListTitle => 'My Trips';
 
   @override
-  String get tripSelectTitle => 'Select Trip';
+  String get tripSelectTitle => 'My Trips';
 
   @override
   String get tripFieldNameLabel => 'Trip Name';
+
+  @override
+  String get tripFieldCreatorNameLabel => 'Your Name';
+
+  @override
+  String get tripFieldCreatorNameHelper =>
+      'Your name will be added as the first member of this trip';
 
   @override
   String get tripFieldBaseCurrencyLabel => 'Base Currency';
@@ -165,6 +175,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tripBackToSettings => 'Back to Settings';
+
+  @override
+  String get tripLeaveButton => 'Leave Trip';
 
   @override
   String get tripCurrencyChangedInfo =>
@@ -195,6 +208,53 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tripSettingsLoadError => 'Failed to load trip settings';
+
+  @override
+  String get tripLeaveDialogTitle => 'Leave Trip?';
+
+  @override
+  String get tripLeaveDialogMessage =>
+      'You will lose access to this trip and all its expenses. You\'ll need an invite link to rejoin.';
+
+  @override
+  String get tripLeaveDialogConfirm => 'Leave Trip';
+
+  @override
+  String tripLeftSuccess(String tripName) {
+    return 'Left $tripName successfully';
+  }
+
+  @override
+  String get tripArchiveButton => 'Archive Trip';
+
+  @override
+  String get tripUnarchiveButton => 'Unarchive Trip';
+
+  @override
+  String get tripArchiveDialogTitle => 'Archive Trip?';
+
+  @override
+  String get tripArchiveDialogMessage =>
+      'This will hide the trip from your active trip list. You can restore it later from archived trips.';
+
+  @override
+  String get tripArchiveSuccess => 'Trip archived';
+
+  @override
+  String get tripUnarchiveSuccess => 'Trip unarchived';
+
+  @override
+  String get tripArchivedPageTitle => 'Archived Trips';
+
+  @override
+  String get tripViewArchivedButton => 'View Archived Trips';
+
+  @override
+  String get tripArchivedEmptyStateTitle => 'No Archived Trips';
+
+  @override
+  String get tripArchivedEmptyStateMessage =>
+      'Trips you archive will appear here';
 
   @override
   String get tripBaseCurrencyPrefix => 'Base: ';
@@ -887,4 +947,304 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryOther => 'Other';
+
+  @override
+  String get tripJoinTitle => 'Join Trip';
+
+  @override
+  String get tripJoinCodeLabel => 'Invite Code';
+
+  @override
+  String get tripJoinCodeHint => 'Enter the trip invite code';
+
+  @override
+  String get tripJoinNameLabel => 'Your Name';
+
+  @override
+  String get tripJoinNameHint => 'How should others see you?';
+
+  @override
+  String get tripJoinButton => 'Join Trip';
+
+  @override
+  String get tripJoinInvalidCode => 'Invalid or non-existent trip code';
+
+  @override
+  String get tripJoinAlreadyMember => 'You\'ve already joined this trip';
+
+  @override
+  String get tripJoinSuccess => 'Successfully joined trip!';
+
+  @override
+  String tripJoinError(String error) {
+    return 'Failed to join trip: $error';
+  }
+
+  @override
+  String get tripInviteTitle => 'Invite Friends';
+
+  @override
+  String get tripInviteCodeLabel => 'Invite Code';
+
+  @override
+  String get tripInviteCodeDescription =>
+      'Share this code with friends to invite them to the trip';
+
+  @override
+  String get tripInviteCopyButton => 'Copy Code';
+
+  @override
+  String get tripInviteShareButton => 'Share Link';
+
+  @override
+  String get tripInviteCodeCopied => 'Invite code copied to clipboard';
+
+  @override
+  String tripInviteShareMessage(String code, String link) {
+    return 'Join my trip on Expense Tracker! Use code: $code or click: $link';
+  }
+
+  @override
+  String get activityLogTitle => 'Activity Log';
+
+  @override
+  String get activityLogEmpty =>
+      'No activities yet. Start by adding expenses or inviting friends!';
+
+  @override
+  String get activityLogLoadMore => 'Load More';
+
+  @override
+  String get activityLogLoading => 'Loading activities...';
+
+  @override
+  String activityTripCreated(String name) {
+    return '$name created the trip';
+  }
+
+  @override
+  String activityMemberJoined(String name) {
+    return '$name joined the trip';
+  }
+
+  @override
+  String activityExpenseAdded(String name, String title) {
+    return '$name added expense: $title';
+  }
+
+  @override
+  String activityExpenseEdited(String name, String title) {
+    return '$name edited expense: $title';
+  }
+
+  @override
+  String activityExpenseDeleted(String name, String title) {
+    return '$name deleted expense: $title';
+  }
+
+  @override
+  String get devicePairingCodePromptTitle => 'Verify Device';
+
+  @override
+  String devicePairingCodePromptMessage(String name) {
+    return 'A member named \'$name\' already exists. Enter the verification code they provided to access this trip.';
+  }
+
+  @override
+  String get devicePairingCodeFieldLabel => '8-Digit Code';
+
+  @override
+  String get devicePairingCodeFieldHint => '1234-5678';
+
+  @override
+  String get devicePairingValidateButton => 'Verify';
+
+  @override
+  String get devicePairingGenerateButton => 'Generate Code';
+
+  @override
+  String get devicePairingCopyButton => 'Copy Code';
+
+  @override
+  String get devicePairingCodeCopied => 'Code copied to clipboard';
+
+  @override
+  String get devicePairingErrorInvalid => 'Invalid or expired code';
+
+  @override
+  String get devicePairingErrorExpired =>
+      'Code has expired. Request a new one from a member.';
+
+  @override
+  String get devicePairingErrorUsed => 'Code already used';
+
+  @override
+  String get devicePairingErrorNameMismatch =>
+      'Code doesn\'t match your member name';
+
+  @override
+  String get devicePairingErrorRateLimit =>
+      'Too many attempts. Please wait 60 seconds.';
+
+  @override
+  String get devicePairingErrorNetwork =>
+      'Cannot verify code offline. Check connection.';
+
+  @override
+  String get devicePairingSuccessMessage => 'Device verified!';
+
+  @override
+  String devicePairingExpiresIn(String minutes, String seconds) {
+    return 'Expires in $minutes:$seconds';
+  }
+
+  @override
+  String get devicePairingShareInstructions =>
+      'Share this code with the person trying to join on another device. It expires in 15 minutes.';
+
+  @override
+  String get identitySelectionTitle => 'Join Trip';
+
+  @override
+  String get identitySelectionPrompt =>
+      'This trip already has members. Please select who you are:';
+
+  @override
+  String get identitySelectionContinue => 'Continue & Verify';
+
+  @override
+  String get identitySelectionNoParticipant => 'Please select your identity';
+
+  @override
+  String identitySelectionTripName(String tripName) {
+    return 'Trip: $tripName';
+  }
+
+  @override
+  String get identitySelectionVerifying => 'Verifying your identity...';
+
+  @override
+  String identitySelectionSuccess(String tripName) {
+    return 'Identity verified! Welcome to $tripName';
+  }
+
+  @override
+  String get tripJoinLoadButton => 'Load Trip';
+
+  @override
+  String get tripJoinSelectIdentityTitle => 'Select Your Identity';
+
+  @override
+  String get tripJoinSelectIdentityPrompt => 'Who are you in this trip?';
+
+  @override
+  String get tripJoinVerifyButton => 'Verify Identity';
+
+  @override
+  String get tripJoinTripNotFound => 'Trip not found. Please check the code.';
+
+  @override
+  String get tripJoinUseRecoveryCode => 'Use Recovery Code';
+
+  @override
+  String get tripJoinRecoveryCodeLabel => 'Recovery Code';
+
+  @override
+  String get tripJoinRecoveryCodeHint => 'Enter 12-digit recovery code';
+
+  @override
+  String get tripJoinRecoveryCodeInvalid =>
+      'Invalid recovery code. Please check and try again.';
+
+  @override
+  String get tripRecoverySectionTitle => 'Recovery Code';
+
+  @override
+  String get tripRecoveryGenerateButton => 'Generate Recovery Code';
+
+  @override
+  String get tripRecoveryViewButton => 'View Recovery Code';
+
+  @override
+  String get tripRecoveryGenerateDialogTitle => 'Generate Recovery Code';
+
+  @override
+  String get tripRecoveryGenerateDialogMessage =>
+      'This will generate a 12-digit recovery code for emergency access to this trip. Keep this code safe - it allows anyone to join this trip as any member.';
+
+  @override
+  String get tripRecoveryViewDialogTitle => 'Recovery Code';
+
+  @override
+  String get tripRecoveryWarningMessage =>
+      'Keep this code safe! Anyone with this code can join this trip as any member.';
+
+  @override
+  String get tripRecoveryCopyButton => 'Copy Code';
+
+  @override
+  String get tripRecoveryCopiedMessage => 'Recovery code copied to clipboard';
+
+  @override
+  String tripRecoveryUsedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'times',
+      one: 'time',
+    );
+    return 'Used $count $_temp0';
+  }
+
+  @override
+  String get tripRecoveryTripLabel => 'Trip';
+
+  @override
+  String get tripRecoveryTripIdLabel => 'Trip ID';
+
+  @override
+  String get tripRecoveryTripIdDescription =>
+      'Share this ID with others to invite them to join this trip.';
+
+  @override
+  String get tripRecoveryTripIdSafeToShare => 'SAFE TO SHARE';
+
+  @override
+  String get tripRecoveryCodeLabel => 'Recovery Code';
+
+  @override
+  String get tripRecoveryCodeDescription =>
+      'Emergency access code. Use this to regain access if all trip members lose their devices.';
+
+  @override
+  String get tripRecoveryCodePrivate => 'PRIVATE';
+
+  @override
+  String get tripRecoveryFirstTimeMessage =>
+      'Save this information now! You can view it later in Trip Settings.';
+
+  @override
+  String get tripRecoveryCodeCopiedToClipboard =>
+      'Recovery code copied to clipboard';
+
+  @override
+  String get tripRecoveryCopyCodeButton => 'Copy Code';
+
+  @override
+  String get tripRecoveryCopyAllButton => 'Copy All';
+
+  @override
+  String get tripRecoveryCopyAllSuccess => 'Trip info copied to clipboard';
+
+  @override
+  String get tripRecoveryTripIdCopied => 'Trip ID copied to clipboard';
+
+  @override
+  String get tripRecoveryPasswordManagerHint =>
+      'Tip: Save this code in a password manager like 1Password or LastPass for secure storage.';
+
+  @override
+  String tripRecoveryCopyFailed(String error) {
+    return 'Failed to copy: $error';
+  }
 }

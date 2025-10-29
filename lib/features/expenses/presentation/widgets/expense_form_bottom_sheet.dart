@@ -194,7 +194,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
     super.dispose();
   }
 
-  void _submitForm() {
+  void _submitForm(List<Participant> tripParticipants) {
     if (_formKey.currentState!.validate()) {
       if (_selectedPayer == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -229,19 +229,29 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         updatedAt: DateTime.now(),
       );
 
+      // Get current user for activity logging
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final actorName = currentUser?.name;
+
       if (widget.expense != null) {
         // Update existing expense
-        context.read<ExpenseCubit>().updateExpense(expense);
+        context.read<ExpenseCubit>().updateExpense(
+          expense,
+          actorName: actorName,
+        );
       } else {
         // Create new expense
-        context.read<ExpenseCubit>().createExpense(expense);
+        context.read<ExpenseCubit>().createExpense(
+          expense,
+          actorName: actorName,
+        );
       }
 
       Navigator.of(context).pop();
     }
   }
 
-  Future<void> _deleteExpense() async {
+  Future<void> _deleteExpense(List<Participant> tripParticipants) async {
     if (widget.expense == null) return;
 
     // Show confirmation dialog
@@ -267,7 +277,14 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
     );
 
     if (confirmed == true && mounted) {
-      await context.read<ExpenseCubit>().deleteExpense(widget.expense!.id);
+      // Get current user for activity logging
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final actorName = currentUser?.name;
+
+      await context.read<ExpenseCubit>().deleteExpense(
+        widget.expense!.id,
+        actorName: actorName,
+      );
       if (mounted) {
         Navigator.of(context).pop();
       }
@@ -459,8 +476,10 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                     _participants = value;
                   });
                 },
-                onSubmit: _submitForm,
-                onDelete: widget.expense != null ? _deleteExpense : null,
+                onSubmit: () => _submitForm(availableParticipants),
+                onDelete: widget.expense != null
+                    ? () => _deleteExpense(availableParticipants)
+                    : null,
               ),
             ),
           ],
