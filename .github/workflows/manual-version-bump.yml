@@ -1,0 +1,48 @@
+name: Manual Version Bump
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version (${{ inputs.bump_type }})
+        run: |
+          chmod +x .github/scripts/bump-major-minor.sh
+          .github/scripts/bump-major-minor.sh ${{ inputs.bump_type }}
+
+      - name: Commit and push version bump
+        run: |
+          git add pubspec.yaml
+          if [ -f "lib/core/config/app_config.dart" ]; then
+            git add lib/core/config/app_config.dart
+          fi
+
+          NEW_VERSION=$(grep "^version:" pubspec.yaml | sed 's/version: //')
+          git commit -m "chore: bump ${{ inputs.bump_type }} version to $NEW_VERSION [skip ci]"
+          git push origin master

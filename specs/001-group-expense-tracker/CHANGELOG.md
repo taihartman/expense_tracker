@@ -17,6 +17,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-10-30 - Automatic Version Tracking System
+
+### Added
+- **Comprehensive version tracking and display system**:
+  - `lib/core/services/version_service.dart` - VersionService for runtime version access via package_info_plus
+  - `lib/core/presentation/widgets/version_footer.dart` - Super small (8px) version display widget positioned at bottom center
+  - Integrated version footer into home page using Stack wrapper in `lib/core/router/app_router.dart`
+  - Initialized VersionService in `lib/main.dart` during app startup
+- **Automated version bumping infrastructure**:
+  - `.github/scripts/bump-version.sh` - Script to automatically increment patch version
+  - `.github/scripts/bump-major-minor.sh` - Script to bump major/minor/patch versions manually
+  - `.github/workflows/version-bump.yml` - GitHub Action for automatic patch version bump on every push to master
+  - `.github/workflows/manual-version-bump.yml` - Manual workflow for major/minor version bumps via GitHub Actions UI
+- **Dependency**: Added `package_info_plus: ^8.0.0` to pubspec.yaml for runtime version access
+- **Documentation**: Updated CLAUDE.md with comprehensive version management section including commands and workflows
+
+### Changed
+- Version format displayed: `1.0.0+1` (semantic version with build number)
+- Version display location: Bottom center of screen (non-intrusive, super small text)
+- Version source: Single source of truth in `pubspec.yaml`, automatically read at runtime
+
+### Impact
+- Every push to master automatically increments patch version (1.0.0 → 1.0.1)
+- Major/minor version bumps can be triggered manually via GitHub Actions for spec-kit features
+- Users can see current app version at a glance
+- No manual version management required - fully automated
+
 ## 2025-10-30 - Trip Join UX Enhancement
 
 ### Changed

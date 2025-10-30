@@ -31,6 +31,7 @@ import 'features/trips/data/repositories/firestore_trip_recovery_code_repository
 import 'features/trips/domain/repositories/trip_recovery_code_repository.dart';
 import 'l10n/app_localizations.dart';
 import 'shared/services/firestore_service.dart';
+import 'core/services/version_service.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -119,6 +120,12 @@ Future<void> main() async {
     '✅ WidgetsFlutterBinding initialized (${DateTime.now().difference(startTime).inMilliseconds}ms)',
   );
 
+  // Initialize version service
+  await VersionService.initialize();
+  _log(
+    '✅ VersionService initialized (${DateTime.now().difference(startTime).inMilliseconds}ms)',
+  );
+
   // Launch app immediately - Firebase initialization will happen in background
   _log(
     '🎬 Launching app widget (${DateTime.now().difference(startTime).inMilliseconds}ms) - Firebase initialization will happen in background',
@@ -153,9 +160,10 @@ class ExpenseTrackerApp extends StatelessWidget {
   static final _deviceLinkCodeRepository = FirestoreDeviceLinkCodeRepository(
     firestore: FirebaseFirestore.instance,
   );
-  static final _tripRecoveryCodeRepository = FirestoreTripRecoveryCodeRepository(
-    firestore: FirebaseFirestore.instance,
-  );
+  static final _tripRecoveryCodeRepository =
+      FirestoreTripRecoveryCodeRepository(
+        firestore: FirebaseFirestore.instance,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -272,9 +280,7 @@ class ExpenseTrackerApp extends StatelessWidget {
           BlocProvider(
             create: (context) {
               _log('🔵 Creating ActivityLogCubit...');
-              return ActivityLogCubit(
-                repository: _activityLogRepository,
-              );
+              return ActivityLogCubit(repository: _activityLogRepository);
             },
           ),
           BlocProvider(

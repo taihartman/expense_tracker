@@ -74,6 +74,33 @@ flutter format .
 flutter format --set-exit-if-changed .
 ```
 
+### Version Management
+
+```bash
+# Bump patch version locally (1.0.0 -> 1.0.1)
+.github/scripts/bump-version.sh
+
+# Bump major/minor/patch version locally
+.github/scripts/bump-major-minor.sh [major|minor|patch]
+
+# Examples:
+.github/scripts/bump-major-minor.sh major   # 1.0.0 -> 2.0.0
+.github/scripts/bump-major-minor.sh minor   # 1.0.0 -> 1.1.0
+.github/scripts/bump-major-minor.sh patch   # 1.0.0 -> 1.0.1
+```
+
+**Automated Version Bumping**:
+- **Patch version**: Automatically bumps on every push to master via GitHub Actions
+- **Major/Minor version**: Use GitHub Actions "Manual Version Bump" workflow
+  - Navigate to Actions tab → Manual Version Bump → Run workflow
+  - Select version type (major/minor/patch)
+  - Workflow commits version change back to master
+
+**Version Display**:
+- Version is displayed at bottom center of the screen in super small text (8px)
+- Format: `1.0.0+1` (semantic version + build number)
+- Automatically reads from `pubspec.yaml` via `package_info_plus`
+
 ## Architecture & Conventions
 
 ### Project Structure

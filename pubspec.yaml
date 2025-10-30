@@ -52,6 +52,7 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.2.2
   qr_flutter: ^4.1.0
+  package_info_plus: ^8.0.0
 
   # UI/Navigation
   go_router: ^12.1.1
