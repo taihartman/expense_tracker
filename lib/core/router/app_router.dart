@@ -82,14 +82,18 @@ class AppRouter {
       final matchedPath = state.matchedLocation;
 
       // Debug logging to track deep link capture and routing flow
-      DebugLogger.log('🔀 REDIRECT: uri=$requestedUri, matched=$matchedPath, _orig=$_originalLocation, _captured=$_capturedInitialUrl');
+      DebugLogger.log(
+        '🔀 REDIRECT: uri=$requestedUri, matched=$matchedPath, _orig=$_originalLocation, _captured=$_capturedInitialUrl',
+      );
 
       // Check if initialization is complete
       final initializationState = context.read<InitializationCubit>().state;
       final isInitialized = initializationState is InitializationComplete;
       final isOnSplash = matchedPath == AppRoutes.splash;
 
-      DebugLogger.log('   isInitialized=$isInitialized, isOnSplash=$isOnSplash');
+      DebugLogger.log(
+        '   isInitialized=$isInitialized, isOnSplash=$isOnSplash',
+      );
 
       // CRITICAL: If we have a captured URL from main() that's a real deep link, use it
       // This restores invite links that were lost during app initialization
@@ -109,7 +113,9 @@ class AppRouter {
       // This captures invite links like /trips/join?code=xxx
       if (_originalLocation == null && !isOnSplash) {
         _originalLocation = requestedUri;
-        DebugLogger.log('📍 Deep link captured from router: $_originalLocation');
+        DebugLogger.log(
+          '📍 Deep link captured from router: $_originalLocation',
+        );
       }
 
       // If not initialized and not on splash, redirect to splash
@@ -309,69 +315,88 @@ class _HomePageContent extends StatelessWidget {
       children: [
         Scaffold(
           appBar: AppBar(title: const TripSelectorWidget()),
-          body: BlocBuilder<TripCubit, TripState>(
-            builder: (context, state) {
+          body: BlocListener<TripCubit, TripState>(
+            listenWhen: (previous, current) {
+              // Only trigger when the selected trip actually changes
+              if (previous is! TripLoaded || current is! TripLoaded) {
+                return true; // State type changed
+              }
+              // Check if selected trip ID changed
+              return previous.selectedTrip?.id != current.selectedTrip?.id;
+            },
+            listener: (context, state) {
+              // Load expenses when trip selection changes
               if (state is TripLoaded && state.selectedTrip != null) {
-                final tripId = state.selectedTrip!.id;
-
-                // Load expenses for selected trip
-                context.read<ExpenseCubit>().loadExpenses(tripId);
-
-                return ExpenseListPage(tripId: tripId);
+                context.read<ExpenseCubit>().loadExpenses(
+                  state.selectedTrip!.id,
+                );
               }
+            },
+            child: BlocBuilder<TripCubit, TripState>(
+              builder: (context, state) {
+                if (state is TripLoaded && state.selectedTrip != null) {
+                  final tripId = state.selectedTrip!.id;
 
-              if (state is TripLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+                  // No need to call loadExpenses here - BlocListener handles it
+                  return ExpenseListPage(tripId: tripId);
+                }
 
-              // No trips yet
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppTheme.spacing3),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.flight_takeoff,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(height: AppTheme.spacing2),
-                      Text(
-                        context.l10n.tripEmptyStateTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: AppTheme.spacing1),
-                      Text(
-                        context.l10n.tripEmptyStateDescription,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                if (state is TripLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                // No trips yet
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppTheme.spacing3),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.flight_takeoff,
+                          size: 64,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppTheme.spacing3),
-                      ElevatedButton.icon(
-                        onPressed: () => context.go(AppRoutes.tripCreate),
-                        icon: const Icon(Icons.add),
-                        label: Text(context.l10n.tripCreateButton),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(200, 48),
+                        const SizedBox(height: AppTheme.spacing2),
+                        Text(
+                          context.l10n.tripEmptyStateTitle,
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
-                      ),
-                      const SizedBox(height: AppTheme.spacing2),
-                      OutlinedButton.icon(
-                        onPressed: () => context.push(AppRoutes.tripJoin),
-                        icon: const Icon(Icons.group_add),
-                        label: Text(context.l10n.tripJoinButton),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(200, 48),
+                        const SizedBox(height: AppTheme.spacing1),
+                        Text(
+                          context.l10n.tripEmptyStateDescription,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
+                          textAlign: TextAlign.center,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: AppTheme.spacing3),
+                        ElevatedButton.icon(
+                          onPressed: () => context.go(AppRoutes.tripCreate),
+                          icon: const Icon(Icons.add),
+                          label: Text(context.l10n.tripCreateButton),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(200, 48),
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacing2),
+                        OutlinedButton.icon(
+                          onPressed: () => context.push(AppRoutes.tripJoin),
+                          icon: const Icon(Icons.group_add),
+                          label: Text(context.l10n.tripJoinButton),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(200, 48),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
         const VersionFooter(),

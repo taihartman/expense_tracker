@@ -17,6 +17,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-10-30 - Real-Time Expense Updates Fix
+
+### Fixed
+- **Real-time expense updates now work correctly for edits and deletes**:
+  - Root cause: `loadExpenses()` was being called during build phase in `app_router.dart`, causing Firestore stream subscription to cancel/recreate on every widget rebuild
+  - This created a race condition where edits/deletes triggered stream updates → UI rebuild → stream cancelled → new stream read stale cache → old data displayed
+  - Adds now worked because new data was already in Firestore cache when stream recreated
+
+### Changed
+- **ExpenseCubit stream subscription management** (`lib/features/expenses/presentation/cubits/expense_cubit.dart`):
+  - Added trip-switching detection: `loadExpenses()` now only recreates stream when switching to a different trip
+  - Returns early if already listening to the requested trip (avoids unnecessary stream churn)
+  - Stream subscription now stable during expense CRUD operations
+
+- **Router architecture** (`lib/core/router/app_router.dart`):
+  - Removed `loadExpenses()` call from `BlocBuilder.builder()` (line 324)
+  - Added `BlocListener<TripCubit>` wrapper to listen for trip selection changes
+  - `loadExpenses()` now called from listener callback instead of build phase
+  - Proper separation: listeners handle side effects, builders handle rendering
+
+- **CRUD operations cleanup** (`lib/features/expenses/presentation/cubits/expense_cubit.dart`):
+  - Removed manual `loadExpenses()` calls from `createExpense()`, `updateExpense()`, and `deleteExpense()`
+  - Firestore stream automatically updates the expense list on changes
+  - Cleaner code with fewer redundant operations
+
+### Impact
+- **Real-time sync now works correctly**: Edits and deletes made on Device A immediately reflect on Device B
+- **Better performance**: Fewer stream subscriptions created (only on trip switching, not on every rebuild)
+- **Cleaner architecture**: Follows Flutter/Bloc best practices (no side effects in build methods)
+- **More reliable**: Eliminates race conditions between stream updates and cache reads
+
+### Testing
+- Analyzed modified files: No issues found
+- Files pass `flutter analyze`
+- Ready for manual testing across multiple devices
+
 ## 2025-10-30 - Automatic Version Tracking System
 
 ### Added

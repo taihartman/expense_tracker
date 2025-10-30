@@ -21,20 +21,30 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   ExpenseCubit({
     required ExpenseRepository expenseRepository,
     ActivityLoggerService? activityLoggerService,
-  })  : _expenseRepository = expenseRepository,
-        _activityLoggerService = activityLoggerService,
-        super(const ExpenseInitial());
+  }) : _expenseRepository = expenseRepository,
+       _activityLoggerService = activityLoggerService,
+       super(const ExpenseInitial());
 
   /// Load all expenses for a trip
+  /// Only recreates the stream subscription when switching to a different trip
   Future<void> loadExpenses(String tripId) async {
     try {
       _log('📥 loadExpenses() started for tripId: $tripId');
       final loadStart = DateTime.now();
 
+      // Only recreate stream if switching to a different trip
+      if (_currentTripId == tripId && _expensesSubscription != null) {
+        _log(
+          '⏭️ Already listening to trip $tripId, skipping stream recreation',
+        );
+        return;
+      }
+
       _currentTripId = tripId;
 
-      // Cancel existing subscription if any
+      // Cancel existing subscription only when switching trips
       await _expensesSubscription?.cancel();
+      _log('🔄 Switching trips - cancelled old subscription');
 
       emit(const ExpenseLoading());
       _log('✅ Emitted ExpenseLoading state');
@@ -119,17 +129,11 @@ class ExpenseCubit extends Cubit<ExpenseState> {
           actorName != null &&
           actorName.isNotEmpty) {
         _log('📝 Logging expense creation via ActivityLoggerService...');
-        await _activityLoggerService.logExpenseAdded(
-          createdExpense,
-          actorName,
-        );
+        await _activityLoggerService.logExpenseAdded(createdExpense, actorName);
         _log('✅ Activity logged');
       }
 
-      // Reload expenses to update the list
-      if (_currentTripId != null) {
-        await loadExpenses(_currentTripId!);
-      }
+      // No need to reload - Firestore stream will automatically update
     } catch (e) {
       emit(ExpenseError('Failed to create expense: ${e.toString()}'));
     }
@@ -171,10 +175,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
         _log('✅ Activity logged');
       }
 
-      // Reload expenses to update the list
-      if (_currentTripId != null) {
-        await loadExpenses(_currentTripId!);
-      }
+      // No need to reload - Firestore stream will automatically update
     } catch (e) {
       emit(ExpenseError('Failed to update expense: ${e.toString()}'));
     }
@@ -212,6 +213,8 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       }
 
       // If deleted expense was selected, clear selection
+      // Note: The stream will automatically update the expenses list,
+      // and the listener in loadExpenses() will verify if selected expense still exists
       if (state is ExpenseLoaded) {
         final currentState = state as ExpenseLoaded;
         if (currentState.selectedExpense?.id == expenseId) {
@@ -219,10 +222,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
         }
       }
 
-      // Reload expenses to update the list
-      if (_currentTripId != null) {
-        await loadExpenses(_currentTripId!);
-      }
+      // No need to reload - Firestore stream will automatically update
     } catch (e) {
       emit(ExpenseError('Failed to delete expense: ${e.toString()}'));
     }
