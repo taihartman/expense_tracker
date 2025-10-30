@@ -39,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Created widget tests: `test/widget/features/expenses/fab_speed_dial_test.dart` (T008-T011)
 - Integrated FAB Speed Dial into Expense List Page (T017-T018)
 - Added 80dp bottom padding to expense ListView for FAB clearance
+- **Phase 3 Complete**: Wired Receipt Split FAB to ItemizedExpenseWizard navigation (T027-T028)
+- FAB Receipt Split now opens wizard directly with trip context (tripId, participants, payer, currency)
 
 ### Changed
 - **Phase 1 Complete**: Migrated 74 localization strings from 'itemized' to 'receiptSplit' terminology

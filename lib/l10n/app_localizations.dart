@@ -694,6 +694,24 @@ abstract class AppLocalizations {
   /// **'Edit Expense'**
   String get expenseEditTitle;
 
+  /// No description provided for @expenseFabMainTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense options'**
+  String get expenseFabMainTooltip;
+
+  /// No description provided for @expenseFabQuickExpenseTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Expense'**
+  String get expenseFabQuickExpenseTooltip;
+
+  /// No description provided for @expenseFabReceiptSplitTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Split (Who Ordered What)'**
+  String get expenseFabReceiptSplitTooltip;
+
   /// No description provided for @expenseSaveButton.
   ///
   /// In en, this message translates to:

@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:expense_tracker/features/expenses/presentation/widgets/fab_speed_dial.dart';
+import 'package:expense_tracker/l10n/app_localizations.dart';
+
+/// Helper to wrap widget with MaterialApp and localization
+Widget _wrapWithMaterialApp(Widget child) {
+  return MaterialApp(
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+    ],
+    supportedLocales: const [Locale('en')],
+    home: Scaffold(
+      body: Container(),
+      floatingActionButton: child,
+    ),
+  );
+}
 
 void main() {
   group('ExpenseFabSpeedDial', () {
     testWidgets('T008: displays main FAB in closed state', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Container(),
-            floatingActionButton: ExpenseFabSpeedDial(
-              tripId: 'test-trip',
-              onQuickExpenseTap: () {},
-              onReceiptSplitTap: () {},
-            ),
+        _wrapWithMaterialApp(
+          ExpenseFabSpeedDial(
+            tripId: 'test-trip',
+            onQuickExpenseTap: () {},
+            onReceiptSplitTap: () {},
           ),
         ),
       );
@@ -26,14 +41,11 @@ void main() {
     testWidgets('T009: FAB expands to show 2 options when tapped',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Container(),
-            floatingActionButton: ExpenseFabSpeedDial(
-              tripId: 'test-trip',
-              onQuickExpenseTap: () {},
-              onReceiptSplitTap: () {},
-            ),
+        _wrapWithMaterialApp(
+          ExpenseFabSpeedDial(
+            tripId: 'test-trip',
+            onQuickExpenseTap: () {},
+            onReceiptSplitTap: () {},
           ),
         ),
       );
@@ -53,14 +65,11 @@ void main() {
       bool quickExpenseTapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Container(),
-            floatingActionButton: ExpenseFabSpeedDial(
-              tripId: 'test-trip',
-              onQuickExpenseTap: () => quickExpenseTapped = true,
-              onReceiptSplitTap: () {},
-            ),
+        _wrapWithMaterialApp(
+          ExpenseFabSpeedDial(
+            tripId: 'test-trip',
+            onQuickExpenseTap: () => quickExpenseTapped = true,
+            onReceiptSplitTap: () {},
           ),
         ),
       );
@@ -88,14 +97,11 @@ void main() {
     testWidgets('T011: Backdrop closes Speed Dial when tapped',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Container(),
-            floatingActionButton: ExpenseFabSpeedDial(
-              tripId: 'test-trip',
-              onQuickExpenseTap: () {},
-              onReceiptSplitTap: () {},
-            ),
+        _wrapWithMaterialApp(
+          ExpenseFabSpeedDial(
+            tripId: 'test-trip',
+            onQuickExpenseTap: () {},
+            onReceiptSplitTap: () {},
           ),
         ),
       );

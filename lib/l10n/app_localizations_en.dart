@@ -367,6 +367,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expenseEditTitle => 'Edit Expense';
 
   @override
+  String get expenseFabMainTooltip => 'Add expense options';
+
+  @override
+  String get expenseFabQuickExpenseTooltip => 'Quick Expense';
+
+  @override
+  String get expenseFabReceiptSplitTooltip =>
+      'Receipt Split (Who Ordered What)';
+
+  @override
   String get expenseSaveButton => 'Add Expense';
 
   @override

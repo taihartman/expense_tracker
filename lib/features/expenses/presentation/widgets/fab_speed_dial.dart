@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// A Material Design Speed Dial FAB for expense entry options.
 ///
@@ -113,11 +114,13 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
               opacity: _opacityAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
-                child: FloatingActionButton.small(
-                  heroTag: 'receiptSplit',
-                  onPressed: _handleReceiptSplitTap,
-                  tooltip: 'Receipt Split (Who Ordered What)',
-                  child: const Icon(Icons.receipt_long),
+                child: Builder(
+                  builder: (context) => FloatingActionButton.small(
+                    heroTag: 'receiptSplit',
+                    onPressed: _handleReceiptSplitTap,
+                    tooltip: context.l10n.expenseFabReceiptSplitTooltip,
+                    child: const Icon(Icons.receipt_long),
+                  ),
                 ),
               ),
             ),
@@ -132,24 +135,28 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
               opacity: _opacityAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
-                child: FloatingActionButton.small(
-                  heroTag: 'quickExpense',
-                  onPressed: _handleQuickExpenseTap,
-                  tooltip: 'Quick Expense',
-                  child: const Icon(Icons.flash_on),
+                child: Builder(
+                  builder: (context) => FloatingActionButton.small(
+                    heroTag: 'quickExpense',
+                    onPressed: _handleQuickExpenseTap,
+                    tooltip: context.l10n.expenseFabQuickExpenseTooltip,
+                    child: const Icon(Icons.flash_on),
+                  ),
                 ),
               ),
             ),
           ),
 
         // Main FAB
-        FloatingActionButton(
-          onPressed: _toggle,
-          tooltip: 'Add expense options',
-          child: AnimatedRotation(
-            turns: _isOpen ? 0.125 : 0.0, // 45° rotation when open
-            duration: const Duration(milliseconds: 200),
-            child: const Icon(Icons.add),
+        Builder(
+          builder: (context) => FloatingActionButton(
+            onPressed: _toggle,
+            tooltip: context.l10n.expenseFabMainTooltip,
+            child: AnimatedRotation(
+              turns: _isOpen ? 0.125 : 0.0, // 45° rotation when open
+              duration: const Duration(milliseconds: 200),
+              child: const Icon(Icons.add),
+            ),
           ),
         ),
       ],
