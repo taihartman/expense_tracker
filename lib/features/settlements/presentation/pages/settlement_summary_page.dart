@@ -44,9 +44,7 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
     final tripCubit = context.read<TripCubit>();
     if (!tripCubit.isUserMemberOf(widget.tripId)) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.settlementTitle),
-        ),
+        appBar: AppBar(title: Text(context.l10n.settlementTitle)),
         body: TripVerificationPrompt(tripId: widget.tripId),
       );
     }

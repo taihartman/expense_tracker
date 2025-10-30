@@ -44,10 +44,7 @@ void main() {
 
       test('creates instance with optional usedAt field', () {
         final usedAt = now.add(const Duration(minutes: 5));
-        final code = createValidCode(
-          used: true,
-          usedAt: usedAt,
-        );
+        final code = createValidCode(used: true, usedAt: usedAt);
 
         expect(code.used, true);
         expect(code.usedAt, usedAt);
@@ -83,16 +80,16 @@ void main() {
       test('returns error if expiresAt is before createdAt', () {
         final created = now;
         final expired = now.subtract(const Duration(minutes: 1));
-        final code = createValidCode(
-          createdAt: created,
-          expiresAt: expired,
-        );
+        final code = createValidCode(createdAt: created, expiresAt: expired);
         expect(code.validate(), contains('Expiry time must be after creation'));
       });
 
       test('returns error if used is true but usedAt is null', () {
         final code = createValidCode(used: true, usedAt: null);
-        expect(code.validate(), contains('Used codes must have usedAt timestamp'));
+        expect(
+          code.validate(),
+          contains('Used codes must have usedAt timestamp'),
+        );
       });
 
       test('allows used codes with usedAt timestamp', () {
@@ -170,7 +167,10 @@ void main() {
           expiresAt: DateTime.now().add(const Duration(minutes: 10)),
         );
         final timeLeft = code.timeUntilExpiry;
-        expect(timeLeft.inMinutes, greaterThanOrEqualTo(9)); // Account for test execution time
+        expect(
+          timeLeft.inMinutes,
+          greaterThanOrEqualTo(9),
+        ); // Account for test execution time
         expect(timeLeft.inMinutes, lessThanOrEqualTo(10));
       });
 
@@ -183,21 +183,19 @@ void main() {
       });
 
       test('returns zero or negative for code expiring now', () {
-        final code = createValidCode(
-          expiresAt: DateTime.now(),
-        );
+        final code = createValidCode(expiresAt: DateTime.now());
         final timeLeft = code.timeUntilExpiry;
-        expect(timeLeft.inSeconds, lessThanOrEqualTo(1)); // Allow 1 second tolerance
+        expect(
+          timeLeft.inSeconds,
+          lessThanOrEqualTo(1),
+        ); // Allow 1 second tolerance
       });
     });
 
     group('copyWith', () {
       test('creates new instance with updated fields', () {
         final original = createValidCode();
-        final updated = original.copyWith(
-          code: '8765-4321',
-          memberName: 'Bob',
-        );
+        final updated = original.copyWith(code: '8765-4321', memberName: 'Bob');
 
         expect(updated.code, '8765-4321');
         expect(updated.memberName, 'Bob');
@@ -208,10 +206,7 @@ void main() {
       test('creates new instance when marking as used', () {
         final original = createValidCode(used: false, usedAt: null);
         final usedTime = DateTime.now();
-        final updated = original.copyWith(
-          used: true,
-          usedAt: usedTime,
-        );
+        final updated = original.copyWith(used: true, usedAt: usedTime);
 
         expect(updated.used, true);
         expect(updated.usedAt, usedTime);

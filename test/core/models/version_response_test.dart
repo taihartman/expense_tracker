@@ -21,28 +21,19 @@ void main() {
       test('throws TypeError when version field is missing', () {
         final json = <String, dynamic>{};
 
-        expect(
-          () => VersionResponse.fromJson(json),
-          throwsA(isA<TypeError>()),
-        );
+        expect(() => VersionResponse.fromJson(json), throwsA(isA<TypeError>()));
       });
 
       test('throws TypeError when version field is null', () {
         final json = {'version': null};
 
-        expect(
-          () => VersionResponse.fromJson(json),
-          throwsA(isA<TypeError>()),
-        );
+        expect(() => VersionResponse.fromJson(json), throwsA(isA<TypeError>()));
       });
 
       test('throws TypeError when version field is not a string', () {
         final json = {'version': 123};
 
-        expect(
-          () => VersionResponse.fromJson(json),
-          throwsA(isA<TypeError>()),
-        );
+        expect(() => VersionResponse.fromJson(json), throwsA(isA<TypeError>()));
       });
     });
 

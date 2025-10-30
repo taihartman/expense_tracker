@@ -22,7 +22,11 @@ class TripSelectorWidget extends StatelessWidget {
 
           return InkWell(
             onTap: () {
-              _showTripSelector(context, state.trips, state.archivedTrips.length);
+              _showTripSelector(
+                context,
+                state.trips,
+                state.archivedTrips.length,
+              );
             },
             child: Container(
               padding: const EdgeInsets.symmetric(

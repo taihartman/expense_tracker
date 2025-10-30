@@ -9,15 +9,11 @@ class VersionResponse {
   ///
   /// Throws [TypeError] if the version field is missing
   factory VersionResponse.fromJson(Map<String, dynamic> json) {
-    return VersionResponse(
-      version: json['version'] as String,
-    );
+    return VersionResponse(version: json['version'] as String);
   }
 
   /// Converts this VersionResponse to JSON
-  Map<String, dynamic> toJson() => {
-        'version': version,
-      };
+  Map<String, dynamic> toJson() => {'version': version};
 
   @override
   bool operator ==(Object other) {

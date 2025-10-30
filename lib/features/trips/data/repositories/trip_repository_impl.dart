@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../domain/models/trip.dart';
@@ -150,7 +149,9 @@ class TripRepositoryImpl implements TripRepository {
     required String participantName,
   }) async {
     try {
-      _log('➕ Adding verified member: $participantName (ID: $participantId) to trip $tripId');
+      _log(
+        '➕ Adding verified member: $participantName (ID: $participantId) to trip $tripId',
+      );
 
       final verifiedMember = VerifiedMember(
         participantId: participantId,
@@ -201,7 +202,9 @@ class TripRepositoryImpl implements TripRepository {
     required String participantId,
   }) async {
     try {
-      _log('🗑️ Removing verified member (ID: $participantId) from trip $tripId');
+      _log(
+        '🗑️ Removing verified member (ID: $participantId) from trip $tripId',
+      );
 
       await _firestoreService.trips
           .doc(tripId)

@@ -50,31 +50,20 @@ void main() {
             usedAt: null,
           );
 
-          when(mockRepository.generateCode('trip-456', 'Alice'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.generateCode('trip-456', 'Alice'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
         act: (cubit) => cubit.generateCode('trip-456', 'Alice'),
         expect: () => [
           const CodeGenerating(),
-          isA<CodeGenerated>().having(
-            (state) => state.code.id,
-            'code id',
-            'code-123',
-          ).having(
-            (state) => state.code.code,
-            'code value',
-            '1234-5678',
-          ).having(
-            (state) => state.code.tripId,
-            'trip id',
-            'trip-456',
-          ).having(
-            (state) => state.code.memberName,
-            'member name',
-            'Alice',
-          ),
+          isA<CodeGenerated>()
+              .having((state) => state.code.id, 'code id', 'code-123')
+              .having((state) => state.code.code, 'code value', '1234-5678')
+              .having((state) => state.code.tripId, 'trip id', 'trip-456')
+              .having((state) => state.code.memberName, 'member name', 'Alice'),
         ],
         verify: (_) {
           verify(mockRepository.generateCode('trip-456', 'Alice')).called(1);
@@ -85,8 +74,9 @@ void main() {
         'should emit [CodeGenerating, CodeGenerationError] when repository throws exception',
         build: () {
           // Arrange - Mock repository failure
-          when(mockRepository.generateCode(any, any))
-              .thenThrow(Exception('Firestore connection failed'));
+          when(
+            mockRepository.generateCode(any, any),
+          ).thenThrow(Exception('Firestore connection failed'));
 
           return cubit;
         },
@@ -118,15 +108,18 @@ void main() {
             usedAt: null,
           );
 
-          when(mockRepository.generateCode('trip-tokyo', 'Charlie'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.generateCode('trip-tokyo', 'Charlie'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
         act: (cubit) => cubit.generateCode('trip-tokyo', 'Charlie'),
         verify: (_) {
           // Verify exact parameters passed to repository
-          verify(mockRepository.generateCode('trip-tokyo', 'Charlie')).called(1);
+          verify(
+            mockRepository.generateCode('trip-tokyo', 'Charlie'),
+          ).called(1);
           verifyNoMoreInteractions(mockRepository);
         },
       );
@@ -148,8 +141,9 @@ void main() {
             usedAt: null,
           );
 
-          when(mockRepository.generateCode('trip-detail', 'DetailUser'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.generateCode('trip-detail', 'DetailUser'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
@@ -173,8 +167,9 @@ void main() {
       blocTest<DevicePairingCubit, DevicePairingState>(
         'should handle network timeout errors gracefully',
         build: () {
-          when(mockRepository.generateCode(any, any))
-              .thenThrow(Exception('Network timeout'));
+          when(
+            mockRepository.generateCode(any, any),
+          ).thenThrow(Exception('Network timeout'));
 
           return cubit;
         },
@@ -192,8 +187,9 @@ void main() {
       blocTest<DevicePairingCubit, DevicePairingState>(
         'should handle permission denied errors',
         build: () {
-          when(mockRepository.generateCode(any, any))
-              .thenThrow(Exception('Permission denied'));
+          when(
+            mockRepository.generateCode(any, any),
+          ).thenThrow(Exception('Permission denied'));
 
           return cubit;
         },
@@ -233,10 +229,12 @@ void main() {
             usedAt: null,
           );
 
-          when(mockRepository.generateCode('trip-1', 'Alice'))
-              .thenAnswer((_) async => code1);
-          when(mockRepository.generateCode('trip-1', 'Bob'))
-              .thenAnswer((_) async => code2);
+          when(
+            mockRepository.generateCode('trip-1', 'Alice'),
+          ).thenAnswer((_) async => code1);
+          when(
+            mockRepository.generateCode('trip-1', 'Bob'),
+          ).thenAnswer((_) async => code2);
 
           return cubit;
         },
@@ -246,9 +244,17 @@ void main() {
         },
         expect: () => [
           const CodeGenerating(),
-          isA<CodeGenerated>().having((s) => s.code.id, 'first code id', 'code-1'),
+          isA<CodeGenerated>().having(
+            (s) => s.code.id,
+            'first code id',
+            'code-1',
+          ),
           const CodeGenerating(),
-          isA<CodeGenerated>().having((s) => s.code.id, 'second code id', 'code-2'),
+          isA<CodeGenerated>().having(
+            (s) => s.code.id,
+            'second code id',
+            'code-2',
+          ),
         ],
         verify: (_) {
           verify(mockRepository.generateCode('trip-1', 'Alice')).called(1);
@@ -270,8 +276,9 @@ void main() {
             usedAt: null,
           );
 
-          when(mockRepository.generateCode('trip-123', "O'Brien"))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.generateCode('trip-123', "O'Brien"),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
@@ -325,8 +332,9 @@ void main() {
             usedAt: DateTime(2025, 1, 15, 10, 5),
           );
 
-          when(mockRepository.validateCode('trip-456', '1234-5678', 'Alice'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.validateCode('trip-456', '1234-5678', 'Alice'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
@@ -340,8 +348,9 @@ void main() {
           ),
         ],
         verify: (_) {
-          verify(mockRepository.validateCode('trip-456', '1234-5678', 'Alice'))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-456', '1234-5678', 'Alice'),
+          ).called(1);
         },
       );
 
@@ -349,8 +358,9 @@ void main() {
         'should emit [CodeValidating, CodeValidationError] for invalid code',
         build: () {
           // Arrange - Mock validation failure (invalid code)
-          when(mockRepository.validateCode(any, any, any))
-              .thenThrow(Exception('Invalid code'));
+          when(
+            mockRepository.validateCode(any, any, any),
+          ).thenThrow(Exception('Invalid code'));
 
           return cubit;
         },
@@ -364,16 +374,18 @@ void main() {
           ),
         ],
         verify: (_) {
-          verify(mockRepository.validateCode('trip-456', '9999-9999', 'Bob'))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-456', '9999-9999', 'Bob'),
+          ).called(1);
         },
       );
 
       blocTest<DevicePairingCubit, DevicePairingState>(
         'should emit error for expired code',
         build: () {
-          when(mockRepository.validateCode(any, any, any))
-              .thenThrow(Exception('Code has expired'));
+          when(
+            mockRepository.validateCode(any, any, any),
+          ).thenThrow(Exception('Code has expired'));
 
           return cubit;
         },
@@ -391,8 +403,9 @@ void main() {
       blocTest<DevicePairingCubit, DevicePairingState>(
         'should emit error for already used code',
         build: () {
-          when(mockRepository.validateCode(any, any, any))
-              .thenThrow(Exception('Code has already been used'));
+          when(
+            mockRepository.validateCode(any, any, any),
+          ).thenThrow(Exception('Code has already been used'));
 
           return cubit;
         },
@@ -410,8 +423,9 @@ void main() {
       blocTest<DevicePairingCubit, DevicePairingState>(
         'should emit error for member name mismatch',
         build: () {
-          when(mockRepository.validateCode(any, any, any))
-              .thenThrow(Exception('Member name does not match'));
+          when(
+            mockRepository.validateCode(any, any, any),
+          ).thenThrow(Exception('Member name does not match'));
 
           return cubit;
         },
@@ -440,16 +454,19 @@ void main() {
             usedAt: DateTime.now(),
           );
 
-          when(mockRepository.validateCode('trip-tokyo', '9876-5432', 'Charlie'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.validateCode('trip-tokyo', '9876-5432', 'Charlie'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
-        act: (cubit) => cubit.validateCode('trip-tokyo', '9876-5432', 'Charlie'),
+        act: (cubit) =>
+            cubit.validateCode('trip-tokyo', '9876-5432', 'Charlie'),
         verify: (_) {
           // Verify exact parameters passed to repository
-          verify(mockRepository.validateCode('trip-tokyo', '9876-5432', 'Charlie'))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-tokyo', '9876-5432', 'Charlie'),
+          ).called(1);
           verifyNoMoreInteractions(mockRepository);
         },
       );
@@ -457,8 +474,9 @@ void main() {
       blocTest<DevicePairingCubit, DevicePairingState>(
         'should handle network timeout errors gracefully',
         build: () {
-          when(mockRepository.validateCode(any, any, any))
-              .thenThrow(Exception('Network timeout'));
+          when(
+            mockRepository.validateCode(any, any, any),
+          ).thenThrow(Exception('Network timeout'));
 
           return cubit;
         },
@@ -488,8 +506,9 @@ void main() {
           );
 
           // Repository should handle case-insensitive matching
-          when(mockRepository.validateCode('trip-123', '1234-5678', 'ALICE'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.validateCode('trip-123', '1234-5678', 'ALICE'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
@@ -499,8 +518,9 @@ void main() {
           isA<CodeValidated>().having((s) => s.tripId, 'tripId', 'trip-123'),
         ],
         verify: (_) {
-          verify(mockRepository.validateCode('trip-123', '1234-5678', 'ALICE'))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-123', '1234-5678', 'ALICE'),
+          ).called(1);
         },
       );
 
@@ -518,16 +538,14 @@ void main() {
             usedAt: DateTime.now(),
           );
 
-          when(mockRepository.validateCode('trip-123', '1234-5678', 'Alice'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.validateCode('trip-123', '1234-5678', 'Alice'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
         act: (cubit) => cubit.validateCode('trip-123', '1234-5678', 'Alice'),
-        expect: () => [
-          const CodeValidating(),
-          isA<CodeValidated>(),
-        ],
+        expect: () => [const CodeValidating(), isA<CodeValidated>()],
       );
 
       blocTest<DevicePairingCubit, DevicePairingState>(
@@ -545,19 +563,18 @@ void main() {
           );
 
           // Repository normalizes code internally
-          when(mockRepository.validateCode('trip-123', '12345678', 'Alice'))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.validateCode('trip-123', '12345678', 'Alice'),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
         act: (cubit) => cubit.validateCode('trip-123', '12345678', 'Alice'),
-        expect: () => [
-          const CodeValidating(),
-          isA<CodeValidated>(),
-        ],
+        expect: () => [const CodeValidating(), isA<CodeValidated>()],
         verify: (_) {
-          verify(mockRepository.validateCode('trip-123', '12345678', 'Alice'))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-123', '12345678', 'Alice'),
+          ).called(1);
         },
       );
 
@@ -575,19 +592,18 @@ void main() {
             usedAt: DateTime.now(),
           );
 
-          when(mockRepository.validateCode('trip-123', '5555-6666', "O'Brien"))
-              .thenAnswer((_) async => mockCode);
+          when(
+            mockRepository.validateCode('trip-123', '5555-6666', "O'Brien"),
+          ).thenAnswer((_) async => mockCode);
 
           return cubit;
         },
         act: (cubit) => cubit.validateCode('trip-123', '5555-6666', "O'Brien"),
-        expect: () => [
-          const CodeValidating(),
-          isA<CodeValidated>(),
-        ],
+        expect: () => [const CodeValidating(), isA<CodeValidated>()],
         verify: (_) {
-          verify(mockRepository.validateCode('trip-123', '5555-6666', "O'Brien"))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-123', '5555-6666', "O'Brien"),
+          ).called(1);
         },
       );
 
@@ -616,10 +632,12 @@ void main() {
             usedAt: DateTime.now(),
           );
 
-          when(mockRepository.validateCode('trip-1', '1234-5678', 'Alice'))
-              .thenAnswer((_) async => code1);
-          when(mockRepository.validateCode('trip-1', '8765-4321', 'Bob'))
-              .thenAnswer((_) async => code2);
+          when(
+            mockRepository.validateCode('trip-1', '1234-5678', 'Alice'),
+          ).thenAnswer((_) async => code1);
+          when(
+            mockRepository.validateCode('trip-1', '8765-4321', 'Bob'),
+          ).thenAnswer((_) async => code2);
 
           return cubit;
         },
@@ -629,15 +647,25 @@ void main() {
         },
         expect: () => [
           const CodeValidating(),
-          isA<CodeValidated>().having((s) => s.tripId, 'first validation', 'trip-1'),
+          isA<CodeValidated>().having(
+            (s) => s.tripId,
+            'first validation',
+            'trip-1',
+          ),
           const CodeValidating(),
-          isA<CodeValidated>().having((s) => s.tripId, 'second validation', 'trip-1'),
+          isA<CodeValidated>().having(
+            (s) => s.tripId,
+            'second validation',
+            'trip-1',
+          ),
         ],
         verify: (_) {
-          verify(mockRepository.validateCode('trip-1', '1234-5678', 'Alice'))
-              .called(1);
-          verify(mockRepository.validateCode('trip-1', '8765-4321', 'Bob'))
-              .called(1);
+          verify(
+            mockRepository.validateCode('trip-1', '1234-5678', 'Alice'),
+          ).called(1);
+          verify(
+            mockRepository.validateCode('trip-1', '8765-4321', 'Bob'),
+          ).called(1);
         },
       );
     });

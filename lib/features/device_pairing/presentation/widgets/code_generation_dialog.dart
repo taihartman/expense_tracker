@@ -33,16 +33,17 @@ class _CodeGenerationDialogState extends State<CodeGenerationDialog> {
     super.initState();
     // Automatically generate code when dialog opens
     context.read<DevicePairingCubit>().generateCode(
-          widget.tripId,
-          widget.memberName,
-        );
+      widget.tripId,
+      widget.memberName,
+    );
   }
 
   Future<void> _copyToClipboard(BuildContext context, String code) async {
+    final messenger = ScaffoldMessenger.of(context);
     await Clipboard.setData(ClipboardData(text: code));
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       const SnackBar(
         content: Text('Copied to clipboard'),
         duration: Duration(seconds: 2),
@@ -97,9 +98,9 @@ class _CodeGenerationDialogState extends State<CodeGenerationDialog> {
                   child: SelectableText(
                     state.code.code,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 4,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),

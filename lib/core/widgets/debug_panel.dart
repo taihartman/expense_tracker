@@ -10,11 +10,7 @@ class DebugPanel extends StatefulWidget {
   final List<String> logs;
   final Map<String, dynamic>? routingState;
 
-  const DebugPanel({
-    super.key,
-    required this.logs,
-    this.routingState,
-  });
+  const DebugPanel({super.key, required this.logs, this.routingState});
 
   @override
   State<DebugPanel> createState() => _DebugPanelState();
@@ -68,7 +64,8 @@ class _DebugPanelState extends State<DebugPanel> {
               // Content (only when expanded)
               if (_isExpanded) ...[
                 // Routing State
-                if (widget.routingState != null && widget.routingState!.isNotEmpty)
+                if (widget.routingState != null &&
+                    widget.routingState!.isNotEmpty)
                   _buildRoutingState(),
 
                 // Logs
@@ -138,34 +135,36 @@ class _DebugPanelState extends State<DebugPanel> {
             ),
           ),
           const SizedBox(height: 4),
-          ...widget.routingState!.entries.map((entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${entry.key}: ',
+          ...widget.routingState!.entries.map(
+            (entry) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${entry.key}: ',
+                    style: const TextStyle(
+                      color: Colors.cyan,
+                      fontSize: 11,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${entry.value}',
                       style: const TextStyle(
-                        color: Colors.cyan,
+                        color: Colors.white,
                         fontSize: 11,
                         fontFamily: 'monospace',
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Expanded(
-                      child: Text(
-                        '${entry.value}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontFamily: 'monospace',
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const Divider(color: Colors.grey),
         ],
       ),
@@ -193,7 +192,10 @@ class _DebugPanelState extends State<DebugPanel> {
               TextButton(
                 onPressed: _copyLogsToClipboard,
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
@@ -218,17 +220,19 @@ class _DebugPanelState extends State<DebugPanel> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: widget.logs
-                          .map((log) => Padding(
-                                padding: const EdgeInsets.only(bottom: 2),
-                                child: Text(
-                                  log,
-                                  style: TextStyle(
-                                    color: _getLogColor(log),
-                                    fontSize: 10,
-                                    fontFamily: 'monospace',
-                                  ),
+                          .map(
+                            (log) => Padding(
+                              padding: const EdgeInsets.only(bottom: 2),
+                              child: Text(
+                                log,
+                                style: TextStyle(
+                                  color: _getLogColor(log),
+                                  fontSize: 10,
+                                  fontFamily: 'monospace',
                                 ),
-                              ))
+                              ),
+                            ),
+                          )
                           .toList(),
                     ),
                   ),

@@ -11,6 +11,39 @@ and this project follows feature-driven versioning with Spec-Kit.
 
 - [001-group-expense-tracker] Group expense tracker with multi-currency support
 
+### Added - Infrastructure
+
+**[2025-01-30] Claude Code Workflow Improvements** - Implemented Reddit post recommendations for improved development experience:
+
+- **Skills System**: Created 6 reusable workflow skills in `.claude/skills/`
+  - `mobile-first-design.md` - Mobile-first UI implementation workflow
+  - `activity-logging.md` - Activity logging integration guide
+  - `localization-workflow.md` - Localized string management
+  - `cubit-testing.md` - BLoC/Cubit testing patterns
+  - `currency-input.md` - Currency field implementation
+  - `read-with-context.md` - Code investigation methodology
+
+- **Documentation Split**: Transformed monolithic 1101-line CLAUDE.md into multi-document system
+  - `CLAUDE.md` (400 lines) - Quick reference hub with links
+  - `PROJECT_KNOWLEDGE.md` - Architecture, design patterns, data flow
+  - `MOBILE.md` - Mobile-first design guidelines
+  - `DEVELOPMENT.md` - Development workflows (localization, currency, activity logging)
+  - `TROUBLESHOOTING.md` - Common issues and solutions
+
+- **Hooks System**: Created 3 autonomous hooks in `.claude/hooks/` for automatic pattern enforcement
+  - `user-prompt-submit.md` - Auto-injects skill reminders based on user intent
+  - `stop-event.md` - Self-checks for errors and pattern compliance after responses
+  - `pre-commit.md` - Quality gates before commits (analyze, format, test, pattern checks)
+
+**Impact:**
+- 64% reduction in main documentation file size (1101 → 400 lines)
+- Faster navigation with specialized documents
+- Consistent patterns via reusable skills
+- Comprehensive troubleshooting guide for common issues
+- **Autonomous Claude**: Skills and patterns enforced automatically without manual reminders
+- **Quality gates**: Errors caught immediately before becoming bugs
+- **Zero errors left behind**: Pre-commit hooks ensure all commits meet quality standards
+
 ---
 
 ## [006-centralized-activity-logger] - 2025-10-30

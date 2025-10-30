@@ -41,7 +41,9 @@ class _TripEditPageState extends State<TripEditPage> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.trip.id);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        widget.trip.id,
+      );
       final actorName = currentUser?.name;
 
       context.read<TripCubit>().updateTripDetails(

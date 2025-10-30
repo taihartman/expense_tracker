@@ -10,9 +10,8 @@ import '../models/activity_log_model.dart';
 class ActivityLogRepositoryImpl implements ActivityLogRepository {
   final FirebaseFirestore _firestore;
 
-  ActivityLogRepositoryImpl({
-    FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  ActivityLogRepositoryImpl({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
   Future<String> addLog(ActivityLog log) async {
@@ -27,10 +26,7 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
   }
 
   @override
-  Stream<List<ActivityLog>> getActivityLogs(
-    String tripId, {
-    int limit = 50,
-  }) {
+  Stream<List<ActivityLog>> getActivityLogs(String tripId, {int limit = 50}) {
     return _firestore
         .collection('trips')
         .doc(tripId)
@@ -39,9 +35,9 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
         .limit(limit)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => ActivityLogModel.fromFirestore(doc))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => ActivityLogModel.fromFirestore(doc))
+              .toList();
+        });
   }
 }

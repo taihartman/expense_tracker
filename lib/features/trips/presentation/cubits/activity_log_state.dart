@@ -24,18 +24,12 @@ class ActivityLogLoaded extends ActivityLogState {
   final List<ActivityLog> logs;
   final bool hasMore;
 
-  const ActivityLogLoaded({
-    required this.logs,
-    this.hasMore = false,
-  });
+  const ActivityLogLoaded({required this.logs, this.hasMore = false});
 
   @override
   List<Object?> get props => [logs, hasMore];
 
-  ActivityLogLoaded copyWith({
-    List<ActivityLog>? logs,
-    bool? hasMore,
-  }) {
+  ActivityLogLoaded copyWith({List<ActivityLog>? logs, bool? hasMore}) {
     return ActivityLogLoaded(
       logs: logs ?? this.logs,
       hasMore: hasMore ?? this.hasMore,

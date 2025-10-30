@@ -108,10 +108,7 @@ class RecoveryCodeDialog extends StatelessWidget {
                 ),
                 child: Text(
                   text,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontFamily: 'monospace',
-                  ),
+                  style: const TextStyle(fontSize: 11, fontFamily: 'monospace'),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -155,8 +152,8 @@ class RecoveryCodeDialog extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             const Spacer(),
             Container(
@@ -191,10 +188,7 @@ class RecoveryCodeDialog extends StatelessWidget {
             ],
           ),
         ),
-        if (description != null) ...[
-          const SizedBox(height: 6),
-          description,
-        ],
+        if (description != null) ...[const SizedBox(height: 6), description],
       ],
     );
   }
@@ -248,9 +242,9 @@ class RecoveryCodeDialog extends StatelessWidget {
                       child: Text(
                         context.l10n.tripRecoveryPasswordManagerHint,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontSize: 12,
-                              color: Colors.blue.shade700,
-                            ),
+                          fontSize: 12,
+                          color: Colors.blue.shade700,
+                        ),
                       ),
                     ),
                   ],
@@ -264,15 +258,15 @@ class RecoveryCodeDialog extends StatelessWidget {
               Text(
                 context.l10n.tripRecoveryTripLabel,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 4),
               SelectableText(
                 tripName!,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: AppTheme.spacing3),
             ],
@@ -287,9 +281,9 @@ class RecoveryCodeDialog extends StatelessWidget {
               child: SelectableText(
                 tripId,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontFamily: 'monospace',
-                      fontSize: 13,
-                    ),
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                ),
               ),
               action: IconButton(
                 icon: const Icon(Icons.copy, size: 16),
@@ -314,9 +308,9 @@ class RecoveryCodeDialog extends StatelessWidget {
                     child: Text(
                       context.l10n.tripRecoveryTripIdDescription,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.blue.shade700,
-                            fontSize: 12,
-                          ),
+                        color: Colors.blue.shade700,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -354,9 +348,9 @@ class RecoveryCodeDialog extends StatelessWidget {
                     child: Text(
                       context.l10n.tripRecoveryCodeDescription,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.red.shade700,
-                            fontSize: 12,
-                          ),
+                        color: Colors.red.shade700,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -368,17 +362,17 @@ class RecoveryCodeDialog extends StatelessWidget {
               const SizedBox(height: AppTheme.spacing2),
               Text(
                 context.l10n.tripRecoveryFirstTimeMessage,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontStyle: FontStyle.italic,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
               ),
             ] else if (usageCount != null) ...[
               const SizedBox(height: AppTheme.spacing2),
               Text(
                 context.l10n.tripRecoveryUsedCount(usageCount!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ],

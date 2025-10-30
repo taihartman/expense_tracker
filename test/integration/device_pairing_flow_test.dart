@@ -56,8 +56,12 @@ void main() {
       // Default stubs
       when(mockLocalStorageService.getJoinedTripIds()).thenReturn([]);
       when(mockLocalStorageService.getSelectedTripId()).thenReturn(null);
-      when(mockLocalStorageService.addJoinedTrip(any)).thenAnswer((_) async => {});
-      when(mockTripRepository.getAllTrips()).thenAnswer((_) => Stream.value([]));
+      when(
+        mockLocalStorageService.addJoinedTrip(any),
+      ).thenAnswer((_) async => {});
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([]));
 
       tripCubit = TripCubit(
         tripRepository: mockTripRepository,
@@ -98,7 +102,9 @@ void main() {
       );
     }
 
-    testWidgets('T024: Join with unique name bypasses verification', (tester) async {
+    testWidgets('T024: Join with unique name bypasses verification', (
+      tester,
+    ) async {
       // Arrange
       const tripId = 'trip-123';
       const uniqueName = 'Charlie'; // Not in participants
@@ -116,7 +122,9 @@ void main() {
       );
 
       // Mock repository to return existing trip (no duplicate)
-      when(mockTripRepository.getTripById(tripId)).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
 
       // Mock successful update (join adds participant via updateTrip)
       when(mockTripRepository.updateTrip(any)).thenAnswer(
@@ -124,12 +132,14 @@ void main() {
       );
 
       // Mock activity logger service
-      when(mockActivityLoggerService.logMemberJoined(
-        tripId: anyNamed('tripId'),
-        memberName: anyNamed('memberName'),
-        joinMethod: anyNamed('joinMethod'),
-        inviterId: anyNamed('inviterId'),
-      )).thenAnswer((_) async {});
+      when(
+        mockActivityLoggerService.logMemberJoined(
+          tripId: anyNamed('tripId'),
+          memberName: anyNamed('memberName'),
+          joinMethod: anyNamed('joinMethod'),
+          inviterId: anyNamed('inviterId'),
+        ),
+      ).thenAnswer((_) async {});
 
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
@@ -144,7 +154,9 @@ void main() {
       // Tap join button
       await tester.tap(find.byType(CustomButton));
       await tester.pump(); // Process button tap
-      await tester.pump(const Duration(milliseconds: 100)); // Allow async operations
+      await tester.pump(
+        const Duration(milliseconds: 100),
+      ); // Allow async operations
 
       // Assert - Verification dialog should NOT appear
       expect(
@@ -157,8 +169,9 @@ void main() {
       verify(mockTripRepository.updateTrip(any)).called(1);
     });
 
-    testWidgets('T024: Join with duplicate name shows verification prompt',
-        (tester) async {
+    testWidgets('T024: Join with duplicate name shows verification prompt', (
+      tester,
+    ) async {
       // Arrange
       const tripId = 'trip-123';
       const duplicateName = 'Alice'; // Exists in participants
@@ -176,7 +189,9 @@ void main() {
       );
 
       // Mock repository to return existing trip (duplicate detected)
-      when(mockTripRepository.getTripById(tripId)).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
 
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
@@ -226,7 +241,9 @@ void main() {
         ],
       );
 
-      when(mockTripRepository.getTripById(tripId)).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
 
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
@@ -273,7 +290,9 @@ void main() {
         ],
       );
 
-      when(mockTripRepository.getTripById(tripId)).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
 
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();
@@ -338,12 +357,12 @@ void main() {
                         context: context,
                         builder: (dialogContext) =>
                             BlocProvider<DevicePairingCubit>.value(
-                          value: devicePairingCubit,
-                          child: const CodeGenerationDialog(
-                            tripId: 'trip-123',
-                            memberName: 'Alice',
-                          ),
-                        ),
+                              value: devicePairingCubit,
+                              child: const CodeGenerationDialog(
+                                tripId: 'trip-123',
+                                memberName: 'Alice',
+                              ),
+                            ),
                       );
                     },
                     child: const Text('Generate Code'),
@@ -356,8 +375,9 @@ void main() {
       );
     }
 
-    testWidgets('T035: Generated code is 8 digits with XXXX-XXXX format',
-        (tester) async {
+    testWidgets('T035: Generated code is 8 digits with XXXX-XXXX format', (
+      tester,
+    ) async {
       // Arrange - Mock successful code generation
       final mockCode = DeviceLinkCode(
         id: 'code-123',
@@ -370,8 +390,9 @@ void main() {
         usedAt: null,
       );
 
-      when(mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'))
-          .thenAnswer((_) async => mockCode);
+      when(
+        mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'),
+      ).thenAnswer((_) async => mockCode);
 
       await tester.pumpWidget(createTestDialogApp());
 
@@ -380,7 +401,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert - Dialog is displayed
-      expect(find.text('Generate Code'), findsNWidgets(2)); // Button + Dialog title
+      expect(
+        find.text('Generate Code'),
+        findsNWidgets(2),
+      ); // Button + Dialog title
 
       // Verify code is displayed with correct format
       expect(
@@ -420,8 +444,9 @@ void main() {
         usedAt: null,
       );
 
-      when(mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'))
-          .thenAnswer((_) async => mockCode);
+      when(
+        mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'),
+      ).thenAnswer((_) async => mockCode);
 
       await tester.pumpWidget(createTestDialogApp());
 
@@ -437,7 +462,10 @@ void main() {
       );
 
       // Verify button is enabled
-      final copyButton = find.widgetWithText(ElevatedButton, 'Copy to Clipboard');
+      final copyButton = find.widgetWithText(
+        ElevatedButton,
+        'Copy to Clipboard',
+      );
       expect(copyButton, findsOneWidget);
 
       final button = tester.widget<ElevatedButton>(copyButton);
@@ -462,8 +490,9 @@ void main() {
         usedAt: null,
       );
 
-      when(mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'))
-          .thenAnswer((_) async => mockCode);
+      when(
+        mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'),
+      ).thenAnswer((_) async => mockCode);
 
       await tester.pumpWidget(createTestDialogApp());
 
@@ -488,8 +517,9 @@ void main() {
       // a few milliseconds may have passed during test execution
     });
 
-    testWidgets('T035: Dialog shows loading state during code generation',
-        (tester) async {
+    testWidgets('T035: Dialog shows loading state during code generation', (
+      tester,
+    ) async {
       // Arrange - Mock delayed code generation
       final mockCode = DeviceLinkCode(
         id: 'code-123',
@@ -502,8 +532,9 @@ void main() {
         usedAt: null,
       );
 
-      when(mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'))
-          .thenAnswer((_) async {
+      when(
+        mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'),
+      ).thenAnswer((_) async {
         await Future.delayed(const Duration(milliseconds: 100));
         return mockCode;
       });
@@ -530,11 +561,13 @@ void main() {
       expect(find.text('5555-6666'), findsOneWidget);
     });
 
-    testWidgets('T035: Dialog shows error state when generation fails',
-        (tester) async {
+    testWidgets('T035: Dialog shows error state when generation fails', (
+      tester,
+    ) async {
       // Arrange - Mock failed code generation
-      when(mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'))
-          .thenThrow(Exception('Network error'));
+      when(
+        mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'),
+      ).thenThrow(Exception('Network error'));
 
       await tester.pumpWidget(createTestDialogApp());
 
@@ -576,8 +609,9 @@ void main() {
         usedAt: null,
       );
 
-      when(mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'))
-          .thenAnswer((_) async => mockCode);
+      when(
+        mockDeviceLinkCodeRepository.generateCode('trip-123', 'Alice'),
+      ).thenAnswer((_) async => mockCode);
 
       await tester.pumpWidget(createTestDialogApp());
 
@@ -600,7 +634,10 @@ void main() {
       );
 
       // Should be back to original screen
-      expect(find.text('Generate Code'), findsOneWidget); // Only the button remains
+      expect(
+        find.text('Generate Code'),
+        findsOneWidget,
+      ); // Only the button remains
     });
   });
 }

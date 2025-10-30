@@ -20,6 +20,7 @@ import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/currency_text_field.dart';
 import '../../../../shared/utils/currency_input_formatter.dart';
 import 'itemized/itemized_expense_wizard.dart';
+import '../../../../core/services/activity_logger_service.dart';
 
 /// Page for creating or editing an expense
 class ExpenseFormPage extends StatefulWidget {
@@ -264,6 +265,8 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                     '🔵 [ExpenseForm] Creating ItemizedExpenseCubit...',
                   );
                   final expenseRepository = context.read<ExpenseRepository>();
+                  final activityLoggerService = context
+                      .read<ActivityLoggerService>();
                   debugPrint(
                     '🔵 [ExpenseForm] ExpenseRepository obtained: ${expenseRepository.runtimeType}',
                   );
@@ -283,6 +286,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                             );
                             return ItemizedExpenseCubit(
                               expenseRepository: expenseRepository,
+                              activityLoggerService: activityLoggerService,
                             );
                           },
                           child: ItemizedExpenseWizard(

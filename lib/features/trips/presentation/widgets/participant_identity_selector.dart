@@ -21,9 +21,7 @@ class ParticipantIdentitySelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (participants.isEmpty) {
-      return const Center(
-        child: Text('No participants available'),
-      );
+      return const Center(child: Text('No participants available'));
     }
 
     return Column(
@@ -49,10 +47,7 @@ class ParticipantIdentitySelector extends StatelessWidget {
             ),
             subtitle: Text(
               'ID: ${participant.id}',
-              style: TextStyle(
-                fontSize: 12.0,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
             ),
             activeColor: Theme.of(context).primaryColor,
             selected: isSelected,

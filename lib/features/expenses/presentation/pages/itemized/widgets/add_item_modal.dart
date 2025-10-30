@@ -117,6 +117,7 @@ class _AddItemModalState extends State<AddItemModal> {
               // Item Name Field
               TextFormField(
                 controller: _nameController,
+                autofocus: true,
                 decoration: InputDecoration(
                   labelText: context.l10n.receiptSplitItemsFieldNameLabel,
                   hintText: context.l10n.receiptSplitItemsFieldNameHint,

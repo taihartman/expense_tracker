@@ -127,13 +127,13 @@ class DeviceLinkCode extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        code,
-        tripId,
-        memberName,
-        createdAt,
-        expiresAt,
-        used,
-        usedAt,
-      ];
+    id,
+    code,
+    tripId,
+    memberName,
+    createdAt,
+    expiresAt,
+    used,
+    usedAt,
+  ];
 }

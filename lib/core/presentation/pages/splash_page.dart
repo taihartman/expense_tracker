@@ -73,78 +73,73 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Semantics(
-            label: context.l10n.splashLoadingAccessibility,
-            child: Center(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  // Responsive sizing
-                  final isMobile = constraints.maxWidth < 768;
-                  final isTablet =
-                      constraints.maxWidth >= 768 &&
-                      constraints.maxWidth <= 1920;
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Semantics(
+          label: context.l10n.splashLoadingAccessibility,
+          child: Center(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Responsive sizing
+                final isMobile = constraints.maxWidth < 768;
+                final isTablet =
+                    constraints.maxWidth >= 768 && constraints.maxWidth <= 1920;
 
-                  final iconSize = isMobile ? 80.0 : (isTablet ? 100.0 : 120.0);
-                  final appNameSize = isMobile
-                      ? 28.0
-                      : (isTablet ? 30.0 : 32.0);
-                  final horizontalPadding = isMobile ? 32.0 : 64.0;
+                final iconSize = isMobile ? 80.0 : (isTablet ? 100.0 : 120.0);
+                final appNameSize = isMobile ? 28.0 : (isTablet ? 30.0 : 32.0);
+                final horizontalPadding = isMobile ? 32.0 : 64.0;
 
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Icon with optional scale animation
-                        ScaleTransition(
-                          scale: _scaleAnimation,
-                          child: Icon(
-                            Icons.account_balance_wallet,
-                            size: iconSize,
-                            color: const Color(0xFF6200EE), // Primary purple
-                          ),
+                return Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Icon with optional scale animation
+                      ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: Icon(
+                          Icons.account_balance_wallet,
+                          size: iconSize,
+                          color: const Color(0xFF6200EE), // Primary purple
                         ),
-                        const SizedBox(height: 24),
+                      ),
+                      const SizedBox(height: 24),
 
-                        // App name
-                        Text(
-                          context.l10n.splashAppName,
-                          style: TextStyle(
-                            fontSize: appNameSize,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: -0.5,
-                            color: const Color(0xFF1F1F1F), // Near-black
-                          ),
+                      // App name
+                      Text(
+                        context.l10n.splashAppName,
+                        style: TextStyle(
+                          fontSize: appNameSize,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.5,
+                          color: const Color(0xFF1F1F1F), // Near-black
                         ),
-                        const SizedBox(height: 60),
+                      ),
+                      const SizedBox(height: 60),
 
-                        // Loading indicator
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const AnimatedDots(),
-                            const SizedBox(height: 12),
-                            Text(
-                              context.l10n.splashLoading,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF757575), // Medium gray
-                              ),
+                      // Loading indicator
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const AnimatedDots(),
+                          const SizedBox(height: 12),
+                          Text(
+                            context.l10n.splashLoading,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF757575), // Medium gray
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),
-      );
+      ),
+    );
   }
 }

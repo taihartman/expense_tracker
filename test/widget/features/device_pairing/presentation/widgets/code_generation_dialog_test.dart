@@ -42,10 +42,7 @@ void main() {
         home: BlocProvider<DevicePairingCubit>.value(
           value: mockCubit,
           child: Scaffold(
-            body: CodeGenerationDialog(
-              tripId: tripId,
-              memberName: memberName,
-            ),
+            body: CodeGenerationDialog(tripId: tripId, memberName: memberName),
           ),
         ),
       );
@@ -53,10 +50,7 @@ void main() {
 
     testWidgets('displays title and member name correctly', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify title
@@ -74,8 +68,9 @@ void main() {
       );
     });
 
-    testWidgets('shows loading indicator while generating code',
-        (tester) async {
+    testWidgets('shows loading indicator while generating code', (
+      tester,
+    ) async {
       // Set state to generating
       when(mockCubit.state).thenReturn(const CodeGenerating());
       when(mockCubit.stream).thenAnswer(
@@ -83,10 +78,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify loading indicator is shown
@@ -97,8 +89,9 @@ void main() {
       );
     });
 
-    testWidgets('displays generated code in large readable format',
-        (tester) async {
+    testWidgets('displays generated code in large readable format', (
+      tester,
+    ) async {
       // Set state to code generated
       final mockCode = DeviceLinkCode(
         id: 'code-123',
@@ -117,10 +110,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify code is displayed
@@ -149,10 +139,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify copy button exists
@@ -191,14 +178,13 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Tap copy button
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Copy to Clipboard'));
+      await tester.tap(
+        find.widgetWithText(ElevatedButton, 'Copy to Clipboard'),
+      );
       await tester.pumpAndSettle();
 
       // Verify clipboard.setData was called with correct code
@@ -207,18 +193,17 @@ void main() {
         contains(
           isA<MethodCall>()
               .having((call) => call.method, 'method', 'Clipboard.setData')
-              .having(
-                (call) => call.arguments,
-                'arguments',
-                {'text': '1234-5678'},
-              ),
+              .having((call) => call.arguments, 'arguments', {
+                'text': '1234-5678',
+              }),
         ),
         reason: 'Should copy code to clipboard',
       );
     });
 
-    testWidgets('T028a: shows confirmation snackbar after copying',
-        (tester) async {
+    testWidgets('T028a: shows confirmation snackbar after copying', (
+      tester,
+    ) async {
       final mockCode = DeviceLinkCode(
         id: 'code-123',
         code: '1234-5678',
@@ -244,14 +229,13 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Tap copy button
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Copy to Clipboard'));
+      await tester.tap(
+        find.widgetWithText(ElevatedButton, 'Copy to Clipboard'),
+      );
       await tester.pump(); // Start the snackbar animation
       await tester.pump(const Duration(milliseconds: 100)); // Let it appear
 
@@ -288,10 +272,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify countdown/expiry info is displayed
@@ -326,10 +307,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify close button exists
@@ -379,12 +357,12 @@ void main() {
                           context: context,
                           builder: (dialogContext) =>
                               BlocProvider<DevicePairingCubit>.value(
-                            value: mockCubit,
-                            child: const CodeGenerationDialog(
-                              tripId: 'trip-123',
-                              memberName: 'Alice',
-                            ),
-                          ),
+                                value: mockCubit,
+                                child: const CodeGenerationDialog(
+                                  tripId: 'trip-123',
+                                  memberName: 'Alice',
+                                ),
+                              ),
                         );
                         dialogDismissed = result == null;
                       },
@@ -410,12 +388,13 @@ void main() {
       expect(dialogDismissed, isTrue, reason: 'Close should dismiss dialog');
     });
 
-    testWidgets('shows error message when code generation fails',
-        (tester) async {
+    testWidgets('shows error message when code generation fails', (
+      tester,
+    ) async {
       // Set state to error
-      when(mockCubit.state).thenReturn(
-        const CodeGenerationError('Failed to generate code'),
-      );
+      when(
+        mockCubit.state,
+      ).thenReturn(const CodeGenerationError('Failed to generate code'));
       when(mockCubit.stream).thenAnswer(
         (_) => Stream<DevicePairingState>.value(
           const CodeGenerationError('Failed to generate code'),
@@ -423,10 +402,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify error message is displayed
@@ -444,13 +420,11 @@ void main() {
       );
     });
 
-    testWidgets('automatically calls generateCode on dialog open',
-        (tester) async {
+    testWidgets('automatically calls generateCode on dialog open', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Wait for initState to complete
@@ -478,30 +452,22 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify code is in SelectableText widget for manual copying
       expect(
         find.byWidgetPredicate(
-          (widget) =>
-              widget is SelectableText && widget.data == '1234-5678',
+          (widget) => widget is SelectableText && widget.data == '1234-5678',
         ),
         findsOneWidget,
         reason: 'Code should be displayed in SelectableText for manual copying',
       );
     });
 
-    testWidgets('handles member names with special characters',
-        (tester) async {
+    testWidgets('handles member names with special characters', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: "O'Brien",
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: "O'Brien"),
       );
 
       // Wait for initState

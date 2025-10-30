@@ -84,10 +84,10 @@ class VersionCheckServiceImpl implements VersionCheckService {
     String? versionJsonUrl,
     Duration? timeout,
     Duration? debounceInterval,
-  })  : _httpClient = httpClient ?? http.Client(),
-        _versionJsonUrl = versionJsonUrl ?? '/version.json',
-        _timeout = timeout ?? const Duration(seconds: 2),
-        _debounceInterval = debounceInterval ?? const Duration(seconds: 10);
+  }) : _httpClient = httpClient ?? http.Client(),
+       _versionJsonUrl = versionJsonUrl ?? '/version.json',
+       _timeout = timeout ?? const Duration(seconds: 2),
+       _debounceInterval = debounceInterval ?? const Duration(seconds: 10);
 
   void _log(String message) {
     if (kDebugMode) {

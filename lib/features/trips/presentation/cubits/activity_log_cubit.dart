@@ -10,8 +10,8 @@ class ActivityLogCubit extends Cubit<ActivityLogState> {
   StreamSubscription? _logsSubscription;
 
   ActivityLogCubit({required ActivityLogRepository repository})
-      : _repository = repository,
-        super(const ActivityLogInitial());
+    : _repository = repository,
+      super(const ActivityLogInitial());
 
   /// Load activity logs for a specific trip
   void loadActivityLogs(String tripId, {int limit = 50}) {
@@ -29,10 +29,7 @@ class ActivityLogCubit extends Cubit<ActivityLogState> {
         (logs) {
           _log('📦 Received ${logs.length} activity logs');
           if (!isClosed) {
-            emit(ActivityLogLoaded(
-              logs: logs,
-              hasMore: logs.length >= limit,
-            ));
+            emit(ActivityLogLoaded(logs: logs, hasMore: logs.length >= limit));
           }
         },
         onError: (error) {
@@ -56,7 +53,9 @@ class ActivityLogCubit extends Cubit<ActivityLogState> {
   }
 
   void _log(String message) {
-    debugPrint('[${DateTime.now().toIso8601String()}] [ActivityLogCubit] $message');
+    debugPrint(
+      '[${DateTime.now().toIso8601String()}] [ActivityLogCubit] $message',
+    );
   }
 
   @override

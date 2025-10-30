@@ -6,7 +6,6 @@ import 'package:expense_tracker/core/services/activity_logger_service.dart';
 import 'package:expense_tracker/core/services/activity_logger_service_impl.dart';
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart';
 import 'package:expense_tracker/features/settlements/domain/models/minimal_transfer.dart';
-import 'package:expense_tracker/features/trips/domain/models/activity_log.dart';
 import 'package:expense_tracker/features/trips/domain/models/trip.dart';
 import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart';
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart';
@@ -50,42 +49,54 @@ void main() {
       // and log them without propagating exceptions
 
       // Setup: Make repository throw an error
-      when(mockActivityLogRepository.addLog(any))
-          .thenThrow(Exception('Firestore error'));
+      when(
+        mockActivityLogRepository.addLog(any),
+      ).thenThrow(Exception('Firestore error'));
 
       // This test will fail until service is implemented
       // Expected: No exception thrown despite repository error
       expect(true, isFalse); // Placeholder - will fail
     });
 
-    test('T004b - partial failure scenario: ActivityLog saved but metadata generation fails', () async {
-      // If metadata generation fails, should still create log with minimal data
-      // Should not throw exception
+    test(
+      'T004b - partial failure scenario: ActivityLog saved but metadata generation fails',
+      () async {
+        // If metadata generation fails, should still create log with minimal data
+        // Should not throw exception
 
-      expect(true, isFalse); // Placeholder - will fail
-    });
+        expect(true, isFalse); // Placeholder - will fail
+      },
+    );
   });
 
   group('Graceful degradation', () {
-    test('T005 - should log with available data when trip data unavailable', () async {
-      // When TripRepository.getTripById fails, should still create activity log
-      // with participant IDs instead of names
+    test(
+      'T005 - should log with available data when trip data unavailable',
+      () async {
+        // When TripRepository.getTripById fails, should still create activity log
+        // with participant IDs instead of names
 
-      when(mockTripRepository.getTripById(any))
-          .thenThrow(Exception('Trip not found'));
+        when(
+          mockTripRepository.getTripById(any),
+        ).thenThrow(Exception('Trip not found'));
 
-      expect(true, isFalse); // Placeholder - will fail
-    });
+        expect(true, isFalse); // Placeholder - will fail
+      },
+    );
 
-    test('T005b - _getTripContext() failure handling (network error, deleted trip)', () async {
-      // Should handle network errors and deleted trips gracefully
-      // Log with minimal data instead of crashing
+    test(
+      'T005b - _getTripContext() failure handling (network error, deleted trip)',
+      () async {
+        // Should handle network errors and deleted trips gracefully
+        // Log with minimal data instead of crashing
 
-      when(mockTripRepository.getTripById(any))
-          .thenThrow(Exception('Network error'));
+        when(
+          mockTripRepository.getTripById(any),
+        ).thenThrow(Exception('Network error'));
 
-      expect(true, isFalse); // Placeholder - will fail
-    });
+        expect(true, isFalse); // Placeholder - will fail
+      },
+    );
   });
 
   group('Actor name handling', () {
@@ -115,6 +126,7 @@ void main() {
       updatedAt: DateTime.now(),
     );
 
+    // ignore: unused_local_variable
     final testExpense = Expense(
       id: 'exp-1',
       tripId: 'trip-1',
@@ -131,56 +143,66 @@ void main() {
     );
 
     test('T012 - logExpenseAdded should resolve participant names', () async {
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
+      when(
+        mockTripRepository.getTripById('trip-1'),
+      ).thenAnswer((_) async => testTrip);
+      when(
+        mockActivityLogRepository.addLog(any),
+      ).thenAnswer((_) async => 'log-id-1');
 
       // This will fail until logExpenseAdded is implemented
       expect(true, isFalse); // Placeholder
     });
 
     test('T013 - logExpenseEdited should use ExpenseChangeDetector', () async {
-      final oldExpense = testExpense;
-      final newExpense = testExpense.copyWith(amount: Decimal.parse('150.0'));
+      when(
+        mockTripRepository.getTripById('trip-1'),
+      ).thenAnswer((_) async => testTrip);
+      when(
+        mockActivityLogRepository.addLog(any),
+      ).thenAnswer((_) async => 'log-id-1');
 
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
-
-      // Should detect amount change and include in metadata
+      // TODO: Implement test - Should detect amount change and include in metadata
       expect(true, isFalse); // Placeholder
     });
 
-    test('T014 - logExpenseEdited with no changes should skip logging', () async {
-      final oldExpense = testExpense;
-      final newExpense = testExpense; // Identical
+    test(
+      'T014 - logExpenseEdited with no changes should skip logging',
+      () async {
+        when(
+          mockTripRepository.getTripById('trip-1'),
+        ).thenAnswer((_) async => testTrip);
 
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
+        // TODO: Implement test - Should NOT call addLog when no changes detected
+        expect(true, isFalse); // Placeholder
+      },
+    );
 
-      // Should NOT call addLog when no changes detected
-      expect(true, isFalse); // Placeholder
-    });
+    test(
+      'T014 - logExpenseEdited with no changes should log with empty metadata (alternative behavior)',
+      () async {
+        // Alternative: Some systems may want to log even with no changes
+        // This test covers that scenario
+        expect(true, isFalse); // Placeholder
+      },
+    );
 
-    test('T014 - logExpenseEdited with no changes should log with empty metadata (alternative behavior)', () async {
-      // Alternative: Some systems may want to log even with no changes
-      // This test covers that scenario
-      expect(true, isFalse); // Placeholder
-    });
+    test(
+      'T015 - logExpenseDeleted should include all required metadata',
+      () async {
+        when(
+          mockTripRepository.getTripById('trip-1'),
+        ).thenAnswer((_) async => testTrip);
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenAnswer((_) async => 'log-id-1');
 
-    test('T015 - logExpenseDeleted should include all required metadata', () async {
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
-
-      expect(true, isFalse); // Placeholder
-    });
+        expect(true, isFalse); // Placeholder
+      },
+    );
 
     test('T016 - logTransferSettled should lookup participant names', () async {
-      final transfer = MinimalTransfer(
+      final _ = MinimalTransfer(
         id: 'transfer-1',
         tripId: 'trip-1',
         fromUserId: 'bob-id',
@@ -189,52 +211,63 @@ void main() {
         computedAt: DateTime.now(),
       );
 
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
+      when(
+        mockTripRepository.getTripById('trip-1'),
+      ).thenAnswer((_) async => testTrip);
+      when(
+        mockActivityLogRepository.addLog(any),
+      ).thenAnswer((_) async => 'log-id-1');
 
       expect(true, isFalse); // Placeholder
     });
 
-    test('T017 - logTransferUnsettled should lookup participant names', () async {
-      final transfer = MinimalTransfer(
-        id: 'transfer-1',
-        tripId: 'trip-1',
-        fromUserId: 'bob-id',
-        toUserId: 'alice-id',
-        amountBase: Decimal.parse('50.0'),
-        computedAt: DateTime.now(),
-      );
+    test(
+      'T017 - logTransferUnsettled should lookup participant names',
+      () async {
+        final _ = MinimalTransfer(
+          id: 'transfer-1',
+          tripId: 'trip-1',
+          fromUserId: 'bob-id',
+          toUserId: 'alice-id',
+          amountBase: Decimal.parse('50.0'),
+          computedAt: DateTime.now(),
+        );
 
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
+        when(
+          mockTripRepository.getTripById('trip-1'),
+        ).thenAnswer((_) async => testTrip);
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenAnswer((_) async => 'log-id-1');
 
-      expect(true, isFalse); // Placeholder
-    });
+        expect(true, isFalse); // Placeholder
+      },
+    );
 
     test('T018 - logMemberJoined should track invite method', () async {
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
+      when(
+        mockTripRepository.getTripById('trip-1'),
+      ).thenAnswer((_) async => testTrip);
+      when(
+        mockActivityLogRepository.addLog(any),
+      ).thenAnswer((_) async => 'log-id-1');
 
       expect(true, isFalse); // Placeholder
     });
 
     test('T019 - logTripCreated should include trip metadata', () async {
-      when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => 'log-id-1');
+      when(
+        mockActivityLogRepository.addLog(any),
+      ).thenAnswer((_) async => 'log-id-1');
 
       expect(true, isFalse); // Placeholder
     });
 
     test('T020 - clearCache should invalidate cached trip data', () async {
       // First call should fetch trip
-      when(mockTripRepository.getTripById('trip-1'))
-          .thenAnswer((_) async => testTrip);
+      when(
+        mockTripRepository.getTripById('trip-1'),
+      ).thenAnswer((_) async => testTrip);
 
       // After clearCache, should fetch again
       expect(true, isFalse); // Placeholder

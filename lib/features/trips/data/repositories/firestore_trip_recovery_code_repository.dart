@@ -9,7 +9,7 @@ class FirestoreTripRecoveryCodeRepository
   final FirebaseFirestore _firestore;
 
   FirestoreTripRecoveryCodeRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Get reference to recovery code document for a trip
   DocumentReference _getRecoveryCodeDoc(String tripId) {
@@ -73,8 +73,9 @@ class FirestoreTripRecoveryCodeRepository
 
     // Normalize codes for comparison (remove hyphens/spaces)
     final normalizedInput = code.replaceAll('-', '').replaceAll(' ', '');
-    final normalizedStored =
-        recoveryCode.code.replaceAll('-', '').replaceAll(' ', '');
+    final normalizedStored = recoveryCode.code
+        .replaceAll('-', '')
+        .replaceAll(' ', '');
 
     if (normalizedInput != normalizedStored) {
       return null;

@@ -5,6 +5,7 @@ import '../../../cubits/itemized_expense_cubit.dart';
 import '../../../cubits/itemized_expense_state.dart';
 import '../../../../../../core/models/currency_code.dart';
 import '../../../../../../core/l10n/l10n_extensions.dart';
+import '../../../../../trips/presentation/cubits/trip_cubit.dart';
 
 /// Step 4: Review breakdown and save
 class ReviewStepPage extends StatelessWidget {
@@ -388,7 +389,18 @@ class ReviewStepPage extends StatelessWidget {
           flex: 2,
           child: ElevatedButton.icon(
             onPressed: canSave
-                ? () => context.read<ItemizedExpenseCubit>().save()
+                ? () {
+                    // Get current user for activity logging
+                    final currentUser = context
+                        .read<TripCubit>()
+                        .getCurrentUserForTrip(state.draft.tripId);
+                    final actorName = currentUser?.name;
+
+                    // Save with actor name for activity logging
+                    context.read<ItemizedExpenseCubit>().save(
+                      actorName: actorName,
+                    );
+                  }
                 : null,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.all(16),

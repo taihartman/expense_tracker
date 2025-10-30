@@ -10,9 +10,8 @@ import '../../../../core/utils/code_generator.dart';
 class FirestoreDeviceLinkCodeRepository implements DeviceLinkCodeRepository {
   final FirebaseFirestore _firestore;
 
-  FirestoreDeviceLinkCodeRepository({
-    required FirebaseFirestore firestore,
-  }) : _firestore = firestore;
+  FirestoreDeviceLinkCodeRepository({required FirebaseFirestore firestore})
+    : _firestore = firestore;
 
   @override
   Future<DeviceLinkCode> generateCode(String tripId, String memberName) async {
@@ -58,7 +57,11 @@ class FirestoreDeviceLinkCodeRepository implements DeviceLinkCodeRepository {
   }
 
   @override
-  Future<DeviceLinkCode> validateCode(String tripId, String code, String memberName) async {
+  Future<DeviceLinkCode> validateCode(
+    String tripId,
+    String code,
+    String memberName,
+  ) async {
     // 1. Normalize code (remove hyphens for consistent querying)
     final normalizedCode = _normalizeCode(code);
 
@@ -155,14 +158,6 @@ class FirestoreDeviceLinkCodeRepository implements DeviceLinkCodeRepository {
         .collection('trips')
         .doc(tripId)
         .collection('deviceLinkCodes');
-  }
-
-  /// Helper: Get reference to validationAttempts subcollection for rate limiting
-  CollectionReference _getAttemptsCollection(String tripId) {
-    return _firestore
-        .collection('trips')
-        .doc(tripId)
-        .collection('validationAttempts');
   }
 
   /// Helper: Convert Firestore document to DeviceLinkCode entity

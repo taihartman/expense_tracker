@@ -13,6 +13,10 @@ analyzer:
     missing_required_param: error
     missing_return: error
     todo: ignore
+    # Ignore duplicate_ignore in auto-generated mock files
+    duplicate_ignore: ignore
+    # Ignore sealed class warnings in test mocks (Firestore SDK limitation)
+    subtype_of_sealed_class: ignore
 
   exclude:
     - '**/*.g.dart'

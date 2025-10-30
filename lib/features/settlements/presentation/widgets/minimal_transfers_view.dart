@@ -300,7 +300,9 @@ class _TransferCardState extends State<_TransferCard> {
 
     if (confirmed == true && context.mounted) {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        widget.tripId,
+      );
       final actorName = currentUser?.name;
 
       await context.read<SettlementCubit>().markTransferAsSettled(
