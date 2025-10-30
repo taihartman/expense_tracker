@@ -5,6 +5,7 @@ import '../cubits/expense_cubit.dart';
 import '../cubits/expense_state.dart';
 import '../widgets/expense_card.dart';
 import '../widgets/expense_form_bottom_sheet.dart';
+import '../widgets/fab_speed_dial.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
@@ -50,14 +51,16 @@ class ExpenseListPage extends StatelessWidget {
               context.push(AppRoutes.settlement(tripId));
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: context.l10n.expenseAddTooltip,
-            onPressed: () {
-              showExpenseFormBottomSheet(context: context, tripId: tripId);
-            },
-          ),
         ],
+      ),
+      floatingActionButton: ExpenseFabSpeedDial(
+        tripId: tripId,
+        onQuickExpenseTap: () {
+          showExpenseFormBottomSheet(context: context, tripId: tripId);
+        },
+        onReceiptSplitTap: () {
+          // TODO: Navigate to Receipt Split wizard (T023)
+        },
       ),
       body: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
@@ -134,8 +137,9 @@ class ExpenseListPage extends StatelessWidget {
                     : <Participant>[];
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppTheme.spacing1,
+                  padding: const EdgeInsets.only(
+                    top: AppTheme.spacing1,
+                    bottom: 80, // 80dp clearance for FAB Speed Dial
                   ),
                   itemCount: state.expenses.length,
                   itemBuilder: (context, index) {

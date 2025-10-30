@@ -93,12 +93,13 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
       alignment: Alignment.bottomRight,
       children: [
         // Backdrop (dismisses Speed Dial when tapped)
+        // Must be FIRST in Stack so FABs are painted on top and receive taps
         if (_isOpen)
           Positioned.fill(
             child: GestureDetector(
               onTap: _close,
               child: Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
               ),
             ),
           ),
