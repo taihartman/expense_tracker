@@ -26,6 +26,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <!-- Add entries below in reverse chronological order (newest first) -->
 
+## 2025-10-30 - Extended TripCubit with Comprehensive Activity Logging
+
+### Added
+- Activity logging for all TripCubit state-changing operations:
+  - `updateTripDetails()` - Logs tripUpdated with change details (name/currency)
+  - `deleteTrip()` - Logs tripDeleted with trip metadata
+  - `archiveTrip()` - Logs tripArchived
+  - `unarchiveTrip()` - Logs tripUnarchived
+  - `validateAndJoinWithRecoveryCode()` - Logs recoveryCodeUsed with usage count
+- ActivityLogItem UI support for tripArchived (grey/archive icon) and tripUnarchived (primary/unarchive icon)
+
+### Changed
+- Updated trip_settings_page.dart to pass actorName to archive/unarchive operations
+- Updated trip_edit_page.dart to pass actorName to updateTripDetails
+- Updated archived_trips_page.dart to pass actorName to unarchive operation
+- All UI calls use `getCurrentUserForTrip()` for proper actor attribution
+
+### Notes
+- All logging follows fire-and-forget pattern with proper error handling
+- Actor names correctly resolved from current user context
+- Extends ActivityLoggerService with 8 new methods for trip/participant/device operations
+
 ## 2025-10-30 - Phase 3 Complete: All Cubits Migrated to ActivityLoggerService
 
 ### Summary

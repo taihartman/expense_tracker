@@ -528,6 +528,112 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
+  /// Add a participant to a trip
+  Future<void> addParticipant({
+    required String tripId,
+    required Participant participant,
+    String? actorName,
+  }) async {
+    try {
+      _log('➕ Adding participant ${participant.name} to trip $tripId');
+
+      // Get the current trip
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Check for duplicate participant
+      final isDuplicate = currentTrip.participants.any(
+        (p) => p.id == participant.id,
+      );
+      if (isDuplicate) {
+        throw Exception('Participant with ID ${participant.id} already exists');
+      }
+
+      // Add participant to trip
+      final updatedParticipants = [
+        ...currentTrip.participants,
+        participant,
+      ];
+      final updatedTrip = currentTrip.copyWith(
+        participants: updatedParticipants,
+        updatedAt: DateTime.now(),
+      );
+
+      await _tripRepository.updateTrip(updatedTrip);
+      _log('✅ Participant added successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging participant addition via ActivityLoggerService...');
+        await _activityLoggerService.logParticipantAdded(
+          tripId: tripId,
+          participantName: participant.name,
+          actorName: actorName,
+        );
+        _log('✅ Activity logged');
+      }
+
+      // Reload trips to refresh the list
+      await loadTrips();
+    } catch (e) {
+      _log('❌ Failed to add participant: $e');
+      emit(TripError('Failed to add participant: ${e.toString()}'));
+    }
+  }
+
+  /// Remove a participant from a trip
+  Future<void> removeParticipant({
+    required String tripId,
+    required Participant participant,
+    String? actorName,
+  }) async {
+    try {
+      _log('➖ Removing participant ${participant.name} from trip $tripId');
+
+      // Get the current trip
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Remove participant from trip
+      final updatedParticipants = List<Participant>.from(
+        currentTrip.participants,
+      )..remove(participant);
+
+      final updatedTrip = currentTrip.copyWith(
+        participants: updatedParticipants,
+        updatedAt: DateTime.now(),
+      );
+
+      await _tripRepository.updateTrip(updatedTrip);
+      _log('✅ Participant removed successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging participant removal via ActivityLoggerService...');
+        await _activityLoggerService.logParticipantRemoved(
+          tripId: tripId,
+          participantName: participant.name,
+          actorName: actorName,
+        );
+        _log('✅ Activity logged');
+      }
+
+      // Reload trips to refresh the list
+      await loadTrips();
+    } catch (e) {
+      _log('❌ Failed to remove participant: $e');
+      emit(TripError('Failed to remove participant: ${e.toString()}'));
+    }
+  }
+
   /// Join an existing trip by trip ID
   Future<void> joinTrip({
     required String tripId,

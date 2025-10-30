@@ -460,17 +460,16 @@ class TripSettingsPage extends StatelessWidget {
         onConfirm: () async {
           Navigator.of(dialogContext).pop();
 
-          // Remove participant from trip
-          final updatedParticipants = List<Participant>.from(trip.participants)
-            ..remove(participant);
-
-          final updatedTrip = trip.copyWith(
-            participants: updatedParticipants,
-            updatedAt: DateTime.now(),
-          );
-
           try {
-            await context.read<TripCubit>().updateTrip(updatedTrip);
+            // Get current user for activity logging
+            final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+            final actorName = currentUser?.name;
+
+            await context.read<TripCubit>().removeParticipant(
+              tripId: trip.id,
+              participant: participant,
+              actorName: actorName,
+            );
 
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -224,15 +224,14 @@ class _ParticipantFormBottomSheetState
   }
 
   Future<void> _addParticipantToTrip(trip, Participant participant) async {
-    final List<Participant> updatedParticipants = [
-      ...trip.participants,
-      participant,
-    ];
-    final updatedTrip = trip.copyWith(
-      participants: updatedParticipants,
-      updatedAt: DateTime.now(),
-    );
+    // Get current user for activity logging
+    final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+    final actorName = currentUser?.name;
 
-    await context.read<TripCubit>().updateTrip(updatedTrip);
+    await context.read<TripCubit>().addParticipant(
+      tripId: trip.id,
+      participant: participant,
+      actorName: actorName,
+    );
   }
 }
