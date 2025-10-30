@@ -37,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Phase 2 Started**: Created ExpenseFabSpeedDial widget with Material Design 3 Speed Dial pattern
 - Created `lib/features/expenses/presentation/widgets/fab_speed_dial.dart`
 - Created widget tests: `test/widget/features/expenses/fab_speed_dial_test.dart` (T008-T011)
+- Integrated FAB Speed Dial into Expense List Page (T017-T018)
+- Added 80dp bottom padding to expense ListView for FAB clearance
 
 ### Changed
 - **Phase 1 Complete**: Migrated 74 localization strings from 'itemized' to 'receiptSplit' terminology
@@ -45,8 +47,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated code references: Find/replace `.l10n.itemized*` → `.l10n.receiptSplit*` across lib/ and test/
 - Fixed 2 remaining references in `split_type.dart` and `expense_form_page.dart`
 - Verified with `flutter analyze` (zero errors)
+- Removed "Add" IconButton from Expense List Page AppBar (T017)
+- Modified `expense_list_page.dart` to use FAB Speed Dial instead of AppBar button
+- Removed Receipt Split OutlinedButton from Quick Expense form (T019-T021)
+- Quick Expense form now only shows Equal and Weighted split options
 
 ### Fixed
 - Fixed T010-T011 widget tests: Changed T010 to directly call `fabWidget.onPressed()` to verify callback wiring without hit-testing complexities
 - Changed T011 to test toggle behavior by tapping main FAB twice
 - All 4 FAB Speed Dial tests now passing
+- Fixed deprecated `withOpacity()` to `withValues(alpha:)` in fab_speed_dial.dart
