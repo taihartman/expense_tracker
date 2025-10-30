@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -40,14 +41,14 @@ class _TripListPageState extends State<TripListPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
+          onPressed: () => context.go(AppRoutes.home),
         ),
         title: Text(context.l10n.tripListTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.group_add),
             tooltip: context.l10n.tripJoinTitle,
-            onPressed: () => context.push('/trips/join'),
+            onPressed: () => context.push(AppRoutes.tripJoin),
           ),
         ],
       ),
@@ -125,7 +126,7 @@ class _TripListPageState extends State<TripListPage> {
                           onTap: () async {
                             await context.read<TripCubit>().selectTrip(trip);
                             if (context.mounted) {
-                              context.go('/');
+                              context.go(AppRoutes.home);
                             }
                           },
                         ),
@@ -138,7 +139,7 @@ class _TripListPageState extends State<TripListPage> {
                   Padding(
                     padding: const EdgeInsets.all(AppTheme.spacing2),
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push('/trips/archived'),
+                      onPressed: () => context.push(AppRoutes.tripArchived),
                       icon: const Icon(Icons.archive),
                       label: Text(
                         'View Archived Trips (${state.archivedTrips.length})',
@@ -156,7 +157,7 @@ class _TripListPageState extends State<TripListPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/trips/create'),
+        onPressed: () => context.push(AppRoutes.tripCreate),
         child: const Icon(Icons.add),
       ),
     );

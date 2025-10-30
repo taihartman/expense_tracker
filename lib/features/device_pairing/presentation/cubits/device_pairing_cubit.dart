@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../domain/repositories/device_link_code_repository.dart';
+import '../../../trips/domain/repositories/trip_repository.dart';
+import '../../../../core/models/participant.dart';
 import 'device_pairing_state.dart';
 
 /// Cubit for managing device pairing operations.
@@ -9,12 +11,15 @@ import 'device_pairing_state.dart';
 class DevicePairingCubit extends Cubit<DevicePairingState> {
   final DeviceLinkCodeRepository _repository;
   final LocalStorageService _localStorageService;
+  final TripRepository? _tripRepository;
 
   DevicePairingCubit({
     required DeviceLinkCodeRepository repository,
     required LocalStorageService localStorageService,
+    TripRepository? tripRepository,
   })  : _repository = repository,
         _localStorageService = localStorageService,
+        _tripRepository = tripRepository,
         super(const DevicePairingInitial());
 
   /// Generates a new device link code for the specified member.
@@ -49,8 +54,8 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
       // Call repository to validate code (includes all 6 validation rules)
       await _repository.validateCode(tripId, code, memberName);
 
-      // Grant trip access by saving tripId to local storage
-      await _grantTripAccess(tripId);
+      // Grant trip access by saving tripId to local storage and adding to verified members
+      await _grantTripAccess(tripId, memberName);
 
       // Emit success state with tripId
       emit(CodeValidated(tripId));
@@ -111,11 +116,29 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
     // 2. Include timestamp and success flag
   }
 
-  /// Grants trip access by saving trip ID to local storage.
+  /// Grants trip access by saving trip ID to local storage
+  /// and adding to verified members in Firestore.
   ///
   /// This adds the trip ID to the user's list of joined trips,
   /// allowing them to access the trip's data.
-  Future<void> _grantTripAccess(String tripId) async {
+  Future<void> _grantTripAccess(String tripId, String memberName) async {
+    // Add to local storage
     await _localStorageService.addJoinedTrip(tripId);
+
+    // Add to verified members in Firestore (cross-device visibility)
+    if (_tripRepository != null) {
+      try {
+        final participantId = Participant.fromName(memberName).id;
+        await _tripRepository.addVerifiedMember(
+          tripId: tripId,
+          participantId: participantId,
+          participantName: memberName,
+        );
+      } catch (e) {
+        // Non-fatal - user still has local access
+        // ignore: avoid_print
+        print('⚠️ Failed to add verified member (non-fatal): $e');
+      }
+    }
   }
 }

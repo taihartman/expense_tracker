@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/trip.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../core/utils/link_utils.dart';
+import '../cubits/trip_cubit.dart';
 
 /// Page for displaying and sharing trip invite details
-class TripInvitePage extends StatelessWidget {
+class TripInvitePage extends StatefulWidget {
   final Trip trip;
 
   const TripInvitePage({super.key, required this.trip});
 
+  @override
+  State<TripInvitePage> createState() => _TripInvitePageState();
+}
+
+class _TripInvitePageState extends State<TripInvitePage> {
+  bool _isLoadingMessage = false;
+
   void _copyInviteCode(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: trip.id));
+    Clipboard.setData(ClipboardData(text: widget.trip.id));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(context.l10n.tripInviteCodeCopied),
@@ -22,26 +31,60 @@ class TripInvitePage extends StatelessWidget {
     );
   }
 
-  void _copyInviteLink(BuildContext context) {
-    final link = generateShareableLink(trip.id);
-    Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Link copied to clipboard'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
+  Future<void> _copyInviteLink(BuildContext context) async {
+    setState(() {
+      _isLoadingMessage = true;
+    });
+
+    try {
+      // Load verified members from Firestore
+      final verifiedMembers = await context
+          .read<TripCubit>()
+          .getVerifiedMembers(widget.trip.id);
+
+      // Generate human-friendly message with link
+      final message = generateShareMessage(
+        trip: widget.trip,
+        verifiedMembers: verifiedMembers,
+      );
+
+      // Copy to clipboard
+      await Clipboard.setData(ClipboardData(text: message));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.tripInviteMessageCopied),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to copy message'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingMessage = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final inviteLink = generateShareableLink(trip.id);
+    final inviteLink = generateShareableLink(widget.trip.id);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.tripInviteTitle),
-      ),
+      appBar: AppBar(title: Text(context.l10n.tripInviteTitle)),
       body: ListView(
         padding: const EdgeInsets.all(AppTheme.spacing3),
         children: [
@@ -81,11 +124,13 @@ class TripInvitePage extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppTheme.spacing2),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: SelectableText(
-                      trip.id,
+                      widget.trip.id,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontFamily: 'monospace',
                         fontWeight: FontWeight.bold,
@@ -119,7 +164,7 @@ class TripInvitePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Shareable Link',
+                    context.l10n.tripInviteShareableLinkLabel,
                     style: Theme.of(context).textTheme.labelLarge,
                   ),
                   const SizedBox(height: AppTheme.spacing1),
@@ -127,7 +172,9 @@ class TripInvitePage extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppTheme.spacing2),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: SelectableText(
@@ -139,13 +186,25 @@ class TripInvitePage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppTheme.spacing2),
 
-                  // Copy Link Button
+                  // Copy Link Button (copies personalized message)
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _copyInviteLink(context),
-                      icon: const Icon(Icons.link),
-                      label: const Text('Copy Link'),
+                      onPressed: _isLoadingMessage
+                          ? null
+                          : () => _copyInviteLink(context),
+                      icon: _isLoadingMessage
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.link),
+                      label: Text(
+                        _isLoadingMessage
+                            ? 'Loading...'
+                            : context.l10n.tripInviteCopyLinkButton,
+                      ),
                     ),
                   ),
                 ],
@@ -170,7 +229,7 @@ class TripInvitePage extends StatelessWidget {
                       ),
                       const SizedBox(width: AppTheme.spacing1),
                       Text(
-                        'How to invite friends',
+                        context.l10n.tripInviteInstructionsTitle,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ],
@@ -179,19 +238,19 @@ class TripInvitePage extends StatelessWidget {
                   _buildInstructionStep(
                     context,
                     '1',
-                    'Share the invite code or link with your friends',
+                    context.l10n.tripInviteInstructionStep1,
                   ),
                   const SizedBox(height: AppTheme.spacing1),
                   _buildInstructionStep(
                     context,
                     '2',
-                    'They enter the code on the Join Trip page',
+                    context.l10n.tripInviteInstructionStep2,
                   ),
                   const SizedBox(height: AppTheme.spacing1),
                   _buildInstructionStep(
                     context,
                     '3',
-                    'They provide their name and join the trip',
+                    context.l10n.tripInviteInstructionStep3,
                   ),
                 ],
               ),
@@ -202,7 +261,11 @@ class TripInvitePage extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructionStep(BuildContext context, String number, String text) {
+  Widget _buildInstructionStep(
+    BuildContext context,
+    String number,
+    String text,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -225,10 +288,7 @@ class TripInvitePage extends StatelessWidget {
         ),
         const SizedBox(width: AppTheme.spacing1),
         Expanded(
-          child: Text(
-            text,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
         ),
       ],
     );

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/models/trip_recovery_code.dart';
+import '../../domain/models/verified_member.dart';
 import '../../domain/repositories/trip_repository.dart';
 import '../../domain/repositories/activity_log_repository.dart';
 import '../../domain/repositories/trip_recovery_code_repository.dart';
@@ -537,6 +538,18 @@ class TripCubit extends Cubit<TripState> {
         );
         _log('👤 User identity saved: ${userParticipant.id}');
 
+        // Add to verified members (idempotent - Firestore will update existing)
+        try {
+          await _tripRepository.addVerifiedMember(
+            tripId: tripId,
+            participantId: userParticipant.id,
+            participantName: userName,
+          );
+          _log('✅ Added to verified members (idempotent)');
+        } catch (e) {
+          _log('⚠️ Failed to add verified member (non-fatal): $e');
+        }
+
         emit(TripJoined(trip));
         await loadTrips();
         return;
@@ -568,6 +581,19 @@ class TripCubit extends Cubit<TripState> {
         } catch (e) {
           _log('⚠️ Failed to log activity (non-fatal): $e');
         }
+      }
+
+      // Add to verified members for cross-device visibility
+      _log('✅ Adding to verified members...');
+      try {
+        await _tripRepository.addVerifiedMember(
+          tripId: tripId,
+          participantId: userParticipant.id,
+          participantName: userName,
+        );
+        _log('✅ Added to verified members');
+      } catch (e) {
+        _log('⚠️ Failed to add verified member (non-fatal): $e');
       }
 
       // Cache trip ID in local storage
@@ -791,6 +817,21 @@ class TripCubit extends Cubit<TripState> {
 
     _log('✅ Found current user: ${participant.name} (${participant.id})');
     return participant;
+  }
+
+  /// Get all verified members for a trip
+  /// Returns list of participants who have verified their identity
+  /// Used for generating invite messages with social proof
+  Future<List<VerifiedMember>> getVerifiedMembers(String tripId) async {
+    try {
+      _log('📥 Getting verified members for trip: $tripId');
+      final members = await _tripRepository.getVerifiedMembers(tripId);
+      _log('✅ Retrieved ${members.length} verified members');
+      return members;
+    } catch (e) {
+      _log('❌ Failed to get verified members: $e');
+      return []; // Return empty list on error (non-fatal)
+    }
   }
 
   @override

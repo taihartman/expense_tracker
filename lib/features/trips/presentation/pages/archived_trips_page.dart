@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -42,7 +43,7 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
+          onPressed: () => context.go(AppRoutes.home),
         ),
         title: Text(context.l10n.tripArchivedPageTitle),
       ),
@@ -176,7 +177,7 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                             if (context.mounted) {
                               await context.read<TripCubit>().selectTrip(trip);
                               if (context.mounted) {
-                                context.go('/');
+                                context.go(AppRoutes.home);
                               }
                             }
                           },
@@ -188,7 +189,7 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                         : () async {
                             await context.read<TripCubit>().selectTrip(trip);
                             if (context.mounted) {
-                              context.go('/');
+                              context.go(AppRoutes.home);
                             }
                           },
                   ),

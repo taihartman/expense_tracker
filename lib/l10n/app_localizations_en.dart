@@ -1018,6 +1018,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tripInviteShareMessageButton => 'Share Message';
+
+  @override
+  String get tripInviteMessageCopied => 'Message copied to clipboard';
+
+  @override
+  String get tripInviteShareableLinkLabel => 'Shareable Link';
+
+  @override
+  String get tripInviteCopyLinkButton => 'Copy Link';
+
+  @override
+  String get tripInviteLinkCopied => 'Link copied to clipboard';
+
+  @override
+  String get tripInviteInstructionsTitle => 'How to invite friends';
+
+  @override
+  String get tripInviteInstructionStep1 =>
+      'Share the message, code, or link with your friends';
+
+  @override
+  String get tripInviteInstructionStep2 =>
+      'They click the link or enter the code on the Join Trip page';
+
+  @override
+  String get tripInviteInstructionStep3 =>
+      'They select their identity and verify via device pairing or recovery code';
+
+  @override
   String get activityLogTitle => 'Activity Log';
 
   @override
@@ -1184,6 +1214,72 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tripJoinRecoveryCodeInvalid =>
       'Invalid recovery code. Please check and try again.';
+
+  @override
+  String get tripJoinInstructionStep1 =>
+      'Enter the trip invite code shared by a trip member';
+
+  @override
+  String get tripJoinInstructionStep2 =>
+      'Select your identity. Members will see expenses under this name.';
+
+  @override
+  String get tripJoinInviteBannerTitle =>
+      'You\'ve been invited to join a trip!';
+
+  @override
+  String get tripJoinInviteBannerMessage =>
+      'The invite code has been pre-filled for you. Tap \'Load Trip\' to continue.';
+
+  @override
+  String get tripJoinNoParticipants => 'This trip has no participants yet.';
+
+  @override
+  String get tripJoinTripLabel => 'Trip';
+
+  @override
+  String get tripJoinNoTripLoaded => 'No trip loaded';
+
+  @override
+  String get tripJoinRecoveryCodeSubtitle =>
+      'Bypass verification with recovery code';
+
+  @override
+  String get tripJoinLoadError =>
+      'Could not load trip. Please check your internet connection and try again.';
+
+  @override
+  String get tripJoinGenericError => 'An error occurred. Please try again.';
+
+  @override
+  String get tripJoinVerificationFailed =>
+      'Verification failed. Please try again.';
+
+  @override
+  String get tripJoinHelpDeviceVerification =>
+      'Device verification ensures only authorized members can access the trip.';
+
+  @override
+  String get tripJoinHelpRecoveryCode =>
+      'Recovery code is a 12-digit code provided when the trip was created.';
+
+  @override
+  String get tripJoinHelpWhereToFindCode =>
+      'Ask a trip member to generate a code for you via Trip Settings.';
+
+  @override
+  String get tripJoinRetryButton => 'Retry';
+
+  @override
+  String get tripJoinConfirmDialogTitle => 'Confirm Your Identity';
+
+  @override
+  String tripJoinConfirmDialogMessage(String tripName, String participantName) {
+    return 'Join $tripName as $participantName?';
+  }
+
+  @override
+  String get tripJoinConfirmButton => 'Confirm & Join';
 
   @override
   String get tripVerificationPromptTitle => 'Select Your Identity';

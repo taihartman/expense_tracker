@@ -304,6 +304,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               return DevicePairingCubit(
                 repository: _deviceLinkCodeRepository,
                 localStorageService: localStorageService,
+                tripRepository: _tripRepository,
               );
             },
           ),

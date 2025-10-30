@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/models/participant.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
@@ -54,7 +55,7 @@ class TripSettingsPage extends StatelessWidget {
             icon: const Icon(Icons.edit),
             tooltip: context.l10n.commonEdit,
             onPressed: () {
-              context.push('/trips/$tripId/edit');
+              context.push(AppRoutes.tripEdit(tripId));
             },
           ),
         ],
@@ -131,7 +132,7 @@ class TripSettingsPage extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () =>
-                              context.push('/trips/$tripId/invite'),
+                              context.push(AppRoutes.tripInvite(tripId)),
                           icon: const Icon(Icons.person_add_alt_1),
                           label: Text(context.l10n.tripInviteTitle),
                           style: ElevatedButton.styleFrom(
@@ -143,7 +144,7 @@ class TripSettingsPage extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () =>
-                              context.push('/trips/$tripId/activity'),
+                              context.push(AppRoutes.tripActivity(tripId)),
                           icon: const Icon(Icons.history),
                           label: const Text('Activity'),
                           style: OutlinedButton.styleFrom(
@@ -777,7 +778,7 @@ class TripSettingsPage extends StatelessWidget {
         );
 
         // Navigate to home page
-        context.go('/');
+        context.go(AppRoutes.home);
       }
     } catch (e) {
       if (context.mounted) {
@@ -857,7 +858,7 @@ class TripSettingsPage extends StatelessWidget {
       );
 
       // Navigate to home
-      context.go('/');
+      context.go(AppRoutes.home);
     } catch (e) {
       if (!context.mounted) return;
 

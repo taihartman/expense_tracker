@@ -53,6 +53,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
   Participant? _selectedParticipant;
   bool _useRecoveryCode = false;
   bool _isLoading = false;
+  String? _loadError; // Track load errors for retry functionality
 
   @override
   void initState() {
@@ -109,14 +110,9 @@ class _TripJoinPageState extends State<TripJoinPage> {
       }
 
       if (trip.participants.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('This trip has no participants yet.'),
-            backgroundColor: Colors.red,
-          ),
-        );
         setState(() {
           _isLoading = false;
+          _loadError = context.l10n.tripJoinNoParticipants;
         });
         return;
       }
@@ -126,92 +122,14 @@ class _TripJoinPageState extends State<TripJoinPage> {
         _loadedTrip = trip;
         _currentStep = JoinStep.selectIdentity;
         _isLoading = false;
+        _loadError = null; // Clear any previous errors
       });
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading trip: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
       setState(() {
         _isLoading = false;
-      });
-    }
-  }
-
-  /// Join trip with recovery code (bypasses verification)
-  Future<void> _joinWithRecoveryCode() async {
-    final tripId = _codeController.text.trim();
-    final recoveryCode = _recoveryCodeController.text.trim();
-
-    if (tripId.isEmpty || recoveryCode.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.validationRequired),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Load trip first to get participant list
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final tripCubit = context.read<TripCubit>();
-      final trip = await tripCubit.getTripById(tripId);
-
-      if (!mounted) return;
-
-      if (trip == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.tripJoinTripNotFound),
-            backgroundColor: Colors.red,
-          ),
-        );
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      if (trip.participants.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('This trip has no participants yet.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        setState(() {
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Show participant selector to choose which identity to use
-      setState(() {
-        _loadedTrip = trip;
-        _currentStep = JoinStep.selectIdentity;
-        _isLoading = false;
-        // Keep recovery code for later validation
-      });
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      setState(() {
-        _isLoading = false;
+        _loadError = context.l10n.tripJoinLoadError;
       });
     }
   }
@@ -219,6 +137,32 @@ class _TripJoinPageState extends State<TripJoinPage> {
   /// Verify identity and join trip
   Future<void> _verifyAndJoin() async {
     if (_selectedParticipant == null || _loadedTrip == null) return;
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.tripJoinConfirmDialogTitle),
+        content: Text(
+          context.l10n.tripJoinConfirmDialogMessage(
+            _loadedTrip!.name,
+            _selectedParticipant!.name,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(context.l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(context.l10n.tripJoinConfirmButton),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
 
     // Capture values before async gap
     final devicePairingCubit = context.read<DevicePairingCubit>();
@@ -288,7 +232,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
 
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Text('Verification failed: ${e.toString()}'),
+          content: Text(context.l10n.tripJoinVerificationFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -347,15 +291,61 @@ class _TripJoinPageState extends State<TripJoinPage> {
 
   /// Step 1: Enter trip code
   Widget _buildEnterCodeStep() {
+    final hasInviteCode =
+        widget.inviteCode != null && widget.inviteCode!.isNotEmpty;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppTheme.spacing2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Invite link banner (shown when code is pre-filled from URL)
+          if (hasInviteCode) ...[
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.card_giftcard, color: Colors.blue.shade700),
+                  const SizedBox(width: AppTheme.spacing2),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.l10n.tripJoinInviteBannerTitle,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          context.l10n.tripJoinInviteBannerMessage,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue.shade800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppTheme.spacing3),
+          ],
+
           // Instructions
-          const Text(
-            'Enter the trip code to join an existing trip.',
-            style: TextStyle(fontSize: 16),
+          Text(
+            context.l10n.tripJoinInstructionStep1,
+            style: const TextStyle(fontSize: 16),
           ),
           const SizedBox(height: AppTheme.spacing3),
 
@@ -366,44 +356,79 @@ class _TripJoinPageState extends State<TripJoinPage> {
             hint: context.l10n.tripJoinCodeHint,
             enabled: !_isLoading,
           ),
-          const SizedBox(height: AppTheme.spacing2),
 
-          // Recovery code toggle
-          SwitchListTile(
-            title: Text(context.l10n.tripJoinUseRecoveryCode),
-            subtitle: const Text('Bypass verification with recovery code'),
-            value: _useRecoveryCode,
-            onChanged: _isLoading
-                ? null
-                : (value) {
-                    setState(() {
-                      _useRecoveryCode = value;
-                    });
-                  },
-          ),
-
-          // Recovery code input (conditional)
-          if (_useRecoveryCode) ...[
+          // Error message with retry button
+          if (_loadError != null) ...[
             const SizedBox(height: AppTheme.spacing2),
-            CustomTextField(
-              controller: _recoveryCodeController,
-              label: context.l10n.tripJoinRecoveryCodeLabel,
-              hint: context.l10n.tripJoinRecoveryCodeHint,
-              enabled: !_isLoading,
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Colors.red.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.red.shade700,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _loadError!,
+                          style: TextStyle(color: Colors.red.shade900),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    icon: const Icon(Icons.refresh),
+                    label: Text(context.l10n.tripJoinRetryButton),
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _loadError = null;
+                            });
+                            _loadTrip();
+                          },
+                  ),
+                ],
+              ),
             ),
           ],
 
           const SizedBox(height: AppTheme.spacing3),
 
-          // Load/Join button
+          // Load button
           CustomButton(
-            text: _useRecoveryCode
-                ? context.l10n.tripJoinButton
-                : context.l10n.tripJoinLoadButton,
-            onPressed: _isLoading
-                ? null
-                : (_useRecoveryCode ? _joinWithRecoveryCode : _loadTrip),
+            text: context.l10n.tripJoinLoadButton,
+            onPressed: _isLoading ? null : _loadTrip,
           ),
+
+          // Loading state
+          if (_isLoading) ...[
+            const SizedBox(height: AppTheme.spacing3),
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spacing3),
+              child: Column(
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: AppTheme.spacing2),
+                  Text(
+                    context.l10n.commonLoading,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -412,7 +437,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
   /// Step 2: Select participant identity
   Widget _buildSelectIdentityStep() {
     if (_loadedTrip == null) {
-      return const Center(child: Text('No trip loaded'));
+      return Center(child: Text(context.l10n.tripJoinNoTripLoaded));
     }
 
     return SingleChildScrollView(
@@ -420,21 +445,36 @@ class _TripJoinPageState extends State<TripJoinPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Trip name card
+          // Trip preview card
           Card(
+            elevation: 2,
             child: Padding(
               padding: const EdgeInsets.all(AppTheme.spacing2),
               child: Row(
                 children: [
-                  const Icon(Icons.card_travel, size: 32),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.card_travel,
+                      size: 32,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
                   const SizedBox(width: AppTheme.spacing2),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Trip',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        Text(
+                          context.l10n.tripJoinTripLabel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                         Text(
                           _loadedTrip!.name,
@@ -442,6 +482,38 @@ class _TripJoinPageState extends State<TripJoinPage> {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.people,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${_loadedTrip!.participants.length} members',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Icon(
+                              Icons.attach_money,
+                              size: 16,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _loadedTrip!.baseCurrency.name.toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -453,10 +525,38 @@ class _TripJoinPageState extends State<TripJoinPage> {
 
           const SizedBox(height: AppTheme.spacing3),
 
-          // Instructions
-          Text(
-            context.l10n.tripJoinSelectIdentityPrompt,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          // Instructions with help icon
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  context.l10n.tripJoinSelectIdentityPrompt,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.help_outline, size: 20),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(context.l10n.tripJoinSelectIdentityTitle),
+                      content: Text(context.l10n.tripJoinInstructionStep2),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(context.l10n.commonGotIt),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                tooltip: 'Help',
+              ),
+            ],
           ),
 
           const SizedBox(height: AppTheme.spacing2),
@@ -471,6 +571,55 @@ class _TripJoinPageState extends State<TripJoinPage> {
               });
             },
           ),
+
+          const SizedBox(height: AppTheme.spacing3),
+
+          // Recovery code toggle with help icon
+          Row(
+            children: [
+              Expanded(
+                child: SwitchListTile(
+                  title: Text(context.l10n.tripJoinUseRecoveryCode),
+                  subtitle: Text(context.l10n.tripJoinRecoveryCodeSubtitle),
+                  value: _useRecoveryCode,
+                  onChanged: (value) {
+                    setState(() {
+                      _useRecoveryCode = value;
+                    });
+                  },
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.help_outline, size: 20),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(context.l10n.tripJoinUseRecoveryCode),
+                      content: Text(context.l10n.tripJoinHelpRecoveryCode),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(context.l10n.commonGotIt),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                tooltip: 'Help',
+              ),
+            ],
+          ),
+
+          // Recovery code input (conditional)
+          if (_useRecoveryCode) ...[
+            const SizedBox(height: AppTheme.spacing2),
+            CustomTextField(
+              controller: _recoveryCodeController,
+              label: context.l10n.tripJoinRecoveryCodeLabel,
+              hint: context.l10n.tripJoinRecoveryCodeHint,
+            ),
+          ],
 
           const SizedBox(height: AppTheme.spacing3),
 

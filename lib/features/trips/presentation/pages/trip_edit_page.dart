@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../../../../core/models/currency_code.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
@@ -44,7 +45,7 @@ class _TripEditPageState extends State<TripEditPage> {
         name: _nameController.text.trim(),
         baseCurrency: _selectedCurrency,
       );
-      context.go('/trips/${widget.trip.id}/settings');
+      context.go(AppRoutes.tripSettings(widget.trip.id));
     }
   }
 
@@ -57,7 +58,7 @@ class _TripEditPageState extends State<TripEditPage> {
           icon: const Icon(Icons.arrow_back),
           tooltip: context.l10n.tripBackToSettings,
           onPressed: () {
-            context.go('/trips/${widget.trip.id}/settings');
+            context.go(AppRoutes.tripSettings(widget.trip.id));
           },
         ),
       ),
