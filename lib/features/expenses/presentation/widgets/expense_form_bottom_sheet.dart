@@ -230,7 +230,9 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
       );
 
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        widget.tripId,
+      );
       final actorName = currentUser?.name;
 
       if (widget.expense != null) {
@@ -278,7 +280,9 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
 
     if (confirmed == true && mounted) {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        widget.tripId,
+      );
       final actorName = currentUser?.name;
 
       await context.read<ExpenseCubit>().deleteExpense(

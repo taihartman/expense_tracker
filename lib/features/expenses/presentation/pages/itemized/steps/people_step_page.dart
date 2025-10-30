@@ -138,7 +138,9 @@ class PeopleStepPage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.all(16),
                       ),
-                      child: Text(context.l10n.receiptSplitPeopleContinueButton),
+                      child: Text(
+                        context.l10n.receiptSplitPeopleContinueButton,
+                      ),
                     ),
                   ),
                 ],

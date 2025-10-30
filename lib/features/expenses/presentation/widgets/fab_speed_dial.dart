@@ -47,9 +47,10 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
       parent: _animationController,
       curve: Curves.easeOutCubic,
     );
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      _scaleAnimation,
-    );
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_scaleAnimation);
   }
 
   @override
@@ -99,9 +100,7 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
           Positioned.fill(
             child: GestureDetector(
               onTap: _close,
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.3),
-              ),
+              child: Container(color: Colors.black.withValues(alpha: 0.3)),
             ),
           ),
 

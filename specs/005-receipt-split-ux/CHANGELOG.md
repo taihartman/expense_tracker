@@ -41,6 +41,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added 80dp bottom padding to expense ListView for FAB clearance
 - **Phase 3 Complete**: Wired Receipt Split FAB to ItemizedExpenseWizard navigation (T027-T028)
 - FAB Receipt Split now opens wizard directly with trip context (tripId, participants, payer, currency)
+- **Phase 4 Complete**: Added localization support to FAB tooltips (T035)
+- Added 3 new localization keys: expenseFabMainTooltip, expenseFabQuickExpenseTooltip, expenseFabReceiptSplitTooltip
+- Updated widget tests with localization delegates
 
 ### Changed
 - **Phase 1 Complete**: Migrated 74 localization strings from 'itemized' to 'receiptSplit' terminology
@@ -59,3 +62,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Changed T011 to test toggle behavior by tapping main FAB twice
 - All 4 FAB Speed Dial tests now passing
 - Fixed deprecated `withOpacity()` to `withValues(alpha:)` in fab_speed_dial.dart
+
+### Summary
+**Feature Complete** - Receipt Split UX improvements with FAB Speed Dial and updated terminology
+- 4 phases implemented (Phase 1-4: T001-T037)
+- All FAB Speed Dial widget tests passing (4/4)
+- Code formatted and analyzed (zero new issues)
+- Backward compatible with existing itemized expenses
+- Ready for QA and code review

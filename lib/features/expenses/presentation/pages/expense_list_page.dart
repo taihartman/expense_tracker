@@ -29,9 +29,7 @@ class ExpenseListPage extends StatelessWidget {
     final tripCubit = context.read<TripCubit>();
     if (!tripCubit.isUserMemberOf(tripId)) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.expenseListTitle),
-        ),
+        appBar: AppBar(title: Text(context.l10n.expenseListTitle)),
         body: TripVerificationPrompt(tripId: tripId),
       );
     }
@@ -82,16 +80,16 @@ class ExpenseListPage extends StatelessWidget {
           await Navigator.of(context).push<bool>(
             MaterialPageRoute(
               builder: (context) => BlocProvider(
-                create: (context) => ItemizedExpenseCubit(
-                  expenseRepository: expenseRepository,
-                ),
+                create: (context) =>
+                    ItemizedExpenseCubit(expenseRepository: expenseRepository),
                 child: ItemizedExpenseWizard(
                   tripId: tripId,
                   participants: trip.participants.map((p) => p.id).toList(),
                   participantNames: {
                     for (var p in trip.participants) p.id: p.name,
                   },
-                  initialPayerUserId: currentUser?.id ?? trip.participants.first.id,
+                  initialPayerUserId:
+                      currentUser?.id ?? trip.participants.first.id,
                   currency: trip.baseCurrency,
                 ),
               ),

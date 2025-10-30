@@ -13,10 +13,7 @@ Widget _wrapWithMaterialApp(Widget child) {
       GlobalWidgetsLocalizations.delegate,
     ],
     supportedLocales: const [Locale('en')],
-    home: Scaffold(
-      body: Container(),
-      floatingActionButton: child,
-    ),
+    home: Scaffold(body: Container(), floatingActionButton: child),
   );
 }
 
@@ -38,8 +35,9 @@ void main() {
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
 
-    testWidgets('T009: FAB expands to show 2 options when tapped',
-        (tester) async {
+    testWidgets('T009: FAB expands to show 2 options when tapped', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrapWithMaterialApp(
           ExpenseFabSpeedDial(
@@ -60,8 +58,9 @@ void main() {
       expect(find.byIcon(Icons.receipt_long), findsOneWidget); // Receipt Split
     });
 
-    testWidgets('T010: Quick Expense option calls onQuickExpenseTap callback',
-        (tester) async {
+    testWidgets('T010: Quick Expense option calls onQuickExpenseTap callback', (
+      tester,
+    ) async {
       bool quickExpenseTapped = false;
 
       await tester.pumpWidget(
@@ -94,8 +93,7 @@ void main() {
       expect(quickExpenseTapped, isTrue);
     });
 
-    testWidgets('T011: Backdrop closes Speed Dial when tapped',
-        (tester) async {
+    testWidgets('T011: Backdrop closes Speed Dial when tapped', (tester) async {
       await tester.pumpWidget(
         _wrapWithMaterialApp(
           ExpenseFabSpeedDial(

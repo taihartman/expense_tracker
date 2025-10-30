@@ -107,7 +107,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
       );
 
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        widget.tripId,
+      );
       final actorName = currentUser?.name;
 
       if (widget.expense != null) {
