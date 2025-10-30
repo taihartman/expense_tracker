@@ -24,6 +24,7 @@ import '../../features/expenses/presentation/cubits/expense_cubit.dart';
 import '../../features/settlements/presentation/pages/settlement_summary_page.dart';
 import '../theme/app_theme.dart';
 import '../l10n/l10n_extensions.dart';
+import '../presentation/widgets/version_footer.dart';
 
 /// Check if user is a member of the trip (for route guarding)
 /// DEPRECATED: No longer used for route-level blocking.
@@ -62,7 +63,6 @@ class AppRouter {
   static String? _originalLocation;
 
   static final GoRouter router = GoRouter(
-    initialLocation: AppRoutes.splash,
     redirect: (context, state) {
       // Store the very first location request (the deep link)
       // This captures invite links like /trips/join?code=xxx
@@ -264,9 +264,11 @@ class _HomePageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const TripSelectorWidget()),
-      body: BlocBuilder<TripCubit, TripState>(
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(title: const TripSelectorWidget()),
+          body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
           if (state is TripLoaded && state.selectedTrip != null) {
             final tripId = state.selectedTrip!.id;
@@ -346,6 +348,9 @@ class _HomePageContent extends StatelessWidget {
           return const SizedBox.shrink();
         },
       ),
+        ),
+        const VersionFooter(),
+      ],
     );
   }
 }

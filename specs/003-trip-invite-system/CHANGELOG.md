@@ -36,10 +36,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Falls back to manual copy dialog if message not ready or clipboard fails
   - Works reliably on iOS Safari, Chrome Mobile, and all mobile browsers
 
-- **Invite link deep linking issue (RESOLVED)**: Fixed invite links redirecting to home screen instead of join trip page. Root cause was redundant navigation in `SplashPage.BlocListener` that triggered AppRouter redirect twice, clearing the preserved deep link on second redirect. Solution:
-  - Removed redundant `context.go(AppRoutes.splash)` call from SplashPage listener (lines 84-90)
-  - AppRouter's redirect logic already handles navigation after initialization completes
-  - Deep links to `/trips/join?code=...&sharedBy=...` now work correctly
+- **Invite link deep linking issue (RESOLVED)**: Fixed invite links redirecting to home screen instead of join trip page on both warm start and cold start:
+  - **First fix (warm start)**: Removed redundant `context.go(AppRoutes.splash)` call from SplashPage listener that triggered double redirect
+  - **Second fix (cold start)**: Removed `initialLocation: AppRoutes.splash` from app_router.dart that prevented deep links from being captured on fresh app start
+  - Root cause: `initialLocation` forced ALL cold starts to `/splash`, preventing redirect callback from seeing actual deep link URL
+  - Deep links now work correctly on both cold start (app closed/refreshed) and warm start (app already open)
   - Users land on TripJoinPage with pre-filled invite code as intended
 
 ## 2025-10-29 - ✅ FEATURE COMPLETE: Trip Invite System (003)
