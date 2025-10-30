@@ -1033,6 +1033,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripInviteLinkCopied => 'Link copied to clipboard';
 
   @override
+  String get tripInviteShowQrButton => 'Show QR Code';
+
+  @override
+  String get tripInviteQrDialogTitle => 'Scan to Join Trip';
+
+  @override
+  String get tripInviteQrDialogDescription =>
+      'Scan this QR code with your phone camera or any QR scanner app to join the trip.';
+
+  @override
   String get tripInviteInstructionsTitle => 'How to invite friends';
 
   @override
@@ -1059,6 +1069,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activityLogLoading => 'Loading activities...';
+
+  @override
+  String get activityJoinViaLink => 'via invite link';
+
+  @override
+  String get activityJoinViaQr => 'via QR code';
+
+  @override
+  String get activityJoinManual => 'by entering code';
+
+  @override
+  String get activityJoinRecovery => 'using recovery code';
+
+  @override
+  String activityInvitedBy(String name) {
+    return 'invited by $name';
+  }
 
   @override
   String activityTripCreated(String name) {
@@ -1222,6 +1249,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tripJoinInstructionStep2 =>
       'Select your identity. Members will see expenses under this name.';
+
+  @override
+  String get tripJoinQrScanTitle => 'Have a QR code?';
+
+  @override
+  String get tripJoinQrScanMessage =>
+      'Simply point your phone camera at the QR code to join instantly. Your camera app will automatically recognize it and open the invite link.';
 
   @override
   String get tripJoinInviteBannerTitle =>

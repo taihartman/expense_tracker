@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../domain/models/trip.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
@@ -31,21 +32,82 @@ class _TripInvitePageState extends State<TripInvitePage> {
     );
   }
 
+  void _showQrCodeDialog(BuildContext context) {
+    // Get current user to track who shared this QR code
+    final currentUser =
+        context.read<TripCubit>().getCurrentUserForTrip(widget.trip.id);
+    final inviteLink =
+        generateQrCodeLink(widget.trip.id, sharedBy: currentUser?.id);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.tripInviteQrDialogTitle),
+        content: SizedBox(
+          width: 320,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                context.l10n.tripInviteQrDialogDescription,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppTheme.spacing3),
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spacing2),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: QrImageView(
+                  data: inviteLink,
+                  version: QrVersions.auto,
+                  size: 280,
+                  backgroundColor: Colors.white,
+                  errorCorrectionLevel: QrErrorCorrectLevel.M,
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacing2),
+              Text(
+                widget.trip.name,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(context.l10n.commonClose),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _copyInviteLink(BuildContext context) async {
     setState(() {
       _isLoadingMessage = true;
     });
 
     try {
+      final tripCubit = context.read<TripCubit>();
+
       // Load verified members from Firestore
-      final verifiedMembers = await context
-          .read<TripCubit>()
-          .getVerifiedMembers(widget.trip.id);
+      final verifiedMembers = await tripCubit.getVerifiedMembers(widget.trip.id);
+
+      // Get current user to track who shared this link
+      final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
 
       // Generate human-friendly message with link
       final message = generateShareMessage(
         trip: widget.trip,
         verifiedMembers: verifiedMembers,
+        sharedByParticipantId: currentUser?.id,
       );
 
       // Copy to clipboard
@@ -108,54 +170,6 @@ class _TripInvitePageState extends State<TripInvitePage> {
           ),
           const SizedBox(height: AppTheme.spacing3),
 
-          // Invite Code Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppTheme.spacing2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.tripInviteCodeLabel,
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  const SizedBox(height: AppTheme.spacing1),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(AppTheme.spacing2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: SelectableText(
-                      widget.trip.id,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontFamily: 'monospace',
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: AppTheme.spacing2),
-
-                  // Copy Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _copyInviteCode(context),
-                      icon: const Icon(Icons.copy),
-                      label: Text(context.l10n.tripInviteCopyButton),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: AppTheme.spacing2),
-
           // Share Link Card
           Card(
             child: Padding(
@@ -205,6 +219,65 @@ class _TripInvitePageState extends State<TripInvitePage> {
                             ? 'Loading...'
                             : context.l10n.tripInviteCopyLinkButton,
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+
+                  // Show QR Code Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showQrCodeDialog(context),
+                      icon: const Icon(Icons.qr_code),
+                      label: Text(context.l10n.tripInviteShowQrButton),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: AppTheme.spacing2),
+
+          // Invite Code Card
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.tripInviteCodeLabel,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(height: AppTheme.spacing1),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppTheme.spacing2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: SelectableText(
+                      widget.trip.id,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+
+                  // Copy Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _copyInviteCode(context),
+                      icon: const Icon(Icons.copy),
+                      label: Text(context.l10n.tripInviteCopyButton),
                     ),
                   ),
                 ],

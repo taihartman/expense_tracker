@@ -148,6 +148,53 @@ class LocalStorageService {
     final updatedIds = [...currentIds, tripId];
     final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
     _log('✅ Added trip ID to joined trips. Total trips: ${updatedIds.length}. Result: $result');
+
+    // Immediate verification
+    final verified = _prefs.getStringList(_joinedTripIdsKey) ?? [];
+    _log('🔍 Immediate verification: ${verified.length} trips in storage');
+
+    if (!verified.contains(tripId)) {
+      _log('⚠️ VERIFICATION FAILED: Trip ID $tripId not found in storage after write!');
+    } else {
+      _log('✅ Verification passed: Trip ID $tripId confirmed in storage');
+    }
+
+    // On web, verify directly in browser localStorage
+    if (kIsWeb) {
+      try {
+        final storage = html.window.localStorage;
+        final webKey = 'flutter.$_joinedTripIdsKey';
+        final webValue = storage[webKey];
+        _log('🌐 Browser localStorage[$webKey]: $webValue');
+      } catch (e) {
+        _log('⚠️ Failed to verify in browser localStorage: $e');
+      }
+    }
+  }
+
+  /// Verify that a trip ID is in the joined trips list
+  ///
+  /// Returns true if the trip ID is found, false otherwise.
+  /// This is useful for post-write verification.
+  bool verifyJoinedTrip(String tripId) {
+    _log('🔍 Verifying trip ID in storage: $tripId');
+    final joinedIds = getJoinedTripIds();
+    final isPresent = joinedIds.contains(tripId);
+    _log('🔍 Verification result: ${isPresent ? "FOUND" : "NOT FOUND"}');
+
+    if (kIsWeb) {
+      try {
+        final storage = html.window.localStorage;
+        final webKey = 'flutter.$_joinedTripIdsKey';
+        final webValue = storage[webKey];
+        _log('🌐 Browser localStorage[$webKey]: $webValue');
+        _log('🌐 Browser localStorage contains "$tripId": ${webValue?.contains(tripId) ?? false}');
+      } catch (e) {
+        _log('⚠️ Failed to check browser localStorage: $e');
+      }
+    }
+
+    return isPresent;
   }
 
   /// Get the list of joined trip IDs

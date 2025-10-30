@@ -1,3 +1,21 @@
+/// How a member joined a trip
+enum JoinMethod {
+  /// Clicked an invite link with pre-filled trip code
+  inviteLink,
+
+  /// Scanned a QR code to join
+  qrCode,
+
+  /// Manually typed the trip code
+  manualCode,
+
+  /// Used a recovery code to bypass verification
+  recoveryCode,
+
+  /// Unknown or legacy (for existing logs without method)
+  unknown,
+}
+
 /// Types of activities that can be logged in a trip
 enum ActivityType {
   // Trip Management Activities
@@ -74,7 +92,11 @@ class ActivityLog {
   /// When this activity occurred
   final DateTime timestamp;
 
-  /// Optional metadata about the activity (e.g., expense ID, amount)
+  /// Optional metadata about the activity
+  ///
+  /// Examples:
+  /// - For expenses: {'expenseId': 'xxx', 'amount': 100.0}
+  /// - For memberJoined: {'joinMethod': 'qrCode', 'invitedBy': 'participant-id'}
   final Map<String, dynamic>? metadata;
 
   const ActivityLog({

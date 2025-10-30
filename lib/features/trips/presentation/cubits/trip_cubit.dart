@@ -503,6 +503,8 @@ class TripCubit extends Cubit<TripState> {
   Future<void> joinTrip({
     required String tripId,
     required String userName,
+    JoinMethod? joinMethod,
+    String? invitedByParticipantId,
   }) async {
     try {
       _log('👥 Joining trip: $tripId as $userName');
@@ -531,6 +533,22 @@ class TripCubit extends Cubit<TripState> {
         await _localStorageService.addJoinedTrip(tripId);
         _log('💾 Trip ID cached (idempotent)');
 
+        // Verify storage persistence (critical for web)
+        _log('🔍 Verifying storage persistence...');
+        await Future.delayed(const Duration(milliseconds: 100));
+        final verified = _localStorageService.verifyJoinedTrip(tripId);
+
+        if (!verified) {
+          _log('❌ STORAGE VERIFICATION FAILED: Trip ID not found after write');
+          emit(
+            const TripError(
+              'Failed to save trip. Please check your browser settings allow local storage.',
+            ),
+          );
+          return;
+        }
+        _log('✅ Storage verification passed');
+
         // Save user identity for this trip (idempotent)
         await _localStorageService.saveUserIdentityForTrip(
           tripId,
@@ -548,6 +566,30 @@ class TripCubit extends Cubit<TripState> {
           _log('✅ Added to verified members (idempotent)');
         } catch (e) {
           _log('⚠️ Failed to add verified member (non-fatal): $e');
+        }
+
+        // Log join activity (every join attempt, including re-joins)
+        if (_activityLogRepository != null) {
+          _log('📝 Logging member_joined activity...');
+          try {
+            final activityLog = ActivityLog(
+              id: '', // Firestore will generate this
+              tripId: tripId,
+              type: ActivityType.memberJoined,
+              actorName: userName,
+              description: '$userName joined the trip',
+              timestamp: DateTime.now(),
+              metadata: {
+                if (joinMethod != null) 'joinMethod': joinMethod.name,
+                if (invitedByParticipantId != null)
+                  'invitedBy': invitedByParticipantId,
+              },
+            );
+            await _activityLogRepository.addLog(activityLog);
+            _log('✅ Activity logged');
+          } catch (e) {
+            _log('⚠️ Failed to log activity (non-fatal): $e');
+          }
         }
 
         emit(TripJoined(trip));
@@ -575,6 +617,11 @@ class TripCubit extends Cubit<TripState> {
             actorName: userName,
             description: '$userName joined the trip',
             timestamp: DateTime.now(),
+            metadata: {
+              if (joinMethod != null) 'joinMethod': joinMethod.name,
+              if (invitedByParticipantId != null)
+                'invitedBy': invitedByParticipantId,
+            },
           );
           await _activityLogRepository.addLog(activityLog);
           _log('✅ Activity logged');
@@ -600,6 +647,22 @@ class TripCubit extends Cubit<TripState> {
       _log('💾 Caching trip ID in local storage...');
       await _localStorageService.addJoinedTrip(tripId);
       _log('✅ Trip ID cached');
+
+      // Verify storage persistence (critical for web)
+      _log('🔍 Verifying storage persistence...');
+      await Future.delayed(const Duration(milliseconds: 100));
+      final verified = _localStorageService.verifyJoinedTrip(tripId);
+
+      if (!verified) {
+        _log('❌ STORAGE VERIFICATION FAILED: Trip ID not found after write');
+        emit(
+          const TripError(
+            'Failed to save trip. Please check your browser settings allow local storage.',
+          ),
+        );
+        return;
+      }
+      _log('✅ Storage verification passed');
 
       // Save user identity for this trip
       _log('👤 Saving user identity for trip...');
@@ -750,7 +813,11 @@ class TripCubit extends Cubit<TripState> {
       _log('✅ Recovery code validated, joining trip...');
 
       // Join trip (bypassing verification since recovery code is valid)
-      await joinTrip(tripId: tripId, userName: userName);
+      await joinTrip(
+        tripId: tripId,
+        userName: userName,
+        joinMethod: JoinMethod.recoveryCode,
+      );
 
       return true;
     } catch (e) {

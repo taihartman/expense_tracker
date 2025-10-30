@@ -1842,6 +1842,24 @@ abstract class AppLocalizations {
   /// **'Link copied to clipboard'**
   String get tripInviteLinkCopied;
 
+  /// No description provided for @tripInviteShowQrButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR Code'**
+  String get tripInviteShowQrButton;
+
+  /// No description provided for @tripInviteQrDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to Join Trip'**
+  String get tripInviteQrDialogTitle;
+
+  /// No description provided for @tripInviteQrDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan this QR code with your phone camera or any QR scanner app to join the trip.'**
+  String get tripInviteQrDialogDescription;
+
   /// No description provided for @tripInviteInstructionsTitle.
   ///
   /// In en, this message translates to:
@@ -1889,6 +1907,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading activities...'**
   String get activityLogLoading;
+
+  /// No description provided for @activityJoinViaLink.
+  ///
+  /// In en, this message translates to:
+  /// **'via invite link'**
+  String get activityJoinViaLink;
+
+  /// No description provided for @activityJoinViaQr.
+  ///
+  /// In en, this message translates to:
+  /// **'via QR code'**
+  String get activityJoinViaQr;
+
+  /// No description provided for @activityJoinManual.
+  ///
+  /// In en, this message translates to:
+  /// **'by entering code'**
+  String get activityJoinManual;
+
+  /// No description provided for @activityJoinRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'using recovery code'**
+  String get activityJoinRecovery;
+
+  /// No description provided for @activityInvitedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'invited by {name}'**
+  String activityInvitedBy(String name);
 
   /// No description provided for @activityTripCreated.
   ///
@@ -2153,6 +2201,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select your identity. Members will see expenses under this name.'**
   String get tripJoinInstructionStep2;
+
+  /// No description provided for @tripJoinQrScanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Have a QR code?'**
+  String get tripJoinQrScanTitle;
+
+  /// No description provided for @tripJoinQrScanMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Simply point your phone camera at the QR code to join instantly. Your camera app will automatically recognize it and open the invite link.'**
+  String get tripJoinQrScanMessage;
 
   /// No description provided for @tripJoinInviteBannerTitle.
   ///
