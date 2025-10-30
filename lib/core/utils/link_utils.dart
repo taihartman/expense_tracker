@@ -10,13 +10,37 @@ import '../../features/trips/domain/models/verified_member.dart';
 /// The hash (#) is required for SPA routing.
 /// When clicked, it will navigate to the join page with the trip ID pre-filled.
 ///
+/// Optional [sharedBy] parameter tracks which member shared this invite (for activity logs).
+///
 /// Example:
 /// ```dart
-/// final link = generateShareableLink('trip-abc-123');
-/// // Returns: https://expenses.taihartman.com/#/trips/join?code=trip-abc-123
+/// final link = generateShareableLink('trip-abc-123', sharedBy: 'participant-id');
+/// // Returns: https://expenses.taihartman.com/#/trips/join?code=trip-abc-123&sharedBy=participant-id
 /// ```
-String generateShareableLink(String tripId) {
-  return '${AppConfig.appBaseUrl}/#/trips/join?code=$tripId';
+String generateShareableLink(String tripId, {String? sharedBy}) {
+  var url = '${AppConfig.appBaseUrl}/#/trips/join?code=$tripId';
+  if (sharedBy != null && sharedBy.isNotEmpty) {
+    url += '&sharedBy=$sharedBy';
+  }
+  return url;
+}
+
+/// Generates a QR code link for joining a trip
+///
+/// Similar to [generateShareableLink] but includes a 'source=qr' parameter
+/// to distinguish QR code scans from direct link clicks in activity logs.
+///
+/// Example:
+/// ```dart
+/// final qrLink = generateQrCodeLink('trip-abc-123', sharedBy: 'participant-id');
+/// // Returns: https://expenses.taihartman.com/#/trips/join?code=trip-abc-123&source=qr&sharedBy=participant-id
+/// ```
+String generateQrCodeLink(String tripId, {String? sharedBy}) {
+  var url = '${AppConfig.appBaseUrl}/#/trips/join?code=$tripId&source=qr';
+  if (sharedBy != null && sharedBy.isNotEmpty) {
+    url += '&sharedBy=$sharedBy';
+  }
+  return url;
 }
 
 /// Generates a human-sounding, personalized invite message
@@ -24,18 +48,22 @@ String generateShareableLink(String tripId) {
 /// Creates a friendly message showing trip details and verified members.
 /// The message format adapts based on how many verified members exist.
 ///
+/// Optional [sharedByParticipantId] parameter tracks who shared this invite.
+///
 /// Example:
 /// ```dart
 /// final message = generateShareMessage(
 ///   trip: myTrip,
 ///   verifiedMembers: [member1, member2, member3],
+///   sharedByParticipantId: 'participant-id',
 /// );
 /// ```
 String generateShareMessage({
   required Trip trip,
   required List<VerifiedMember> verifiedMembers,
+  String? sharedByParticipantId,
 }) {
-  final link = generateShareableLink(trip.id);
+  final link = generateShareableLink(trip.id, sharedBy: sharedByParticipantId);
   final currency = trip.baseCurrency.name;
 
   // Build participant context line

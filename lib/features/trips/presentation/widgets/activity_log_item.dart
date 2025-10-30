@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/models/activity_log.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/time_utils.dart';
+import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Widget that displays a single activity log entry
 class ActivityLogItem extends StatelessWidget {
@@ -45,6 +46,12 @@ class ActivityLogItem extends StatelessWidget {
                   log.description,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+              ],
+              // Show join method metadata for memberJoined activities
+              if (log.type == ActivityType.memberJoined &&
+                  log.metadata != null) ...[
+                const SizedBox(height: 4),
+                _buildJoinMethodInfo(context, log.metadata!),
               ],
               const SizedBox(height: 4),
               Text(
@@ -186,5 +193,57 @@ class ActivityLogItem extends StatelessWidget {
       case ActivityType.recoveryCodeUsed:
         return 'used a recovery code';
     }
+  }
+
+  Widget _buildJoinMethodInfo(BuildContext context, Map<String, dynamic> metadata) {
+    final joinMethod = metadata['joinMethod'] as String?;
+    final invitedBy = metadata['invitedBy'] as String?;
+    final l10n = context.l10n;
+
+    // Build description parts
+    String? methodText;
+    IconData? methodIcon;
+
+    switch (joinMethod) {
+      case 'inviteLink':
+        methodText = l10n.activityJoinViaLink;
+        methodIcon = Icons.link;
+        break;
+      case 'qrCode':
+        methodText = l10n.activityJoinViaQr;
+        methodIcon = Icons.qr_code_scanner;
+        break;
+      case 'manualCode':
+        methodText = l10n.activityJoinManual;
+        methodIcon = Icons.keyboard;
+        break;
+      case 'recoveryCode':
+        methodText = l10n.activityJoinRecovery;
+        methodIcon = Icons.vpn_key;
+        break;
+    }
+
+    // If no join method, don't show anything
+    if (methodText == null) return const SizedBox.shrink();
+
+    return Row(
+      children: [
+        Icon(
+          methodIcon,
+          size: 14,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            invitedBy != null ? '$methodText • ${l10n.activityInvitedBy(invitedBy)}' : methodText,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

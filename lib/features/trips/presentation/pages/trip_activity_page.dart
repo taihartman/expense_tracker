@@ -17,6 +17,16 @@ class TripActivityPage extends StatefulWidget {
 }
 
 class _TripActivityPageState extends State<TripActivityPage> {
+  // Cache cubit reference to avoid accessing context in dispose()
+  late ActivityLogCubit _activityLogCubit;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Cache the cubit reference safely during the widget lifecycle
+    _activityLogCubit = context.read<ActivityLogCubit>();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -30,8 +40,8 @@ class _TripActivityPageState extends State<TripActivityPage> {
 
   @override
   void dispose() {
-    // Clear logs when leaving the page
-    context.read<ActivityLogCubit>().clearLogs();
+    // Clear logs when leaving the page using cached reference
+    _activityLogCubit.clearLogs();
     super.dispose();
   }
 

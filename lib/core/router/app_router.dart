@@ -10,6 +10,7 @@ import '../../features/trips/presentation/cubits/trip_state.dart';
 import '../../features/trips/presentation/pages/trip_list_page.dart';
 import '../../features/trips/presentation/pages/trip_create_page.dart';
 import '../../features/trips/presentation/pages/trip_join_page.dart';
+import '../../features/trips/domain/models/activity_log.dart';
 import '../../features/trips/presentation/pages/trip_invite_page.dart';
 import '../../features/trips/presentation/pages/trip_identity_selection_page.dart';
 import '../../features/trips/presentation/pages/trip_activity_page.dart';
@@ -112,7 +113,22 @@ class AppRouter {
         path: AppRoutes.tripJoin,
         builder: (context, state) {
           final inviteCode = state.uri.queryParameters['code'];
-          return TripJoinPage(inviteCode: inviteCode);
+          final source = state.uri.queryParameters['source'];
+          final sharedBy = state.uri.queryParameters['sharedBy'];
+
+          // Determine join method based on query parameters
+          JoinMethod? joinMethod;
+          if (inviteCode != null && inviteCode.isNotEmpty) {
+            // Code came from URL - either QR or invite link
+            joinMethod = source == 'qr' ? JoinMethod.qrCode : JoinMethod.inviteLink;
+          }
+          // If no code in URL, user will manually enter it (detected in TripJoinPage)
+
+          return TripJoinPage(
+            inviteCode: inviteCode,
+            sourceMethod: joinMethod,
+            invitedBy: sharedBy,
+          );
         },
       ),
       GoRoute(
@@ -226,6 +242,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Load trips when HomePage mounts (after initialization completes)
+    Future.microtask(() {
+      if (mounted) {
+        context.read<TripCubit>().loadTrips();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return const _HomePageContent();

@@ -5,11 +5,13 @@ import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../widgets/participant_identity_selector.dart';
 import '../../domain/models/trip.dart';
+import '../../domain/models/activity_log.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../../core/utils/code_input_formatter.dart';
 import '../../../device_pairing/presentation/widgets/code_verification_prompt.dart';
 import '../../../device_pairing/presentation/cubits/device_pairing_cubit.dart';
 
@@ -36,7 +38,18 @@ class TripJoinPage extends StatefulWidget {
   /// Optional invite code pre-filled from deep link
   final String? inviteCode;
 
-  const TripJoinPage({super.key, this.inviteCode});
+  /// How the user arrived at this page (for activity logging)
+  final JoinMethod? sourceMethod;
+
+  /// Participant ID of who shared the invite (for activity logging)
+  final String? invitedBy;
+
+  const TripJoinPage({
+    super.key,
+    this.inviteCode,
+    this.sourceMethod,
+    this.invitedBy,
+  });
 
   @override
   State<TripJoinPage> createState() => _TripJoinPageState();
@@ -73,7 +86,8 @@ class _TripJoinPageState extends State<TripJoinPage> {
 
   /// Load trip by ID from loaded trips list
   Future<void> _loadTrip() async {
-    final tripId = _codeController.text.trim();
+    // Strip formatting from trip code (remove dashes, spaces, etc.)
+    final tripId = CodeInputFormatter.stripFormatting(_codeController.text);
 
     if (tripId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -176,10 +190,15 @@ class _TripJoinPageState extends State<TripJoinPage> {
     try {
       // Check if using recovery code
       if (_useRecoveryCode && _recoveryCodeController.text.trim().isNotEmpty) {
+        // Strip formatting from recovery code
+        final recoveryCode = CodeInputFormatter.stripFormatting(
+          _recoveryCodeController.text,
+        );
+
         // Validate recovery code and join
         final success = await tripCubit.validateAndJoinWithRecoveryCode(
           tripId: _loadedTrip!.id,
-          code: _recoveryCodeController.text.trim(),
+          code: recoveryCode,
           userName: _selectedParticipant!.name,
         );
 
@@ -213,6 +232,8 @@ class _TripJoinPageState extends State<TripJoinPage> {
           await tripCubit.joinTrip(
             tripId: _loadedTrip!.id,
             userName: _selectedParticipant!.name,
+            joinMethod: widget.sourceMethod ?? JoinMethod.manualCode,
+            invitedByParticipantId: widget.invitedBy,
           );
 
           // Note: Navigation handled by BlocListener below
@@ -256,11 +277,29 @@ class _TripJoinPageState extends State<TripJoinPage> {
             // Navigate back to trip list
             context.go('/');
           } else if (state is TripError) {
-            // Show error message
+            // Check if this is a storage-related error
+            final isStorageError =
+                state.message.contains('local storage') ||
+                state.message.contains('save trip');
+
+            // Show error message with action
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.red,
+                duration: isStorageError
+                    ? const Duration(seconds: 8)
+                    : const Duration(seconds: 4),
+                action: isStorageError
+                    ? SnackBarAction(
+                        label: context.l10n.commonRetry,
+                        textColor: Colors.white,
+                        onPressed: () {
+                          // Retry the join operation
+                          _verifyAndJoin();
+                        },
+                      )
+                    : null,
               ),
             );
 
@@ -349,12 +388,61 @@ class _TripJoinPageState extends State<TripJoinPage> {
           ),
           const SizedBox(height: AppTheme.spacing3),
 
+          // QR Code scanning info
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacing2),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.qr_code_scanner,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: AppTheme.spacing2),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        context.l10n.tripJoinQrScanTitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        context.l10n.tripJoinQrScanMessage,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing3),
+
           // Trip code input
           CustomTextField(
             controller: _codeController,
             label: context.l10n.tripJoinCodeLabel,
             hint: context.l10n.tripJoinCodeHint,
             enabled: !_isLoading,
+            inputFormatters: [CodeInputFormatter(groupSize: 4)],
+            keyboardType: TextInputType.text,
           ),
 
           // Error message with retry button
@@ -618,6 +706,10 @@ class _TripJoinPageState extends State<TripJoinPage> {
               controller: _recoveryCodeController,
               label: context.l10n.tripJoinRecoveryCodeLabel,
               hint: context.l10n.tripJoinRecoveryCodeHint,
+              inputFormatters: [
+                CodeInputFormatter(groupSize: 4, maxLength: 12),
+              ],
+              keyboardType: TextInputType.number,
             ),
           ],
 

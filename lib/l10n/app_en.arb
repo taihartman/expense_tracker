@@ -683,6 +683,9 @@
   "tripInviteShareableLinkLabel": "Shareable Link",
   "tripInviteCopyLinkButton": "Copy Link",
   "tripInviteLinkCopied": "Link copied to clipboard",
+  "tripInviteShowQrButton": "Show QR Code",
+  "tripInviteQrDialogTitle": "Scan to Join Trip",
+  "tripInviteQrDialogDescription": "Scan this QR code with your phone camera or any QR scanner app to join the trip.",
   "tripInviteInstructionsTitle": "How to invite friends",
   "tripInviteInstructionStep1": "Share the message, code, or link with your friends",
   "tripInviteInstructionStep2": "They click the link or enter the code on the Join Trip page",
@@ -693,6 +696,18 @@
   "activityLogEmpty": "No activities yet. Start by adding expenses or inviting friends!",
   "activityLogLoadMore": "Load More",
   "activityLogLoading": "Loading activities...",
+  "activityJoinViaLink": "via invite link",
+  "activityJoinViaQr": "via QR code",
+  "activityJoinManual": "by entering code",
+  "activityJoinRecovery": "using recovery code",
+  "activityInvitedBy": "invited by {name}",
+  "@activityInvitedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
 
 
   "activityTripCreated": "{name} created the trip",
@@ -827,6 +842,8 @@
   "tripJoinRecoveryCodeInvalid": "Invalid recovery code. Please check and try again.",
   "tripJoinInstructionStep1": "Enter the trip invite code shared by a trip member",
   "tripJoinInstructionStep2": "Select your identity. Members will see expenses under this name.",
+  "tripJoinQrScanTitle": "Have a QR code?",
+  "tripJoinQrScanMessage": "Simply point your phone camera at the QR code to join instantly. Your camera app will automatically recognize it and open the invite link.",
   "tripJoinInviteBannerTitle": "You've been invited to join a trip!",
   "tripJoinInviteBannerMessage": "The invite code has been pre-filled for you. Tap 'Load Trip' to continue.",
   "tripJoinNoParticipants": "This trip has no participants yet.",
