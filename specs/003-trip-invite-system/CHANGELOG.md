@@ -36,12 +36,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Falls back to manual copy dialog if message not ready or clipboard fails
   - Works reliably on iOS Safari, Chrome Mobile, and all mobile browsers
 
-- **Invite link deep linking issue (RESOLVED)**: Fixed invite links redirecting to home screen instead of join trip page on both warm start and cold start:
-  - **First fix (warm start)**: Removed redundant `context.go(AppRoutes.splash)` call from SplashPage listener that triggered double redirect
-  - **Second fix (cold start)**: Removed `initialLocation: AppRoutes.splash` from app_router.dart that prevented deep links from being captured on fresh app start
-  - Root cause: `initialLocation` forced ALL cold starts to `/splash`, preventing redirect callback from seeing actual deep link URL
+- **Invite link deep linking issue (FINALLY RESOLVED after 3 attempts)**:
+  - **Attempt 1 (commit e109158)**: Removed redundant `context.go(AppRoutes.splash)` from SplashPage - fixed warm start ✅
+  - **Attempt 2 (commit 275afad)**: Removed `initialLocation: AppRoutes.splash` - BROKE cold start ❌
+  - **Attempt 3 (this commit)**: Added back `initialLocation: AppRoutes.splash` + debug logging - fixes cold start ✅
+  - **Root cause understanding**: WITHOUT `initialLocation`, GoRouter defaults to `/` on cold start, causing `_originalLocation` to capture `/` instead of the invite link. WITH `initialLocation: AppRoutes.splash`, GoRouter properly captures the invite link when user navigates to it.
+  - **Final solution**: Keep `initialLocation: AppRoutes.splash` AND remove redundant SplashPage navigation
   - Deep links now work correctly on both cold start (app closed/refreshed) and warm start (app already open)
-  - Users land on TripJoinPage with pre-filled invite code as intended
+  - Added comprehensive debug logging to track routing flow in browser console
 
 ## 2025-10-29 - ✅ FEATURE COMPLETE: Trip Invite System (003)
 
