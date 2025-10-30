@@ -116,10 +116,13 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       emit(ExpenseCreated(createdExpense));
 
       // Log activity
-      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty) {
+      if (_activityLogRepository != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
         _log('📝 Logging expense_added activity...');
         try {
-          final description = expense.description != null && expense.description!.isNotEmpty
+          final description =
+              expense.description != null && expense.description!.isNotEmpty
               ? expense.description!
               : '${expense.amount} ${expense.currency.name.toUpperCase()}';
 
@@ -161,10 +164,13 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       emit(ExpenseUpdated(expense));
 
       // Log activity
-      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty) {
+      if (_activityLogRepository != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
         _log('📝 Logging expense_edited activity...');
         try {
-          final description = expense.description != null && expense.description!.isNotEmpty
+          final description =
+              expense.description != null && expense.description!.isNotEmpty
               ? expense.description!
               : '${expense.amount} ${expense.currency.name.toUpperCase()}';
 
@@ -214,14 +220,19 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       await _expenseRepository.deleteExpense(expenseId);
 
       // Log activity
-      if (_activityLogRepository != null && actorName != null && actorName.isNotEmpty && tripId != null) {
+      if (_activityLogRepository != null &&
+          actorName != null &&
+          actorName.isNotEmpty &&
+          tripId != null) {
         _log('📝 Logging expense_deleted activity...');
         try {
-          final description = expenseToDelete?.description != null && expenseToDelete!.description!.isNotEmpty
+          final description =
+              expenseToDelete?.description != null &&
+                  expenseToDelete!.description!.isNotEmpty
               ? expenseToDelete.description!
               : expenseToDelete != null
-                  ? '${expenseToDelete.amount} ${expenseToDelete.currency.name.toUpperCase()}'
-                  : 'Expense deleted';
+              ? '${expenseToDelete.amount} ${expenseToDelete.currency.name.toUpperCase()}'
+              : 'Expense deleted';
 
           final activityLog = ActivityLog(
             id: '', // Firestore will generate this

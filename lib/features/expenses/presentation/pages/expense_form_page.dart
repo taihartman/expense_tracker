@@ -107,7 +107,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
       );
 
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(widget.tripId);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        widget.tripId,
+      );
       final actorName = currentUser?.name;
 
       if (widget.expense != null) {
@@ -616,24 +618,6 @@ class ExpenseFormContent extends StatelessWidget {
               onSelectionChanged: (Set<SplitType> newSelection) {
                 onSplitTypeChanged(newSelection.first);
               },
-            ),
-          ),
-          const SizedBox(height: AppTheme.spacing1),
-          // Itemized option as separate button
-          Builder(
-            builder: (context) => SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  debugPrint('🟣 [UI] Itemized button CLICKED');
-                  onSplitTypeChanged(SplitType.itemized);
-                },
-                icon: const Icon(Icons.receipt_long),
-                label: Text(context.l10n.expenseSplitTypeItemized),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
             ),
           ),
           const SizedBox(height: AppTheme.spacing2),

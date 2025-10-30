@@ -130,8 +130,8 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
       appBar: AppBar(
         title: Text(
           isEditMode
-              ? context.l10n.itemizedWizardTitleEdit
-              : context.l10n.itemizedWizardTitleNew,
+              ? context.l10n.receiptSplitWizardTitleEdit
+              : context.l10n.receiptSplitWizardTitleNew,
         ),
         elevation: 0,
       ),
@@ -142,8 +142,8 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
               SnackBar(
                 content: Text(
                   isEditMode
-                      ? context.l10n.itemizedWizardUpdatedSuccess
-                      : context.l10n.itemizedWizardSavedSuccess,
+                      ? context.l10n.receiptSplitWizardUpdatedSuccess
+                      : context.l10n.receiptSplitWizardSavedSuccess,
                 ),
                 backgroundColor: Colors.green,
               ),
@@ -167,7 +167,7 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  Text(context.l10n.itemizedWizardSaving),
+                  Text(context.l10n.receiptSplitWizardSaving),
                 ],
               ),
             );
@@ -228,25 +228,25 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
         children: [
           _buildStepIndicator(
             0,
-            context.l10n.itemizedWizardStepPeople,
+            context.l10n.receiptSplitWizardStepPeople,
             Icons.people,
           ),
           _buildStepConnector(0),
           _buildStepIndicator(
             1,
-            context.l10n.itemizedWizardStepItems,
+            context.l10n.receiptSplitWizardStepItems,
             Icons.receipt_long,
           ),
           _buildStepConnector(1),
           _buildStepIndicator(
             2,
-            context.l10n.itemizedWizardStepExtras,
+            context.l10n.receiptSplitWizardStepExtras,
             Icons.add_circle_outline,
           ),
           _buildStepConnector(2),
           _buildStepIndicator(
             3,
-            context.l10n.itemizedWizardStepReview,
+            context.l10n.receiptSplitWizardStepReview,
             Icons.check_circle_outline,
           ),
         ],

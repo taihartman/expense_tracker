@@ -694,6 +694,24 @@ abstract class AppLocalizations {
   /// **'Edit Expense'**
   String get expenseEditTitle;
 
+  /// No description provided for @expenseFabMainTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add expense options'**
+  String get expenseFabMainTooltip;
+
+  /// No description provided for @expenseFabQuickExpenseTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Expense'**
+  String get expenseFabQuickExpenseTooltip;
+
+  /// No description provided for @expenseFabReceiptSplitTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Split (Who Ordered What)'**
+  String get expenseFabReceiptSplitTooltip;
+
   /// No description provided for @expenseSaveButton.
   ///
   /// In en, this message translates to:
@@ -838,11 +856,11 @@ abstract class AppLocalizations {
   /// **'Weighted'**
   String get expenseSplitTypeWeighted;
 
-  /// No description provided for @expenseSplitTypeItemized.
+  /// No description provided for @expenseSplitTypeReceiptSplit.
   ///
   /// In en, this message translates to:
-  /// **'Itemized (Add Line Items)'**
-  String get expenseSplitTypeItemized;
+  /// **'Receipt Split (Who Ordered What)'**
+  String get expenseSplitTypeReceiptSplit;
 
   /// No description provided for @expenseParticipantSelectorRequired.
   ///
@@ -925,413 +943,413 @@ abstract class AppLocalizations {
   /// No description provided for @expenseItemizedOpenError.
   ///
   /// In en, this message translates to:
-  /// **'Error opening itemized expense: {error}'**
+  /// **'Error opening receipt split: {error}'**
   String expenseItemizedOpenError(String error);
 
-  /// No description provided for @itemizedWizardTitleNew.
+  /// No description provided for @receiptSplitWizardTitleNew.
   ///
   /// In en, this message translates to:
-  /// **'New Itemized Expense'**
-  String get itemizedWizardTitleNew;
+  /// **'New Receipt Split'**
+  String get receiptSplitWizardTitleNew;
 
-  /// No description provided for @itemizedWizardTitleEdit.
+  /// No description provided for @receiptSplitWizardTitleEdit.
   ///
   /// In en, this message translates to:
-  /// **'Edit Itemized Expense'**
-  String get itemizedWizardTitleEdit;
+  /// **'Edit Receipt Split'**
+  String get receiptSplitWizardTitleEdit;
 
-  /// No description provided for @itemizedWizardSavedSuccess.
+  /// No description provided for @receiptSplitWizardSavedSuccess.
   ///
   /// In en, this message translates to:
   /// **'Expense saved successfully!'**
-  String get itemizedWizardSavedSuccess;
+  String get receiptSplitWizardSavedSuccess;
 
-  /// No description provided for @itemizedWizardUpdatedSuccess.
+  /// No description provided for @receiptSplitWizardUpdatedSuccess.
   ///
   /// In en, this message translates to:
   /// **'Expense updated successfully!'**
-  String get itemizedWizardUpdatedSuccess;
+  String get receiptSplitWizardUpdatedSuccess;
 
-  /// No description provided for @itemizedWizardSaving.
+  /// No description provided for @receiptSplitWizardSaving.
   ///
   /// In en, this message translates to:
   /// **'Saving expense...'**
-  String get itemizedWizardSaving;
+  String get receiptSplitWizardSaving;
 
-  /// No description provided for @itemizedWizardStepPeople.
+  /// No description provided for @receiptSplitWizardStepPeople.
   ///
   /// In en, this message translates to:
   /// **'People'**
-  String get itemizedWizardStepPeople;
+  String get receiptSplitWizardStepPeople;
 
-  /// No description provided for @itemizedWizardStepItems.
+  /// No description provided for @receiptSplitWizardStepItems.
   ///
   /// In en, this message translates to:
   /// **'Items'**
-  String get itemizedWizardStepItems;
+  String get receiptSplitWizardStepItems;
 
-  /// No description provided for @itemizedWizardStepExtras.
+  /// No description provided for @receiptSplitWizardStepExtras.
   ///
   /// In en, this message translates to:
   /// **'Extras'**
-  String get itemizedWizardStepExtras;
+  String get receiptSplitWizardStepExtras;
 
-  /// No description provided for @itemizedWizardStepReview.
+  /// No description provided for @receiptSplitWizardStepReview.
   ///
   /// In en, this message translates to:
   /// **'Review'**
-  String get itemizedWizardStepReview;
+  String get receiptSplitWizardStepReview;
 
-  /// No description provided for @itemizedPeopleTitle.
+  /// No description provided for @receiptSplitPeopleTitle.
   ///
   /// In en, this message translates to:
   /// **'Who paid for this expense? *'**
-  String get itemizedPeopleTitle;
+  String get receiptSplitPeopleTitle;
 
-  /// No description provided for @itemizedPeopleDescription.
+  /// No description provided for @receiptSplitPeopleDescription.
   ///
   /// In en, this message translates to:
   /// **'Select the person who paid'**
-  String get itemizedPeopleDescription;
+  String get receiptSplitPeopleDescription;
 
-  /// No description provided for @itemizedPeopleDescriptionError.
+  /// No description provided for @receiptSplitPeopleDescriptionError.
   ///
   /// In en, this message translates to:
   /// **'Required - Select the person who paid'**
-  String get itemizedPeopleDescriptionError;
+  String get receiptSplitPeopleDescriptionError;
 
-  /// No description provided for @itemizedPeopleContinueButton.
+  /// No description provided for @receiptSplitPeopleContinueButton.
   ///
   /// In en, this message translates to:
   /// **'Continue to Items'**
-  String get itemizedPeopleContinueButton;
+  String get receiptSplitPeopleContinueButton;
 
-  /// No description provided for @itemizedItemsTitle.
+  /// No description provided for @receiptSplitItemsTitle.
   ///
   /// In en, this message translates to:
   /// **'Add items from receipt'**
-  String get itemizedItemsTitle;
+  String get receiptSplitItemsTitle;
 
-  /// No description provided for @itemizedItemsDescription.
+  /// No description provided for @receiptSplitItemsDescription.
   ///
   /// In en, this message translates to:
   /// **'Add each item and assign who ordered it'**
-  String get itemizedItemsDescription;
+  String get receiptSplitItemsDescription;
 
-  /// No description provided for @itemizedItemsEmptyTitle.
+  /// No description provided for @receiptSplitItemsEmptyTitle.
   ///
   /// In en, this message translates to:
   /// **'No items yet'**
-  String get itemizedItemsEmptyTitle;
+  String get receiptSplitItemsEmptyTitle;
 
-  /// No description provided for @itemizedItemsEmptyDescription.
+  /// No description provided for @receiptSplitItemsEmptyDescription.
   ///
   /// In en, this message translates to:
   /// **'Add items from the form below'**
-  String get itemizedItemsEmptyDescription;
+  String get receiptSplitItemsEmptyDescription;
 
-  /// No description provided for @itemizedItemsNotAssigned.
+  /// No description provided for @receiptSplitItemsNotAssigned.
   ///
   /// In en, this message translates to:
   /// **'Not assigned'**
-  String get itemizedItemsNotAssigned;
+  String get receiptSplitItemsNotAssigned;
 
-  /// No description provided for @itemizedItemsAssignTooltip.
+  /// No description provided for @receiptSplitItemsAssignTooltip.
   ///
   /// In en, this message translates to:
   /// **'Assign'**
-  String get itemizedItemsAssignTooltip;
+  String get receiptSplitItemsAssignTooltip;
 
-  /// No description provided for @itemizedItemsEditTooltip.
+  /// No description provided for @receiptSplitItemsEditTooltip.
   ///
   /// In en, this message translates to:
   /// **'Edit'**
-  String get itemizedItemsEditTooltip;
+  String get receiptSplitItemsEditTooltip;
 
-  /// No description provided for @itemizedItemsRemoveTooltip.
+  /// No description provided for @receiptSplitItemsRemoveTooltip.
   ///
   /// In en, this message translates to:
   /// **'Remove'**
-  String get itemizedItemsRemoveTooltip;
+  String get receiptSplitItemsRemoveTooltip;
 
-  /// No description provided for @itemizedItemsAddCardTitle.
+  /// No description provided for @receiptSplitItemsAddCardTitle.
   ///
   /// In en, this message translates to:
   /// **'Add New Item'**
-  String get itemizedItemsAddCardTitle;
+  String get receiptSplitItemsAddCardTitle;
 
-  /// No description provided for @itemizedItemsEditCardTitle.
+  /// No description provided for @receiptSplitItemsEditCardTitle.
   ///
   /// In en, this message translates to:
   /// **'Edit Item'**
-  String get itemizedItemsEditCardTitle;
+  String get receiptSplitItemsEditCardTitle;
 
-  /// No description provided for @itemizedItemsFieldNameLabel.
+  /// No description provided for @receiptSplitItemsFieldNameLabel.
   ///
   /// In en, this message translates to:
   /// **'Item name'**
-  String get itemizedItemsFieldNameLabel;
+  String get receiptSplitItemsFieldNameLabel;
 
-  /// No description provided for @itemizedItemsFieldNameHint.
+  /// No description provided for @receiptSplitItemsFieldNameHint.
   ///
   /// In en, this message translates to:
   /// **'e.g., Caesar Salad'**
-  String get itemizedItemsFieldNameHint;
+  String get receiptSplitItemsFieldNameHint;
 
-  /// No description provided for @itemizedItemsFieldQtyLabel.
+  /// No description provided for @receiptSplitItemsFieldQtyLabel.
   ///
   /// In en, this message translates to:
   /// **'Qty'**
-  String get itemizedItemsFieldQtyLabel;
+  String get receiptSplitItemsFieldQtyLabel;
 
-  /// No description provided for @itemizedItemsFieldPriceLabel.
+  /// No description provided for @receiptSplitItemsFieldPriceLabel.
   ///
   /// In en, this message translates to:
   /// **'Price'**
-  String get itemizedItemsFieldPriceLabel;
+  String get receiptSplitItemsFieldPriceLabel;
 
-  /// No description provided for @itemizedItemsFieldPriceHint.
+  /// No description provided for @receiptSplitItemsFieldPriceHint.
   ///
   /// In en, this message translates to:
   /// **'0.00'**
-  String get itemizedItemsFieldPriceHint;
+  String get receiptSplitItemsFieldPriceHint;
 
-  /// No description provided for @itemizedItemsAddButton.
+  /// No description provided for @receiptSplitItemsAddButton.
   ///
   /// In en, this message translates to:
   /// **'Add Item'**
-  String get itemizedItemsAddButton;
+  String get receiptSplitItemsAddButton;
 
-  /// No description provided for @itemizedItemsUpdateButton.
+  /// No description provided for @receiptSplitItemsUpdateButton.
   ///
   /// In en, this message translates to:
   /// **'Update Item'**
-  String get itemizedItemsUpdateButton;
+  String get receiptSplitItemsUpdateButton;
 
-  /// No description provided for @itemizedItemsContinueButton.
+  /// No description provided for @receiptSplitItemsContinueButton.
   ///
   /// In en, this message translates to:
   /// **'Continue to Extras'**
-  String get itemizedItemsContinueButton;
+  String get receiptSplitItemsContinueButton;
 
-  /// No description provided for @itemizedItemsAssignDialogTitle.
+  /// No description provided for @receiptSplitItemsAssignDialogTitle.
   ///
   /// In en, this message translates to:
   /// **'Assign: {itemName}'**
-  String itemizedItemsAssignDialogTitle(String itemName);
+  String receiptSplitItemsAssignDialogTitle(Object itemName);
 
-  /// No description provided for @itemizedExtrasTitle.
+  /// No description provided for @receiptSplitExtrasTitle.
   ///
   /// In en, this message translates to:
   /// **'Add tax & tip'**
-  String get itemizedExtrasTitle;
+  String get receiptSplitExtrasTitle;
 
-  /// No description provided for @itemizedExtrasDescription.
+  /// No description provided for @receiptSplitExtrasDescription.
   ///
   /// In en, this message translates to:
   /// **'Optional - leave blank if not applicable'**
-  String get itemizedExtrasDescription;
+  String get receiptSplitExtrasDescription;
 
-  /// No description provided for @itemizedExtrasTaxCardTitle.
+  /// No description provided for @receiptSplitExtrasTaxCardTitle.
   ///
   /// In en, this message translates to:
   /// **'Sales Tax'**
-  String get itemizedExtrasTaxCardTitle;
+  String get receiptSplitExtrasTaxCardTitle;
 
-  /// No description provided for @itemizedExtrasTaxRateLabel.
+  /// No description provided for @receiptSplitExtrasTaxRateLabel.
   ///
   /// In en, this message translates to:
   /// **'Tax Rate (%)'**
-  String get itemizedExtrasTaxRateLabel;
+  String get receiptSplitExtrasTaxRateLabel;
 
-  /// No description provided for @itemizedExtrasTaxRateHint.
+  /// No description provided for @receiptSplitExtrasTaxRateHint.
   ///
   /// In en, this message translates to:
   /// **'e.g., 8.875'**
-  String get itemizedExtrasTaxRateHint;
+  String get receiptSplitExtrasTaxRateHint;
 
-  /// No description provided for @itemizedExtrasTaxRateHelper.
+  /// No description provided for @receiptSplitExtrasTaxRateHelper.
   ///
   /// In en, this message translates to:
   /// **'Applies to all taxable items'**
-  String get itemizedExtrasTaxRateHelper;
+  String get receiptSplitExtrasTaxRateHelper;
 
-  /// No description provided for @itemizedExtrasTipCardTitle.
+  /// No description provided for @receiptSplitExtrasTipCardTitle.
   ///
   /// In en, this message translates to:
   /// **'Tip / Gratuity'**
-  String get itemizedExtrasTipCardTitle;
+  String get receiptSplitExtrasTipCardTitle;
 
-  /// No description provided for @itemizedExtrasTipRateLabel.
+  /// No description provided for @receiptSplitExtrasTipRateLabel.
   ///
   /// In en, this message translates to:
   /// **'Tip Rate (%)'**
-  String get itemizedExtrasTipRateLabel;
+  String get receiptSplitExtrasTipRateLabel;
 
-  /// No description provided for @itemizedExtrasTipRateHint.
+  /// No description provided for @receiptSplitExtrasTipRateHint.
   ///
   /// In en, this message translates to:
   /// **'e.g., 18'**
-  String get itemizedExtrasTipRateHint;
+  String get receiptSplitExtrasTipRateHint;
 
-  /// No description provided for @itemizedExtrasTipRateHelper.
+  /// No description provided for @receiptSplitExtrasTipRateHelper.
   ///
   /// In en, this message translates to:
   /// **'Calculated on pre-tax subtotal'**
-  String get itemizedExtrasTipRateHelper;
+  String get receiptSplitExtrasTipRateHelper;
 
-  /// No description provided for @itemizedExtrasInfoMessage.
+  /// No description provided for @receiptSplitExtrasInfoMessage.
   ///
   /// In en, this message translates to:
   /// **'Tax and tip will be split proportionally based on each person\'s item subtotal'**
-  String get itemizedExtrasInfoMessage;
+  String get receiptSplitExtrasInfoMessage;
 
-  /// No description provided for @itemizedExtrasContinueButton.
+  /// No description provided for @receiptSplitExtrasContinueButton.
   ///
   /// In en, this message translates to:
   /// **'Continue to Review'**
-  String get itemizedExtrasContinueButton;
+  String get receiptSplitExtrasContinueButton;
 
-  /// No description provided for @itemizedReviewTitle.
+  /// No description provided for @receiptSplitReviewTitle.
   ///
   /// In en, this message translates to:
   /// **'Review & Save'**
-  String get itemizedReviewTitle;
+  String get receiptSplitReviewTitle;
 
-  /// No description provided for @itemizedReviewDescription.
+  /// No description provided for @receiptSplitReviewDescription.
   ///
   /// In en, this message translates to:
   /// **'Check the breakdown before saving'**
-  String get itemizedReviewDescription;
+  String get receiptSplitReviewDescription;
 
-  /// No description provided for @itemizedReviewCannotSaveTitle.
+  /// No description provided for @receiptSplitReviewCannotSaveTitle.
   ///
   /// In en, this message translates to:
   /// **'Cannot Save'**
-  String get itemizedReviewCannotSaveTitle;
+  String get receiptSplitReviewCannotSaveTitle;
 
-  /// No description provided for @itemizedReviewWarningTitle.
+  /// No description provided for @receiptSplitReviewWarningTitle.
   ///
   /// In en, this message translates to:
   /// **'Warning'**
-  String get itemizedReviewWarningTitle;
+  String get receiptSplitReviewWarningTitle;
 
-  /// No description provided for @itemizedReviewGrandTotal.
+  /// No description provided for @receiptSplitReviewGrandTotal.
   ///
   /// In en, this message translates to:
   /// **'Grand Total'**
-  String get itemizedReviewGrandTotal;
+  String get receiptSplitReviewGrandTotal;
 
-  /// No description provided for @itemizedReviewPeopleSplitting.
+  /// No description provided for @receiptSplitReviewPeopleSplitting.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 person splitting} other{{count} people splitting}}'**
-  String itemizedReviewPeopleSplitting(int count);
+  String receiptSplitReviewPeopleSplitting(num count);
 
-  /// No description provided for @itemizedReviewPerPersonBreakdown.
+  /// No description provided for @receiptSplitReviewPerPersonBreakdown.
   ///
   /// In en, this message translates to:
   /// **'Per Person Breakdown'**
-  String get itemizedReviewPerPersonBreakdown;
+  String get receiptSplitReviewPerPersonBreakdown;
 
-  /// No description provided for @itemizedReviewPaidBadge.
+  /// No description provided for @receiptSplitReviewPaidBadge.
   ///
   /// In en, this message translates to:
   /// **'PAID'**
-  String get itemizedReviewPaidBadge;
+  String get receiptSplitReviewPaidBadge;
 
-  /// No description provided for @itemizedReviewItemsSubtotal.
+  /// No description provided for @receiptSplitReviewItemsSubtotal.
   ///
   /// In en, this message translates to:
   /// **'Items Subtotal'**
-  String get itemizedReviewItemsSubtotal;
+  String get receiptSplitReviewItemsSubtotal;
 
-  /// No description provided for @itemizedReviewRounding.
+  /// No description provided for @receiptSplitReviewRounding.
   ///
   /// In en, this message translates to:
   /// **'Rounding'**
-  String get itemizedReviewRounding;
+  String get receiptSplitReviewRounding;
 
-  /// No description provided for @itemizedReviewTotal.
+  /// No description provided for @receiptSplitReviewTotal.
   ///
   /// In en, this message translates to:
   /// **'Total'**
-  String get itemizedReviewTotal;
+  String get receiptSplitReviewTotal;
 
-  /// No description provided for @itemizedReviewItemDetails.
+  /// No description provided for @receiptSplitReviewItemDetails.
   ///
   /// In en, this message translates to:
   /// **'Item Details'**
-  String get itemizedReviewItemDetails;
+  String get receiptSplitReviewItemDetails;
 
-  /// No description provided for @itemizedReviewSaveButton.
+  /// No description provided for @receiptSplitReviewSaveButton.
   ///
   /// In en, this message translates to:
   /// **'Save Expense'**
-  String get itemizedReviewSaveButton;
+  String get receiptSplitReviewSaveButton;
 
-  /// No description provided for @itemizedReviewUpdateButton.
+  /// No description provided for @receiptSplitReviewUpdateButton.
   ///
   /// In en, this message translates to:
   /// **'Update Expense'**
-  String get itemizedReviewUpdateButton;
+  String get receiptSplitReviewUpdateButton;
 
-  /// No description provided for @itemizedExpenseCannotEditNotItemized.
+  /// No description provided for @receiptSplitExpenseCannotEditNotItemized.
   ///
   /// In en, this message translates to:
   /// **'Cannot edit: expense is not itemized'**
-  String get itemizedExpenseCannotEditNotItemized;
+  String get receiptSplitExpenseCannotEditNotItemized;
 
-  /// No description provided for @itemizedExpenseCannotEditNoItems.
+  /// No description provided for @receiptSplitExpenseCannotEditNoItems.
   ///
   /// In en, this message translates to:
   /// **'Cannot edit: expense has no items'**
-  String get itemizedExpenseCannotEditNoItems;
+  String get receiptSplitExpenseCannotEditNoItems;
 
-  /// No description provided for @itemizedExpenseCannotSaveNotReady.
+  /// No description provided for @receiptSplitExpenseCannotSaveNotReady.
   ///
   /// In en, this message translates to:
   /// **'Cannot save: expense not ready'**
-  String get itemizedExpenseCannotSaveNotReady;
+  String get receiptSplitExpenseCannotSaveNotReady;
 
-  /// No description provided for @itemizedExpenseCannotSaveValidationErrors.
+  /// No description provided for @receiptSplitExpenseCannotSaveValidationErrors.
   ///
   /// In en, this message translates to:
   /// **'Cannot save: validation errors exist'**
-  String get itemizedExpenseCannotSaveValidationErrors;
+  String get receiptSplitExpenseCannotSaveValidationErrors;
 
-  /// No description provided for @itemizedExpenseCannotSaveNoPayerSelected.
+  /// No description provided for @receiptSplitExpenseCannotSaveNoPayerSelected.
   ///
   /// In en, this message translates to:
   /// **'Cannot save: payer not selected'**
-  String get itemizedExpenseCannotSaveNoPayerSelected;
+  String get receiptSplitExpenseCannotSaveNoPayerSelected;
 
-  /// No description provided for @itemizedExpenseSaveError.
+  /// No description provided for @receiptSplitExpenseSaveError.
   ///
   /// In en, this message translates to:
   /// **'Failed to save expense: {error}'**
-  String itemizedExpenseSaveError(String error);
+  String receiptSplitExpenseSaveError(Object error);
 
-  /// No description provided for @itemizedExpenseCalculationError.
+  /// No description provided for @receiptSplitExpenseCalculationError.
   ///
   /// In en, this message translates to:
   /// **'Calculation error: {error}'**
-  String itemizedExpenseCalculationError(String error);
+  String receiptSplitExpenseCalculationError(Object error);
 
-  /// No description provided for @itemizedExpenseGeneratedDescriptionNoItems.
+  /// No description provided for @receiptSplitExpenseGeneratedDescriptionNoItems.
   ///
   /// In en, this message translates to:
   /// **'Itemized expense'**
-  String get itemizedExpenseGeneratedDescriptionNoItems;
+  String get receiptSplitExpenseGeneratedDescriptionNoItems;
 
-  /// No description provided for @itemizedExpenseGeneratedDescriptionMultiple.
+  /// No description provided for @receiptSplitExpenseGeneratedDescriptionMultiple.
   ///
   /// In en, this message translates to:
   /// **'{item1}, {item2}, and {count} more'**
-  String itemizedExpenseGeneratedDescriptionMultiple(
-    String item1,
-    String item2,
-    int count,
+  String receiptSplitExpenseGeneratedDescriptionMultiple(
+    Object count,
+    Object item1,
+    Object item2,
   );
 
   /// No description provided for @expenseCardNoItemizedDetails.

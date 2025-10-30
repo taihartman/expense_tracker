@@ -60,7 +60,7 @@ class ReviewStepPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.itemizedReviewTitle,
+                context.l10n.receiptSplitReviewTitle,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -68,7 +68,7 @@ class ReviewStepPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                context.l10n.itemizedReviewDescription,
+                context.l10n.receiptSplitReviewDescription,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 16),
@@ -114,7 +114,7 @@ class ReviewStepPage extends StatelessWidget {
               Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
               const SizedBox(width: 8),
               Text(
-                context.l10n.itemizedReviewCannotSaveTitle,
+                context.l10n.receiptSplitReviewCannotSaveTitle,
                 style: TextStyle(
                   color: Colors.red.shade900,
                   fontWeight: FontWeight.bold,
@@ -158,7 +158,7 @@ class ReviewStepPage extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                context.l10n.itemizedReviewWarningTitle,
+                context.l10n.receiptSplitReviewWarningTitle,
                 style: TextStyle(
                   color: Colors.orange.shade900,
                   fontWeight: FontWeight.bold,
@@ -190,7 +190,7 @@ class ReviewStepPage extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              context.l10n.itemizedReviewGrandTotal,
+              context.l10n.receiptSplitReviewGrandTotal,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
@@ -204,7 +204,7 @@ class ReviewStepPage extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              context.l10n.itemizedReviewPeopleSplitting(
+              context.l10n.receiptSplitReviewPeopleSplitting(
                 state.participantBreakdown.length,
               ),
               style: TextStyle(color: Colors.grey.shade600),
@@ -220,7 +220,7 @@ class ReviewStepPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          context.l10n.itemizedReviewPerPersonBreakdown,
+          context.l10n.receiptSplitReviewPerPersonBreakdown,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
@@ -257,7 +257,7 @@ class ReviewStepPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        context.l10n.itemizedReviewPaidBadge,
+                        context.l10n.receiptSplitReviewPaidBadge,
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -278,7 +278,7 @@ class ReviewStepPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildBreakdownRow(
-                        context.l10n.itemizedReviewItemsSubtotal,
+                        context.l10n.receiptSplitReviewItemsSubtotal,
                         breakdown.itemsSubtotal,
                         currency,
                       ),
@@ -288,13 +288,13 @@ class ReviewStepPage extends StatelessWidget {
                       }),
                       if (breakdown.roundedAdjustment != Decimal.zero)
                         _buildBreakdownRow(
-                          context.l10n.itemizedReviewRounding,
+                          context.l10n.receiptSplitReviewRounding,
                           breakdown.roundedAdjustment,
                           currency,
                         ),
                       const Divider(height: 24),
                       _buildBreakdownRow(
-                        context.l10n.itemizedReviewTotal,
+                        context.l10n.receiptSplitReviewTotal,
                         breakdown.total,
                         currency,
                         isBold: true,
@@ -302,7 +302,7 @@ class ReviewStepPage extends StatelessWidget {
                       const SizedBox(height: 12),
                       ExpansionTile(
                         title: Text(
-                          context.l10n.itemizedReviewItemDetails,
+                          context.l10n.receiptSplitReviewItemDetails,
                           style: const TextStyle(fontSize: 14),
                         ),
                         children: breakdown.items.map((item) {
@@ -395,8 +395,8 @@ class ReviewStepPage extends StatelessWidget {
             icon: const Icon(Icons.save),
             label: Text(
               isEditMode
-                  ? context.l10n.itemizedReviewUpdateButton
-                  : context.l10n.itemizedReviewSaveButton,
+                  ? context.l10n.receiptSplitReviewUpdateButton
+                  : context.l10n.receiptSplitReviewSaveButton,
             ),
           ),
         ),

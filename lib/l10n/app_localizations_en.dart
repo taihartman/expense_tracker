@@ -367,6 +367,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expenseEditTitle => 'Edit Expense';
 
   @override
+  String get expenseFabMainTooltip => 'Add expense options';
+
+  @override
+  String get expenseFabQuickExpenseTooltip => 'Quick Expense';
+
+  @override
+  String get expenseFabReceiptSplitTooltip =>
+      'Receipt Split (Who Ordered What)';
+
+  @override
   String get expenseSaveButton => 'Add Expense';
 
   @override
@@ -440,7 +450,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get expenseSplitTypeWeighted => 'Weighted';
 
   @override
-  String get expenseSplitTypeItemized => 'Itemized (Add Line Items)';
+  String get expenseSplitTypeReceiptSplit => 'Receipt Split (Who Ordered What)';
 
   @override
   String get expenseParticipantSelectorRequired =>
@@ -502,164 +512,168 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String expenseItemizedOpenError(String error) {
-    return 'Error opening itemized expense: $error';
+    return 'Error opening receipt split: $error';
   }
 
   @override
-  String get itemizedWizardTitleNew => 'New Itemized Expense';
+  String get receiptSplitWizardTitleNew => 'New Receipt Split';
 
   @override
-  String get itemizedWizardTitleEdit => 'Edit Itemized Expense';
+  String get receiptSplitWizardTitleEdit => 'Edit Receipt Split';
 
   @override
-  String get itemizedWizardSavedSuccess => 'Expense saved successfully!';
+  String get receiptSplitWizardSavedSuccess => 'Expense saved successfully!';
 
   @override
-  String get itemizedWizardUpdatedSuccess => 'Expense updated successfully!';
+  String get receiptSplitWizardUpdatedSuccess =>
+      'Expense updated successfully!';
 
   @override
-  String get itemizedWizardSaving => 'Saving expense...';
+  String get receiptSplitWizardSaving => 'Saving expense...';
 
   @override
-  String get itemizedWizardStepPeople => 'People';
+  String get receiptSplitWizardStepPeople => 'People';
 
   @override
-  String get itemizedWizardStepItems => 'Items';
+  String get receiptSplitWizardStepItems => 'Items';
 
   @override
-  String get itemizedWizardStepExtras => 'Extras';
+  String get receiptSplitWizardStepExtras => 'Extras';
 
   @override
-  String get itemizedWizardStepReview => 'Review';
+  String get receiptSplitWizardStepReview => 'Review';
 
   @override
-  String get itemizedPeopleTitle => 'Who paid for this expense? *';
+  String get receiptSplitPeopleTitle => 'Who paid for this expense? *';
 
   @override
-  String get itemizedPeopleDescription => 'Select the person who paid';
+  String get receiptSplitPeopleDescription => 'Select the person who paid';
 
   @override
-  String get itemizedPeopleDescriptionError =>
+  String get receiptSplitPeopleDescriptionError =>
       'Required - Select the person who paid';
 
   @override
-  String get itemizedPeopleContinueButton => 'Continue to Items';
+  String get receiptSplitPeopleContinueButton => 'Continue to Items';
 
   @override
-  String get itemizedItemsTitle => 'Add items from receipt';
+  String get receiptSplitItemsTitle => 'Add items from receipt';
 
   @override
-  String get itemizedItemsDescription =>
+  String get receiptSplitItemsDescription =>
       'Add each item and assign who ordered it';
 
   @override
-  String get itemizedItemsEmptyTitle => 'No items yet';
+  String get receiptSplitItemsEmptyTitle => 'No items yet';
 
   @override
-  String get itemizedItemsEmptyDescription => 'Add items from the form below';
+  String get receiptSplitItemsEmptyDescription =>
+      'Add items from the form below';
 
   @override
-  String get itemizedItemsNotAssigned => 'Not assigned';
+  String get receiptSplitItemsNotAssigned => 'Not assigned';
 
   @override
-  String get itemizedItemsAssignTooltip => 'Assign';
+  String get receiptSplitItemsAssignTooltip => 'Assign';
 
   @override
-  String get itemizedItemsEditTooltip => 'Edit';
+  String get receiptSplitItemsEditTooltip => 'Edit';
 
   @override
-  String get itemizedItemsRemoveTooltip => 'Remove';
+  String get receiptSplitItemsRemoveTooltip => 'Remove';
 
   @override
-  String get itemizedItemsAddCardTitle => 'Add New Item';
+  String get receiptSplitItemsAddCardTitle => 'Add New Item';
 
   @override
-  String get itemizedItemsEditCardTitle => 'Edit Item';
+  String get receiptSplitItemsEditCardTitle => 'Edit Item';
 
   @override
-  String get itemizedItemsFieldNameLabel => 'Item name';
+  String get receiptSplitItemsFieldNameLabel => 'Item name';
 
   @override
-  String get itemizedItemsFieldNameHint => 'e.g., Caesar Salad';
+  String get receiptSplitItemsFieldNameHint => 'e.g., Caesar Salad';
 
   @override
-  String get itemizedItemsFieldQtyLabel => 'Qty';
+  String get receiptSplitItemsFieldQtyLabel => 'Qty';
 
   @override
-  String get itemizedItemsFieldPriceLabel => 'Price';
+  String get receiptSplitItemsFieldPriceLabel => 'Price';
 
   @override
-  String get itemizedItemsFieldPriceHint => '0.00';
+  String get receiptSplitItemsFieldPriceHint => '0.00';
 
   @override
-  String get itemizedItemsAddButton => 'Add Item';
+  String get receiptSplitItemsAddButton => 'Add Item';
 
   @override
-  String get itemizedItemsUpdateButton => 'Update Item';
+  String get receiptSplitItemsUpdateButton => 'Update Item';
 
   @override
-  String get itemizedItemsContinueButton => 'Continue to Extras';
+  String get receiptSplitItemsContinueButton => 'Continue to Extras';
 
   @override
-  String itemizedItemsAssignDialogTitle(String itemName) {
+  String receiptSplitItemsAssignDialogTitle(Object itemName) {
     return 'Assign: $itemName';
   }
 
   @override
-  String get itemizedExtrasTitle => 'Add tax & tip';
+  String get receiptSplitExtrasTitle => 'Add tax & tip';
 
   @override
-  String get itemizedExtrasDescription =>
+  String get receiptSplitExtrasDescription =>
       'Optional - leave blank if not applicable';
 
   @override
-  String get itemizedExtrasTaxCardTitle => 'Sales Tax';
+  String get receiptSplitExtrasTaxCardTitle => 'Sales Tax';
 
   @override
-  String get itemizedExtrasTaxRateLabel => 'Tax Rate (%)';
+  String get receiptSplitExtrasTaxRateLabel => 'Tax Rate (%)';
 
   @override
-  String get itemizedExtrasTaxRateHint => 'e.g., 8.875';
+  String get receiptSplitExtrasTaxRateHint => 'e.g., 8.875';
 
   @override
-  String get itemizedExtrasTaxRateHelper => 'Applies to all taxable items';
+  String get receiptSplitExtrasTaxRateHelper => 'Applies to all taxable items';
 
   @override
-  String get itemizedExtrasTipCardTitle => 'Tip / Gratuity';
+  String get receiptSplitExtrasTipCardTitle => 'Tip / Gratuity';
 
   @override
-  String get itemizedExtrasTipRateLabel => 'Tip Rate (%)';
+  String get receiptSplitExtrasTipRateLabel => 'Tip Rate (%)';
 
   @override
-  String get itemizedExtrasTipRateHint => 'e.g., 18';
+  String get receiptSplitExtrasTipRateHint => 'e.g., 18';
 
   @override
-  String get itemizedExtrasTipRateHelper => 'Calculated on pre-tax subtotal';
+  String get receiptSplitExtrasTipRateHelper =>
+      'Calculated on pre-tax subtotal';
 
   @override
-  String get itemizedExtrasInfoMessage =>
+  String get receiptSplitExtrasInfoMessage =>
       'Tax and tip will be split proportionally based on each person\'s item subtotal';
 
   @override
-  String get itemizedExtrasContinueButton => 'Continue to Review';
+  String get receiptSplitExtrasContinueButton => 'Continue to Review';
 
   @override
-  String get itemizedReviewTitle => 'Review & Save';
+  String get receiptSplitReviewTitle => 'Review & Save';
 
   @override
-  String get itemizedReviewDescription => 'Check the breakdown before saving';
+  String get receiptSplitReviewDescription =>
+      'Check the breakdown before saving';
 
   @override
-  String get itemizedReviewCannotSaveTitle => 'Cannot Save';
+  String get receiptSplitReviewCannotSaveTitle => 'Cannot Save';
 
   @override
-  String get itemizedReviewWarningTitle => 'Warning';
+  String get receiptSplitReviewWarningTitle => 'Warning';
 
   @override
-  String get itemizedReviewGrandTotal => 'Grand Total';
+  String get receiptSplitReviewGrandTotal => 'Grand Total';
 
   @override
-  String itemizedReviewPeopleSplitting(int count) {
+  String receiptSplitReviewPeopleSplitting(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -670,67 +684,68 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get itemizedReviewPerPersonBreakdown => 'Per Person Breakdown';
+  String get receiptSplitReviewPerPersonBreakdown => 'Per Person Breakdown';
 
   @override
-  String get itemizedReviewPaidBadge => 'PAID';
+  String get receiptSplitReviewPaidBadge => 'PAID';
 
   @override
-  String get itemizedReviewItemsSubtotal => 'Items Subtotal';
+  String get receiptSplitReviewItemsSubtotal => 'Items Subtotal';
 
   @override
-  String get itemizedReviewRounding => 'Rounding';
+  String get receiptSplitReviewRounding => 'Rounding';
 
   @override
-  String get itemizedReviewTotal => 'Total';
+  String get receiptSplitReviewTotal => 'Total';
 
   @override
-  String get itemizedReviewItemDetails => 'Item Details';
+  String get receiptSplitReviewItemDetails => 'Item Details';
 
   @override
-  String get itemizedReviewSaveButton => 'Save Expense';
+  String get receiptSplitReviewSaveButton => 'Save Expense';
 
   @override
-  String get itemizedReviewUpdateButton => 'Update Expense';
+  String get receiptSplitReviewUpdateButton => 'Update Expense';
 
   @override
-  String get itemizedExpenseCannotEditNotItemized =>
+  String get receiptSplitExpenseCannotEditNotItemized =>
       'Cannot edit: expense is not itemized';
 
   @override
-  String get itemizedExpenseCannotEditNoItems =>
+  String get receiptSplitExpenseCannotEditNoItems =>
       'Cannot edit: expense has no items';
 
   @override
-  String get itemizedExpenseCannotSaveNotReady =>
+  String get receiptSplitExpenseCannotSaveNotReady =>
       'Cannot save: expense not ready';
 
   @override
-  String get itemizedExpenseCannotSaveValidationErrors =>
+  String get receiptSplitExpenseCannotSaveValidationErrors =>
       'Cannot save: validation errors exist';
 
   @override
-  String get itemizedExpenseCannotSaveNoPayerSelected =>
+  String get receiptSplitExpenseCannotSaveNoPayerSelected =>
       'Cannot save: payer not selected';
 
   @override
-  String itemizedExpenseSaveError(String error) {
+  String receiptSplitExpenseSaveError(Object error) {
     return 'Failed to save expense: $error';
   }
 
   @override
-  String itemizedExpenseCalculationError(String error) {
+  String receiptSplitExpenseCalculationError(Object error) {
     return 'Calculation error: $error';
   }
 
   @override
-  String get itemizedExpenseGeneratedDescriptionNoItems => 'Itemized expense';
+  String get receiptSplitExpenseGeneratedDescriptionNoItems =>
+      'Itemized expense';
 
   @override
-  String itemizedExpenseGeneratedDescriptionMultiple(
-    String item1,
-    String item2,
-    int count,
+  String receiptSplitExpenseGeneratedDescriptionMultiple(
+    Object count,
+    Object item1,
+    Object item2,
   ) {
     return '$item1, $item2, and $count more';
   }

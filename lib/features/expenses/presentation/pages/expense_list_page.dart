@@ -3,8 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/expense_cubit.dart';
 import '../cubits/expense_state.dart';
+import '../cubits/itemized_expense_cubit.dart';
 import '../widgets/expense_card.dart';
 import '../widgets/expense_form_bottom_sheet.dart';
+import '../widgets/fab_speed_dial.dart';
+import '../../domain/repositories/expense_repository.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
@@ -12,6 +15,7 @@ import '../../../../core/models/participant.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import 'itemized/itemized_expense_wizard.dart';
 
 /// Page displaying list of expenses for a trip
 class ExpenseListPage extends StatelessWidget {
@@ -25,9 +29,7 @@ class ExpenseListPage extends StatelessWidget {
     final tripCubit = context.read<TripCubit>();
     if (!tripCubit.isUserMemberOf(tripId)) {
       return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.expenseListTitle),
-        ),
+        appBar: AppBar(title: Text(context.l10n.expenseListTitle)),
         body: TripVerificationPrompt(tripId: tripId),
       );
     }
@@ -50,14 +52,50 @@ class ExpenseListPage extends StatelessWidget {
               context.push(AppRoutes.settlement(tripId));
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: context.l10n.expenseAddTooltip,
-            onPressed: () {
-              showExpenseFormBottomSheet(context: context, tripId: tripId);
-            },
-          ),
         ],
+      ),
+      floatingActionButton: ExpenseFabSpeedDial(
+        tripId: tripId,
+        onQuickExpenseTap: () {
+          showExpenseFormBottomSheet(context: context, tripId: tripId);
+        },
+        onReceiptSplitTap: () async {
+          // Get trip info and current user
+          final tripCubit = context.read<TripCubit>();
+          final tripState = tripCubit.state;
+
+          if (tripState is! TripLoaded) return;
+
+          // Find the current trip
+          final trip = tripState.trips.firstWhere(
+            (t) => t.id == tripId,
+            orElse: () => tripState.selectedTrip!,
+          );
+
+          // Get current user for this trip
+          final currentUser = tripCubit.getCurrentUserForTrip(tripId);
+
+          // Navigate to Receipt Split wizard
+          final expenseRepository = context.read<ExpenseRepository>();
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (context) => BlocProvider(
+                create: (context) =>
+                    ItemizedExpenseCubit(expenseRepository: expenseRepository),
+                child: ItemizedExpenseWizard(
+                  tripId: tripId,
+                  participants: trip.participants.map((p) => p.id).toList(),
+                  participantNames: {
+                    for (var p in trip.participants) p.id: p.name,
+                  },
+                  initialPayerUserId:
+                      currentUser?.id ?? trip.participants.first.id,
+                  currency: trip.baseCurrency,
+                ),
+              ),
+            ),
+          );
+        },
       ),
       body: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {
@@ -134,8 +172,9 @@ class ExpenseListPage extends StatelessWidget {
                     : <Participant>[];
 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppTheme.spacing1,
+                  padding: const EdgeInsets.only(
+                    top: AppTheme.spacing1,
+                    bottom: 80, // 80dp clearance for FAB Speed Dial
                   ),
                   itemCount: state.expenses.length,
                   itemBuilder: (context, index) {
