@@ -62,26 +62,55 @@ class AppRouter {
   // Store the original requested location for deep link preservation
   static String? _originalLocation;
 
+  // Store the initial URL from browser captured in main()
+  // This must be set before runApp() to preserve deep links
+  static String? _capturedInitialUrl;
+
+  /// Captures the initial browser URL before widget tree creation
+  /// Must be called from main() before runApp() to preserve deep links
+  static void setInitialUrl(String url) {
+    if (_capturedInitialUrl == null) {
+      _capturedInitialUrl = url;
+      DebugLogger.log('📍 Captured initial URL from main(): $url');
+    }
+  }
+
   static final GoRouter router = GoRouter(
     initialLocation: AppRoutes.splash,
     redirect: (context, state) {
-      // Debug logging to track deep link capture and routing flow
-      DebugLogger.log('🔀 REDIRECT: uri=${state.uri}, matched=${state.matchedLocation}, _orig=$_originalLocation');
+      final requestedUri = state.uri.toString();
+      final matchedPath = state.matchedLocation;
 
-      // Store the very first location request (the deep link)
-      // This captures invite links like /trips/join?code=xxx
-      if (_originalLocation == null &&
-          state.matchedLocation != AppRoutes.splash) {
-        _originalLocation = state.uri.toString();
-        DebugLogger.log('📍 Deep link captured: $_originalLocation');
-      }
+      // Debug logging to track deep link capture and routing flow
+      DebugLogger.log('🔀 REDIRECT: uri=$requestedUri, matched=$matchedPath, _orig=$_originalLocation, _captured=$_capturedInitialUrl');
 
       // Check if initialization is complete
       final initializationState = context.read<InitializationCubit>().state;
       final isInitialized = initializationState is InitializationComplete;
-      final isOnSplash = state.matchedLocation == AppRoutes.splash;
+      final isOnSplash = matchedPath == AppRoutes.splash;
 
       DebugLogger.log('   isInitialized=$isInitialized, isOnSplash=$isOnSplash');
+
+      // CRITICAL: If we have a captured URL from main() that's a real deep link, use it
+      // This restores invite links that were lost during app initialization
+      if (_capturedInitialUrl != null &&
+          _capturedInitialUrl != '/' &&
+          _capturedInitialUrl != AppRoutes.splash) {
+        // Only restore if initialization is complete and we're on splash
+        if (isInitialized && isOnSplash) {
+          final preserved = _capturedInitialUrl!;
+          _capturedInitialUrl = null; // Clear after use
+          DebugLogger.log('✅ Restoring captured URL from main(): $preserved');
+          return preserved;
+        }
+      }
+
+      // Store the very first location request (the deep link) as backup
+      // This captures invite links like /trips/join?code=xxx
+      if (_originalLocation == null && !isOnSplash) {
+        _originalLocation = requestedUri;
+        DebugLogger.log('📍 Deep link captured from router: $_originalLocation');
+      }
 
       // If not initialized and not on splash, redirect to splash
       // This preserves the original location in _originalLocation
