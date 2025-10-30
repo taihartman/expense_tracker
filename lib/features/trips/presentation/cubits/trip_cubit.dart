@@ -335,6 +335,7 @@ class TripCubit extends Cubit<TripState> {
     required String tripId,
     required String name,
     required CurrencyCode baseCurrency,
+    String? actorName,
   }) async {
     try {
       _log(
@@ -356,6 +357,19 @@ class TripCubit extends Cubit<TripState> {
       // Use existing updateTrip method
       await updateTrip(updatedTrip);
       _log('✅ Trip details updated successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip update via ActivityLoggerService...');
+        await _activityLoggerService.logTripUpdated(
+          currentTrip,
+          updatedTrip,
+          actorName,
+        );
+        _log('✅ Activity logged');
+      }
     } catch (e) {
       _log('❌ Failed to update trip details: $e');
       emit(TripError('Failed to update trip: ${e.toString()}'));
@@ -363,9 +377,22 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Delete a trip
-  Future<void> deleteTrip(String tripId) async {
+  Future<void> deleteTrip(String tripId, {String? actorName}) async {
     try {
+      // Get trip details before deletion for logging
+      final trip = await _tripRepository.getTripById(tripId);
+
       await _tripRepository.deleteTrip(tripId);
+
+      // Log activity using centralized service (before clearing selection)
+      if (_activityLoggerService != null &&
+          trip != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip deletion via ActivityLoggerService...');
+        await _activityLoggerService.logTripDeleted(trip, actorName);
+        _log('✅ Activity logged');
+      }
 
       // If deleted trip was selected, clear selection
       if (_selectedTripId == tripId) {
@@ -389,7 +416,7 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Archive a trip (hide from active trip list)
-  Future<void> archiveTrip(String tripId) async {
+  Future<void> archiveTrip(String tripId, {String? actorName}) async {
     try {
       _log('📦 Archiving trip: $tripId');
 
@@ -411,6 +438,15 @@ class TripCubit extends Cubit<TripState> {
       await _tripRepository.updateTrip(updatedTrip);
       _log('✅ Trip archived successfully');
 
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip archive via ActivityLoggerService...');
+        await _activityLoggerService.logTripArchived(updatedTrip, actorName);
+        _log('✅ Activity logged');
+      }
+
       // If archiving current trip, clear selection
       if (isCurrentlySelected) {
         _selectedTripId = null;
@@ -427,7 +463,7 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Unarchive a trip (restore to active trip list)
-  Future<void> unarchiveTrip(String tripId) async {
+  Future<void> unarchiveTrip(String tripId, {String? actorName}) async {
     try {
       _log('📤 Unarchiving trip: $tripId');
 
@@ -445,6 +481,15 @@ class TripCubit extends Cubit<TripState> {
 
       await _tripRepository.updateTrip(updatedTrip);
       _log('✅ Trip unarchived successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip unarchive via ActivityLoggerService...');
+        await _activityLoggerService.logTripUnarchived(updatedTrip, actorName);
+        _log('✅ Activity logged');
+      }
 
       // Reload trips to refresh the list
       await loadTrips();
@@ -778,6 +823,17 @@ class TripCubit extends Cubit<TripState> {
         userName: userName,
         joinMethod: JoinMethod.recoveryCode,
       );
+
+      // Log recovery code usage via centralized service
+      if (_activityLoggerService != null) {
+        _log('📝 Logging recovery code usage via ActivityLoggerService...');
+        await _activityLoggerService.logRecoveryCodeUsed(
+          tripId: tripId,
+          memberName: userName,
+          usageCount: recoveryCode.usedCount,
+        );
+        _log('✅ Activity logged');
+      }
 
       return true;
     } catch (e) {

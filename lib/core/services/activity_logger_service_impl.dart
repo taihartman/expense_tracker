@@ -434,4 +434,228 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         return joinMethod;
     }
   }
+
+  @override
+  Future<void> logTripUpdated(
+    Trip oldTrip,
+    Trip newTrip,
+    String actorName,
+  ) async {
+    try {
+      final changes = <String>[];
+
+      // Detect name change
+      if (oldTrip.name != newTrip.name) {
+        changes.add('name: "${oldTrip.name}" → "${newTrip.name}"');
+      }
+
+      // Detect currency change
+      if (oldTrip.baseCurrency != newTrip.baseCurrency) {
+        changes.add('currency: ${oldTrip.baseCurrency.code} → ${newTrip.baseCurrency.code}');
+      }
+
+      // Skip logging if no changes detected
+      if (changes.isEmpty) {
+        _logError('No changes detected for trip update, skipping log');
+        return;
+      }
+
+      final description = 'Updated ${changes.join(", ")}';
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: newTrip.id,
+        type: ActivityType.tripUpdated,
+        actorName: actorName.isEmpty ? 'Unknown' : actorName,
+        description: description,
+        timestamp: DateTime.now(),
+        metadata: {
+          'tripId': newTrip.id,
+          'changes': changes,
+          if (oldTrip.name != newTrip.name) ...{
+            'oldName': oldTrip.name,
+            'newName': newTrip.name,
+          },
+          if (oldTrip.baseCurrency != newTrip.baseCurrency) ...{
+            'oldCurrency': oldTrip.baseCurrency.code,
+            'newCurrency': newTrip.baseCurrency.code,
+          },
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log trip updated: $e');
+    }
+  }
+
+  @override
+  Future<void> logTripDeleted(Trip trip, String actorName) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: trip.id,
+        type: ActivityType.tripDeleted,
+        actorName: actorName.isEmpty ? 'Unknown' : actorName,
+        description: 'Deleted trip "${trip.name}"',
+        timestamp: DateTime.now(),
+        metadata: {
+          'tripId': trip.id,
+          'tripName': trip.name,
+          'baseCurrency': trip.baseCurrency.code,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log trip deleted: $e');
+    }
+  }
+
+  @override
+  Future<void> logTripArchived(Trip trip, String actorName) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: trip.id,
+        type: ActivityType.tripArchived,
+        actorName: actorName.isEmpty ? 'Unknown' : actorName,
+        description: 'Archived trip "${trip.name}"',
+        timestamp: DateTime.now(),
+        metadata: {
+          'tripId': trip.id,
+          'tripName': trip.name,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log trip archived: $e');
+    }
+  }
+
+  @override
+  Future<void> logTripUnarchived(Trip trip, String actorName) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: trip.id,
+        type: ActivityType.tripUnarchived,
+        actorName: actorName.isEmpty ? 'Unknown' : actorName,
+        description: 'Unarchived trip "${trip.name}"',
+        timestamp: DateTime.now(),
+        metadata: {
+          'tripId': trip.id,
+          'tripName': trip.name,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log trip unarchived: $e');
+    }
+  }
+
+  @override
+  Future<void> logParticipantAdded({
+    required String tripId,
+    required String participantName,
+    required String actorName,
+  }) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: tripId,
+        type: ActivityType.participantAdded,
+        actorName: actorName.isEmpty ? 'Unknown' : actorName,
+        description: 'Added $participantName to the trip',
+        timestamp: DateTime.now(),
+        metadata: {
+          'participantName': participantName,
+          'addedBy': actorName,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log participant added: $e');
+    }
+  }
+
+  @override
+  Future<void> logParticipantRemoved({
+    required String tripId,
+    required String participantName,
+    required String actorName,
+  }) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: tripId,
+        type: ActivityType.participantRemoved,
+        actorName: actorName.isEmpty ? 'Unknown' : actorName,
+        description: 'Removed $participantName from the trip',
+        timestamp: DateTime.now(),
+        metadata: {
+          'participantName': participantName,
+          'removedBy': actorName,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log participant removed: $e');
+    }
+  }
+
+  @override
+  Future<void> logDeviceVerified({
+    required String tripId,
+    required String memberName,
+    required String deviceCode,
+  }) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: tripId,
+        type: ActivityType.deviceVerified,
+        actorName: memberName,
+        description: '$memberName verified their device',
+        timestamp: DateTime.now(),
+        metadata: {
+          'memberName': memberName,
+          'deviceCode': deviceCode.length >= 4 ? deviceCode.substring(deviceCode.length - 4) : deviceCode,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log device verified: $e');
+    }
+  }
+
+  @override
+  Future<void> logRecoveryCodeUsed({
+    required String tripId,
+    required String memberName,
+    required int usageCount,
+  }) async {
+    try {
+      final activityLog = ActivityLog(
+        id: '',
+        tripId: tripId,
+        type: ActivityType.recoveryCodeUsed,
+        actorName: memberName,
+        description: '$memberName used a recovery code to join',
+        timestamp: DateTime.now(),
+        metadata: {
+          'memberName': memberName,
+          'usageCount': usageCount,
+        },
+      );
+
+      await _logActivity(activityLog);
+    } catch (e) {
+      _logError('Failed to log recovery code used: $e');
+    }
+  }
 }

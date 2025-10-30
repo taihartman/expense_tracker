@@ -260,12 +260,14 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
     required String? tripId,
     required String? name,
     required _i10.CurrencyCode? baseCurrency,
+    String? actorName,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#updateTripDetails, [], {
               #tripId: tripId,
               #name: name,
               #baseCurrency: baseCurrency,
+              #actorName: actorName,
             }),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
@@ -273,27 +275,31 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> deleteTrip(String? tripId) =>
+  _i6.Future<void> deleteTrip(String? tripId, {String? actorName}) =>
       (super.noSuchMethod(
-            Invocation.method(#deleteTrip, [tripId]),
+            Invocation.method(#deleteTrip, [tripId], {#actorName: actorName}),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> archiveTrip(String? tripId) =>
+  _i6.Future<void> archiveTrip(String? tripId, {String? actorName}) =>
       (super.noSuchMethod(
-            Invocation.method(#archiveTrip, [tripId]),
+            Invocation.method(#archiveTrip, [tripId], {#actorName: actorName}),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<void> unarchiveTrip(String? tripId) =>
+  _i6.Future<void> unarchiveTrip(String? tripId, {String? actorName}) =>
       (super.noSuchMethod(
-            Invocation.method(#unarchiveTrip, [tripId]),
+            Invocation.method(
+              #unarchiveTrip,
+              [tripId],
+              {#actorName: actorName},
+            ),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )

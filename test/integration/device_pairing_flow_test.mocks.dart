@@ -259,6 +259,114 @@ class MockActivityLoggerService extends _i1.Mock
           as _i6.Future<void>);
 
   @override
+  _i6.Future<void> logTripUpdated(
+    _i2.Trip? oldTrip,
+    _i2.Trip? newTrip,
+    String? actorName,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTripUpdated, [oldTrip, newTrip, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logTripDeleted(_i2.Trip? trip, String? actorName) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTripDeleted, [trip, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logTripArchived(_i2.Trip? trip, String? actorName) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTripArchived, [trip, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logTripUnarchived(_i2.Trip? trip, String? actorName) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTripUnarchived, [trip, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logParticipantAdded({
+    required String? tripId,
+    required String? participantName,
+    required String? actorName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logParticipantAdded, [], {
+              #tripId: tripId,
+              #participantName: participantName,
+              #actorName: actorName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logParticipantRemoved({
+    required String? tripId,
+    required String? participantName,
+    required String? actorName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logParticipantRemoved, [], {
+              #tripId: tripId,
+              #participantName: participantName,
+              #actorName: actorName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logDeviceVerified({
+    required String? tripId,
+    required String? memberName,
+    required String? deviceCode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logDeviceVerified, [], {
+              #tripId: tripId,
+              #memberName: memberName,
+              #deviceCode: deviceCode,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logRecoveryCodeUsed({
+    required String? tripId,
+    required String? memberName,
+    required int? usageCount,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#logRecoveryCodeUsed, [], {
+              #tripId: tripId,
+              #memberName: memberName,
+              #usageCount: usageCount,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
   void clearCache() => super.noSuchMethod(
     Invocation.method(#clearCache, []),
     returnValueForMissingStub: null,
