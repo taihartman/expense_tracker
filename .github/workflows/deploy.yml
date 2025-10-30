@@ -23,6 +23,19 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+      - name: Generate version.json from pubspec.yaml
+        run: |
+          # Extract version from pubspec.yaml
+          VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          echo "📦 Extracted version from pubspec.yaml: $VERSION"
+
+          # Generate version.json
+          echo "{\"version\": \"$VERSION\"}" > web/version.json
+
+          # Verify generated file
+          echo "✅ Generated web/version.json:"
+          cat web/version.json
+
       - name: Build and Deploy
         uses: bluefireteam/flutter-gh-pages@v9
         with:
