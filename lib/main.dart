@@ -1,16 +1,13 @@
 import 'dart:ui';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'firebase_options.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/services/local_storage_service.dart';
-import 'core/services/migration_service.dart';
+import 'core/cubits/initialization_cubit.dart';
+import 'core/presentation/pages/initialization_splash_page.dart';
 import 'features/trips/data/repositories/trip_repository_impl.dart';
 import 'features/trips/domain/repositories/trip_repository.dart';
 import 'features/trips/data/repositories/activity_log_repository_impl.dart';
@@ -95,7 +92,8 @@ class AppBlocObserver extends BlocObserver {
 
 /// Application entry point
 ///
-/// Initializes Firebase and launches the Flutter application
+/// Launches the Flutter application immediately, with Firebase initialization
+/// happening in the background via InitializationCubit
 Future<void> main() async {
   _log('🚀 APP START: main() called');
 
@@ -121,72 +119,16 @@ Future<void> main() async {
     '✅ WidgetsFlutterBinding initialized (${DateTime.now().difference(startTime).inMilliseconds}ms)',
   );
 
-  // Initialize Firebase with correct project configuration
-  _log('📡 Starting Firebase initialization...');
-  final firebaseStart = DateTime.now();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Launch app immediately - Firebase initialization will happen in background
   _log(
-    '✅ Firebase initialized (${DateTime.now().difference(firebaseStart).inMilliseconds}ms)',
+    '🎬 Launching app widget (${DateTime.now().difference(startTime).inMilliseconds}ms) - Firebase initialization will happen in background',
   );
-
-  // Sign in anonymously to satisfy Firestore security rules
-  _log('🔐 Signing in anonymously...');
-  final authStart = DateTime.now();
-  try {
-    final userCredential = await FirebaseAuth.instance.signInAnonymously();
-    _log(
-      '✅ Anonymous auth successful - UID: ${userCredential.user?.uid} (${DateTime.now().difference(authStart).inMilliseconds}ms)',
-    );
-  } catch (e, stackTrace) {
-    _logError('Anonymous Auth Failed', e, stackTrace);
-    // Auth failure will prevent Firestore access if security rules require authentication
-    // Consider showing an error dialog or retry mechanism here
-  }
-
-  // Enable offline persistence with reasonable cache limit
-  _log('💾 Configuring Firestore persistence...');
-  final persistenceStart = DateTime.now();
-  FirebaseFirestore.instance.settings = const Settings(
-    persistenceEnabled: true,
-    cacheSizeBytes: 104857600, // 100MB cache limit (was unlimited)
-  );
-  _log(
-    '✅ Firestore persistence configured (${DateTime.now().difference(persistenceStart).inMilliseconds}ms)',
-  );
-
-  // Initialize LocalStorageService for user preferences
-  _log('💾 Initializing LocalStorageService...');
-  final storageStart = DateTime.now();
-  final localStorageService = await LocalStorageService.init();
-  _log(
-    '✅ LocalStorageService initialized (${DateTime.now().difference(storageStart).inMilliseconds}ms)',
-  );
-
-  // Run data migrations
-  _log('🔄 Running data migrations...');
-  final migrationStart = DateTime.now();
-  final prefs = await SharedPreferences.getInstance();
-  final firestoreService = FirestoreService();
-  final migrationService = MigrationService(
-    firestoreService: firestoreService,
-    prefs: prefs,
-  );
-  await migrationService.runMigrations();
-  _log(
-    '✅ Migrations completed (${DateTime.now().difference(migrationStart).inMilliseconds}ms)',
-  );
-
-  _log(
-    '🎬 Launching app widget (total startup: ${DateTime.now().difference(startTime).inMilliseconds}ms)',
-  );
-  runApp(ExpenseTrackerApp(localStorageService: localStorageService));
+  runApp(const ExpenseTrackerApp());
 }
 
-/// Root application widget with singleton BLoC providers
+/// Root application widget with initialization handling
 class ExpenseTrackerApp extends StatelessWidget {
-  final LocalStorageService localStorageService;
-
-  const ExpenseTrackerApp({super.key, required this.localStorageService});
+  const ExpenseTrackerApp({super.key});
 
   // Singleton instances shared across the entire app
   static final _firestoreService = FirestoreService();
@@ -217,7 +159,68 @@ class ExpenseTrackerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _log('🏗️ Building ExpenseTrackerApp widget tree...');
+    return BlocProvider(
+      create: (context) {
+        final cubit = InitializationCubit();
+        // Start initialization immediately
+        cubit.initialize();
+        return cubit;
+      },
+      child: BlocBuilder<InitializationCubit, InitializationState>(
+        builder: (context, state) {
+          if (state is InitializationError) {
+            // Show error UI
+            return MaterialApp(
+              home: Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        state.message,
+                        style: const TextStyle(fontSize: 18),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Retry initialization
+                          context.read<InitializationCubit>().initialize();
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
+          if (state is InitializationComplete) {
+            // Firebase is initialized - build the full app
+            return _buildInitializedApp(state.localStorageService);
+          }
+
+          // Show splash page during initialization (default case)
+          return MaterialApp(
+            theme: AppTheme.lightTheme,
+            debugShowCheckedModeBanner: false,
+            home: const InitializationSplashPage(),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Builds the full app widget tree after initialization is complete
+  Widget _buildInitializedApp(LocalStorageService localStorageService) {
+    _log('🏗️ Building initialized app widget tree...');
     final buildStart = DateTime.now();
 
     _log('📦 Creating repository providers...');

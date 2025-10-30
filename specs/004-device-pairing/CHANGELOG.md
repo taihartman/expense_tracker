@@ -38,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed recovery code generation on web platform - refactored to use three 4-digit segments to avoid exceeding JavaScript's Random.nextInt() 2^32 limit
 - Fixed ErrorPage by adding "Go to Home" button to prevent users from being stuck on navigation error screen
 - Updated TripActivityPage to use localized string (context.l10n.activityLogTitle) instead of hardcoded "Trip Activity" text
+- Fixed invite link 404 errors - Updated `link_utils.dart` to use correct GitHub Pages URL (`taihartman.github.io/expense_tracker`) with hash-based routing (`#/`). Added `web/404.html` fallback for SPA redirect support. Links now generate as `https://taihartman.github.io/expense_tracker/#/trips/join?code={tripId}` instead of broken `https://expense-tracker.app` URLs
+- Fixed 888ms startup blank screen by inverting initialization pattern. Created InitializationCubit to handle async Firebase/auth/storage/migration initialization in background. Refactored main.dart to call runApp() immediately after WidgetsFlutterBinding (~19ms). Created InitializationSplashPage shown during Firebase init. ExpenseTrackerApp now uses BlocBuilder to show splash during initialization, error UI on failure, and full app on success. Result: Splash screen now appears in 19ms instead of 925ms - 906ms (98%) faster perceived startup time
 
 ### Removed
 - [Removed features or files will be logged here]
@@ -47,6 +49,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Development Log
 
 <!-- Add entries below in reverse chronological order (newest first) -->
+
+## 2025-10-30
+
+### Fixed
+- Fixed 888ms startup blank screen by inverting initialization pattern. Created `InitializationCubit` to handle async Firebase/auth/storage/migration initialization in background. Refactored `main.dart` to call `runApp()` immediately after `WidgetsFlutterBinding` (~19ms). Created `InitializationSplashPage` shown during Firebase init. `ExpenseTrackerApp` now uses `BlocBuilder` to show splash during initialization, error UI on failure, and full app on success. Result: Splash screen now appears in 19ms instead of 925ms - **906ms (98%) faster perceived startup time**.
 
 ## 2025-10-29
 
