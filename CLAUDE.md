@@ -356,6 +356,63 @@ if (currentUser == null) {
 final actorName = currentUser.name;
 ```
 
+#### Expense Edit Activity Tracking
+
+The app implements comprehensive change detection for expense edits, capturing exactly what changed in each edit operation.
+
+**Implementation:**
+- **Change Detector**: `lib/features/expenses/domain/utils/expense_change_detector.dart`
+- **Enhanced Cubit**: `lib/features/expenses/presentation/cubits/expense_cubit.dart`
+- **Expandable UI**: `lib/features/trips/presentation/widgets/activity_log_item.dart`
+
+**How it Works:**
+
+1. When an expense is updated, `ExpenseCubit.updateExpense()`:
+   - Fetches the old expense before updating
+   - Calls `ExpenseChangeDetector.detectChanges()` to compare old vs new
+   - Logs `expenseEdited` activity with rich metadata containing all changes
+
+2. The change detector tracks:
+   - **Amount changes**: `$100.00 → $150.00`
+   - **Currency changes**: `USD → VND`
+   - **Description changes**: `Dinner → Lunch`
+   - **Category changes**: `None → Food` (includes names, not just IDs)
+   - **Payer changes**: `Bob → Alice` (includes names, not just IDs)
+   - **Date changes**: `2025-01-01 → 2025-01-02`
+   - **Split type changes**: `equal → weighted`
+   - **Participant changes**: Added/removed participants and weight modifications
+
+3. The UI displays expense edits as expandable cards:
+   - Collapsed: "Alice edited Lunch" with expand icon
+   - Expanded: Shows detailed "Changes:" section with before → after for each field
+
+**Metadata Structure Example:**
+
+```dart
+{
+  'expenseId': 'exp-123',
+  'changes': {
+    'amount': {'old': '100.00', 'new': '150.00'},
+    'payer': {'oldId': 'bob-id', 'newId': 'alice-id', 'oldName': 'Bob', 'newName': 'Alice'},
+    'category': {'oldId': null, 'newId': 'cat-1', 'oldName': 'None', 'newName': 'Food'},
+    'splitType': {'old': 'equal', 'new': 'weighted'},
+    'participants': {
+      'added': [{'id': 'charlie-id', 'name': 'Charlie', 'weight': 1}],
+      'removed': [{'id': 'dave-id', 'name': 'Dave', 'weight': 1}],
+      'weightsChanged': [{'id': 'bob-id', 'name': 'Bob', 'oldWeight': 1, 'newWeight': 2}]
+    }
+  }
+}
+```
+
+**Key Implementation Details:**
+
+- **TripRepository injection**: `ExpenseCubit` requires `TripRepository` to fetch participant names
+- **Participant names**: Changes include both IDs and human-readable names for better audit trail
+- **Non-blocking**: Change detection failures don't block the expense update
+- **All edits logged**: Even minor edits (like description-only changes) create activity logs
+- **Expandable UI**: Users can click to see detailed change breakdown
+
 #### Adding New Activity Types
 
 **1. Add to ActivityType enum** (`lib/features/trips/domain/models/activity_log.dart`):

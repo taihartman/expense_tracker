@@ -976,6 +976,12 @@ abstract class AppLocalizations {
   /// **'Saving expense...'**
   String get receiptSplitWizardSaving;
 
+  /// No description provided for @receiptSplitWizardStepReceiptInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receiptSplitWizardStepReceiptInfo;
+
   /// No description provided for @receiptSplitWizardStepPeople.
   ///
   /// In en, this message translates to:
@@ -991,7 +997,7 @@ abstract class AppLocalizations {
   /// No description provided for @receiptSplitWizardStepExtras.
   ///
   /// In en, this message translates to:
-  /// **'Extras'**
+  /// **'Tip'**
   String get receiptSplitWizardStepExtras;
 
   /// No description provided for @receiptSplitWizardStepReview.
@@ -999,6 +1005,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review'**
   String get receiptSplitWizardStepReview;
+
+  /// No description provided for @receiptSplitReceiptInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Details'**
+  String get receiptSplitReceiptInfoTitle;
+
+  /// No description provided for @receiptSplitReceiptInfoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the subtotal and tax from your receipt'**
+  String get receiptSplitReceiptInfoDescription;
+
+  /// No description provided for @receiptSplitReceiptInfoSubtotalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal (before tax & tip) *'**
+  String get receiptSplitReceiptInfoSubtotalLabel;
+
+  /// No description provided for @receiptSplitReceiptInfoSubtotalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get receiptSplitReceiptInfoSubtotalHint;
+
+  /// No description provided for @receiptSplitReceiptInfoSubtotalHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Items you add should sum to this amount'**
+  String get receiptSplitReceiptInfoSubtotalHelper;
+
+  /// No description provided for @receiptSplitReceiptInfoTaxLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax Amount'**
+  String get receiptSplitReceiptInfoTaxLabel;
+
+  /// No description provided for @receiptSplitReceiptInfoTaxHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get receiptSplitReceiptInfoTaxHint;
+
+  /// No description provided for @receiptSplitReceiptInfoTaxHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank if no tax'**
+  String get receiptSplitReceiptInfoTaxHelper;
+
+  /// No description provided for @receiptSplitReceiptInfoContinueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Payer'**
+  String get receiptSplitReceiptInfoContinueButton;
 
   /// No description provided for @receiptSplitPeopleTitle.
   ///
@@ -1129,8 +1189,44 @@ abstract class AppLocalizations {
   /// No description provided for @receiptSplitItemsContinueButton.
   ///
   /// In en, this message translates to:
-  /// **'Continue to Extras'**
+  /// **'Continue to Tip'**
   String get receiptSplitItemsContinueButton;
+
+  /// No description provided for @receiptSplitItemsExpectedSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Subtotal'**
+  String get receiptSplitItemsExpectedSubtotal;
+
+  /// No description provided for @receiptSplitItemsCurrentTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Items Total'**
+  String get receiptSplitItemsCurrentTotal;
+
+  /// No description provided for @receiptSplitItemsDifference.
+  ///
+  /// In en, this message translates to:
+  /// **'Difference'**
+  String get receiptSplitItemsDifference;
+
+  /// No description provided for @receiptSplitItemsSubtotalMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'✓ Items match expected subtotal'**
+  String get receiptSplitItemsSubtotalMatch;
+
+  /// No description provided for @receiptSplitItemsSubtotalMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Items don\'t match expected subtotal'**
+  String get receiptSplitItemsSubtotalMismatch;
+
+  /// No description provided for @receiptSplitItemsValidationHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep adding items until total matches subtotal'**
+  String get receiptSplitItemsValidationHelper;
 
   /// No description provided for @receiptSplitItemsAssignDialogTitle.
   ///
@@ -1141,7 +1237,7 @@ abstract class AppLocalizations {
   /// No description provided for @receiptSplitExtrasTitle.
   ///
   /// In en, this message translates to:
-  /// **'Add tax & tip'**
+  /// **'Add tip'**
   String get receiptSplitExtrasTitle;
 
   /// No description provided for @receiptSplitExtrasDescription.
@@ -1150,40 +1246,28 @@ abstract class AppLocalizations {
   /// **'Optional - leave blank if not applicable'**
   String get receiptSplitExtrasDescription;
 
-  /// No description provided for @receiptSplitExtrasTaxCardTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sales Tax'**
-  String get receiptSplitExtrasTaxCardTitle;
-
-  /// No description provided for @receiptSplitExtrasTaxRateLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Tax Rate (%)'**
-  String get receiptSplitExtrasTaxRateLabel;
-
-  /// No description provided for @receiptSplitExtrasTaxRateHint.
-  ///
-  /// In en, this message translates to:
-  /// **'e.g., 8.875'**
-  String get receiptSplitExtrasTaxRateHint;
-
-  /// No description provided for @receiptSplitExtrasTaxRateHelper.
-  ///
-  /// In en, this message translates to:
-  /// **'Applies to all taxable items'**
-  String get receiptSplitExtrasTaxRateHelper;
-
   /// No description provided for @receiptSplitExtrasTipCardTitle.
   ///
   /// In en, this message translates to:
   /// **'Tip / Gratuity'**
   String get receiptSplitExtrasTipCardTitle;
 
+  /// No description provided for @receiptSplitExtrasTipAmountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip Amount'**
+  String get receiptSplitExtrasTipAmountLabel;
+
+  /// No description provided for @receiptSplitExtrasTipAmountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'0.00'**
+  String get receiptSplitExtrasTipAmountHint;
+
   /// No description provided for @receiptSplitExtrasTipRateLabel.
   ///
   /// In en, this message translates to:
-  /// **'Tip Rate (%)'**
+  /// **'Or Tip Rate (%)'**
   String get receiptSplitExtrasTipRateLabel;
 
   /// No description provided for @receiptSplitExtrasTipRateHint.
@@ -1195,13 +1279,13 @@ abstract class AppLocalizations {
   /// No description provided for @receiptSplitExtrasTipRateHelper.
   ///
   /// In en, this message translates to:
-  /// **'Calculated on pre-tax subtotal'**
+  /// **'Calculated on items subtotal'**
   String get receiptSplitExtrasTipRateHelper;
 
   /// No description provided for @receiptSplitExtrasInfoMessage.
   ///
   /// In en, this message translates to:
-  /// **'Tax and tip will be split proportionally based on each person\'s item subtotal'**
+  /// **'Tip will be split proportionally based on each person\'s item subtotal'**
   String get receiptSplitExtrasInfoMessage;
 
   /// No description provided for @receiptSplitExtrasContinueButton.
@@ -1233,6 +1317,40 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Warning'**
   String get receiptSplitReviewWarningTitle;
+
+  /// No description provided for @receiptSplitReviewSubtotalWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtotal Mismatch'**
+  String get receiptSplitReviewSubtotalWarningTitle;
+
+  /// No description provided for @receiptSplitReviewSubtotalWarningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your items ({itemsTotal}) don\'t match the expected subtotal ({expectedSubtotal}). Difference: {difference}'**
+  String receiptSplitReviewSubtotalWarningMessage(
+    String itemsTotal,
+    String expectedSubtotal,
+    String difference,
+  );
+
+  /// No description provided for @receiptSplitReviewExpectedSubtotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected Subtotal'**
+  String get receiptSplitReviewExpectedSubtotal;
+
+  /// No description provided for @receiptSplitReviewItemsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Items Total'**
+  String get receiptSplitReviewItemsTotal;
+
+  /// No description provided for @receiptSplitReviewTaxFromReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax (from receipt)'**
+  String get receiptSplitReviewTaxFromReceipt;
 
   /// No description provided for @receiptSplitReviewGrandTotal.
   ///

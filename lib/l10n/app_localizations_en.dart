@@ -532,16 +532,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptSplitWizardSaving => 'Saving expense...';
 
   @override
+  String get receiptSplitWizardStepReceiptInfo => 'Receipt';
+
+  @override
   String get receiptSplitWizardStepPeople => 'People';
 
   @override
   String get receiptSplitWizardStepItems => 'Items';
 
   @override
-  String get receiptSplitWizardStepExtras => 'Extras';
+  String get receiptSplitWizardStepExtras => 'Tip';
 
   @override
   String get receiptSplitWizardStepReview => 'Review';
+
+  @override
+  String get receiptSplitReceiptInfoTitle => 'Receipt Details';
+
+  @override
+  String get receiptSplitReceiptInfoDescription =>
+      'Enter the subtotal and tax from your receipt';
+
+  @override
+  String get receiptSplitReceiptInfoSubtotalLabel =>
+      'Subtotal (before tax & tip) *';
+
+  @override
+  String get receiptSplitReceiptInfoSubtotalHint => '0.00';
+
+  @override
+  String get receiptSplitReceiptInfoSubtotalHelper =>
+      'Items you add should sum to this amount';
+
+  @override
+  String get receiptSplitReceiptInfoTaxLabel => 'Tax Amount';
+
+  @override
+  String get receiptSplitReceiptInfoTaxHint => '0.00';
+
+  @override
+  String get receiptSplitReceiptInfoTaxHelper => 'Leave blank if no tax';
+
+  @override
+  String get receiptSplitReceiptInfoContinueButton => 'Continue to Payer';
 
   @override
   String get receiptSplitPeopleTitle => 'Who paid for this expense? *';
@@ -610,7 +643,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptSplitItemsUpdateButton => 'Update Item';
 
   @override
-  String get receiptSplitItemsContinueButton => 'Continue to Extras';
+  String get receiptSplitItemsContinueButton => 'Continue to Tip';
+
+  @override
+  String get receiptSplitItemsExpectedSubtotal => 'Expected Subtotal';
+
+  @override
+  String get receiptSplitItemsCurrentTotal => 'Current Items Total';
+
+  @override
+  String get receiptSplitItemsDifference => 'Difference';
+
+  @override
+  String get receiptSplitItemsSubtotalMatch =>
+      '✓ Items match expected subtotal';
+
+  @override
+  String get receiptSplitItemsSubtotalMismatch =>
+      'Items don\'t match expected subtotal';
+
+  @override
+  String get receiptSplitItemsValidationHelper =>
+      'Keep adding items until total matches subtotal';
 
   @override
   String receiptSplitItemsAssignDialogTitle(Object itemName) {
@@ -618,40 +672,33 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get receiptSplitExtrasTitle => 'Add tax & tip';
+  String get receiptSplitExtrasTitle => 'Add tip';
 
   @override
   String get receiptSplitExtrasDescription =>
       'Optional - leave blank if not applicable';
 
   @override
-  String get receiptSplitExtrasTaxCardTitle => 'Sales Tax';
-
-  @override
-  String get receiptSplitExtrasTaxRateLabel => 'Tax Rate (%)';
-
-  @override
-  String get receiptSplitExtrasTaxRateHint => 'e.g., 8.875';
-
-  @override
-  String get receiptSplitExtrasTaxRateHelper => 'Applies to all taxable items';
-
-  @override
   String get receiptSplitExtrasTipCardTitle => 'Tip / Gratuity';
 
   @override
-  String get receiptSplitExtrasTipRateLabel => 'Tip Rate (%)';
+  String get receiptSplitExtrasTipAmountLabel => 'Tip Amount';
+
+  @override
+  String get receiptSplitExtrasTipAmountHint => '0.00';
+
+  @override
+  String get receiptSplitExtrasTipRateLabel => 'Or Tip Rate (%)';
 
   @override
   String get receiptSplitExtrasTipRateHint => 'e.g., 18';
 
   @override
-  String get receiptSplitExtrasTipRateHelper =>
-      'Calculated on pre-tax subtotal';
+  String get receiptSplitExtrasTipRateHelper => 'Calculated on items subtotal';
 
   @override
   String get receiptSplitExtrasInfoMessage =>
-      'Tax and tip will be split proportionally based on each person\'s item subtotal';
+      'Tip will be split proportionally based on each person\'s item subtotal';
 
   @override
   String get receiptSplitExtrasContinueButton => 'Continue to Review';
@@ -668,6 +715,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptSplitReviewWarningTitle => 'Warning';
+
+  @override
+  String get receiptSplitReviewSubtotalWarningTitle => 'Subtotal Mismatch';
+
+  @override
+  String receiptSplitReviewSubtotalWarningMessage(
+    String itemsTotal,
+    String expectedSubtotal,
+    String difference,
+  ) {
+    return 'Your items ($itemsTotal) don\'t match the expected subtotal ($expectedSubtotal). Difference: $difference';
+  }
+
+  @override
+  String get receiptSplitReviewExpectedSubtotal => 'Expected Subtotal';
+
+  @override
+  String get receiptSplitReviewItemsTotal => 'Items Total';
+
+  @override
+  String get receiptSplitReviewTaxFromReceipt => 'Tax (from receipt)';
 
   @override
   String get receiptSplitReviewGrandTotal => 'Grand Total';

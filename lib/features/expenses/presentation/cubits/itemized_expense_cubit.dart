@@ -185,6 +185,29 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     _validateAndCalculate();
   }
 
+  /// Set receipt info (expected subtotal and tax amount)
+  void setReceiptInfo({required Decimal expectedSubtotal, Decimal? taxAmount}) {
+    debugPrint('🟡 [Cubit] setReceiptInfo() called');
+    debugPrint('🟡 [Cubit] expectedSubtotal: $expectedSubtotal');
+    debugPrint('🟡 [Cubit] taxAmount: $taxAmount');
+
+    final current = _getCurrentEditingState();
+    if (current == null) {
+      debugPrint(
+        '🟡 [Cubit] No current editing state, cannot set receipt info',
+      );
+      return;
+    }
+
+    final updatedState = current.copyWith(
+      expectedSubtotal: expectedSubtotal,
+      taxAmount: taxAmount,
+    );
+    emit(updatedState);
+    debugPrint('🟡 [Cubit] Receipt info updated');
+    _validateAndCalculate();
+  }
+
   /// Add a new line item
   void addItem(LineItem item) {
     final current = _getCurrentEditingState();
@@ -486,6 +509,22 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
       validationWarnings.add(
         'Tip percentage is unusually high (${current.extras.tip!.value}%)',
       );
+    }
+
+    // Check for subtotal mismatch (warning only)
+    if (current.expectedSubtotal != null) {
+      final itemsTotal = current.items.fold<Decimal>(
+        Decimal.zero,
+        (sum, item) => sum + item.itemTotal,
+      );
+      final difference = (itemsTotal - current.expectedSubtotal!).abs();
+      final tolerance = Decimal.parse('0.01');
+
+      if (difference > tolerance) {
+        validationWarnings.add(
+          'Items total (${itemsTotal.toStringAsFixed(2)}) does not match expected subtotal (${current.expectedSubtotal!.toStringAsFixed(2)})',
+        );
+      }
     }
 
     // Update editing state with validation results
