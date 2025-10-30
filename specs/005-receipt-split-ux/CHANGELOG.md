@@ -70,3 +70,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Code formatted and analyzed (zero new issues)
 - Backward compatible with existing itemized expenses
 - Ready for QA and code review
+
+## 2025-10-30 - Auto-focus Enhancement
+
+### Added
+- Added autofocus to name field in receipt split mode - automatically focuses and shows keyboard when adding/editing items

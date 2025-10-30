@@ -35,7 +35,9 @@ class _TripInvitePageState extends State<TripInvitePage> {
       final tripCubit = context.read<TripCubit>();
 
       // Load verified members asynchronously (before user interaction)
-      final verifiedMembers = await tripCubit.getVerifiedMembers(widget.trip.id);
+      final verifiedMembers = await tripCubit.getVerifiedMembers(
+        widget.trip.id,
+      );
 
       // Get current user to track who shared this link
       final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
@@ -56,7 +58,11 @@ class _TripInvitePageState extends State<TripInvitePage> {
 
       developer.log('✅ Share message pre-loaded', name: 'TripInvitePage');
     } catch (e) {
-      developer.log('⚠️ Failed to load share message: $e', name: 'TripInvitePage', error: e);
+      developer.log(
+        '⚠️ Failed to load share message: $e',
+        name: 'TripInvitePage',
+        error: e,
+      );
 
       if (mounted) {
         setState(() {
@@ -79,10 +85,13 @@ class _TripInvitePageState extends State<TripInvitePage> {
 
   void _showQrCodeDialog(BuildContext context) {
     // Get current user to track who shared this QR code
-    final currentUser =
-        context.read<TripCubit>().getCurrentUserForTrip(widget.trip.id);
-    final inviteLink =
-        generateQrCodeLink(widget.trip.id, sharedBy: currentUser?.id);
+    final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+      widget.trip.id,
+    );
+    final inviteLink = generateQrCodeLink(
+      widget.trip.id,
+      sharedBy: currentUser?.id,
+    );
 
     showDialog(
       context: context,
@@ -137,7 +146,10 @@ class _TripInvitePageState extends State<TripInvitePage> {
   void _copyInviteLink(BuildContext context) {
     // If message hasn't loaded yet, show fallback dialog
     if (_shareMessage == null) {
-      developer.log('⚠️ Share message not ready, showing fallback', name: 'TripInvitePage');
+      developer.log(
+        '⚠️ Share message not ready, showing fallback',
+        name: 'TripInvitePage',
+      );
       _showManualCopyDialog(context);
       return;
     }
@@ -157,7 +169,11 @@ class _TripInvitePageState extends State<TripInvitePage> {
         ),
       );
     } catch (e) {
-      developer.log('❌ Clipboard copy failed: $e', name: 'TripInvitePage', error: e);
+      developer.log(
+        '❌ Clipboard copy failed: $e',
+        name: 'TripInvitePage',
+        error: e,
+      );
 
       // Show fallback dialog with selectable text
       _showManualCopyDialog(context);
@@ -193,9 +209,9 @@ class _TripInvitePageState extends State<TripInvitePage> {
               ),
               child: SelectableText(
                 message,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontFamily: 'monospace',
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
               ),
             ),
           ],

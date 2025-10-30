@@ -50,7 +50,9 @@ class _TripCreatePageState extends State<TripCreatePage> {
   ) async {
     try {
       // Query the recovery code from Firestore
-      final recoveryCode = await context.read<TripCubit>().getRecoveryCode(tripId);
+      final recoveryCode = await context.read<TripCubit>().getRecoveryCode(
+        tripId,
+      );
 
       if (!mounted || recoveryCode == null) {
         // If code not found or widget unmounted, still navigate

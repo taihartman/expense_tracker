@@ -142,7 +142,9 @@ class InitializationCubit extends Cubit<InitializationState> {
 
       // All done!
       final totalTime = DateTime.now().difference(startTime).inMilliseconds;
-      _log('✅ InitializationCubit: All initialization completed ($totalTime ms)');
+      _log(
+        '✅ InitializationCubit: All initialization completed ($totalTime ms)',
+      );
       emit(InitializationComplete(localStorageService));
     } catch (e, stackTrace) {
       _logError('Initialization Failed', e, stackTrace);

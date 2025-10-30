@@ -55,12 +55,8 @@ class UpdateCheckState {
   }
 
   @override
-  int get hashCode => Object.hash(
-        lastCheckTime,
-        isCheckingNow,
-        updateAvailable,
-        serverVersion,
-      );
+  int get hashCode =>
+      Object.hash(lastCheckTime, isCheckingNow, updateAvailable, serverVersion);
 
   @override
   String toString() {

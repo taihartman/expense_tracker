@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Conditional import for web-specific functionality
-import 'web_storage_stub.dart'
-    if (dart.library.html) 'dart:html' as html;
+import 'web_storage_stub.dart' if (dart.library.html) 'dart:html' as html;
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -147,14 +146,18 @@ class LocalStorageService {
 
     final updatedIds = [...currentIds, tripId];
     final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
-    _log('✅ Added trip ID to joined trips. Total trips: ${updatedIds.length}. Result: $result');
+    _log(
+      '✅ Added trip ID to joined trips. Total trips: ${updatedIds.length}. Result: $result',
+    );
 
     // Immediate verification
     final verified = _prefs.getStringList(_joinedTripIdsKey) ?? [];
     _log('🔍 Immediate verification: ${verified.length} trips in storage');
 
     if (!verified.contains(tripId)) {
-      _log('⚠️ VERIFICATION FAILED: Trip ID $tripId not found in storage after write!');
+      _log(
+        '⚠️ VERIFICATION FAILED: Trip ID $tripId not found in storage after write!',
+      );
     } else {
       _log('✅ Verification passed: Trip ID $tripId confirmed in storage');
     }
@@ -188,7 +191,9 @@ class LocalStorageService {
         final webKey = 'flutter.$_joinedTripIdsKey';
         final webValue = storage[webKey];
         _log('🌐 Browser localStorage[$webKey]: $webValue');
-        _log('🌐 Browser localStorage contains "$tripId": ${webValue?.contains(tripId) ?? false}');
+        _log(
+          '🌐 Browser localStorage contains "$tripId": ${webValue?.contains(tripId) ?? false}',
+        );
       } catch (e) {
         _log('⚠️ Failed to check browser localStorage: $e');
       }
@@ -203,7 +208,9 @@ class LocalStorageService {
   List<String> getJoinedTripIds() {
     _log('📖 Reading joined trip IDs from key: $_joinedTripIdsKey');
     final ids = _prefs.getStringList(_joinedTripIdsKey) ?? [];
-    _log('📖 Found ${ids.length} joined trip(s): ${ids.isEmpty ? "none" : ids.join(", ")}');
+    _log(
+      '📖 Found ${ids.length} joined trip(s): ${ids.isEmpty ? "none" : ids.join(", ")}',
+    );
     return ids;
   }
 
@@ -219,7 +226,9 @@ class LocalStorageService {
 
     final updatedIds = currentIds.where((id) => id != tripId).toList();
     final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
-    _log('✅ Removed trip ID from joined trips. Remaining trips: ${updatedIds.length}. Result: $result');
+    _log(
+      '✅ Removed trip ID from joined trips. Remaining trips: ${updatedIds.length}. Result: $result',
+    );
   }
 
   /// Save the user's identity (participant ID) for a specific trip
@@ -270,7 +279,9 @@ class LocalStorageService {
   Future<void> clearAllUserIdentities() async {
     _log('🗑️ Clearing all user identities');
     final keys = _prefs.getKeys();
-    final identityKeys = keys.where((k) => k.startsWith(_tripIdentityKeyPrefix));
+    final identityKeys = keys.where(
+      (k) => k.startsWith(_tripIdentityKeyPrefix),
+    );
 
     for (final key in identityKeys) {
       await _prefs.remove(key);

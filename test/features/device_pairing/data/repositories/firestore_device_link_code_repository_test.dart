@@ -4,17 +4,18 @@ import 'package:mockito/mockito.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker/features/device_pairing/data/repositories/firestore_device_link_code_repository.dart';
 
-@GenerateMocks([
-  FirebaseFirestore,
-  DocumentSnapshot,
-  WriteBatch,
-], customMocks: [
-  MockSpec<CollectionReference<Map<String, dynamic>>>(as: #MockCollectionRef),
-  MockSpec<DocumentReference<Map<String, dynamic>>>(as: #MockDocumentRef),
-  MockSpec<Query<Map<String, dynamic>>>(as: #MockQuery),
-  MockSpec<QuerySnapshot<Map<String, dynamic>>>(as: #MockQuerySnapshot),
-  MockSpec<QueryDocumentSnapshot<Map<String, dynamic>>>(as: #MockQueryDocSnapshot),
-])
+@GenerateMocks(
+  [FirebaseFirestore, DocumentSnapshot, WriteBatch],
+  customMocks: [
+    MockSpec<CollectionReference<Map<String, dynamic>>>(as: #MockCollectionRef),
+    MockSpec<DocumentReference<Map<String, dynamic>>>(as: #MockDocumentRef),
+    MockSpec<Query<Map<String, dynamic>>>(as: #MockQuery),
+    MockSpec<QuerySnapshot<Map<String, dynamic>>>(as: #MockQuerySnapshot),
+    MockSpec<QueryDocumentSnapshot<Map<String, dynamic>>>(
+      as: #MockQueryDocSnapshot,
+    ),
+  ],
+)
 import 'firestore_device_link_code_repository_test.mocks.dart';
 
 /// T025: Unit tests for FirestoreDeviceLinkCodeRepository.generateCode()
@@ -51,15 +52,22 @@ void main() {
       // Setup default Firestore mocking chain
       when(mockFirestore.collection('trips')).thenReturn(mockTripsCollection);
       when(mockTripsCollection.doc(any)).thenReturn(mockTripDoc);
-      when(mockTripDoc.collection('deviceLinkCodes')).thenReturn(mockCodesCollection);
+      when(
+        mockTripDoc.collection('deviceLinkCodes'),
+      ).thenReturn(mockCodesCollection);
       when(mockCodesCollection.add(any)).thenAnswer((_) async => mockCodeDoc);
       when(mockCodeDoc.id).thenReturn('generated-code-id-123');
 
       // Mock query for finding previous codes
-      when(mockCodesCollection.where('memberNameLower', isEqualTo: anyNamed('isEqualTo')))
-          .thenReturn(mockQuery);
-      when(mockQuery.where('used', isEqualTo: anyNamed('isEqualTo')))
-          .thenReturn(mockQuery);
+      when(
+        mockCodesCollection.where(
+          'memberNameLower',
+          isEqualTo: anyNamed('isEqualTo'),
+        ),
+      ).thenReturn(mockQuery);
+      when(
+        mockQuery.where('used', isEqualTo: anyNamed('isEqualTo')),
+      ).thenReturn(mockQuery);
       when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
       when(mockQuerySnapshot.docs).thenReturn([]);
 
@@ -71,10 +79,16 @@ void main() {
       final result = await repository.generateCode('trip-123', 'Alice');
 
       // Assert
-      expect(result.code, matches(r'^\d{4}-\d{4}$'),
-          reason: 'Code should be formatted as XXXX-XXXX');
-      expect(result.code.replaceAll('-', '').length, equals(8),
-          reason: 'Code should have exactly 8 digits');
+      expect(
+        result.code,
+        matches(r'^\d{4}-\d{4}$'),
+        reason: 'Code should be formatted as XXXX-XXXX',
+      );
+      expect(
+        result.code.replaceAll('-', '').length,
+        equals(8),
+        reason: 'Code should have exactly 8 digits',
+      );
     });
 
     test('should create code with memberName and memberNameLower', () async {
@@ -86,12 +100,16 @@ void main() {
       await repository.generateCode(tripId, memberName);
 
       // Assert - Verify Firestore add was called with correct data
-      final captured = verify(mockCodesCollection.add(captureAny)).captured.single
-          as Map<String, dynamic>;
+      final captured =
+          verify(mockCodesCollection.add(captureAny)).captured.single
+              as Map<String, dynamic>;
 
       expect(captured['memberName'], equals('Alice'));
-      expect(captured['memberNameLower'], equals('alice'),
-          reason: 'Should store lowercase version for case-insensitive matching');
+      expect(
+        captured['memberNameLower'],
+        equals('alice'),
+        reason: 'Should store lowercase version for case-insensitive matching',
+      );
     });
 
     test('should set expiry to 15 minutes from now', () async {
@@ -105,15 +123,26 @@ void main() {
       final afterGeneration = DateTime.now();
       final expectedExpiry = beforeGeneration.add(const Duration(minutes: 15));
 
-      expect(result.expiresAt.isAfter(beforeGeneration),
-          isTrue, reason: 'Expiry should be after generation start');
-      expect(result.expiresAt.isBefore(afterGeneration.add(const Duration(minutes: 15, seconds: 1))),
-          isTrue, reason: 'Expiry should be approximately 15 minutes from now');
+      expect(
+        result.expiresAt.isAfter(beforeGeneration),
+        isTrue,
+        reason: 'Expiry should be after generation start',
+      );
+      expect(
+        result.expiresAt.isBefore(
+          afterGeneration.add(const Duration(minutes: 15, seconds: 1)),
+        ),
+        isTrue,
+        reason: 'Expiry should be approximately 15 minutes from now',
+      );
 
       // Allow 1 second tolerance for test execution time
       final diff = result.expiresAt.difference(expectedExpiry).abs();
-      expect(diff.inSeconds, lessThan(2),
-          reason: 'Expiry should be within 2 seconds of expected 15-minute mark');
+      expect(
+        diff.inSeconds,
+        lessThan(2),
+        reason: 'Expiry should be within 2 seconds of expected 15-minute mark',
+      );
     });
 
     test('should set used=false and usedAt=null for new code', () async {
@@ -121,22 +150,40 @@ void main() {
       final result = await repository.generateCode('trip-123', 'Alice');
 
       // Assert
-      expect(result.used, isFalse, reason: 'New code should not be marked as used');
-      expect(result.usedAt, isNull, reason: 'New code should have no usedAt timestamp');
+      expect(
+        result.used,
+        isFalse,
+        reason: 'New code should not be marked as used',
+      );
+      expect(
+        result.usedAt,
+        isNull,
+        reason: 'New code should have no usedAt timestamp',
+      );
     });
 
-    test('should store correct tripId and return entity with generated ID', () async {
-      // Arrange
-      const tripId = 'trip-tokyo-456';
+    test(
+      'should store correct tripId and return entity with generated ID',
+      () async {
+        // Arrange
+        const tripId = 'trip-tokyo-456';
 
-      // Act
-      final result = await repository.generateCode(tripId, 'Bob');
+        // Act
+        final result = await repository.generateCode(tripId, 'Bob');
 
-      // Assert
-      expect(result.tripId, equals(tripId), reason: 'Code should reference correct trip');
-      expect(result.id, equals('generated-code-id-123'),
-          reason: 'Should use Firestore-generated document ID');
-    });
+        // Assert
+        expect(
+          result.tripId,
+          equals(tripId),
+          reason: 'Code should reference correct trip',
+        );
+        expect(
+          result.id,
+          equals('generated-code-id-123'),
+          reason: 'Should use Firestore-generated document ID',
+        );
+      },
+    );
 
     test('should query for previous codes with same memberNameLower', () async {
       // Arrange
@@ -146,7 +193,9 @@ void main() {
       await repository.generateCode('trip-123', memberName);
 
       // Assert - Verify query was constructed correctly
-      verify(mockCodesCollection.where('memberNameLower', isEqualTo: 'charlie')).called(1);
+      verify(
+        mockCodesCollection.where('memberNameLower', isEqualTo: 'charlie'),
+      ).called(1);
       verify(mockQuery.where('used', isEqualTo: false)).called(1);
     });
 
@@ -165,14 +214,18 @@ void main() {
       when(mockPreviousRef1.update(any)).thenAnswer((_) async {});
       when(mockPreviousRef2.update(any)).thenAnswer((_) async {});
 
-      when(mockQuerySnapshot.docs).thenReturn([mockPreviousCode1, mockPreviousCode2]);
+      when(
+        mockQuerySnapshot.docs,
+      ).thenReturn([mockPreviousCode1, mockPreviousCode2]);
 
       // Act
       await repository.generateCode('trip-123', memberName);
 
       // Assert - Verify both previous codes were marked as used
-      final captured1 = verify(mockPreviousRef1.update(captureAny)).captured.single as Map;
-      final captured2 = verify(mockPreviousRef2.update(captureAny)).captured.single as Map;
+      final captured1 =
+          verify(mockPreviousRef1.update(captureAny)).captured.single as Map;
+      final captured2 =
+          verify(mockPreviousRef2.update(captureAny)).captured.single as Map;
 
       expect(captured1['used'], isTrue);
       expect(captured1['usedAt'], isNotNull);
@@ -190,7 +243,9 @@ void main() {
       }
 
       // Assert - All should query for 'alice' (lowercase) - called 3 times total
-      verify(mockCodesCollection.where('memberNameLower', isEqualTo: 'alice')).called(3);
+      verify(
+        mockCodesCollection.where('memberNameLower', isEqualTo: 'alice'),
+      ).called(3);
     });
 
     test('should generate different codes on successive calls', () async {
@@ -200,12 +255,21 @@ void main() {
       final code3 = await repository.generateCode('trip-123', 'Alice');
 
       // Assert
-      expect(code1.code, isNot(equals(code2.code)),
-          reason: 'Should generate unique codes');
-      expect(code2.code, isNot(equals(code3.code)),
-          reason: 'Should generate unique codes');
-      expect(code1.code, isNot(equals(code3.code)),
-          reason: 'Should generate unique codes');
+      expect(
+        code1.code,
+        isNot(equals(code2.code)),
+        reason: 'Should generate unique codes',
+      );
+      expect(
+        code2.code,
+        isNot(equals(code3.code)),
+        reason: 'Should generate unique codes',
+      );
+      expect(
+        code1.code,
+        isNot(equals(code3.code)),
+        reason: 'Should generate unique codes',
+      );
     });
 
     test('should include all required fields in Firestore document', () async {
@@ -213,8 +277,9 @@ void main() {
       await repository.generateCode('trip-123', 'TestUser');
 
       // Assert
-      final captured = verify(mockCodesCollection.add(captureAny)).captured.single
-          as Map<String, dynamic>;
+      final captured =
+          verify(mockCodesCollection.add(captureAny)).captured.single
+              as Map<String, dynamic>;
 
       expect(captured, containsPair('code', anything));
       expect(captured, containsPair('tripId', 'trip-123'));
@@ -228,18 +293,26 @@ void main() {
 
     test('should handle member names with special characters', () async {
       // Arrange
-      const specialNames = ["O'Brien", "José", "Mary-Jane", "李明"];
+      const specialNames = ['O\'Brien', 'José', 'Mary-Jane', '李明'];
 
       for (final name in specialNames) {
         // Act
         final result = await repository.generateCode('trip-123', name);
 
         // Assert
-        expect(result.memberName, equals(name),
-            reason: 'Should preserve original name with special characters');
+        expect(
+          result.memberName,
+          equals(name),
+          reason: 'Should preserve original name with special characters',
+        );
 
         // Verify query used lowercase version
-        verify(mockCodesCollection.where('memberNameLower', isEqualTo: name.toLowerCase()));
+        verify(
+          mockCodesCollection.where(
+            'memberNameLower',
+            isEqualTo: name.toLowerCase(),
+          ),
+        );
       }
     });
   });
@@ -267,7 +340,9 @@ void main() {
       // Setup Firestore hierarchy
       when(mockFirestore.collection('trips')).thenReturn(mockTripsCollection);
       when(mockTripsCollection.doc(any)).thenReturn(mockTripDoc);
-      when(mockTripDoc.collection('deviceLinkCodes')).thenReturn(mockCodesCollection);
+      when(
+        mockTripDoc.collection('deviceLinkCodes'),
+      ).thenReturn(mockCodesCollection);
 
       repository = FirestoreDeviceLinkCodeRepository(firestore: mockFirestore);
     });
@@ -275,7 +350,9 @@ void main() {
     group('Validation Rule 1: Code exists -', () {
       test('should throw exception when code does not exist', () async {
         // Arrange - Empty query result (code not found)
-        when(mockCodesCollection.where(any, isEqualTo: any)).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where(any, isEqualTo: any),
+        ).thenReturn(mockQuery);
         when(mockQuery.where(any, isEqualTo: any)).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([]);
@@ -283,11 +360,13 @@ void main() {
         // Act & Assert
         expect(
           () => repository.validateCode('trip-123', '1234-5678', 'Alice'),
-          throwsA(isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('Invalid code'),
-          )),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid code'),
+            ),
+          ),
         );
       });
 
@@ -311,8 +390,12 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockCodeDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
@@ -320,7 +403,11 @@ void main() {
         when(mockCodeDocRef.update(any)).thenAnswer((_) async {});
 
         // Act
-        final result = await repository.validateCode('trip-123', '1234-5678', 'Alice');
+        final result = await repository.validateCode(
+          'trip-123',
+          '1234-5678',
+          'Alice',
+        );
 
         // Assert
         expect(result.code, equals('1234-5678'));
@@ -338,8 +425,12 @@ void main() {
           'tripId': 'trip-123',
           'memberName': 'Alice',
           'memberNameLower': 'alice',
-          'createdAt': Timestamp.fromDate(now.subtract(const Duration(minutes: 20))),
-          'expiresAt': Timestamp.fromDate(now.subtract(const Duration(minutes: 5))), // Expired
+          'createdAt': Timestamp.fromDate(
+            now.subtract(const Duration(minutes: 20)),
+          ),
+          'expiresAt': Timestamp.fromDate(
+            now.subtract(const Duration(minutes: 5)),
+          ), // Expired
           'used': false,
           'usedAt': null,
         };
@@ -347,19 +438,25 @@ void main() {
         when(mockCodeDoc.data()).thenReturn(expiredCodeData);
         when(mockCodeDoc.id).thenReturn('code-id-123');
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         // Act & Assert
         expect(
           () => repository.validateCode('trip-123', '1234-5678', 'Alice'),
-          throwsA(isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('expired'),
-          )),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('expired'),
+            ),
+          ),
         );
       });
 
@@ -374,7 +471,9 @@ void main() {
           'memberName': 'Alice',
           'memberNameLower': 'alice',
           'createdAt': Timestamp.fromDate(now),
-          'expiresAt': Timestamp.fromDate(now.add(const Duration(minutes: 10))), // Still valid
+          'expiresAt': Timestamp.fromDate(
+            now.add(const Duration(minutes: 10)),
+          ), // Still valid
           'used': false,
           'usedAt': null,
         };
@@ -383,15 +482,23 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         when(mockDocRef.update(any)).thenAnswer((_) async {});
 
         // Act
-        final result = await repository.validateCode('trip-123', '1234-5678', 'Alice');
+        final result = await repository.validateCode(
+          'trip-123',
+          '1234-5678',
+          'Alice',
+        );
 
         // Assert
         expect(result.code, equals('1234-5678'));
@@ -411,25 +518,33 @@ void main() {
           'createdAt': Timestamp.fromDate(now),
           'expiresAt': Timestamp.fromDate(now.add(const Duration(minutes: 10))),
           'used': true, // Already used
-          'usedAt': Timestamp.fromDate(now.subtract(const Duration(minutes: 5))),
+          'usedAt': Timestamp.fromDate(
+            now.subtract(const Duration(minutes: 5)),
+          ),
         };
 
         when(mockCodeDoc.data()).thenReturn(usedCodeData);
         when(mockCodeDoc.id).thenReturn('code-id-123');
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         // Act & Assert
         expect(
           () => repository.validateCode('trip-123', '1234-5678', 'Alice'),
-          throwsA(isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('already been used'),
-          )),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('already been used'),
+            ),
+          ),
         );
       });
 
@@ -453,8 +568,12 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
@@ -471,19 +590,27 @@ void main() {
     group('Validation Rule 4: Trip matches -', () {
       test('should throw exception when tripId does not match', () async {
         // Arrange - Query with tripId filter will return empty
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-999')).thenReturn(mockQuery); // Wrong trip
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-999'),
+        ).thenReturn(mockQuery); // Wrong trip
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(mockQuerySnapshot.docs).thenReturn([]); // Not found because trip doesn't match
+        when(
+          mockQuerySnapshot.docs,
+        ).thenReturn([]); // Not found because trip doesn't match
 
         // Act & Assert
         expect(
           () => repository.validateCode('trip-999', '1234-5678', 'Alice'),
-          throwsA(isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('Invalid code'),
-          )),
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Invalid code'),
+            ),
+          ),
         );
       });
 
@@ -507,8 +634,12 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-correct')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-correct'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
@@ -541,19 +672,29 @@ void main() {
         when(mockCodeDoc.data()).thenReturn(codeData);
         when(mockCodeDoc.id).thenReturn('code-id-123');
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         // Act & Assert
         expect(
-          () => repository.validateCode('trip-123', '1234-5678', 'Bob'), // Wrong name
-          throwsA(isA<Exception>().having(
-            (e) => e.toString(),
-            'message',
-            contains('does not match'),
-          )),
+          () => repository.validateCode(
+            'trip-123',
+            '1234-5678',
+            'Bob',
+          ), // Wrong name
+          throwsA(
+            isA<Exception>().having(
+              (e) => e.toString(),
+              'message',
+              contains('does not match'),
+            ),
+          ),
         );
       });
 
@@ -577,15 +718,23 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         when(mockDocRef.update(any)).thenAnswer((_) async {});
 
         // Act
-        final result = await repository.validateCode('trip-123', '1234-5678', 'Alice');
+        final result = await repository.validateCode(
+          'trip-123',
+          '1234-5678',
+          'Alice',
+        );
 
         // Assert
         expect(result.memberName, equals('Alice'));
@@ -611,15 +760,23 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         when(mockDocRef.update(any)).thenAnswer((_) async {});
 
         // Act
-        final result = await repository.validateCode('trip-123', '1234-5678', 'ALICE'); // Different case
+        final result = await repository.validateCode(
+          'trip-123',
+          '1234-5678',
+          'ALICE',
+        ); // Different case
 
         // Assert
         expect(result.memberName, equals('Alice'));
@@ -627,40 +784,53 @@ void main() {
     });
 
     group('Validation Rule 6: Rate limiting (placeholder) -', () {
-      test('should allow validation without rate limiting check for now', () async {
-        // Arrange - Valid code
-        final mockCodeDoc = MockQueryDocSnapshot();
-        final mockDocRef = MockDocumentRef();
-        final now = DateTime.now();
-        final codeData = {
-          'code': '1234-5678',
-          'tripId': 'trip-123',
-          'memberName': 'Alice',
-          'memberNameLower': 'alice',
-          'createdAt': Timestamp.fromDate(now),
-          'expiresAt': Timestamp.fromDate(now.add(const Duration(minutes: 10))),
-          'used': false,
-          'usedAt': null,
-        };
+      test(
+        'should allow validation without rate limiting check for now',
+        () async {
+          // Arrange - Valid code
+          final mockCodeDoc = MockQueryDocSnapshot();
+          final mockDocRef = MockDocumentRef();
+          final now = DateTime.now();
+          final codeData = {
+            'code': '1234-5678',
+            'tripId': 'trip-123',
+            'memberName': 'Alice',
+            'memberNameLower': 'alice',
+            'createdAt': Timestamp.fromDate(now),
+            'expiresAt': Timestamp.fromDate(
+              now.add(const Duration(minutes: 10)),
+            ),
+            'used': false,
+            'usedAt': null,
+          };
 
-        when(mockCodeDoc.data()).thenReturn(codeData);
-        when(mockCodeDoc.id).thenReturn('code-id-123');
-        when(mockCodeDoc.reference).thenReturn(mockDocRef);
+          when(mockCodeDoc.data()).thenReturn(codeData);
+          when(mockCodeDoc.id).thenReturn('code-id-123');
+          when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
-        when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
+          when(
+            mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+          ).thenReturn(mockQuery);
+          when(
+            mockQuery.where('tripId', isEqualTo: 'trip-123'),
+          ).thenReturn(mockQuery);
+          when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+          when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
-        when(mockDocRef.update(any)).thenAnswer((_) async {});
+          when(mockDocRef.update(any)).thenAnswer((_) async {});
 
-        // Act - Should succeed without rate limiting check
-        final result = await repository.validateCode('trip-123', '1234-5678', 'Alice');
+          // Act - Should succeed without rate limiting check
+          final result = await repository.validateCode(
+            'trip-123',
+            '1234-5678',
+            'Alice',
+          );
 
-        // Assert
-        expect(result, isNotNull);
-        // Note: Rate limiting will be implemented in Phase 6 (User Story 4)
-      });
+          // Assert
+          expect(result, isNotNull);
+          // Note: Rate limiting will be implemented in Phase 6 (User Story 4)
+        },
+      );
     });
 
     group('Code normalization (T040) -', () {
@@ -684,56 +854,79 @@ void main() {
         when(mockCodeDoc.id).thenReturn('code-id-123');
         when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
+        when(
+          mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+        ).thenReturn(mockQuery);
+        when(
+          mockQuery.where('tripId', isEqualTo: 'trip-123'),
+        ).thenReturn(mockQuery);
         when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
         when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
         when(mockDocRef.update(any)).thenAnswer((_) async {});
 
         // Act
-        final result = await repository.validateCode('trip-123', '1234-5678', 'Alice');
+        final result = await repository.validateCode(
+          'trip-123',
+          '1234-5678',
+          'Alice',
+        );
 
         // Assert
         expect(result.code, equals('1234-5678'));
       });
 
-      test('should accept code without hyphen (12345678) and normalize', () async {
-        // Arrange - Code stored with hyphen
-        final mockCodeDoc = MockQueryDocSnapshot();
-        final mockDocRef = MockDocumentRef();
-        final now = DateTime.now();
-        final codeData = {
-          'code': '1234-5678',
-          'tripId': 'trip-123',
-          'memberName': 'Alice',
-          'memberNameLower': 'alice',
-          'createdAt': Timestamp.fromDate(now),
-          'expiresAt': Timestamp.fromDate(now.add(const Duration(minutes: 10))),
-          'used': false,
-          'usedAt': null,
-        };
+      test(
+        'should accept code without hyphen (12345678) and normalize',
+        () async {
+          // Arrange - Code stored with hyphen
+          final mockCodeDoc = MockQueryDocSnapshot();
+          final mockDocRef = MockDocumentRef();
+          final now = DateTime.now();
+          final codeData = {
+            'code': '1234-5678',
+            'tripId': 'trip-123',
+            'memberName': 'Alice',
+            'memberNameLower': 'alice',
+            'createdAt': Timestamp.fromDate(now),
+            'expiresAt': Timestamp.fromDate(
+              now.add(const Duration(minutes: 10)),
+            ),
+            'used': false,
+            'usedAt': null,
+          };
 
-        when(mockCodeDoc.data()).thenReturn(codeData);
-        when(mockCodeDoc.id).thenReturn('code-id-123');
-        when(mockCodeDoc.reference).thenReturn(mockDocRef);
+          when(mockCodeDoc.data()).thenReturn(codeData);
+          when(mockCodeDoc.id).thenReturn('code-id-123');
+          when(mockCodeDoc.reference).thenReturn(mockDocRef);
 
-        // Repository should normalize input and query for '1234-5678'
-        when(mockCodesCollection.where('code', isEqualTo: '1234-5678')).thenReturn(mockQuery);
-        when(mockQuery.where('tripId', isEqualTo: 'trip-123')).thenReturn(mockQuery);
-        when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
-        when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
+          // Repository should normalize input and query for '1234-5678'
+          when(
+            mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+          ).thenReturn(mockQuery);
+          when(
+            mockQuery.where('tripId', isEqualTo: 'trip-123'),
+          ).thenReturn(mockQuery);
+          when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+          when(mockQuerySnapshot.docs).thenReturn([mockCodeDoc]);
 
-        when(mockDocRef.update(any)).thenAnswer((_) async {});
+          when(mockDocRef.update(any)).thenAnswer((_) async {});
 
-        // Act - User enters code without hyphen
-        final result = await repository.validateCode('trip-123', '12345678', 'Alice');
+          // Act - User enters code without hyphen
+          final result = await repository.validateCode(
+            'trip-123',
+            '12345678',
+            'Alice',
+          );
 
-        // Assert
-        expect(result.code, equals('1234-5678'));
-        // Verify repository normalized the code before querying
-        verify(mockCodesCollection.where('code', isEqualTo: '1234-5678')).called(1);
-      });
+          // Assert
+          expect(result.code, equals('1234-5678'));
+          // Verify repository normalized the code before querying
+          verify(
+            mockCodesCollection.where('code', isEqualTo: '1234-5678'),
+          ).called(1);
+        },
+      );
     });
   });
 }

@@ -32,12 +32,7 @@ class _InitializationSplashPageState extends State<InitializationSplashPage>
     _scaleAnimation = Tween<double>(
       begin: 0.9,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _scaleController,
-        curve: Curves.easeOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeOut));
   }
 
   @override
@@ -77,8 +72,7 @@ class _InitializationSplashPageState extends State<InitializationSplashPage>
                     constraints.maxWidth >= 768 && constraints.maxWidth <= 1920;
 
                 final iconSize = isMobile ? 80.0 : (isTablet ? 100.0 : 120.0);
-                final appNameSize =
-                    isMobile ? 28.0 : (isTablet ? 30.0 : 32.0);
+                final appNameSize = isMobile ? 28.0 : (isTablet ? 30.0 : 32.0);
                 final horizontalPadding = isMobile ? 32.0 : 64.0;
 
                 return Padding(

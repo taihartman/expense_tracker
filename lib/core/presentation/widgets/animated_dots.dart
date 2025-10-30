@@ -81,11 +81,17 @@ class _AnimatedDotsState extends State<AnimatedDots>
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildDot(activeDotIndex == 0 ? widget.activeColor : widget.inactiveColor),
+            _buildDot(
+              activeDotIndex == 0 ? widget.activeColor : widget.inactiveColor,
+            ),
             SizedBox(width: widget.spacing),
-            _buildDot(activeDotIndex == 1 ? widget.activeColor : widget.inactiveColor),
+            _buildDot(
+              activeDotIndex == 1 ? widget.activeColor : widget.inactiveColor,
+            ),
             SizedBox(width: widget.spacing),
-            _buildDot(activeDotIndex == 2 ? widget.activeColor : widget.inactiveColor),
+            _buildDot(
+              activeDotIndex == 2 ? widget.activeColor : widget.inactiveColor,
+            ),
           ],
         );
       },
@@ -96,10 +102,7 @@ class _AnimatedDotsState extends State<AnimatedDots>
     return Container(
       width: widget.dotSize,
       height: widget.dotSize,
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }

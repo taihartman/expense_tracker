@@ -60,10 +60,7 @@ class _TripActivityPageState extends State<TripActivityPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.activityLogTitle),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: Text(context.l10n.activityLogTitle), elevation: 0),
       body: ActivityLogList(tripId: widget.tripId),
     );
   }

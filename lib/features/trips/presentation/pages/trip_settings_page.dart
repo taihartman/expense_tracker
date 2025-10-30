@@ -462,7 +462,9 @@ class TripSettingsPage extends StatelessWidget {
 
           try {
             // Get current user for activity logging
-            final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+            final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+              trip.id,
+            );
             final actorName = currentUser?.name;
 
             await context.read<TripCubit>().removeParticipant(
@@ -542,11 +544,8 @@ class TripSettingsPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => _showRecoveryCodeDialog(
-                        context,
-                        tripId,
-                        tripName,
-                      ),
+                      onPressed: () =>
+                          _showRecoveryCodeDialog(context, tripId, tripName),
                       icon: const Icon(Icons.visibility),
                       label: Text(context.l10n.tripRecoveryViewButton),
                     ),
@@ -555,11 +554,8 @@ class TripSettingsPage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => _generateRecoveryCode(
-                        context,
-                        tripId,
-                        tripName,
-                      ),
+                      onPressed: () =>
+                          _generateRecoveryCode(context, tripId, tripName),
                       icon: const Icon(Icons.add),
                       label: Text(context.l10n.tripRecoveryGenerateButton),
                     ),
@@ -767,10 +763,15 @@ class TripSettingsPage extends StatelessWidget {
 
     try {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        trip.id,
+      );
       final actorName = currentUser?.name;
 
-      await context.read<TripCubit>().archiveTrip(trip.id, actorName: actorName);
+      await context.read<TripCubit>().archiveTrip(
+        trip.id,
+        actorName: actorName,
+      );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -800,10 +801,15 @@ class TripSettingsPage extends StatelessWidget {
   Future<void> _handleUnarchiveTrip(BuildContext context, trip) async {
     try {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+        trip.id,
+      );
       final actorName = currentUser?.name;
 
-      await context.read<TripCubit>().unarchiveTrip(trip.id, actorName: actorName);
+      await context.read<TripCubit>().unarchiveTrip(
+        trip.id,
+        actorName: actorName,
+      );
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

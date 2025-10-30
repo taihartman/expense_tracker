@@ -223,10 +223,14 @@ class TripCubit extends Cubit<TripState> {
           final recoveryCode = await _recoveryCodeRepository
               .generateRecoveryCode(createdTrip.id);
           _log('✅ Recovery code generated: ${recoveryCode.code}');
-          _log('   Code details: tripId=${recoveryCode.tripId}, usedCount=${recoveryCode.usedCount}, createdAt=${recoveryCode.createdAt}');
+          _log(
+            '   Code details: tripId=${recoveryCode.tripId}, usedCount=${recoveryCode.usedCount}, createdAt=${recoveryCode.createdAt}',
+          );
         } catch (e, stackTrace) {
           _log('❌ Failed to generate recovery code (non-fatal): $e');
-          _log('   Stack trace: ${stackTrace.toString().split('\n').take(3).join('\n   ')}');
+          _log(
+            '   Stack trace: ${stackTrace.toString().split('\n').take(3).join('\n   ')}',
+          );
           // Don't fail trip creation if recovery code generation fails
           // User can manually generate recovery code later from trip settings
         }
@@ -451,7 +455,9 @@ class TripCubit extends Cubit<TripState> {
       if (isCurrentlySelected) {
         _selectedTripId = null;
         await _localStorageService.clearSelectedTripId();
-        _log('🔄 Cleared archived trip selection - will auto-select first active trip');
+        _log(
+          '🔄 Cleared archived trip selection - will auto-select first active trip',
+        );
       }
 
       // Reload trips to refresh the list (will auto-select if needed)
@@ -552,10 +558,7 @@ class TripCubit extends Cubit<TripState> {
       }
 
       // Add participant to trip
-      final updatedParticipants = [
-        ...currentTrip.participants,
-        participant,
-      ];
+      final updatedParticipants = [...currentTrip.participants, participant];
       final updatedTrip = currentTrip.copyWith(
         participants: updatedParticipants,
         updatedAt: DateTime.now(),

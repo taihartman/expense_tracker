@@ -50,14 +50,14 @@ class SettlementCubit extends Cubit<SettlementState> {
     required CategoryRepository categoryRepository,
     SettlementCalculator? settlementCalculator,
     ActivityLoggerService? activityLoggerService,
-  })  : _settlementRepository = settlementRepository,
-        _expenseRepository = expenseRepository,
-        _tripRepository = tripRepository,
-        _settledTransferRepository = settledTransferRepository,
-        _categoryRepository = categoryRepository,
-        _settlementCalculator = settlementCalculator ?? SettlementCalculator(),
-        _activityLoggerService = activityLoggerService,
-        super(const SettlementInitial());
+  }) : _settlementRepository = settlementRepository,
+       _expenseRepository = expenseRepository,
+       _tripRepository = tripRepository,
+       _settledTransferRepository = settledTransferRepository,
+       _categoryRepository = categoryRepository,
+       _settlementCalculator = settlementCalculator ?? SettlementCalculator(),
+       _activityLoggerService = activityLoggerService,
+       super(const SettlementInitial());
 
   /// Separate transfers into active and settled lists
   ({List<MinimalTransfer> active, List<MinimalTransfer> settled})
@@ -204,7 +204,10 @@ class SettlementCubit extends Cubit<SettlementState> {
   ///
   /// [actorName] is the name of the user performing this action (current user).
   /// Used for activity logging.
-  Future<void> markTransferAsSettled(String transferId, {String? actorName}) async {
+  Future<void> markTransferAsSettled(
+    String transferId, {
+    String? actorName,
+  }) async {
     if (_currentTripId == null) {
       _log('⚠️ Cannot mark transfer as settled: no current trip');
       return;
@@ -237,7 +240,9 @@ class SettlementCubit extends Cubit<SettlementState> {
       _log('✅ Transfer marked as settled');
 
       // Log activity using centralized service
-      if (_activityLoggerService != null && actorName != null && actorName.isNotEmpty) {
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
         _log('📝 Logging transfer settled via ActivityLoggerService...');
         await _activityLoggerService.logTransferSettled(transfer, actorName);
         _log('✅ Activity logged');

@@ -133,11 +133,11 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                     trailing: PopupMenuButton(
                       itemBuilder: (context) => [
                         PopupMenuItem(
-                          child: Row(
+                          child: const Row(
                             children: [
-                              const Icon(Icons.unarchive),
-                              const SizedBox(width: AppTheme.spacing2),
-                              const Text('Unarchive'),
+                              Icon(Icons.unarchive),
+                              SizedBox(width: AppTheme.spacing2),
+                              Text('Unarchive'),
                             ],
                           ),
                           onTap: () async {
@@ -147,7 +147,9 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                             );
                             if (context.mounted) {
                               // Get current user for activity logging
-                              final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+                              final currentUser = context
+                                  .read<TripCubit>()
+                                  .getCurrentUserForTrip(trip.id);
                               final actorName = currentUser?.name;
 
                               await context.read<TripCubit>().unarchiveTrip(
@@ -168,11 +170,11 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                           },
                         ),
                         PopupMenuItem(
-                          child: Row(
+                          child: const Row(
                             children: [
-                              const Icon(Icons.visibility),
-                              const SizedBox(width: AppTheme.spacing2),
-                              const Text('View'),
+                              Icon(Icons.visibility),
+                              SizedBox(width: AppTheme.spacing2),
+                              Text('View'),
                             ],
                           ),
                           onTap: () async {

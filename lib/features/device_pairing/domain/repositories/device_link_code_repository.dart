@@ -42,7 +42,11 @@ abstract class DeviceLinkCodeRepository {
   ///
   /// Throws:
   /// - [Exception] with specific error message for each validation failure
-  Future<DeviceLinkCode> validateCode(String tripId, String code, String memberName);
+  Future<DeviceLinkCode> validateCode(
+    String tripId,
+    String code,
+    String memberName,
+  );
 
   /// Revokes (deletes) an active code before expiry.
   ///

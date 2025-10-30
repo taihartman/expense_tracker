@@ -35,7 +35,9 @@ class VerificationCodeInputFormatter extends TextInputFormatter {
     }
 
     // Limit to 8 digits maximum
-    final digits = normalized.length > 8 ? normalized.substring(0, 8) : normalized;
+    final digits = normalized.length > 8
+        ? normalized.substring(0, 8)
+        : normalized;
 
     // Format: Insert dash after 4th digit if we have more than 4 digits
     String formattedText;
@@ -49,8 +51,13 @@ class VerificationCodeInputFormatter extends TextInputFormatter {
     // Strategy: Count how many digits are before the cursor in the old value,
     // then place cursor after the same number of digits in the formatted value
     final oldSelection = newValue.selection.baseOffset;
-    final oldTextBeforeCursor = newValue.text.substring(0, oldSelection.clamp(0, newValue.text.length));
-    final digitsBeforeCursor = CodeGenerator.normalize(oldTextBeforeCursor).length;
+    final oldTextBeforeCursor = newValue.text.substring(
+      0,
+      oldSelection.clamp(0, newValue.text.length),
+    );
+    final digitsBeforeCursor = CodeGenerator.normalize(
+      oldTextBeforeCursor,
+    ).length;
 
     // Find position in formatted text corresponding to same number of digits
     int newCursorPos = 0;

@@ -52,10 +52,7 @@ void main() {
 
     testWidgets('displays title and message correctly', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify title
@@ -79,13 +76,11 @@ void main() {
       );
     });
 
-    testWidgets('displays code input field with correct formatting',
-        (tester) async {
+    testWidgets('displays code input field with correct formatting', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Find code input field
@@ -102,10 +97,7 @@ void main() {
 
     testWidgets('accepts 8-digit code with hyphen', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Enter code with hyphen
@@ -123,10 +115,7 @@ void main() {
 
     testWidgets('accepts 8-digit code without hyphen', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Enter code without hyphen
@@ -144,10 +133,7 @@ void main() {
 
     testWidgets('displays Submit and Cancel buttons', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Find buttons
@@ -164,13 +150,9 @@ void main() {
       );
     });
 
-    testWidgets('Submit button is disabled when code is empty',
-        (tester) async {
+    testWidgets('Submit button is disabled when code is empty', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Find submit button
@@ -186,13 +168,11 @@ void main() {
       );
     });
 
-    testWidgets('Submit button is enabled when code has 8 digits',
-        (tester) async {
+    testWidgets('Submit button is enabled when code has 8 digits', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Enter valid code
@@ -210,13 +190,11 @@ void main() {
       );
     });
 
-    testWidgets('Submit button triggers validation with correct parameters',
-        (tester) async {
+    testWidgets('Submit button triggers validation with correct parameters', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Enter code
@@ -254,13 +232,14 @@ void main() {
                       onPressed: () async {
                         final result = await showDialog<bool>(
                           context: context,
-                          builder: (dialogContext) => BlocProvider<DevicePairingCubit>.value(
-                            value: mockCubit,
-                            child: const CodeVerificationPrompt(
-                              tripId: 'trip-123',
-                              memberName: 'Alice',
-                            ),
-                          ),
+                          builder: (dialogContext) =>
+                              BlocProvider<DevicePairingCubit>.value(
+                                value: mockCubit,
+                                child: const CodeVerificationPrompt(
+                                  tripId: 'trip-123',
+                                  memberName: 'Alice',
+                                ),
+                              ),
                         );
                         dialogPopped = result == false;
                       },
@@ -294,10 +273,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Verify loading indicator is shown
@@ -328,10 +304,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Wait for error state
@@ -353,8 +326,9 @@ void main() {
       );
     });
 
-    testWidgets('pops dialog with true when validation succeeds',
-        (tester) async {
+    testWidgets('pops dialog with true when validation succeeds', (
+      tester,
+    ) async {
       // Set up stream that emits success after initial state
       when(mockCubit.state).thenReturn(const DevicePairingInitial());
       when(mockCubit.stream).thenAnswer(
@@ -383,13 +357,14 @@ void main() {
                       onPressed: () async {
                         dialogResult = await showDialog<bool>(
                           context: context,
-                          builder: (dialogContext) => BlocProvider<DevicePairingCubit>.value(
-                            value: mockCubit,
-                            child: const CodeVerificationPrompt(
-                              tripId: 'trip-123',
-                              memberName: 'Alice',
-                            ),
-                          ),
+                          builder: (dialogContext) =>
+                              BlocProvider<DevicePairingCubit>.value(
+                                value: mockCubit,
+                                child: const CodeVerificationPrompt(
+                                  tripId: 'trip-123',
+                                  memberName: 'Alice',
+                                ),
+                              ),
                         );
                       },
                       child: const Text('Show Dialog'),
@@ -418,10 +393,7 @@ void main() {
 
     testWidgets('does not validate with invalid code format', (tester) async {
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       // Enter invalid code (too short)
@@ -443,9 +415,9 @@ void main() {
 
     testWidgets('clears error message when user types', (tester) async {
       // Set initial error state
-      when(mockCubit.state).thenReturn(
-        const CodeValidationError('Invalid code'),
-      );
+      when(
+        mockCubit.state,
+      ).thenReturn(const CodeValidationError('Invalid code'));
       when(mockCubit.stream).thenAnswer(
         (_) => Stream<DevicePairingState>.value(
           const CodeValidationError('Invalid code'),
@@ -453,10 +425,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        createTestWidget(
-          tripId: 'trip-123',
-          memberName: 'Alice',
-        ),
+        createTestWidget(tripId: 'trip-123', memberName: 'Alice'),
       );
 
       await tester.pumpAndSettle();

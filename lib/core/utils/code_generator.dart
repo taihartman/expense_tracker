@@ -33,9 +33,18 @@ class CodeGenerator {
   /// Returns a string in format "XXXX-XXXX-XXXX" (e.g., "1234-5678-9012").
   static String generateRecoveryCode() {
     // Generate three 4-digit segments to avoid exceeding Random.nextInt() limit on web
-    final segment1 = _random.nextInt(10000).toString().padLeft(4, '0'); // 0000-9999
-    final segment2 = _random.nextInt(10000).toString().padLeft(4, '0'); // 0000-9999
-    final segment3 = _random.nextInt(10000).toString().padLeft(4, '0'); // 0000-9999
+    final segment1 = _random
+        .nextInt(10000)
+        .toString()
+        .padLeft(4, '0'); // 0000-9999
+    final segment2 = _random
+        .nextInt(10000)
+        .toString()
+        .padLeft(4, '0'); // 0000-9999
+    final segment3 = _random
+        .nextInt(10000)
+        .toString()
+        .padLeft(4, '0'); // 0000-9999
     return '$segment1-$segment2-$segment3';
   }
 

@@ -20,11 +20,11 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
     required LocalStorageService localStorageService,
     TripRepository? tripRepository,
     ActivityLoggerService? activityLoggerService,
-  })  : _repository = repository,
-        _localStorageService = localStorageService,
-        _tripRepository = tripRepository,
-        _activityLoggerService = activityLoggerService,
-        super(const DevicePairingInitial());
+  }) : _repository = repository,
+       _localStorageService = localStorageService,
+       _tripRepository = tripRepository,
+       _activityLoggerService = activityLoggerService,
+       super(const DevicePairingInitial());
 
   /// Generates a new device link code for the specified member.
   ///
@@ -64,7 +64,9 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
       // Log device verification via centralized service
       if (_activityLoggerService != null) {
         // Use last 4 characters of code for reference (not the full code for security)
-        final deviceCode = code.length >= 4 ? code.substring(code.length - 4) : code;
+        final deviceCode = code.length >= 4
+            ? code.substring(code.length - 4)
+            : code;
         await _activityLoggerService.logDeviceVerified(
           tripId: tripId,
           memberName: memberName,
@@ -112,24 +114,6 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
   // =========================================================================
   // Private Helper Methods
   // =========================================================================
-
-  /// Checks if rate limited (>5 validation attempts in last 60 seconds).
-  ///
-  /// Returns true if rate limited, false otherwise.
-  Future<bool> _isRateLimited(String tripId) async {
-    // TODO: Implement rate limiting check
-    // 1. Query validationAttempts for last 60 seconds
-    // 2. Count attempts
-    // 3. Return true if >= 5
-    return false;
-  }
-
-  /// Records a validation attempt for rate limiting.
-  Future<void> _recordAttempt(String tripId, bool success) async {
-    // TODO: Implement attempt recording
-    // 1. Create new document in validationAttempts subcollection
-    // 2. Include timestamp and success flag
-  }
 
   /// Grants trip access by saving trip ID to local storage
   /// and adding to verified members in Firestore.

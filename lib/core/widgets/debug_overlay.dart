@@ -21,10 +21,7 @@ import 'debug_panel.dart';
 class DebugOverlay extends StatefulWidget {
   final Widget child;
 
-  const DebugOverlay({
-    super.key,
-    required this.child,
-  });
+  const DebugOverlay({super.key, required this.child});
 
   @override
   State<DebugOverlay> createState() => _DebugOverlayState();
@@ -81,10 +78,7 @@ class _DebugOverlayState extends State<DebugOverlay> {
     return Stack(
       children: [
         widget.child,
-        DebugPanel(
-          logs: _logs,
-          routingState: routingState,
-        ),
+        DebugPanel(logs: _logs, routingState: routingState),
       ],
     );
   }

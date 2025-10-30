@@ -47,60 +47,58 @@ void main() {
       versionCheckService.dispose();
     });
 
-    testWidgets('T037: Full update flow - version mismatch triggers notification',
-        (tester) async {
-      // Arrange: Mock HTTP response with newer version
-      final newerVersion = VersionResponse(version: '1.1.0');
-      when(mockHttpClient.get(Uri.parse('/version.json')))
-          .thenAnswer((_) async => http.Response(
-                jsonEncode(newerVersion.toJson()),
-                200,
-              ));
+    testWidgets(
+      'T037: Full update flow - version mismatch triggers notification',
+      (tester) async {
+        // Arrange: Mock HTTP response with newer version
+        final newerVersion = VersionResponse(version: '1.1.0');
+        when(mockHttpClient.get(Uri.parse('/version.json'))).thenAnswer(
+          (_) async => http.Response(jsonEncode(newerVersion.toJson()), 200),
+        );
 
-      // Setup lifecycle service to not call onResume immediately
-      when(mockLifecycleService.startObserving(onResume: anyNamed('onResume')))
-          .thenReturn(null);
-      when(mockLifecycleService.stopObserving()).thenReturn(null);
+        // Setup lifecycle service to not call onResume immediately
+        when(
+          mockLifecycleService.startObserving(onResume: anyNamed('onResume')),
+        ).thenReturn(null);
+        when(mockLifecycleService.stopObserving()).thenReturn(null);
 
-      // Act: Render app with UpdateNotificationListener
-      await tester.pumpWidget(
-        MaterialApp(
-          home: UpdateNotificationListener(
-            versionCheckService: versionCheckService,
-            lifecycleService: mockLifecycleService,
-            child: const Scaffold(
-              body: Center(child: Text('Test App')),
+        // Act: Render app with UpdateNotificationListener
+        await tester.pumpWidget(
+          MaterialApp(
+            home: UpdateNotificationListener(
+              versionCheckService: versionCheckService,
+              lifecycleService: mockLifecycleService,
+              child: const Scaffold(body: Center(child: Text('Test App'))),
             ),
           ),
-        ),
-      );
+        );
 
-      // Wait for initial check to complete
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+        // Wait for initial check to complete
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
 
-      // Assert: Notification banner should appear
-      expect(find.text('A new version is available'), findsOneWidget);
-      expect(find.text('Update Now'), findsOneWidget);
-      expect(find.text('Dismiss'), findsOneWidget);
-      expect(find.byIcon(Icons.system_update), findsOneWidget);
+        // Assert: Notification banner should appear
+        expect(find.text('A new version is available'), findsOneWidget);
+        expect(find.text('Update Now'), findsOneWidget);
+        expect(find.text('Dismiss'), findsOneWidget);
+        expect(find.byIcon(Icons.system_update), findsOneWidget);
 
-      // Verify HTTP was called
-      verify(mockHttpClient.get(Uri.parse('/version.json'))).called(1);
-    });
+        // Verify HTTP was called
+        verify(mockHttpClient.get(Uri.parse('/version.json'))).called(1);
+      },
+    );
 
     testWidgets('T038: Dismiss and reappear behavior', (tester) async {
       // Arrange: Mock HTTP response with newer version
       final newerVersion = VersionResponse(version: '1.1.0');
-      when(mockHttpClient.get(Uri.parse('/version.json')))
-          .thenAnswer((_) async => http.Response(
-                jsonEncode(newerVersion.toJson()),
-                200,
-              ));
+      when(mockHttpClient.get(Uri.parse('/version.json'))).thenAnswer(
+        (_) async => http.Response(jsonEncode(newerVersion.toJson()), 200),
+      );
 
       VoidCallback? capturedOnResume;
-      when(mockLifecycleService.startObserving(onResume: anyNamed('onResume')))
-          .thenAnswer((invocation) {
+      when(
+        mockLifecycleService.startObserving(onResume: anyNamed('onResume')),
+      ).thenAnswer((invocation) {
         capturedOnResume =
             invocation.namedArguments[const Symbol('onResume')] as VoidCallback;
       });
@@ -112,9 +110,7 @@ void main() {
           home: UpdateNotificationListener(
             versionCheckService: versionCheckService,
             lifecycleService: mockLifecycleService,
-            child: const Scaffold(
-              body: Center(child: Text('Test App')),
-            ),
+            child: const Scaffold(body: Center(child: Text('Test App'))),
           ),
         ),
       );
@@ -149,14 +145,13 @@ void main() {
     testWidgets('T039: No-update scenario - equal versions', (tester) async {
       // Arrange: Mock HTTP response with same version as local
       final sameVersion = VersionResponse(version: '1.0.0');
-      when(mockHttpClient.get(Uri.parse('/version.json')))
-          .thenAnswer((_) async => http.Response(
-                jsonEncode(sameVersion.toJson()),
-                200,
-              ));
+      when(mockHttpClient.get(Uri.parse('/version.json'))).thenAnswer(
+        (_) async => http.Response(jsonEncode(sameVersion.toJson()), 200),
+      );
 
-      when(mockLifecycleService.startObserving(onResume: anyNamed('onResume')))
-          .thenReturn(null);
+      when(
+        mockLifecycleService.startObserving(onResume: anyNamed('onResume')),
+      ).thenReturn(null);
       when(mockLifecycleService.stopObserving()).thenReturn(null);
 
       // Act: Render app with UpdateNotificationListener
@@ -165,9 +160,7 @@ void main() {
           home: UpdateNotificationListener(
             versionCheckService: versionCheckService,
             lifecycleService: mockLifecycleService,
-            child: const Scaffold(
-              body: Center(child: Text('Test App')),
-            ),
+            child: const Scaffold(body: Center(child: Text('Test App'))),
           ),
         ),
       );
@@ -186,21 +179,22 @@ void main() {
       verify(mockHttpClient.get(Uri.parse('/version.json'))).called(1);
     });
 
-    testWidgets('T039a: localStorage preservation after reload', (tester) async {
+    testWidgets('T039a: localStorage preservation after reload', (
+      tester,
+    ) async {
       // Note: This test verifies the conceptual behavior since window.location.reload()
       // cannot be fully tested in Flutter test environment without a real browser.
       // In practice, window.location.reload() DOES preserve localStorage.
 
       // Arrange: Mock HTTP response with newer version
       final newerVersion = VersionResponse(version: '1.1.0');
-      when(mockHttpClient.get(Uri.parse('/version.json')))
-          .thenAnswer((_) async => http.Response(
-                jsonEncode(newerVersion.toJson()),
-                200,
-              ));
+      when(mockHttpClient.get(Uri.parse('/version.json'))).thenAnswer(
+        (_) async => http.Response(jsonEncode(newerVersion.toJson()), 200),
+      );
 
-      when(mockLifecycleService.startObserving(onResume: anyNamed('onResume')))
-          .thenReturn(null);
+      when(
+        mockLifecycleService.startObserving(onResume: anyNamed('onResume')),
+      ).thenReturn(null);
       when(mockLifecycleService.stopObserving()).thenReturn(null);
 
       // Act: Render app
@@ -209,9 +203,7 @@ void main() {
           home: UpdateNotificationListener(
             versionCheckService: versionCheckService,
             lifecycleService: mockLifecycleService,
-            child: const Scaffold(
-              body: Center(child: Text('Test App')),
-            ),
+            child: const Scaffold(body: Center(child: Text('Test App'))),
           ),
         ),
       );
@@ -232,14 +224,17 @@ void main() {
       // that the reload mechanism preserves localStorage.
     });
 
-    testWidgets('T037: Network error handling - no notification on failure',
-        (tester) async {
+    testWidgets('T037: Network error handling - no notification on failure', (
+      tester,
+    ) async {
       // Arrange: Mock HTTP to throw exception
-      when(mockHttpClient.get(Uri.parse('/version.json')))
-          .thenThrow(Exception('Network error'));
+      when(
+        mockHttpClient.get(Uri.parse('/version.json')),
+      ).thenThrow(Exception('Network error'));
 
-      when(mockLifecycleService.startObserving(onResume: anyNamed('onResume')))
-          .thenReturn(null);
+      when(
+        mockLifecycleService.startObserving(onResume: anyNamed('onResume')),
+      ).thenReturn(null);
       when(mockLifecycleService.stopObserving()).thenReturn(null);
 
       // Act: Render app
@@ -248,9 +243,7 @@ void main() {
           home: UpdateNotificationListener(
             versionCheckService: versionCheckService,
             lifecycleService: mockLifecycleService,
-            child: const Scaffold(
-              body: Center(child: Text('Test App')),
-            ),
+            child: const Scaffold(body: Center(child: Text('Test App'))),
           ),
         ),
       );
@@ -269,15 +262,14 @@ void main() {
     testWidgets('T037: Debouncing prevents rapid checks', (tester) async {
       // Arrange: Mock HTTP response
       final newerVersion = VersionResponse(version: '1.1.0');
-      when(mockHttpClient.get(Uri.parse('/version.json')))
-          .thenAnswer((_) async => http.Response(
-                jsonEncode(newerVersion.toJson()),
-                200,
-              ));
+      when(mockHttpClient.get(Uri.parse('/version.json'))).thenAnswer(
+        (_) async => http.Response(jsonEncode(newerVersion.toJson()), 200),
+      );
 
       VoidCallback? capturedOnResume;
-      when(mockLifecycleService.startObserving(onResume: anyNamed('onResume')))
-          .thenAnswer((invocation) {
+      when(
+        mockLifecycleService.startObserving(onResume: anyNamed('onResume')),
+      ).thenAnswer((invocation) {
         capturedOnResume =
             invocation.namedArguments[const Symbol('onResume')] as VoidCallback;
       });
@@ -289,9 +281,7 @@ void main() {
           home: UpdateNotificationListener(
             versionCheckService: versionCheckService,
             lifecycleService: mockLifecycleService,
-            child: const Scaffold(
-              body: Center(child: Text('Test App')),
-            ),
+            child: const Scaffold(body: Center(child: Text('Test App'))),
           ),
         ),
       );

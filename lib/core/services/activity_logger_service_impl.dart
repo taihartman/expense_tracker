@@ -1,14 +1,15 @@
 import 'dart:developer' as developer;
 
-import 'package:expense_tracker/core/models/participant.dart';
-import 'package:expense_tracker/core/services/activity_logger_service.dart';
-import 'package:expense_tracker/features/expenses/domain/models/expense.dart';
-import 'package:expense_tracker/features/expenses/domain/utils/expense_change_detector.dart';
-import 'package:expense_tracker/features/settlements/domain/models/minimal_transfer.dart';
-import 'package:expense_tracker/features/trips/domain/models/activity_log.dart';
-import 'package:expense_tracker/features/trips/domain/models/trip.dart';
-import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart';
-import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart';
+import '../models/participant.dart';
+import '../models/split_type.dart';
+import 'activity_logger_service.dart';
+import '../../features/expenses/domain/models/expense.dart';
+import '../../features/expenses/domain/utils/expense_change_detector.dart';
+import '../../features/settlements/domain/models/minimal_transfer.dart';
+import '../../features/trips/domain/models/activity_log.dart';
+import '../../features/trips/domain/models/trip.dart';
+import '../../features/trips/domain/repositories/activity_log_repository.dart';
+import '../../features/trips/domain/repositories/trip_repository.dart';
 
 /// Internal cache for trip context data
 class _TripContextCache {
@@ -48,9 +49,9 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
     required ActivityLogRepository activityLogRepository,
     required TripRepository tripRepository,
     int cacheExpirationMinutes = 5,
-  })  : _activityLogRepository = activityLogRepository,
-        _tripRepository = tripRepository,
-        _cacheExpirationMinutes = cacheExpirationMinutes;
+  }) : _activityLogRepository = activityLogRepository,
+       _tripRepository = tripRepository,
+       _cacheExpirationMinutes = cacheExpirationMinutes;
 
   @override
   Future<void> logExpenseAdded(Expense expense, String actorName) async {
@@ -71,6 +72,78 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
       // Create description
       final description = expense.description ?? 'Expense';
 
+      // Build base metadata
+      final metadata = <String, dynamic>{
+        'expenseId': expense.id,
+        'amount': expense.amount.toString(),
+        'currency': expense.currency.code,
+        'payerId': expense.payerUserId,
+        'payerName': payer.name,
+        'splitType': expense.splitType.name,
+      };
+
+      // Add itemized-specific metadata
+      if (expense.splitType == SplitType.itemized) {
+        // Item count
+        if (expense.items != null && expense.items!.isNotEmpty) {
+          metadata['itemCount'] = expense.items!.length;
+
+          // Sample items (first 3)
+          final sampleItems = expense.items!
+              .take(3)
+              .map((item) => item.name)
+              .toList();
+          metadata['sampleItems'] = sampleItems.join(', ');
+        }
+
+        // Participant breakdown
+        if (expense.participantAmounts != null) {
+          final participantNames = expense.participantAmounts!.keys.map((
+            userId,
+          ) {
+            final participant = context.participants.firstWhere(
+              (p) => p.id == userId,
+              orElse: () => Participant(
+                id: userId,
+                name: 'Unknown',
+                createdAt: DateTime.now(),
+              ),
+            );
+            return participant.name;
+          }).toList();
+
+          metadata['participantCount'] = participantNames.length;
+          metadata['participants'] = participantNames.join(', ');
+        }
+
+        // Tax, tip, fees
+        if (expense.extras != null) {
+          final extras = expense.extras!;
+
+          // Tax
+          if (extras.tax != null) {
+            metadata['hasTax'] = true;
+            metadata['taxAmount'] = extras.tax!.value.toString();
+          }
+
+          // Tip
+          if (extras.tip != null) {
+            metadata['hasTip'] = true;
+            metadata['tipAmount'] = extras.tip!.value.toString();
+          }
+
+          // Fees
+          if (extras.fees.isNotEmpty) {
+            metadata['feeCount'] = extras.fees.length;
+          }
+
+          // Discounts
+          if (extras.discounts.isNotEmpty) {
+            metadata['discountCount'] = extras.discounts.length;
+          }
+        }
+      }
+
       // Create activity log
       final activityLog = ActivityLog(
         id: '', // Firestore will generate
@@ -79,13 +152,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         actorName: actorName.isEmpty ? 'Unknown' : actorName,
         description: description,
         timestamp: DateTime.now(),
-        metadata: {
-          'expenseId': expense.id,
-          'amount': expense.amount.toString(),
-          'currency': expense.currency.code,
-          'payerId': expense.payerUserId,
-          'payerName': payer.name,
-        },
+        metadata: metadata,
       );
 
       await _logActivity(activityLog);
@@ -397,11 +464,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
   ///
   /// Uses developer.log for non-fatal errors.
   void _logError(String message) {
-    developer.log(
-      message,
-      name: 'ActivityLoggerService',
-      error: message,
-    );
+    developer.log(message, name: 'ActivityLoggerService', error: message);
   }
 
   /// Detect expense changes using ExpenseChangeDetector utility
@@ -451,7 +514,9 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
 
       // Detect currency change
       if (oldTrip.baseCurrency != newTrip.baseCurrency) {
-        changes.add('currency: ${oldTrip.baseCurrency.code} → ${newTrip.baseCurrency.code}');
+        changes.add(
+          'currency: ${oldTrip.baseCurrency.code} → ${newTrip.baseCurrency.code}',
+        );
       }
 
       // Skip logging if no changes detected
@@ -521,10 +586,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         actorName: actorName.isEmpty ? 'Unknown' : actorName,
         description: 'Archived trip "${trip.name}"',
         timestamp: DateTime.now(),
-        metadata: {
-          'tripId': trip.id,
-          'tripName': trip.name,
-        },
+        metadata: {'tripId': trip.id, 'tripName': trip.name},
       );
 
       await _logActivity(activityLog);
@@ -543,10 +605,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         actorName: actorName.isEmpty ? 'Unknown' : actorName,
         description: 'Unarchived trip "${trip.name}"',
         timestamp: DateTime.now(),
-        metadata: {
-          'tripId': trip.id,
-          'tripName': trip.name,
-        },
+        metadata: {'tripId': trip.id, 'tripName': trip.name},
       );
 
       await _logActivity(activityLog);
@@ -569,10 +628,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         actorName: actorName.isEmpty ? 'Unknown' : actorName,
         description: 'Added $participantName to the trip',
         timestamp: DateTime.now(),
-        metadata: {
-          'participantName': participantName,
-          'addedBy': actorName,
-        },
+        metadata: {'participantName': participantName, 'addedBy': actorName},
       );
 
       await _logActivity(activityLog);
@@ -595,10 +651,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         actorName: actorName.isEmpty ? 'Unknown' : actorName,
         description: 'Removed $participantName from the trip',
         timestamp: DateTime.now(),
-        metadata: {
-          'participantName': participantName,
-          'removedBy': actorName,
-        },
+        metadata: {'participantName': participantName, 'removedBy': actorName},
       );
 
       await _logActivity(activityLog);
@@ -623,7 +676,9 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         timestamp: DateTime.now(),
         metadata: {
           'memberName': memberName,
-          'deviceCode': deviceCode.length >= 4 ? deviceCode.substring(deviceCode.length - 4) : deviceCode,
+          'deviceCode': deviceCode.length >= 4
+              ? deviceCode.substring(deviceCode.length - 4)
+              : deviceCode,
         },
       );
 
@@ -647,10 +702,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         actorName: memberName,
         description: '$memberName used a recovery code to join',
         timestamp: DateTime.now(),
-        metadata: {
-          'memberName': memberName,
-          'usageCount': usageCount,
-        },
+        metadata: {'memberName': memberName, 'usageCount': usageCount},
       );
 
       await _logActivity(activityLog);

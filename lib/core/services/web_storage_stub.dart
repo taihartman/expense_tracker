@@ -2,6 +2,7 @@
 ///
 /// This file provides no-op implementations for web-specific functionality
 /// when running in non-web environments.
+library;
 
 class Storage {
   Iterable<String> get keys => [];

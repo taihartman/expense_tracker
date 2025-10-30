@@ -16,6 +16,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import 'itemized/itemized_expense_wizard.dart';
+import '../../../../core/services/activity_logger_service.dart';
 
 /// Page displaying list of expenses for a trip
 class ExpenseListPage extends StatelessWidget {
@@ -63,42 +64,45 @@ class ExpenseListPage extends StatelessWidget {
             showExpenseFormBottomSheet(context: context, tripId: tripId);
           },
           onReceiptSplitTap: () async {
-          // Get trip info and current user
-          final tripCubit = context.read<TripCubit>();
-          final tripState = tripCubit.state;
+            // Get trip info and current user
+            final tripCubit = context.read<TripCubit>();
+            final tripState = tripCubit.state;
 
-          if (tripState is! TripLoaded) return;
+            if (tripState is! TripLoaded) return;
 
-          // Find the current trip
-          final trip = tripState.trips.firstWhere(
-            (t) => t.id == tripId,
-            orElse: () => tripState.selectedTrip!,
-          );
+            // Find the current trip
+            final trip = tripState.trips.firstWhere(
+              (t) => t.id == tripId,
+              orElse: () => tripState.selectedTrip!,
+            );
 
-          // Get current user for this trip
-          final currentUser = tripCubit.getCurrentUserForTrip(tripId);
+            // Get current user for this trip
+            final currentUser = tripCubit.getCurrentUserForTrip(tripId);
 
-          // Navigate to Receipt Split wizard
-          final expenseRepository = context.read<ExpenseRepository>();
-          await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder: (context) => BlocProvider(
-                create: (context) =>
-                    ItemizedExpenseCubit(expenseRepository: expenseRepository),
-                child: ItemizedExpenseWizard(
-                  tripId: tripId,
-                  participants: trip.participants.map((p) => p.id).toList(),
-                  participantNames: {
-                    for (var p in trip.participants) p.id: p.name,
-                  },
-                  initialPayerUserId:
-                      currentUser?.id ?? trip.participants.first.id,
-                  currency: trip.baseCurrency,
+            // Navigate to Receipt Split wizard
+            final expenseRepository = context.read<ExpenseRepository>();
+            final activityLoggerService = context.read<ActivityLoggerService>();
+            await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (context) => BlocProvider(
+                  create: (context) => ItemizedExpenseCubit(
+                    expenseRepository: expenseRepository,
+                    activityLoggerService: activityLoggerService,
+                  ),
+                  child: ItemizedExpenseWizard(
+                    tripId: tripId,
+                    participants: trip.participants.map((p) => p.id).toList(),
+                    participantNames: {
+                      for (var p in trip.participants) p.id: p.name,
+                    },
+                    initialPayerUserId:
+                        currentUser?.id ?? trip.participants.first.id,
+                    currency: trip.baseCurrency,
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
         ),
       ),
       body: BlocBuilder<ExpenseCubit, ExpenseState>(

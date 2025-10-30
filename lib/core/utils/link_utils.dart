@@ -105,7 +105,10 @@ String _buildParticipantContext({
   }
 
   // 3+ members: show first 2 names + "and X others"
-  final firstTwo = sortedMembers.take(2).map((m) => m.participantName).join(', ');
+  final firstTwo = sortedMembers
+      .take(2)
+      .map((m) => m.participantName)
+      .join(', ');
   final remaining = sortedMembers.length - 2;
 
   return '$firstTwo and $remaining ${remaining == 1 ? 'other' : 'others'} are already tracking expenses in $currency.';

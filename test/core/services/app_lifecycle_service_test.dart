@@ -41,9 +41,11 @@ void main() {
 
         // Should not throw when starting observation
         expect(
-          () => service.startObserving(onResume: () {
-            // Callback provided
-          }),
+          () => service.startObserving(
+            onResume: () {
+              // Callback provided
+            },
+          ),
           returnsNormally,
         );
 

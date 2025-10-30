@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:html' as html;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:web/web.dart' as web;
 
 import '../services/app_lifecycle_service.dart';
 import '../services/version_check_service.dart';
@@ -25,8 +25,7 @@ class UpdateNotificationListener extends StatefulWidget {
       _UpdateNotificationListenerState();
 }
 
-class _UpdateNotificationListenerState
-    extends State<UpdateNotificationListener>
+class _UpdateNotificationListenerState extends State<UpdateNotificationListener>
     with SingleTickerProviderStateMixin {
   late final VersionCheckService _versionCheckService;
   late final AppLifecycleService _lifecycleService;
@@ -53,10 +52,7 @@ class _UpdateNotificationListenerState
     );
 
     // Create a pulsing scale animation for the update icon
-    _iconAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.2,
-    ).animate(
+    _iconAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
       CurvedAnimation(
         parent: _iconAnimationController,
         curve: Curves.easeInOut,
@@ -187,7 +183,7 @@ class _UpdateNotificationListenerState
 
     // Use window.location.reload() to trigger a full app reload
     // This will fetch the new version and preserve localStorage
-    html.window.location.reload();
+    web.window.location.reload();
   }
 
   @override

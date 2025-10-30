@@ -15,6 +15,7 @@ import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../shared/utils/currency_input_formatter.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
+import '../../../../core/services/activity_logger_service.dart';
 
 /// Shows expense form in a Material 3 bottom sheet modal
 void showExpenseFormBottomSheet({
@@ -131,6 +132,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
 
     try {
       final expenseRepository = context.read<ExpenseRepository>();
+      final activityLoggerService = context.read<ActivityLoggerService>();
       debugPrint('🔵 [BottomSheet] ExpenseRepository obtained');
 
       // Navigate to itemized expense wizard with existing expense
@@ -138,8 +140,10 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         MaterialPageRoute(
           builder: (context) {
             return BlocProvider(
-              create: (context) =>
-                  ItemizedExpenseCubit(expenseRepository: expenseRepository),
+              create: (context) => ItemizedExpenseCubit(
+                expenseRepository: expenseRepository,
+                activityLoggerService: activityLoggerService,
+              ),
               child: ItemizedExpenseWizard(
                 tripId: widget.tripId,
                 participants: availableParticipants.map((p) => p.id).toList(),
@@ -386,6 +390,8 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                       );
                       final expenseRepository = context
                           .read<ExpenseRepository>();
+                      final activityLoggerService = context
+                          .read<ActivityLoggerService>();
                       debugPrint(
                         '🔵 [BottomSheet] ExpenseRepository obtained: ${expenseRepository.runtimeType}',
                       );
@@ -405,6 +411,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                                 );
                                 return ItemizedExpenseCubit(
                                   expenseRepository: expenseRepository,
+                                  activityLoggerService: activityLoggerService,
                                 );
                               },
                               child: ItemizedExpenseWizard(

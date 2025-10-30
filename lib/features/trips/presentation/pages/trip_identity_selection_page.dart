@@ -34,8 +34,7 @@ class TripIdentitySelectionPage extends StatefulWidget {
       _TripIdentitySelectionPageState();
 }
 
-class _TripIdentitySelectionPageState
-    extends State<TripIdentitySelectionPage> {
+class _TripIdentitySelectionPageState extends State<TripIdentitySelectionPage> {
   Participant? _selectedParticipant;
   bool _isVerifying = false;
   bool _useRecoveryCode = false;
@@ -50,15 +49,11 @@ class _TripIdentitySelectionPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(context.l10n.identitySelectionTitle),
-      ),
+      appBar: AppBar(title: Text(context.l10n.identitySelectionTitle)),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, state) {
           if (state is TripLoading) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (state is TripError) {
@@ -85,7 +80,9 @@ class _TripIdentitySelectionPageState
 
           // Find the trip
           final tripCubit = context.read<TripCubit>();
-          final trip = tripCubit.trips.where((t) => t.id == widget.tripId).firstOrNull;
+          final trip = tripCubit.trips
+              .where((t) => t.id == widget.tripId)
+              .firstOrNull;
 
           if (trip == null) {
             return Center(
@@ -123,7 +120,11 @@ class _TripIdentitySelectionPageState
             );
           }
 
-          return _buildIdentitySelectionForm(context, trip.name, trip.participants);
+          return _buildIdentitySelectionForm(
+            context,
+            trip.name,
+            trip.participants,
+          );
         },
       ),
     );
@@ -153,10 +154,7 @@ class _TripIdentitySelectionPageState
                       children: [
                         const Text(
                           'Trip',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                         Text(
                           tripName,
@@ -178,10 +176,7 @@ class _TripIdentitySelectionPageState
           // Instructions
           Text(
             context.l10n.identitySelectionPrompt,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
 
           const SizedBox(height: 16),
@@ -273,10 +268,7 @@ class _TripIdentitySelectionPageState
             const SizedBox(height: 8),
             Text(
               context.l10n.identitySelectionNoParticipant,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ],
@@ -347,13 +339,16 @@ class _TripIdentitySelectionPageState
 
       if (verified) {
         // Success! Navigate to destination
-        final destination = widget.returnPath ?? '/trips/${widget.tripId}/expenses';
+        final destination =
+            widget.returnPath ?? '/trips/${widget.tripId}/expenses';
 
         // Get trip name
-        final tripName = tripCubit.trips
-            .where((t) => t.id == widget.tripId)
-            .firstOrNull
-            ?.name ?? 'trip';
+        final tripName =
+            tripCubit.trips
+                .where((t) => t.id == widget.tripId)
+                .firstOrNull
+                ?.name ??
+            'trip';
 
         // Show success message briefly
         scaffoldMessenger.showSnackBar(

@@ -19,6 +19,7 @@ import '../../domain/services/itemized_calculator.dart';
 import '../../domain/repositories/expense_repository.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/split_type.dart';
+import '../../../../core/services/activity_logger_service.dart';
 import 'itemized_expense_state.dart';
 
 /// Cubit for managing itemized expense creation/editing
@@ -27,12 +28,15 @@ import 'itemized_expense_state.dart';
 class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
   final ExpenseRepository _expenseRepository;
   final ItemizedCalculator _calculator;
+  final ActivityLoggerService? _activityLoggerService;
 
   ItemizedExpenseCubit({
     required ExpenseRepository expenseRepository,
     ItemizedCalculator? calculator,
+    ActivityLoggerService? activityLoggerService,
   }) : _expenseRepository = expenseRepository,
        _calculator = calculator ?? ItemizedCalculator(),
+       _activityLoggerService = activityLoggerService,
        super(const ItemizedExpenseInitial());
 
   /// Initialize a new itemized expense
@@ -396,7 +400,7 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
   }
 
   /// Save the expense
-  Future<void> save() async {
+  Future<void> save({String? actorName}) async {
     if (state is! ItemizedExpenseReady) {
       emit(ItemizedExpenseError('Cannot save: expense not ready', state));
       return;
@@ -420,6 +424,19 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     try {
       final isEditMode = readyState.draft.isEditMode;
       debugPrint('🟡 [Cubit] Save mode: ${isEditMode ? "EDIT" : "CREATE"}');
+
+      // For edit mode, fetch old expense before saving (needed for activity logging)
+      Expense? oldExpense;
+      if (isEditMode && readyState.draft.expenseId != null) {
+        try {
+          oldExpense = await _expenseRepository.getExpenseById(
+            readyState.draft.expenseId!,
+          );
+        } catch (e) {
+          debugPrint('⚠️ [Cubit] Failed to fetch old expense for logging: $e');
+          // Non-fatal, continue with save
+        }
+      }
 
       // Build Expense entity
       final expense = Expense(
@@ -463,6 +480,31 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
         debugPrint('🟡 [Cubit] Creating new expense');
         savedExpense = await _expenseRepository.createExpense(expense);
         debugPrint('🟡 [Cubit] Expense created successfully');
+      }
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        debugPrint('📝 [Cubit] Logging itemized expense activity...');
+        try {
+          if (isEditMode && oldExpense != null) {
+            await _activityLoggerService.logExpenseEdited(
+              oldExpense,
+              savedExpense,
+              actorName,
+            );
+          } else {
+            await _activityLoggerService.logExpenseAdded(
+              savedExpense,
+              actorName,
+            );
+          }
+          debugPrint('✅ [Cubit] Activity logged');
+        } catch (e) {
+          debugPrint('⚠️ [Cubit] Failed to log activity (non-fatal): $e');
+          // Fire-and-forget - don't fail the save operation
+        }
       }
 
       emit(ItemizedExpenseSaved(savedExpense));

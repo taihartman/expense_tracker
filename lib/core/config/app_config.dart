@@ -43,7 +43,8 @@ class AppConfig {
   /// Uses `kDebugMode` by default (only enabled in debug builds).
   ///
   /// To disable: Change to `static const bool enableDebugPanel = false;`
-  static const bool enableDebugPanel = false;  // Disabled after fixing deep link issue
+  static const bool enableDebugPanel =
+      false; // Disabled after fixing deep link issue
 
   // ============================================================================
   // Future Configuration

@@ -1,6 +1,6 @@
-import 'package:expense_tracker/features/expenses/domain/models/expense.dart';
-import 'package:expense_tracker/features/settlements/domain/models/minimal_transfer.dart';
-import 'package:expense_tracker/features/trips/domain/models/trip.dart';
+import '../../features/expenses/domain/models/expense.dart';
+import '../../features/settlements/domain/models/minimal_transfer.dart';
+import '../../features/trips/domain/models/trip.dart';
 
 /// Centralized service for activity logging across the application.
 ///
@@ -57,10 +57,7 @@ abstract class ActivityLoggerService {
   ///
   /// - [transfer]: The transfer that was unsettled
   /// - [actorName]: Name of the user who marked it unsettled
-  Future<void> logTransferUnsettled(
-    MinimalTransfer transfer,
-    String actorName,
-  );
+  Future<void> logTransferUnsettled(MinimalTransfer transfer, String actorName);
 
   /// Log a member joining a trip.
   ///
@@ -92,11 +89,7 @@ abstract class ActivityLoggerService {
   /// - [oldTrip]: The trip before changes
   /// - [newTrip]: The trip after changes
   /// - [actorName]: Name of the user who made the update
-  Future<void> logTripUpdated(
-    Trip oldTrip,
-    Trip newTrip,
-    String actorName,
-  );
+  Future<void> logTripUpdated(Trip oldTrip, Trip newTrip, String actorName);
 
   /// Log a trip being deleted.
   ///

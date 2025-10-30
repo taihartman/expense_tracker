@@ -23,8 +23,7 @@ class CodeVerificationPrompt extends StatefulWidget {
   });
 
   @override
-  State<CodeVerificationPrompt> createState() =>
-      _CodeVerificationPromptState();
+  State<CodeVerificationPrompt> createState() => _CodeVerificationPromptState();
 }
 
 class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
@@ -55,10 +54,10 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
   void _handleSubmit(BuildContext context) {
     if (_isCodeValid()) {
       context.read<DevicePairingCubit>().validateCode(
-            widget.tripId,
-            _codeController.text.trim(),
-            widget.memberName,
-          );
+        widget.tripId,
+        _codeController.text.trim(),
+        widget.memberName,
+      );
     }
   }
 
@@ -68,7 +67,9 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
 
   Future<void> _copyAskForCodeMessage(BuildContext context) async {
     try {
-      final message = context.l10n.devicePairingAskForCodeMessage(widget.memberName);
+      final message = context.l10n.devicePairingAskForCodeMessage(
+        widget.memberName,
+      );
       await Clipboard.setData(ClipboardData(text: message));
 
       if (context.mounted) {
@@ -115,7 +116,9 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Explanation message
-              Text(context.l10n.devicePairingCodePromptMessage(widget.memberName)),
+              Text(
+                context.l10n.devicePairingCodePromptMessage(widget.memberName),
+              ),
               const SizedBox(height: 12),
 
               // How to get code info
@@ -155,9 +158,7 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
-                inputFormatters: [
-                  VerificationCodeInputFormatter(),
-                ],
+                inputFormatters: [VerificationCodeInputFormatter()],
                 onChanged: (value) {
                   // Clear error when user types
                   if (_errorMessage != null) {
@@ -175,7 +176,9 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: isValidating ? null : () => _copyAskForCodeMessage(context),
+                  onPressed: isValidating
+                      ? null
+                      : () => _copyAskForCodeMessage(context),
                   icon: const Icon(Icons.content_copy, size: 18),
                   label: Text(context.l10n.devicePairingAskForCodeButton),
                 ),
@@ -186,9 +189,7 @@ class _CodeVerificationPromptState extends State<CodeVerificationPrompt> {
               if (isValidating)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  child: Center(child: CircularProgressIndicator()),
                 ),
             ],
           ),
