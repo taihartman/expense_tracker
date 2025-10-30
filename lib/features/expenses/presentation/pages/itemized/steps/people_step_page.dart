@@ -31,7 +31,7 @@ class PeopleStepPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.itemizedPeopleTitle,
+                context.l10n.receiptSplitPeopleTitle,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -43,8 +43,8 @@ class PeopleStepPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 payerUserId == null
-                    ? context.l10n.itemizedPeopleDescriptionError
-                    : context.l10n.itemizedPeopleDescription,
+                    ? context.l10n.receiptSplitPeopleDescriptionError
+                    : context.l10n.receiptSplitPeopleDescription,
                 style: TextStyle(
                   color: payerUserId == null
                       ? Theme.of(context).colorScheme.error
@@ -138,7 +138,7 @@ class PeopleStepPage extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.all(16),
                       ),
-                      child: Text(context.l10n.itemizedPeopleContinueButton),
+                      child: Text(context.l10n.receiptSplitPeopleContinueButton),
                     ),
                   ),
                 ],

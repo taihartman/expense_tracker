@@ -629,7 +629,7 @@ class ExpenseFormContent extends StatelessWidget {
                   onSplitTypeChanged(SplitType.itemized);
                 },
                 icon: const Icon(Icons.receipt_long),
-                label: Text(context.l10n.expenseSplitTypeItemized),
+                label: Text(context.l10n.expenseSplitTypeReceiptSplit),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),

@@ -54,7 +54,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.itemizedItemsTitle,
+                context.l10n.receiptSplitItemsTitle,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -62,7 +62,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                context.l10n.itemizedItemsDescription,
+                context.l10n.receiptSplitItemsDescription,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 24),
@@ -94,12 +94,12 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            context.l10n.itemizedItemsEmptyTitle,
+            context.l10n.receiptSplitItemsEmptyTitle,
             style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
           ),
           const SizedBox(height: 8),
           Text(
-            context.l10n.itemizedItemsEmptyDescription,
+            context.l10n.receiptSplitItemsEmptyDescription,
             style: TextStyle(color: Colors.grey.shade500),
           ),
         ],
@@ -124,7 +124,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
         ? item.assignment.users
               .map((id) => widget.participantNames[id] ?? id)
               .join(', ')
-        : context.l10n.itemizedItemsNotAssigned;
+        : context.l10n.receiptSplitItemsNotAssigned;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -166,17 +166,17 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
           children: [
             IconButton(
               icon: const Icon(Icons.people_alt),
-              tooltip: context.l10n.itemizedItemsAssignTooltip,
+              tooltip: context.l10n.receiptSplitItemsAssignTooltip,
               onPressed: () => _showAssignDialog(item, participants),
             ),
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              tooltip: context.l10n.itemizedItemsEditTooltip,
+              tooltip: context.l10n.receiptSplitItemsEditTooltip,
               onPressed: () => _startEditItem(item),
             ),
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              tooltip: context.l10n.itemizedItemsRemoveTooltip,
+              tooltip: context.l10n.receiptSplitItemsRemoveTooltip,
               onPressed: () {
                 context.read<ItemizedExpenseCubit>().removeItem(item.id);
               },
@@ -201,8 +201,8 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
               children: [
                 Text(
                   isEditMode
-                      ? context.l10n.itemizedItemsEditCardTitle
-                      : context.l10n.itemizedItemsAddCardTitle,
+                      ? context.l10n.receiptSplitItemsEditCardTitle
+                      : context.l10n.receiptSplitItemsAddCardTitle,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 if (isEditMode) ...[
@@ -220,8 +220,8 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
             TextField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: context.l10n.itemizedItemsFieldNameLabel,
-                hintText: context.l10n.itemizedItemsFieldNameHint,
+                labelText: context.l10n.receiptSplitItemsFieldNameLabel,
+                hintText: context.l10n.receiptSplitItemsFieldNameHint,
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.shopping_basket),
               ),
@@ -233,7 +233,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                   child: TextField(
                     controller: _quantityController,
                     decoration: InputDecoration(
-                      labelText: context.l10n.itemizedItemsFieldQtyLabel,
+                      labelText: context.l10n.receiptSplitItemsFieldQtyLabel,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.numbers),
                     ),
@@ -246,8 +246,8 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                   child: TextField(
                     controller: _priceController,
                     decoration: InputDecoration(
-                      labelText: context.l10n.itemizedItemsFieldPriceLabel,
-                      hintText: context.l10n.itemizedItemsFieldPriceHint,
+                      labelText: context.l10n.receiptSplitItemsFieldPriceLabel,
+                      hintText: context.l10n.receiptSplitItemsFieldPriceHint,
                       border: const OutlineInputBorder(),
                       prefixIcon: const Icon(Icons.attach_money),
                     ),
@@ -266,8 +266,8 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                 icon: Icon(isEditMode ? Icons.check : Icons.add),
                 label: Text(
                   isEditMode
-                      ? context.l10n.itemizedItemsUpdateButton
-                      : context.l10n.itemizedItemsAddButton,
+                      ? context.l10n.receiptSplitItemsUpdateButton
+                      : context.l10n.receiptSplitItemsAddButton,
                 ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(14),
@@ -297,7 +297,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
           child: ElevatedButton(
             onPressed: hasItems ? widget.onContinue : null,
             style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
-            child: Text(context.l10n.itemizedItemsContinueButton),
+            child: Text(context.l10n.receiptSplitItemsContinueButton),
           ),
         ),
       ],
@@ -398,7 +398,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(context.l10n.itemizedItemsAssignDialogTitle(item.name)),
+        title: Text(context.l10n.receiptSplitItemsAssignDialogTitle(item.name)),
         content: StatefulBuilder(
           builder: (context, setState) => SingleChildScrollView(
             child: Column(

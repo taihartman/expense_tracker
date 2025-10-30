@@ -23,7 +23,7 @@ enum SplitType {
       case SplitType.weighted:
         return context.l10n.expenseSplitTypeWeighted;
       case SplitType.itemized:
-        return context.l10n.expenseSplitTypeItemized;
+        return context.l10n.expenseSplitTypeReceiptSplit;
     }
   }
 

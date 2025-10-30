@@ -93,7 +93,7 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                context.l10n.itemizedExtrasTitle,
+                context.l10n.receiptSplitExtrasTitle,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -101,7 +101,7 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                context.l10n.itemizedExtrasDescription,
+                context.l10n.receiptSplitExtrasDescription,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
               const SizedBox(height: 24),
@@ -139,7 +139,7 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
                 const Icon(Icons.receipt, color: Colors.blue),
                 const SizedBox(width: 8),
                 Text(
-                  context.l10n.itemizedExtrasTaxCardTitle,
+                  context.l10n.receiptSplitExtrasTaxCardTitle,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -165,11 +165,11 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
               TextField(
                 controller: _taxController,
                 decoration: InputDecoration(
-                  labelText: context.l10n.itemizedExtrasTaxRateLabel,
-                  hintText: context.l10n.itemizedExtrasTaxRateHint,
+                  labelText: context.l10n.receiptSplitExtrasTaxRateLabel,
+                  hintText: context.l10n.receiptSplitExtrasTaxRateHint,
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.percent),
-                  helperText: context.l10n.itemizedExtrasTaxRateHelper,
+                  helperText: context.l10n.receiptSplitExtrasTaxRateHelper,
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -214,7 +214,7 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
                 const Icon(Icons.attach_money, color: Colors.green),
                 const SizedBox(width: 8),
                 Text(
-                  context.l10n.itemizedExtrasTipCardTitle,
+                  context.l10n.receiptSplitExtrasTipCardTitle,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -240,11 +240,11 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
               TextField(
                 controller: _tipController,
                 decoration: InputDecoration(
-                  labelText: context.l10n.itemizedExtrasTipRateLabel,
-                  hintText: context.l10n.itemizedExtrasTipRateHint,
+                  labelText: context.l10n.receiptSplitExtrasTipRateLabel,
+                  hintText: context.l10n.receiptSplitExtrasTipRateHint,
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.percent),
-                  helperText: context.l10n.itemizedExtrasTipRateHelper,
+                  helperText: context.l10n.receiptSplitExtrasTipRateHelper,
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -286,7 +286,7 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                context.l10n.itemizedExtrasInfoMessage,
+                context.l10n.receiptSplitExtrasInfoMessage,
                 style: TextStyle(color: Colors.blue.shade900, fontSize: 13),
               ),
             ),
@@ -312,7 +312,7 @@ class _ExtrasStepPageState extends State<ExtrasStepPage> {
           child: ElevatedButton(
             onPressed: widget.onContinue,
             style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
-            child: Text(context.l10n.itemizedExtrasContinueButton),
+            child: Text(context.l10n.receiptSplitExtrasContinueButton),
           ),
         ),
       ],

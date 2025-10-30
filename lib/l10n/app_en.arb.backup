@@ -260,7 +260,7 @@
 
   "expenseSplitTypeEqual": "Equal",
   "expenseSplitTypeWeighted": "Weighted",
-  "expenseSplitTypeReceiptSplit": "Receipt Split (Who Ordered What)",
+  "expenseSplitTypeItemized": "Itemized (Add Line Items)",
 
   "expenseParticipantSelectorRequired": "Required - select at least one participant",
   "expenseParticipantWeightLabel": "Weight",
@@ -322,7 +322,7 @@
     }
   },
 
-  "expenseItemizedOpenError": "Error opening receipt split: {error}",
+  "expenseItemizedOpenError": "Error opening itemized expense: {error}",
   "@expenseItemizedOpenError": {
     "placeholders": {
       "error": {
@@ -332,41 +332,41 @@
   },
 
 
-  "receiptSplitWizardTitleNew": "New Receipt Split",
-  "receiptSplitWizardTitleEdit": "Edit Receipt Split",
-  "receiptSplitWizardSavedSuccess": "Expense saved successfully!",
-  "receiptSplitWizardUpdatedSuccess": "Expense updated successfully!",
-  "receiptSplitWizardSaving": "Saving expense...",
+  "itemizedWizardTitleNew": "New Itemized Expense",
+  "itemizedWizardTitleEdit": "Edit Itemized Expense",
+  "itemizedWizardSavedSuccess": "Expense saved successfully!",
+  "itemizedWizardUpdatedSuccess": "Expense updated successfully!",
+  "itemizedWizardSaving": "Saving expense...",
 
-  "receiptSplitWizardStepPeople": "People",
-  "receiptSplitWizardStepItems": "Items",
-  "receiptSplitWizardStepExtras": "Extras",
-  "receiptSplitWizardStepReview": "Review",
+  "itemizedWizardStepPeople": "People",
+  "itemizedWizardStepItems": "Items",
+  "itemizedWizardStepExtras": "Extras",
+  "itemizedWizardStepReview": "Review",
 
-  "receiptSplitPeopleTitle": "Who paid for this expense? *",
-  "receiptSplitPeopleDescription": "Select the person who paid",
-  "receiptSplitPeopleDescriptionError": "Required - Select the person who paid",
-  "receiptSplitPeopleContinueButton": "Continue to Items",
+  "itemizedPeopleTitle": "Who paid for this expense? *",
+  "itemizedPeopleDescription": "Select the person who paid",
+  "itemizedPeopleDescriptionError": "Required - Select the person who paid",
+  "itemizedPeopleContinueButton": "Continue to Items",
 
-  "receiptSplitItemsTitle": "Add items from receipt",
-  "receiptSplitItemsDescription": "Add each item and assign who ordered it",
-  "receiptSplitItemsEmptyTitle": "No items yet",
-  "receiptSplitItemsEmptyDescription": "Add items from the form below",
-  "receiptSplitItemsNotAssigned": "Not assigned",
-  "receiptSplitItemsAssignTooltip": "Assign",
-  "receiptSplitItemsEditTooltip": "Edit",
-  "receiptSplitItemsRemoveTooltip": "Remove",
-  "receiptSplitItemsAddCardTitle": "Add New Item",
-  "receiptSplitItemsEditCardTitle": "Edit Item",
-  "receiptSplitItemsFieldNameLabel": "Item name",
-  "receiptSplitItemsFieldNameHint": "e.g., Caesar Salad",
-  "receiptSplitItemsFieldQtyLabel": "Qty",
-  "receiptSplitItemsFieldPriceLabel": "Price",
-  "receiptSplitItemsFieldPriceHint": "0.00",
-  "receiptSplitItemsAddButton": "Add Item",
-  "receiptSplitItemsUpdateButton": "Update Item",
-  "receiptSplitItemsContinueButton": "Continue to Extras",
-  "receiptSplitItemsAssignDialogTitle": "Assign: {itemName}",
+  "itemizedItemsTitle": "Add items from receipt",
+  "itemizedItemsDescription": "Add each item and assign who ordered it",
+  "itemizedItemsEmptyTitle": "No items yet",
+  "itemizedItemsEmptyDescription": "Add items from the form below",
+  "itemizedItemsNotAssigned": "Not assigned",
+  "itemizedItemsAssignTooltip": "Assign",
+  "itemizedItemsEditTooltip": "Edit",
+  "itemizedItemsRemoveTooltip": "Remove",
+  "itemizedItemsAddCardTitle": "Add New Item",
+  "itemizedItemsEditCardTitle": "Edit Item",
+  "itemizedItemsFieldNameLabel": "Item name",
+  "itemizedItemsFieldNameHint": "e.g., Caesar Salad",
+  "itemizedItemsFieldQtyLabel": "Qty",
+  "itemizedItemsFieldPriceLabel": "Price",
+  "itemizedItemsFieldPriceHint": "0.00",
+  "itemizedItemsAddButton": "Add Item",
+  "itemizedItemsUpdateButton": "Update Item",
+  "itemizedItemsContinueButton": "Continue to Extras",
+  "itemizedItemsAssignDialogTitle": "Assign: {itemName}",
   "@itemizedItemsAssignDialogTitle": {
     "placeholders": {
       "itemName": {
@@ -375,25 +375,25 @@
     }
   },
 
-  "receiptSplitExtrasTitle": "Add tax & tip",
-  "receiptSplitExtrasDescription": "Optional - leave blank if not applicable",
-  "receiptSplitExtrasTaxCardTitle": "Sales Tax",
-  "receiptSplitExtrasTaxRateLabel": "Tax Rate (%)",
-  "receiptSplitExtrasTaxRateHint": "e.g., 8.875",
-  "receiptSplitExtrasTaxRateHelper": "Applies to all taxable items",
-  "receiptSplitExtrasTipCardTitle": "Tip / Gratuity",
-  "receiptSplitExtrasTipRateLabel": "Tip Rate (%)",
-  "receiptSplitExtrasTipRateHint": "e.g., 18",
-  "receiptSplitExtrasTipRateHelper": "Calculated on pre-tax subtotal",
-  "receiptSplitExtrasInfoMessage": "Tax and tip will be split proportionally based on each person's item subtotal",
-  "receiptSplitExtrasContinueButton": "Continue to Review",
+  "itemizedExtrasTitle": "Add tax & tip",
+  "itemizedExtrasDescription": "Optional - leave blank if not applicable",
+  "itemizedExtrasTaxCardTitle": "Sales Tax",
+  "itemizedExtrasTaxRateLabel": "Tax Rate (%)",
+  "itemizedExtrasTaxRateHint": "e.g., 8.875",
+  "itemizedExtrasTaxRateHelper": "Applies to all taxable items",
+  "itemizedExtrasTipCardTitle": "Tip / Gratuity",
+  "itemizedExtrasTipRateLabel": "Tip Rate (%)",
+  "itemizedExtrasTipRateHint": "e.g., 18",
+  "itemizedExtrasTipRateHelper": "Calculated on pre-tax subtotal",
+  "itemizedExtrasInfoMessage": "Tax and tip will be split proportionally based on each person's item subtotal",
+  "itemizedExtrasContinueButton": "Continue to Review",
 
-  "receiptSplitReviewTitle": "Review & Save",
-  "receiptSplitReviewDescription": "Check the breakdown before saving",
-  "receiptSplitReviewCannotSaveTitle": "Cannot Save",
-  "receiptSplitReviewWarningTitle": "Warning",
-  "receiptSplitReviewGrandTotal": "Grand Total",
-  "receiptSplitReviewPeopleSplitting": "{count, plural, =1{1 person splitting} other{{count} people splitting}}",
+  "itemizedReviewTitle": "Review & Save",
+  "itemizedReviewDescription": "Check the breakdown before saving",
+  "itemizedReviewCannotSaveTitle": "Cannot Save",
+  "itemizedReviewWarningTitle": "Warning",
+  "itemizedReviewGrandTotal": "Grand Total",
+  "itemizedReviewPeopleSplitting": "{count, plural, =1{1 person splitting} other{{count} people splitting}}",
   "@itemizedReviewPeopleSplitting": {
     "placeholders": {
       "count": {
@@ -401,21 +401,21 @@
       }
     }
   },
-  "receiptSplitReviewPerPersonBreakdown": "Per Person Breakdown",
-  "receiptSplitReviewPaidBadge": "PAID",
-  "receiptSplitReviewItemsSubtotal": "Items Subtotal",
-  "receiptSplitReviewRounding": "Rounding",
-  "receiptSplitReviewTotal": "Total",
-  "receiptSplitReviewItemDetails": "Item Details",
-  "receiptSplitReviewSaveButton": "Save Expense",
-  "receiptSplitReviewUpdateButton": "Update Expense",
+  "itemizedReviewPerPersonBreakdown": "Per Person Breakdown",
+  "itemizedReviewPaidBadge": "PAID",
+  "itemizedReviewItemsSubtotal": "Items Subtotal",
+  "itemizedReviewRounding": "Rounding",
+  "itemizedReviewTotal": "Total",
+  "itemizedReviewItemDetails": "Item Details",
+  "itemizedReviewSaveButton": "Save Expense",
+  "itemizedReviewUpdateButton": "Update Expense",
 
-  "receiptSplitExpenseCannotEditNotItemized": "Cannot edit: expense is not itemized",
-  "receiptSplitExpenseCannotEditNoItems": "Cannot edit: expense has no items",
-  "receiptSplitExpenseCannotSaveNotReady": "Cannot save: expense not ready",
-  "receiptSplitExpenseCannotSaveValidationErrors": "Cannot save: validation errors exist",
-  "receiptSplitExpenseCannotSaveNoPayerSelected": "Cannot save: payer not selected",
-  "receiptSplitExpenseSaveError": "Failed to save expense: {error}",
+  "itemizedExpenseCannotEditNotItemized": "Cannot edit: expense is not itemized",
+  "itemizedExpenseCannotEditNoItems": "Cannot edit: expense has no items",
+  "itemizedExpenseCannotSaveNotReady": "Cannot save: expense not ready",
+  "itemizedExpenseCannotSaveValidationErrors": "Cannot save: validation errors exist",
+  "itemizedExpenseCannotSaveNoPayerSelected": "Cannot save: payer not selected",
+  "itemizedExpenseSaveError": "Failed to save expense: {error}",
   "@itemizedExpenseSaveError": {
     "placeholders": {
       "error": {
@@ -423,7 +423,7 @@
       }
     }
   },
-  "receiptSplitExpenseCalculationError": "Calculation error: {error}",
+  "itemizedExpenseCalculationError": "Calculation error: {error}",
   "@itemizedExpenseCalculationError": {
     "placeholders": {
       "error": {
@@ -431,8 +431,8 @@
       }
     }
   },
-  "receiptSplitExpenseGeneratedDescriptionNoItems": "Itemized expense",
-  "receiptSplitExpenseGeneratedDescriptionMultiple": "{item1}, {item2}, and {count} more",
+  "itemizedExpenseGeneratedDescriptionNoItems": "Itemized expense",
+  "itemizedExpenseGeneratedDescriptionMultiple": "{item1}, {item2}, and {count} more",
   "@itemizedExpenseGeneratedDescriptionMultiple": {
     "placeholders": {
       "item1": {
