@@ -103,14 +103,19 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Builder(
-                  builder: (context) => Row(
-                    mainAxisSize: MainAxisSize.min,
+                  builder: (context) => Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
-                      Text(
-                        'Receipt Split',
-                        style: Theme.of(context).textTheme.labelLarge,
+                      // Text label positioned to the left
+                      Positioned(
+                        right: 72, // 56 (FAB width) + 16 (spacing)
+                        child: Text(
+                          'Receipt Split',
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
                       ),
-                      const SizedBox(width: 16),
+                      // FAB stays centered
                       FloatingActionButton(
                         heroTag: 'receiptSplit',
                         onPressed: _handleReceiptSplitTap,
@@ -133,14 +138,19 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Builder(
-                  builder: (context) => Row(
-                    mainAxisSize: MainAxisSize.min,
+                  builder: (context) => Stack(
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
-                      Text(
-                        'Quick Expense',
-                        style: Theme.of(context).textTheme.labelLarge,
+                      // Text label positioned to the left
+                      Positioned(
+                        right: 72, // 56 (FAB width) + 16 (spacing)
+                        child: Text(
+                          'Quick Expense',
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
                       ),
-                      const SizedBox(width: 16),
+                      // FAB stays centered
                       FloatingActionButton(
                         heroTag: 'quickExpense',
                         onPressed: _handleQuickExpenseTap,
