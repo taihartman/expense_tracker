@@ -263,7 +263,14 @@ class _TripJoinPageState extends State<TripJoinPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.tripJoinTitle)),
+      appBar: AppBar(
+        title: Text(context.l10n.tripJoinTitle),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => context.go('/'),
+          tooltip: 'Close',
+        ),
+      ),
       body: BlocListener<TripCubit, TripState>(
         listener: (context, state) {
           if (state is TripJoined) {
