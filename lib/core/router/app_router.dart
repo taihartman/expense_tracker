@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'app_routes.dart';
 import '../presentation/pages/splash_page.dart';
 import '../cubits/initialization_cubit.dart';
+import '../utils/debug_logger.dart';
 import '../../features/trips/presentation/cubits/trip_cubit.dart';
 import '../../features/trips/presentation/widgets/trip_selector.dart';
 import '../../features/trips/presentation/cubits/trip_state.dart';
@@ -19,7 +20,6 @@ import '../../features/trips/presentation/pages/trip_settings_page.dart';
 import '../../features/trips/presentation/pages/archived_trips_page.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
-import '../../features/expenses/presentation/widgets/expense_form_bottom_sheet.dart';
 import '../../features/expenses/presentation/cubits/expense_cubit.dart';
 import '../../features/settlements/presentation/pages/settlement_summary_page.dart';
 import '../theme/app_theme.dart';
@@ -66,14 +66,14 @@ class AppRouter {
     initialLocation: AppRoutes.splash,
     redirect: (context, state) {
       // Debug logging to track deep link capture and routing flow
-      debugPrint('🔀 REDIRECT: uri=${state.uri}, matched=${state.matchedLocation}, _orig=$_originalLocation');
+      DebugLogger.log('🔀 REDIRECT: uri=${state.uri}, matched=${state.matchedLocation}, _orig=$_originalLocation');
 
       // Store the very first location request (the deep link)
       // This captures invite links like /trips/join?code=xxx
       if (_originalLocation == null &&
           state.matchedLocation != AppRoutes.splash) {
         _originalLocation = state.uri.toString();
-        debugPrint('📍 Deep link captured: $_originalLocation');
+        DebugLogger.log('📍 Deep link captured: $_originalLocation');
       }
 
       // Check if initialization is complete
@@ -81,25 +81,25 @@ class AppRouter {
       final isInitialized = initializationState is InitializationComplete;
       final isOnSplash = state.matchedLocation == AppRoutes.splash;
 
-      debugPrint('   isInitialized=$isInitialized, isOnSplash=$isOnSplash');
+      DebugLogger.log('   isInitialized=$isInitialized, isOnSplash=$isOnSplash');
 
       // If not initialized and not on splash, redirect to splash
       // This preserves the original location in _originalLocation
       if (!isInitialized && !isOnSplash) {
-        debugPrint('⏳ Redirect to splash (initialization in progress)');
+        DebugLogger.log('⏳ Redirect to splash (initialization in progress)');
         return AppRoutes.splash;
       }
 
       // If initialized and still on splash, navigate to the original deep link or home
       if (isInitialized && isOnSplash) {
         final destination = _originalLocation ?? AppRoutes.home;
-        debugPrint('✅ Navigate from splash to: $destination');
+        DebugLogger.log('✅ Navigate from splash to: $destination');
         _originalLocation = null; // Clear after use
         return destination;
       }
 
       // Allow all other navigation
-      debugPrint('➡️ Allow navigation');
+      DebugLogger.log('➡️ Allow navigation');
       return null;
     },
     routes: [
@@ -342,22 +342,6 @@ class _HomePageContent extends StatelessWidget {
                   ),
                 ),
               );
-            },
-          ),
-          floatingActionButton: BlocBuilder<TripCubit, TripState>(
-            builder: (context, state) {
-              if (state is TripLoaded && state.selectedTrip != null) {
-                return FloatingActionButton(
-                  onPressed: () {
-                    showExpenseFormBottomSheet(
-                      context: context,
-                      tripId: state.selectedTrip!.id,
-                    );
-                  },
-                  child: const Icon(Icons.add),
-                );
-              }
-              return const SizedBox.shrink();
             },
           ),
         ),
