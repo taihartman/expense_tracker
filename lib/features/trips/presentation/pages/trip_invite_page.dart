@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../domain/models/trip.dart';
-import '../../domain/models/verified_member.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../core/utils/link_utils.dart';
@@ -21,14 +20,50 @@ class TripInvitePage extends StatefulWidget {
 }
 
 class _TripInvitePageState extends State<TripInvitePage> {
-  bool _isLoadingMessage = false;
-  late Future<List<VerifiedMember>> _verifiedMembersFuture;
+  bool _isLoadingMessage = true;
+  String? _shareMessage;
 
   @override
   void initState() {
     super.initState();
-    // Pre-load verified members to avoid async gap during clipboard operation
-    _verifiedMembersFuture = context.read<TripCubit>().getVerifiedMembers(widget.trip.id);
+    // Pre-compute share message to avoid async gap during clipboard operation
+    _loadShareMessage();
+  }
+
+  Future<void> _loadShareMessage() async {
+    try {
+      final tripCubit = context.read<TripCubit>();
+
+      // Load verified members asynchronously (before user interaction)
+      final verifiedMembers = await tripCubit.getVerifiedMembers(widget.trip.id);
+
+      // Get current user to track who shared this link
+      final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
+
+      // Generate complete share message
+      final message = generateShareMessage(
+        trip: widget.trip,
+        verifiedMembers: verifiedMembers,
+        sharedByParticipantId: currentUser?.id,
+      );
+
+      if (mounted) {
+        setState(() {
+          _shareMessage = message;
+          _isLoadingMessage = false;
+        });
+      }
+
+      developer.log('✅ Share message pre-loaded', name: 'TripInvitePage');
+    } catch (e) {
+      developer.log('⚠️ Failed to load share message: $e', name: 'TripInvitePage', error: e);
+
+      if (mounted) {
+        setState(() {
+          _isLoadingMessage = false;
+        });
+      }
+    }
   }
 
   void _copyInviteCode(BuildContext context) {
@@ -99,124 +134,80 @@ class _TripInvitePageState extends State<TripInvitePage> {
     );
   }
 
-  Future<void> _copyInviteLink(BuildContext context) async {
-    setState(() {
-      _isLoadingMessage = true;
-    });
+  void _copyInviteLink(BuildContext context) {
+    // If message hasn't loaded yet, show fallback dialog
+    if (_shareMessage == null) {
+      developer.log('⚠️ Share message not ready, showing fallback', name: 'TripInvitePage');
+      _showManualCopyDialog(context);
+      return;
+    }
 
     try {
-      final tripCubit = context.read<TripCubit>();
-
-      // Use pre-loaded verified members (no async gap!)
-      final verifiedMembers = await _verifiedMembersFuture;
-
-      // Get current user to track who shared this link
-      final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
-
-      // Generate human-friendly message with link
-      final message = generateShareMessage(
-        trip: widget.trip,
-        verifiedMembers: verifiedMembers,
-        sharedByParticipantId: currentUser?.id,
-      );
-
-      // Copy to clipboard (synchronous - no async gap from user gesture)
-      await Clipboard.setData(ClipboardData(text: message));
+      // COMPLETELY SYNCHRONOUS clipboard call - no async/await!
+      // This preserves the user gesture context on mobile browsers
+      Clipboard.setData(ClipboardData(text: _shareMessage!));
 
       developer.log('✅ Clipboard copy successful', name: 'TripInvitePage');
 
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.tripInviteMessageCopied),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.l10n.tripInviteMessageCopied),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
     } catch (e) {
       developer.log('❌ Clipboard copy failed: $e', name: 'TripInvitePage', error: e);
 
       // Show fallback dialog with selectable text
-      if (context.mounted) {
-        await _showManualCopyDialog(context);
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingMessage = false;
-        });
-      }
+      _showManualCopyDialog(context);
     }
   }
 
-  Future<void> _showManualCopyDialog(BuildContext context) async {
-    try {
-      final tripCubit = context.read<TripCubit>();
-      final verifiedMembers = await _verifiedMembersFuture;
-      final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
+  void _showManualCopyDialog(BuildContext context) {
+    // Use pre-computed message, or fallback to just the trip code
+    final message = _shareMessage ?? widget.trip.id;
 
-      final message = generateShareMessage(
-        trip: widget.trip,
-        verifiedMembers: verifiedMembers,
-        sharedByParticipantId: currentUser?.id,
-      );
-
-      if (context.mounted) {
-        await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(context.l10n.tripInviteCopyFallbackTitle),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  context.l10n.tripInviteCopyFallbackMessage,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: AppTheme.spacing2),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppTheme.spacing2),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                  child: SelectableText(
-                    message,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-              ],
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(context.l10n.tripInviteCopyFallbackTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              context.l10n.tripInviteCopyFallbackMessage,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(context.l10n.commonClose),
+            const SizedBox(height: AppTheme.spacing2),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
-            ],
+              child: SelectableText(
+                message,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(context.l10n.commonClose),
           ),
-        );
-      }
-    } catch (e) {
-      developer.log('❌ Failed to show fallback dialog: $e', name: 'TripInvitePage', error: e);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(context.l10n.tripInviteCopyError),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
-        );
-      }
-    }
+        ],
+      ),
+    );
   }
 
   @override

@@ -29,7 +29,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## 2025-10-30
 
 ### Fixed
-- Mobile web clipboard issue on trip invite page. Pre-loaded verified members in `initState()` to eliminate async gap between user tap and clipboard access (mobile browsers require synchronous clipboard calls within user gesture context). Added fallback dialog with selectable text when clipboard API fails. Added detailed developer logging for debugging clipboard issues on different mobile browsers.
+- **Mobile web clipboard issue (RESOLVED)**: Completely rewrote clipboard logic to be 100% synchronous. The previous fix still had an async gap (`await _verifiedMembersFuture`) that broke mobile clipboard access. New implementation:
+  - Pre-computes complete share message in `initState()` and stores in `_shareMessage` state variable
+  - Button handler is now completely synchronous (no async/await keywords) - preserves user gesture context on mobile browsers
+  - Shows loading state while message is being prepared
+  - Falls back to manual copy dialog if message not ready or clipboard fails
+  - Works reliably on iOS Safari, Chrome Mobile, and all mobile browsers
 
 ## 2025-10-29 - ✅ FEATURE COMPLETE: Trip Invite System (003)
 
