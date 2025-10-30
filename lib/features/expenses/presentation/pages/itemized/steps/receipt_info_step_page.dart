@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
 import '../../../cubits/itemized_expense_cubit.dart';
 import '../../../cubits/itemized_expense_state.dart';
 import '../../../../../../core/l10n/l10n_extensions.dart';
+import '../../../../../../core/models/currency_code.dart';
+import '../../../../../../shared/widgets/currency_text_field.dart';
+import '../../../../../../shared/utils/currency_input_formatter.dart';
 
 /// Step 1: Enter receipt info (subtotal and tax)
 class ReceiptInfoStepPage extends StatefulWidget {
-  final String currencyCode;
+  final CurrencyCode currencyCode;
   final VoidCallback onContinue;
   final VoidCallback onCancel;
 
@@ -38,10 +40,16 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
       final state = context.read<ItemizedExpenseCubit>().state;
       if (state is ItemizedExpenseEditing) {
         if (state.expectedSubtotal != null) {
-          _subtotalController.text = state.expectedSubtotal.toString();
+          _subtotalController.text = formatAmountForInput(
+            state.expectedSubtotal!,
+            widget.currencyCode,
+          );
         }
         if (state.taxAmount != null) {
-          _taxController.text = state.taxAmount.toString();
+          _taxController.text = formatAmountForInput(
+            state.taxAmount!,
+            widget.currencyCode,
+          );
         }
       }
     });
@@ -58,10 +66,15 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
 
   void _handleContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      final subtotal = Decimal.parse(_subtotalController.text.trim());
-      final tax = _taxController.text.trim().isEmpty
+      final subtotalText = stripCurrencyFormatting(
+        _subtotalController.text.trim(),
+      );
+      final subtotal = Decimal.parse(subtotalText);
+
+      final taxText = _taxController.text.trim();
+      final tax = taxText.isEmpty
           ? null
-          : Decimal.parse(_taxController.text.trim());
+          : Decimal.parse(stripCurrencyFormatting(taxText));
 
       // Update cubit with receipt info
       context.read<ItemizedExpenseCubit>().setReceiptInfo(
@@ -109,46 +122,19 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextFormField(
+                        CurrencyTextField(
                           controller: _subtotalController,
-                          focusNode: _subtotalFocusNode,
-                          decoration: InputDecoration(
-                            labelText: context
-                                .l10n
-                                .receiptSplitReceiptInfoSubtotalLabel,
-                            hintText: context
-                                .l10n
-                                .receiptSplitReceiptInfoSubtotalHint,
-                            helperText: context
-                                .l10n
-                                .receiptSplitReceiptInfoSubtotalHelper,
-                            helperMaxLines: 2,
-                            prefixText: '${widget.currencyCode} ',
-                            border: const OutlineInputBorder(),
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d{0,2}'),
-                            ),
-                          ],
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return context.l10n.validationRequired;
-                            }
-                            try {
-                              final decimal = Decimal.parse(value.trim());
-                              if (decimal <= Decimal.zero) {
-                                return 'Subtotal must be greater than 0';
-                              }
-                            } catch (e) {
-                              return context.l10n.validationInvalidNumber;
-                            }
-                            return null;
-                          },
+                          currencyCode: widget.currencyCode,
+                          label:
+                              context.l10n.receiptSplitReceiptInfoSubtotalLabel,
+                          hint:
+                              context.l10n.receiptSplitReceiptInfoSubtotalHint,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          context.l10n.receiptSplitReceiptInfoSubtotalHelper,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Theme.of(context).hintColor),
                         ),
                       ],
                     ),
@@ -167,42 +153,19 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextFormField(
+                        CurrencyTextField(
                           controller: _taxController,
-                          focusNode: _taxFocusNode,
-                          decoration: InputDecoration(
-                            labelText:
-                                context.l10n.receiptSplitReceiptInfoTaxLabel,
-                            hintText:
-                                context.l10n.receiptSplitReceiptInfoTaxHint,
-                            helperText:
-                                context.l10n.receiptSplitReceiptInfoTaxHelper,
-                            prefixText: '${widget.currencyCode} ',
-                            border: const OutlineInputBorder(),
-                          ),
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d{0,2}'),
-                            ),
-                          ],
-                          textInputAction: TextInputAction.done,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return null; // Optional
-                            }
-                            try {
-                              final decimal = Decimal.parse(value.trim());
-                              if (decimal < Decimal.zero) {
-                                return 'Tax cannot be negative';
-                              }
-                            } catch (e) {
-                              return context.l10n.validationInvalidNumber;
-                            }
-                            return null;
-                          },
+                          currencyCode: widget.currencyCode,
+                          label: context.l10n.receiptSplitReceiptInfoTaxLabel,
+                          hint: context.l10n.receiptSplitReceiptInfoTaxHint,
+                          isRequired: false,
+                          allowZero: true,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          context.l10n.receiptSplitReceiptInfoTaxHelper,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Theme.of(context).hintColor),
                         ),
                       ],
                     ),

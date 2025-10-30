@@ -184,7 +184,7 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
                     ReceiptInfoStepPage(
-                      currencyCode: widget.currency.code,
+                      currencyCode: widget.currency,
                       onContinue: _onStepContinue,
                       onCancel: _onStepCancel,
                     ),
