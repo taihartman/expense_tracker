@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting...</title>
+  <script>
+    // GitHub Pages SPA redirect solution
+    // This handles direct URL access (without hash) by redirecting to index.html
+    // The path is preserved and the Flutter app will handle routing
+
+    // Get the current path (everything after the domain)
+    const path = window.location.pathname.replace('/expense_tracker/', '');
+    const search = window.location.search;
+    const hash = window.location.hash;
+
+    // Redirect to index.html with the path as a hash route
+    // This allows the Flutter app to boot and handle the route
+    if (path && path !== '404.html') {
+      // Convert path-based URL to hash-based URL
+      // Example: /trips/join?code=abc -> /#/trips/join?code=abc
+      window.location.replace('/expense_tracker/#/' + path + search + hash);
+    } else {
+      // No specific path, just redirect to home
+      window.location.replace('/expense_tracker/');
+    }
+  </script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+    }
+    .message {
+      text-align: center;
+      color: #666;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="message">
+    <div class="spinner"></div>
+    <p>Redirecting to Expense Tracker...</p>
+  </div>
+</body>
+</html>

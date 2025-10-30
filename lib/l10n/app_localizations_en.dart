@@ -196,6 +196,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripEmptyStateTitle => 'No trips yet';
 
   @override
+  String get tripEmptyStateDescription =>
+      'Create a new trip or join an existing one';
+
+  @override
   String tripLoadError(String error) {
     return 'Failed to load trips: $error';
   }

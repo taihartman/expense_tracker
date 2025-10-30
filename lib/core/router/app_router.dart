@@ -19,6 +19,8 @@ import '../../features/expenses/presentation/pages/expense_form_page.dart';
 import '../../features/expenses/presentation/widgets/expense_form_bottom_sheet.dart';
 import '../../features/expenses/presentation/cubits/expense_cubit.dart';
 import '../../features/settlements/presentation/pages/settlement_summary_page.dart';
+import '../theme/app_theme.dart';
+import '../l10n/l10n_extensions.dart';
 
 /// Check if user is a member of the trip (for route guarding)
 /// DEPRECATED: No longer used for route-level blocking.
@@ -220,18 +222,49 @@ class _HomePageContent extends StatelessWidget {
 
           // No trips yet
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.flight_takeoff, size: 64),
-                const SizedBox(height: 16),
-                const Text('No trips yet'),
-                const SizedBox(height: 8),
-                ElevatedButton(
-                  onPressed: () => context.go('/trips/create'),
-                  child: const Text('Create Your First Trip'),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing3),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.flight_takeoff,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+                  Text(
+                    context.l10n.tripEmptyStateTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: AppTheme.spacing1),
+                  Text(
+                    context.l10n.tripEmptyStateDescription,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppTheme.spacing3),
+                  ElevatedButton.icon(
+                    onPressed: () => context.go('/trips/create'),
+                    icon: const Icon(Icons.add),
+                    label: Text(context.l10n.tripCreateButton),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(200, 48),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+                  OutlinedButton.icon(
+                    onPressed: () => context.push('/trips/join'),
+                    icon: const Icon(Icons.group_add),
+                    label: Text(context.l10n.tripJoinButton),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(200, 48),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

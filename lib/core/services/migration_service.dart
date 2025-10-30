@@ -21,6 +21,7 @@ class MigrationService {
 
   // Migration keys
   static const String _migrationV1Key = 'migration_v1_completed';
+  static const String _migrationV2Key = 'migration_v2_completed';
 
   // Fixed participants from MVP (to be removed after migration)
   static const List<Participant> _fixedParticipants = [
@@ -50,6 +51,15 @@ class MigrationService {
         _log('✅ Migration v1 completed and marked as done');
       } else {
         _log('ℹ️ Migration v1 already completed, skipping');
+      }
+
+      // Run migration v2 if not completed
+      if (_prefs.getBool(_migrationV2Key) != true) {
+        await _migrationV2LegacyTripAccess();
+        await _prefs.setBool(_migrationV2Key, true);
+        _log('✅ Migration v2 completed and marked as done');
+      } else {
+        _log('ℹ️ Migration v2 already completed, skipping');
       }
 
       _log('✅ All migrations completed successfully');
@@ -178,6 +188,47 @@ class MigrationService {
       );
     } catch (e) {
       _log('❌ Fatal error in migration v1: $e');
+      rethrow;
+    }
+  }
+
+  /// Migration v2: Add legacy selected trip to joined trips list
+  /// - Fixes issue where users who created trips before join/invite system
+  ///   would lose access to their trips after filtering fix
+  /// - Reads selected_trip_id from local storage
+  /// - If it exists and is NOT in joined_trip_ids, adds it automatically
+  Future<void> _migrationV2LegacyTripAccess() async {
+    _log('🔄 Running migration v2: Legacy trip access');
+
+    try {
+      // Get the selected trip ID from local storage
+      final selectedTripId = _prefs.getString('selected_trip_id');
+
+      if (selectedTripId == null || selectedTripId.isEmpty) {
+        _log('ℹ️ No selected trip ID found, migration complete');
+        return;
+      }
+
+      _log('🔍 Found selected trip ID: $selectedTripId');
+
+      // Get the list of joined trip IDs
+      final joinedTripIds = _prefs.getStringList('joined_trip_ids') ?? [];
+      _log('📋 Current joined trips: $joinedTripIds');
+
+      // Check if selected trip is already in joined list
+      if (joinedTripIds.contains(selectedTripId)) {
+        _log('✅ Selected trip already in joined list, skipping');
+        return;
+      }
+
+      // Add the selected trip to joined trips list
+      joinedTripIds.add(selectedTripId);
+      await _prefs.setStringList('joined_trip_ids', joinedTripIds);
+
+      _log('✅ Added legacy trip $selectedTripId to joined trips list');
+      _log('🎉 Migration v2 complete: Legacy trip access restored');
+    } catch (e) {
+      _log('❌ Fatal error in migration v2: $e');
       rethrow;
     }
   }

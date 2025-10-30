@@ -38,6 +38,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed recovery code generation on web platform - refactored to use three 4-digit segments to avoid exceeding JavaScript's Random.nextInt() 2^32 limit
 - Fixed ErrorPage by adding "Go to Home" button to prevent users from being stuck on navigation error screen
 - Updated TripActivityPage to use localized string (context.l10n.activityLogTitle) instead of hardcoded "Trip Activity" text
+- Fixed invite link 404 errors - Updated `link_utils.dart` to use correct GitHub Pages URL (`taihartman.github.io/expense_tracker`) with hash-based routing (`#/`). Added `web/404.html` fallback for SPA redirect support. Links now generate as `https://taihartman.github.io/expense_tracker/#/trips/join?code={tripId}` instead of broken `https://expense-tracker.app` URLs
+- Fixed 888ms startup blank screen by inverting initialization pattern. Created InitializationCubit to handle async Firebase/auth/storage/migration initialization in background. Refactored main.dart to call runApp() immediately after WidgetsFlutterBinding (~19ms). Created InitializationSplashPage shown during Firebase init. ExpenseTrackerApp now uses BlocBuilder to show splash during initialization, error UI on failure, and full app on success. Result: Splash screen now appears in 19ms instead of 925ms - 906ms (98%) faster perceived startup time
 
 ### Removed
 - [Removed features or files will be logged here]
@@ -47,6 +49,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## Development Log
 
 <!-- Add entries below in reverse chronological order (newest first) -->
+
+## 2025-10-30
+
+### Fixed
+- Fixed 888ms startup blank screen by inverting initialization pattern. Created `InitializationCubit` to handle async Firebase/auth/storage/migration initialization in background. Refactored `main.dart` to call `runApp()` immediately after `WidgetsFlutterBinding` (~19ms). Created `InitializationSplashPage` shown during Firebase init. `ExpenseTrackerApp` now uses `BlocBuilder` to show splash during initialization, error UI on failure, and full app on success. Result: Splash screen now appears in 19ms instead of 925ms - **906ms (98%) faster perceived startup time**.
 
 ## 2025-10-29
 
@@ -80,6 +87,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Fixed recovery code generation on web platform by refactoring `CodeGenerator.generateRecoveryCode()` to generate three 4-digit segments instead of one 12-digit number. The original implementation exceeded JavaScript's `Random.nextInt()` limit of 2^32, causing a RangeError on web.
 - Fixed deprecated `withOpacity()` calls by replacing with `withValues(alpha:)` throughout recovery code dialogs
 - Made device verification non-blocking: removed route-level redirects and replaced with page-level verification prompts. Users can now freely navigate between trips, but unverified trips display an identity selection prompt instead of trip content. Updated ExpenseListPage, SettlementSummaryPage, TripActivityPage, and TripSettingsPage to check isUserMemberOf() and show TripVerificationPrompt widget when needed. Added localization strings tripVerificationPromptTitle, tripVerificationPromptMessage, tripVerificationPromptButton, and tripVerificationPromptBackButton.
+- Fixed critical trip filtering security issue - users now only see trips they joined or created (removed fallback showing all Firestore trips). Enhanced device pairing code verification prompt with better UX, Ask for Code button, auto-formatting input, and 8 new localization strings. Added animated splash screen with loading dots for smooth app startup.
+- Added migration v2 for legacy trip access. Automatically adds selected_trip_id to joined_trip_ids list on app startup, ensuring users who created trips before the join/invite system can still access their legacy trips after the filtering security fix.
+- Enhanced empty state UI when user has no trips. Replaced hardcoded strings with localization, added Join Trip button alongside Create Trip button, improved styling with proper theming and spacing to match app design patterns. Added tripEmptyStateDescription localization string.
 
 ## 2025-10-29 - Initial Device Pairing Implementation
 
