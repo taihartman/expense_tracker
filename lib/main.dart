@@ -127,6 +127,12 @@ Future<void> main() async {
     '✅ VersionService initialized (${DateTime.now().difference(startTime).inMilliseconds}ms)',
   );
 
+  // CRITICAL: Capture browser URL BEFORE creating widget tree
+  // This preserves deep links (invite links) during app initialization
+  final initialUrl = PlatformDispatcher.instance.defaultRouteName;
+  _log('🌐 Initial URL from platform: $initialUrl');
+  AppRouter.setInitialUrl(initialUrl);
+
   // Launch app immediately - Firebase initialization will happen in background
   _log(
     '🎬 Launching app widget (${DateTime.now().difference(startTime).inMilliseconds}ms) - Firebase initialization will happen in background',
