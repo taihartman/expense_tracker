@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../l10n/l10n_extensions.dart';
-import '../../router/app_routes.dart';
 import '../widgets/animated_dots.dart';
 import '../../../features/trips/presentation/cubits/trip_cubit.dart';
-import '../../../features/trips/presentation/cubits/trip_state.dart';
 
 /// Splash screen displayed during app initialization and data loading.
 ///
@@ -14,7 +11,9 @@ import '../../../features/trips/presentation/cubits/trip_state.dart';
 /// - Trip data loads from Firestore
 /// - User preferences are loaded
 ///
-/// Navigation is handled by AppRouter's redirect logic, which preserves deep links.
+/// Navigation is handled automatically by AppRouter's redirect logic when
+/// InitializationCubit completes. The router preserves deep links and navigates
+/// to the intended destination once initialization is complete.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -26,7 +25,6 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _scaleController;
   late Animation<double> _scaleAnimation;
-  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -74,24 +72,7 @@ class _SplashPageState extends State<SplashPage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<TripCubit, TripState>(
-      listener: (context, state) {
-        // When trips are loaded, trigger navigation which will invoke the router's redirect
-        // The redirect will navigate to the preserved deep link or home
-        if (state is TripLoaded || state is TripError) {
-          if (!_hasNavigated && mounted) {
-            _hasNavigated = true;
-            // Navigate to splash itself - this triggers the redirect callback
-            // which will then navigate to the preserved deep link or home
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (mounted) {
-                context.go(AppRoutes.splash);
-              }
-            });
-          }
-        }
-      },
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Semantics(
@@ -164,7 +145,6 @@ class _SplashPageState extends State<SplashPage>
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
