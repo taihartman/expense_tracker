@@ -4,15 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/models/trip_recovery_code.dart';
 import '../../domain/models/verified_member.dart';
-import '../../domain/repositories/trip_repository.dart';
-import '../../domain/repositories/activity_log_repository.dart';
-import '../../domain/repositories/trip_recovery_code_repository.dart';
 import '../../domain/models/activity_log.dart';
+import '../../domain/repositories/trip_repository.dart';
+import '../../domain/repositories/trip_recovery_code_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
 import 'trip_state.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/services/local_storage_service.dart';
+import '../../../../core/services/activity_logger_service.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -21,7 +21,7 @@ void _log(String message) {
 
 class TripCubit extends Cubit<TripState> {
   final TripRepository _tripRepository;
-  final ActivityLogRepository? _activityLogRepository;
+  final ActivityLoggerService? _activityLoggerService;
   final CategoryRepository? _categoryRepository;
   final TripRecoveryCodeRepository? _recoveryCodeRepository;
   final LocalStorageService _localStorageService;
@@ -33,11 +33,11 @@ class TripCubit extends Cubit<TripState> {
   TripCubit({
     required TripRepository tripRepository,
     required LocalStorageService localStorageService,
-    ActivityLogRepository? activityLogRepository,
+    ActivityLoggerService? activityLoggerService,
     CategoryRepository? categoryRepository,
     TripRecoveryCodeRepository? recoveryCodeRepository,
   }) : _tripRepository = tripRepository,
-       _activityLogRepository = activityLogRepository,
+       _activityLoggerService = activityLoggerService,
        _categoryRepository = categoryRepository,
        _recoveryCodeRepository = recoveryCodeRepository,
        _localStorageService = localStorageService,
@@ -237,29 +237,13 @@ class TripCubit extends Cubit<TripState> {
       }
 
       // Log trip creation activity if repository is available
-      if (_activityLogRepository != null &&
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
           creatorName != null &&
           creatorName.isNotEmpty) {
-        _log('📝 Logging trip_created activity...');
-        try {
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: createdTrip.id,
-            type: ActivityType.tripCreated,
-            actorName: creatorName,
-            description: 'Created trip "$name"',
-            timestamp: DateTime.now(),
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-          // Don't fail trip creation if activity logging fails
-        }
-      } else {
-        _log(
-          '⚠️ ActivityLogRepository not provided or no creator name, skipping activity logging',
-        );
+        _log('📝 Logging trip creation via ActivityLoggerService...');
+        await _activityLoggerService.logTripCreated(createdTrip, creatorName);
+        _log('✅ Activity logged');
       }
 
       // Seed default categories for the new trip
@@ -569,27 +553,15 @@ class TripCubit extends Cubit<TripState> {
         }
 
         // Log join activity (every join attempt, including re-joins)
-        if (_activityLogRepository != null) {
-          _log('📝 Logging member_joined activity...');
-          try {
-            final activityLog = ActivityLog(
-              id: '', // Firestore will generate this
-              tripId: tripId,
-              type: ActivityType.memberJoined,
-              actorName: userName,
-              description: '$userName joined the trip',
-              timestamp: DateTime.now(),
-              metadata: {
-                if (joinMethod != null) 'joinMethod': joinMethod.name,
-                if (invitedByParticipantId != null)
-                  'invitedBy': invitedByParticipantId,
-              },
-            );
-            await _activityLogRepository.addLog(activityLog);
-            _log('✅ Activity logged');
-          } catch (e) {
-            _log('⚠️ Failed to log activity (non-fatal): $e');
-          }
+        if (_activityLoggerService != null) {
+          _log('📝 Logging member joined via ActivityLoggerService...');
+          await _activityLoggerService.logMemberJoined(
+            tripId: tripId,
+            memberName: userName,
+            joinMethod: joinMethod?.name ?? 'unknown',
+            inviterId: invitedByParticipantId,
+          );
+          _log('✅ Activity logged');
         }
 
         emit(TripJoined(trip));
@@ -606,28 +578,16 @@ class TripCubit extends Cubit<TripState> {
       await _tripRepository.updateTrip(updatedTrip);
       _log('✅ User added to trip');
 
-      // Log activity
-      if (_activityLogRepository != null) {
-        _log('📝 Logging member_joined activity...');
-        try {
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: tripId,
-            type: ActivityType.memberJoined,
-            actorName: userName,
-            description: '$userName joined the trip',
-            timestamp: DateTime.now(),
-            metadata: {
-              if (joinMethod != null) 'joinMethod': joinMethod.name,
-              if (invitedByParticipantId != null)
-                'invitedBy': invitedByParticipantId,
-            },
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-        }
+      // Log activity using centralized service
+      if (_activityLoggerService != null) {
+        _log('📝 Logging member joined via ActivityLoggerService...');
+        await _activityLoggerService.logMemberJoined(
+          tripId: tripId,
+          memberName: userName,
+          joinMethod: joinMethod?.name ?? 'unknown',
+          inviterId: invitedByParticipantId,
+        );
+        _log('✅ Activity logged');
       }
 
       // Add to verified members for cross-device visibility

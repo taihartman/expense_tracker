@@ -5,6 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i6;
 
+import 'package:expense_tracker/core/services/activity_logger_service.dart'
+    as _i8;
 import 'package:expense_tracker/core/services/local_storage_service.dart'
     as _i12;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
@@ -15,17 +17,16 @@ import 'package:expense_tracker/features/device_pairing/domain/models/device_lin
     as _i4;
 import 'package:expense_tracker/features/device_pairing/domain/repositories/device_link_code_repository.dart'
     as _i13;
-import 'package:expense_tracker/features/trips/domain/models/activity_log.dart'
+import 'package:expense_tracker/features/expenses/domain/models/expense.dart'
     as _i9;
+import 'package:expense_tracker/features/settlements/domain/models/minimal_transfer.dart'
+    as _i10;
 import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i2;
 import 'package:expense_tracker/features/trips/domain/models/verified_member.dart'
     as _i7;
-import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart'
-    as _i8;
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart'
     as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -161,35 +162,107 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
           as _i6.Future<void>);
 }
 
-/// A class which mocks [ActivityLogRepository].
+/// A class which mocks [ActivityLoggerService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockActivityLogRepository extends _i1.Mock
-    implements _i8.ActivityLogRepository {
-  MockActivityLogRepository() {
+class MockActivityLoggerService extends _i1.Mock
+    implements _i8.ActivityLoggerService {
+  MockActivityLoggerService() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i6.Future<String> addLog(_i9.ActivityLog? log) =>
+  _i6.Future<void> logExpenseAdded(_i9.Expense? expense, String? actorName) =>
       (super.noSuchMethod(
-            Invocation.method(#addLog, [log]),
-            returnValue: _i6.Future<String>.value(
-              _i10.dummyValue<String>(this, Invocation.method(#addLog, [log])),
-            ),
+            Invocation.method(#logExpenseAdded, [expense, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i6.Future<String>);
+          as _i6.Future<void>);
 
   @override
-  _i6.Stream<List<_i9.ActivityLog>> getActivityLogs(
-    String? tripId, {
-    int? limit = 50,
+  _i6.Future<void> logExpenseEdited(
+    _i9.Expense? oldExpense,
+    _i9.Expense? newExpense,
+    String? actorName,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#logExpenseEdited, [
+              oldExpense,
+              newExpense,
+              actorName,
+            ]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logExpenseDeleted(_i9.Expense? expense, String? actorName) =>
+      (super.noSuchMethod(
+            Invocation.method(#logExpenseDeleted, [expense, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logTransferSettled(
+    _i10.MinimalTransfer? transfer,
+    String? actorName,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTransferSettled, [transfer, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logTransferUnsettled(
+    _i10.MinimalTransfer? transfer,
+    String? actorName,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTransferUnsettled, [transfer, actorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logMemberJoined({
+    required String? tripId,
+    required String? memberName,
+    required String? joinMethod,
+    String? inviterId,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#getActivityLogs, [tripId], {#limit: limit}),
-            returnValue: _i6.Stream<List<_i9.ActivityLog>>.empty(),
+            Invocation.method(#logMemberJoined, [], {
+              #tripId: tripId,
+              #memberName: memberName,
+              #joinMethod: joinMethod,
+              #inviterId: inviterId,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i6.Stream<List<_i9.ActivityLog>>);
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> logTripCreated(_i2.Trip? trip, String? creatorName) =>
+      (super.noSuchMethod(
+            Invocation.method(#logTripCreated, [trip, creatorName]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  void clearCache() => super.noSuchMethod(
+    Invocation.method(#clearCache, []),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [CategoryRepository].

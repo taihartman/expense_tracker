@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/services/activity_logger_service.dart';
 import '../../domain/models/expense.dart';
 import '../../domain/repositories/expense_repository.dart';
-import '../../domain/utils/expense_change_detector.dart';
-import '../../../trips/domain/models/activity_log.dart';
-import '../../../trips/domain/repositories/activity_log_repository.dart';
-import '../../../trips/domain/repositories/trip_repository.dart';
 import 'expense_state.dart';
 
 /// Helper function to log with timestamps
@@ -17,19 +14,16 @@ void _log(String message) {
 /// Cubit for managing expense state
 class ExpenseCubit extends Cubit<ExpenseState> {
   final ExpenseRepository _expenseRepository;
-  final ActivityLogRepository? _activityLogRepository;
-  final TripRepository? _tripRepository;
+  final ActivityLoggerService? _activityLoggerService;
   String? _currentTripId;
   StreamSubscription<List<Expense>>? _expensesSubscription;
 
   ExpenseCubit({
     required ExpenseRepository expenseRepository,
-    ActivityLogRepository? activityLogRepository,
-    TripRepository? tripRepository,
-  }) : _expenseRepository = expenseRepository,
-       _activityLogRepository = activityLogRepository,
-       _tripRepository = tripRepository,
-       super(const ExpenseInitial());
+    ActivityLoggerService? activityLoggerService,
+  })  : _expenseRepository = expenseRepository,
+        _activityLoggerService = activityLoggerService,
+        super(const ExpenseInitial());
 
   /// Load all expenses for a trip
   Future<void> loadExpenses(String tripId) async {
@@ -120,31 +114,16 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
       emit(ExpenseCreated(createdExpense));
 
-      // Log activity
-      if (_activityLogRepository != null &&
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
           actorName != null &&
           actorName.isNotEmpty) {
-        _log('📝 Logging expense_added activity...');
-        try {
-          final description =
-              expense.description != null && expense.description!.isNotEmpty
-              ? expense.description!
-              : '${expense.amount} ${expense.currency.name.toUpperCase()}';
-
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: expense.tripId,
-            type: ActivityType.expenseAdded,
-            actorName: actorName,
-            description: description,
-            timestamp: DateTime.now(),
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-          // Don't fail expense creation if activity logging fails
-        }
+        _log('📝 Logging expense creation via ActivityLoggerService...');
+        await _activityLoggerService.logExpenseAdded(
+          createdExpense,
+          actorName,
+        );
+        _log('✅ Activity logged');
       }
 
       // Reload expenses to update the list
@@ -178,53 +157,18 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
       emit(ExpenseUpdated(expense));
 
-      // Log activity with detailed change tracking
-      if (_activityLogRepository != null &&
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
           actorName != null &&
           actorName.isNotEmpty &&
           oldExpense != null) {
-        _log('📝 Logging expense_edited activity with change detection...');
-        try {
-          // Fetch trip to get participant names for change descriptions
-          final trip = _tripRepository != null
-              ? await _tripRepository.getTripById(expense.tripId)
-              : null;
-
-          // Detect all changes between old and new expense
-          final expenseChanges = trip != null
-              ? ExpenseChangeDetector.detectChanges(
-                  oldExpense,
-                  expense,
-                  trip.participants,
-                )
-              : ExpenseChanges({}); // Fallback if trip not available
-
-          // Build description for activity log
-          final expenseName =
-              expense.description != null && expense.description!.isNotEmpty
-              ? expense.description!
-              : '${expense.amount} ${expense.currency.code}';
-
-          // Create activity log with rich metadata
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: expense.tripId,
-            type: ActivityType.expenseEdited,
-            actorName: actorName,
-            description: expenseName,
-            timestamp: DateTime.now(),
-            metadata: expenseChanges.hasChanges
-                ? expenseChanges.toMetadata(expense.id)
-                : null,
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log(
-            '✅ Activity logged with ${expenseChanges.changes.length} changes tracked',
-          );
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-          // Don't fail expense update if activity logging fails
-        }
+        _log('📝 Logging expense edit via ActivityLoggerService...');
+        await _activityLoggerService.logExpenseEdited(
+          oldExpense,
+          expense,
+          actorName,
+        );
+        _log('✅ Activity logged');
       }
 
       // Reload expenses to update the list
@@ -244,47 +188,27 @@ class ExpenseCubit extends Cubit<ExpenseState> {
     try {
       // Find the expense to get details before deleting (for activity log)
       Expense? expenseToDelete;
-      String? tripId;
       if (state is ExpenseLoaded) {
         final currentState = state as ExpenseLoaded;
         expenseToDelete = currentState.expenses.firstWhere(
           (e) => e.id == expenseId,
           orElse: () => throw Exception('Expense not found'),
         );
-        tripId = expenseToDelete.tripId;
       }
 
       await _expenseRepository.deleteExpense(expenseId);
 
-      // Log activity
-      if (_activityLogRepository != null &&
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
           actorName != null &&
           actorName.isNotEmpty &&
-          tripId != null) {
-        _log('📝 Logging expense_deleted activity...');
-        try {
-          final description =
-              expenseToDelete?.description != null &&
-                  expenseToDelete!.description!.isNotEmpty
-              ? expenseToDelete.description!
-              : expenseToDelete != null
-              ? '${expenseToDelete.amount} ${expenseToDelete.currency.name.toUpperCase()}'
-              : 'Expense deleted';
-
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: tripId,
-            type: ActivityType.expenseDeleted,
-            actorName: actorName,
-            description: description,
-            timestamp: DateTime.now(),
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-          // Don't fail expense deletion if activity logging fails
-        }
+          expenseToDelete != null) {
+        _log('📝 Logging expense deletion via ActivityLoggerService...');
+        await _activityLoggerService.logExpenseDeleted(
+          expenseToDelete,
+          actorName,
+        );
+        _log('✅ Activity logged');
       }
 
       // If deleted expense was selected, clear selection

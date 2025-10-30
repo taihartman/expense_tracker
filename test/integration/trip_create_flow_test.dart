@@ -3,8 +3,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:expense_tracker/features/trips/domain/models/trip.dart';
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart';
-import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart';
-import 'package:expense_tracker/features/trips/domain/models/activity_log.dart';
+import 'package:expense_tracker/core/services/activity_logger_service.dart';
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart';
 import 'package:expense_tracker/core/services/local_storage_service.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
@@ -14,7 +13,7 @@ import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.da
 
 @GenerateMocks([
   TripRepository,
-  ActivityLogRepository,
+  ActivityLoggerService,
   CategoryRepository,
   LocalStorageService,
 ])
@@ -32,13 +31,13 @@ void main() {
   group('T016: Integration - Create Trip Flow', () {
     late TripCubit cubit;
     late MockTripRepository mockTripRepository;
-    late MockActivityLogRepository mockActivityLogRepository;
+    late MockActivityLoggerService mockActivityLoggerService;
     late MockCategoryRepository mockCategoryRepository;
     late MockLocalStorageService mockLocalStorageService;
 
     setUp(() {
       mockTripRepository = MockTripRepository();
-      mockActivityLogRepository = MockActivityLogRepository();
+      mockActivityLoggerService = MockActivityLoggerService();
       mockCategoryRepository = MockCategoryRepository();
       mockLocalStorageService = MockLocalStorageService();
 
@@ -50,7 +49,7 @@ void main() {
       cubit = TripCubit(
         tripRepository: mockTripRepository,
         localStorageService: mockLocalStorageService,
-        activityLogRepository: mockActivityLogRepository,
+        activityLoggerService: mockActivityLoggerService,
         categoryRepository: mockCategoryRepository,
       );
     });
@@ -78,7 +77,7 @@ void main() {
       // Mock repository responses
       when(mockTripRepository.createTrip(any)).thenAnswer((_) async => createdTrip);
       when(mockCategoryRepository.seedDefaultCategories(any)).thenAnswer((_) async => []);
-      when(mockActivityLogRepository.addLog(any)).thenAnswer((_) async => 'log-activity-123');
+      when(mockActivityLoggerService.logTripCreated(any, any)).thenAnswer((_) async {});
       when(mockTripRepository.getAllTrips()).thenAnswer((_) => Stream.value([createdTrip]));
 
       // Track state emissions
@@ -105,11 +104,10 @@ void main() {
       expect(capturedTrip.participants.first.name, creatorName);
 
       // 2. Check activity log was created
-      final capturedLog = verify(mockActivityLogRepository.addLog(captureAny)).captured.single as ActivityLog;
-      expect(capturedLog.type, ActivityType.tripCreated);
-      expect(capturedLog.actorName, creatorName);
-      expect(capturedLog.tripId, createdTrip.id);
-      expect(capturedLog.description, contains(tripName));
+      verify(mockActivityLoggerService.logTripCreated(
+        argThat(predicate((Trip t) => t.id == createdTrip.id)),
+        creatorName,
+      )).called(1);
 
       // 3. Check trip ID was cached in local storage
       verify(mockLocalStorageService.addJoinedTrip(createdTrip.id)).called(1);
@@ -153,7 +151,7 @@ void main() {
       expect(errorState.message, contains('Network error'));
 
       // Verify no side effects occurred
-      verifyNever(mockActivityLogRepository.addLog(any));
+      verifyNever(mockActivityLoggerService.logTripCreated(any, any));
       verifyNever(mockLocalStorageService.addJoinedTrip(any));
     });
   });

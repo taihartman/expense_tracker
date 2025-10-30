@@ -6,6 +6,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/services/local_storage_service.dart';
+import 'core/services/activity_logger_service.dart';
+import 'core/services/activity_logger_service_impl.dart';
 import 'core/cubits/initialization_cubit.dart';
 import 'core/presentation/pages/initialization_splash_page.dart';
 import 'core/widgets/debug_overlay.dart';
@@ -151,6 +153,10 @@ class ExpenseTrackerApp extends StatelessWidget {
     firestoreService: _firestoreService,
   );
   static final _activityLogRepository = ActivityLogRepositoryImpl();
+  static final _activityLoggerService = ActivityLoggerServiceImpl(
+    activityLogRepository: _activityLogRepository,
+    tripRepository: _tripRepository,
+  );
   static final _expenseRepository = ExpenseRepositoryImpl(
     firestoreService: _firestoreService,
   );
@@ -246,6 +252,9 @@ class ExpenseTrackerApp extends StatelessWidget {
         RepositoryProvider<ActivityLogRepository>.value(
           value: _activityLogRepository,
         ),
+        RepositoryProvider<ActivityLoggerService>.value(
+          value: _activityLoggerService,
+        ),
         RepositoryProvider<ExpenseRepository>.value(value: _expenseRepository),
         RepositoryProvider<CategoryRepository>.value(
           value: _categoryRepository,
@@ -274,7 +283,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               final cubit = TripCubit(
                 tripRepository: _tripRepository,
                 localStorageService: localStorageService,
-                activityLogRepository: _activityLogRepository,
+                activityLoggerService: _activityLoggerService,
                 categoryRepository: _categoryRepository,
                 recoveryCodeRepository: _tripRecoveryCodeRepository,
               );
@@ -296,8 +305,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               _log('🔵 Creating ExpenseCubit...');
               return ExpenseCubit(
                 expenseRepository: _expenseRepository,
-                activityLogRepository: _activityLogRepository,
-                tripRepository: _tripRepository,
+                activityLoggerService: _activityLoggerService,
               );
             },
           ),
@@ -310,6 +318,7 @@ class ExpenseTrackerApp extends StatelessWidget {
                 tripRepository: _tripRepository,
                 settledTransferRepository: _settledTransferRepository,
                 categoryRepository: _categoryRepository,
+                activityLoggerService: _activityLoggerService,
               );
             },
           ),
