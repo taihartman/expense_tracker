@@ -56,7 +56,7 @@ class ExpenseListPage extends StatelessWidget {
       ),
       floatingActionButton: SizedBox(
         height: 200,
-        width: 200,
+        width: 56,
         child: ExpenseFabSpeedDial(
           tripId: tripId,
           onQuickExpenseTap: () {

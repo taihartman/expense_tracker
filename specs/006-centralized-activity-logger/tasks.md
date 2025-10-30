@@ -33,7 +33,9 @@
 
 - [ ] T003 [P] Write test for ActivityLoggerService interface structure in `test/core/services/activity_logger_service_test.dart`
 - [ ] T004 [P] Write test for fire-and-forget error handling (service never throws) in `test/core/services/activity_logger_service_test.dart`
+- [ ] T004b [P] Write test for partial failure scenario (ActivityLog saved but metadata generation fails) in `test/core/services/activity_logger_service_test.dart`
 - [ ] T005 [P] Write test for graceful degradation when trip data unavailable in `test/core/services/activity_logger_service_test.dart`
+- [ ] T005b [P] Write test for _getTripContext() failure handling (network error, deleted trip) in `test/core/services/activity_logger_service_test.dart`
 - [ ] T006 [P] Write test for handling null/empty actorName in `test/core/services/activity_logger_service_test.dart`
 
 ### Implementation (After Tests Fail)
@@ -43,6 +45,7 @@
 - [ ] T009 Implement private helper methods in ActivityLoggerServiceImpl: `_getTripContext()`, `_logActivity()`, `_logError()`, `_formatJoinMethod()`
 - [ ] T010 Implement error handling pattern (try-catch with _logError) in all public methods
 - [ ] T011 Add service to dependency injection in `lib/main.dart` (RepositoryProvider for ActivityLoggerService)
+- [ ] T011b Establish baseline performance measurement for manual activity logging (measure ExpenseCubit.updateExpense with manual logging overhead)
 
 **Checkpoint**: Foundation ready - verify all foundational tests pass, user story implementation can now begin in parallel
 
@@ -60,7 +63,7 @@
 
 - [ ] T012 [P] [US1] Write test for logExpenseAdded with participant name resolution in `test/core/services/activity_logger_service_test.dart`
 - [ ] T013 [P] [US1] Write test for logExpenseEdited with ExpenseChangeDetector integration in `test/core/services/activity_logger_service_test.dart`
-- [ ] T014 [P] [US1] Write test for logExpenseEdited with no changes detected (identical old/new) in `test/core/services/activity_logger_service_test.dart`
+- [ ] T014 [P] [US1] Write test for logExpenseEdited with no changes detected (identical old/new) - verify BOTH skip-logging AND log-with-empty-metadata scenarios in `test/core/services/activity_logger_service_test.dart`
 - [ ] T015 [P] [US1] Write test for logExpenseDeleted with all required metadata in `test/core/services/activity_logger_service_test.dart`
 - [ ] T016 [P] [US1] Write test for logTransferSettled with participant name lookup in `test/core/services/activity_logger_service_test.dart`
 - [ ] T017 [P] [US1] Write test for logTransferUnsettled with participant name lookup in `test/core/services/activity_logger_service_test.dart`
@@ -70,15 +73,20 @@
 
 ### Implementation for User Story 1 (After Tests Written and Failing)
 
-- [ ] T021 [US1] Implement logExpenseAdded method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve payer name, create activity log with metadata)
-- [ ] T022 [US1] Implement logExpenseEdited method in `lib/core/services/activity_logger_service_impl.dart` (use ExpenseChangeDetector.detectChanges, generate description with change count, create activity log with change metadata)
-- [ ] T023 [US1] Implement logExpenseDeleted method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with expense details in metadata)
-- [ ] T024 [US1] Implement logTransferSettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details)
-- [ ] T025 [US1] Implement logTransferUnsettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details)
-- [ ] T026 [US1] Implement logMemberJoined method in `lib/core/services/activity_logger_service_impl.dart` (format join method, optionally lookup inviter name, create activity log with join metadata)
-- [ ] T027 [US1] Implement logTripCreated method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with trip name and base currency in metadata)
-- [ ] T028 [US1] Implement clearCache method in `lib/core/services/activity_logger_service_impl.dart` (set _tripContextCache to null)
+**TDD CHECKPOINT**: Before starting implementation, run all T012-T020 tests and verify they FAIL with expected error messages (e.g., "Method not implemented", "Null check failed"). Do NOT proceed if tests pass prematurely.
+
+- [ ] T021 [US1] Implement logExpenseAdded method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve payer name, create activity log with metadata) - **PREREQUISITE: Verify T012 fails first**
+- [ ] T022 [US1] Implement logExpenseEdited method in `lib/core/services/activity_logger_service_impl.dart` (use ExpenseChangeDetector.detectChanges, generate description with change count, create activity log with change metadata) - **PREREQUISITE: Verify T013 fails first**
+- [ ] T022b [US1] Verify ExpenseChangeDetector.detectChanges() is reused (not reimplemented) in logExpenseEdited - check imports and method calls
+- [ ] T023 [US1] Implement logExpenseDeleted method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with expense details in metadata) - **PREREQUISITE: Verify T015 fails first**
+- [ ] T024 [US1] Implement logTransferSettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details) - **PREREQUISITE: Verify T016 fails first**
+- [ ] T025 [US1] Implement logTransferUnsettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details) - **PREREQUISITE: Verify T017 fails first**
+- [ ] T026 [US1] Implement logMemberJoined method in `lib/core/services/activity_logger_service_impl.dart` (format join method, optionally lookup inviter name, create activity log with join metadata) - **PREREQUISITE: Verify T018 fails first**
+- [ ] T027 [US1] Implement logTripCreated method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with trip name and base currency in metadata) - **PREREQUISITE: Verify T019 fails first**
+- [ ] T028 [US1] Implement clearCache method in `lib/core/services/activity_logger_service_impl.dart` (set _tripContextCache to null) - **PREREQUISITE: Verify T020 fails first**
 - [ ] T029 [US1] Verify all US1 tests pass (run `flutter test test/core/services/activity_logger_service_test.dart`)
+- [ ] T029b [US1] Measure baseline LOC for activity logging in ExpenseCubit before migration (for SC-001, SC-004 verification) - count lines in updateExpense method dedicated to activity logging
+- [ ] T029c [US1] Verify 80%+ code coverage for US1 service implementation (run `flutter test --coverage`)
 
 ### Migration: ExpenseCubit (Pilot Feature)
 
@@ -118,8 +126,9 @@
 - [ ] T045 [US2] Review and standardize metadata structure in logTransferSettled/Unsettled (ensure fromId/fromName, toId/toName consistency) in `lib/core/services/activity_logger_service_impl.dart`
 - [ ] T046 [US2] Review and standardize metadata structure in logMemberJoined (ensure consistent field naming) in `lib/core/services/activity_logger_service_impl.dart`
 - [ ] T047 [US2] Review and standardize metadata structure in logTripCreated (ensure consistent field naming) in `lib/core/services/activity_logger_service_impl.dart`
-- [ ] T048 [US2] Document metadata standards in `specs/006-centralized-activity-logger/contracts/metadata_standards.md` (field naming conventions, required vs optional fields, data types)
+- [ ] T048 [US2] Document metadata standards in `specs/006-centralized-activity-logger/contracts/metadata_standards.md` with specific requirements: field naming (oldValue/newValue not before/after), participant format ({id, name} always as pair), monetary format ({amount, currency} always as pair), change detection structure
 - [ ] T049 [US2] Verify all US2 tests pass (run `flutter test test/core/services/activity_logger_service_metadata_test.dart`)
+- [ ] T049b [US2] Verify 80%+ code coverage for US2 metadata standardization (run `flutter test --coverage`)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently. All activities follow the same metadata structure with consistent field names.
 
@@ -150,6 +159,7 @@
 - [ ] T059 [US3] Add cacheExpirationMinutes parameter to ActivityLoggerServiceImpl constructor with default 5 minutes in `lib/core/services/activity_logger_service_impl.dart`
 - [ ] T060 [US3] Verify all US3 tests pass (run `flutter test test/core/services/activity_logger_service_cache_test.dart` and `flutter test test/core/services/activity_logger_service_performance_test.dart`)
 - [ ] T061 [US3] Manual performance test: Log 50 expenses rapidly and measure response time (should be <500ms after first)
+- [ ] T061b [US3] Verify 80%+ code coverage for US3 caching implementation (run `flutter test --coverage`)
 
 **Checkpoint**: All user stories should now be independently functional. Performance meets <500ms requirement for 50+ activities in 1 minute.
 

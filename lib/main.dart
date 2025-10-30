@@ -9,6 +9,7 @@ import 'core/services/local_storage_service.dart';
 import 'core/cubits/initialization_cubit.dart';
 import 'core/presentation/pages/initialization_splash_page.dart';
 import 'core/widgets/debug_overlay.dart';
+import 'core/widgets/update_notification_banner.dart';
 import 'features/trips/data/repositories/trip_repository_impl.dart';
 import 'features/trips/domain/repositories/trip_repository.dart';
 import 'features/trips/data/repositories/activity_log_repository_impl.dart';
@@ -338,9 +339,11 @@ class ExpenseTrackerApp extends StatelessWidget {
           supportedLocales: const [
             Locale('en'), // English
           ],
-          // Wrap app with debug overlay (only shows if AppConfig.enableDebugPanel is true)
+          // Wrap app with debug overlay and update notification listener
           builder: (context, child) {
-            return DebugOverlay(child: child ?? const SizedBox.shrink());
+            return UpdateNotificationListener(
+              child: DebugOverlay(child: child ?? const SizedBox.shrink()),
+            );
           },
         ),
       ),

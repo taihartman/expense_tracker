@@ -1,0 +1,208 @@
+openapi: 3.0.0
+info:
+  title: Version Check API
+  version: 1.0.0
+  description: |
+    Static JSON endpoint for web app version checking.
+
+    This endpoint returns the currently deployed version of the web application.
+    It is auto-generated during the Flutter build process from pubspec.yaml.
+
+    **Deployment**: GitHub Pages at `/expense_tracker/version.json`
+    **Generation**: Created by Flutter build system
+    **Update Frequency**: Every deployment (typically multiple times per day)
+    **Cache Headers**: Default GitHub Pages caching (max-age=600 seconds)
+
+servers:
+  - url: https://{username}.github.io/expense_tracker
+    description: Production (GitHub Pages)
+    variables:
+      username:
+        default: yourusername
+        description: GitHub username
+  - url: http://localhost:8000
+    description: Local testing (python -m http.server)
+
+paths:
+  /version.json:
+    get:
+      summary: Get deployed app version
+      description: |
+        Returns the semantic version string of the currently deployed web application.
+
+        **Usage Pattern**:
+        1. Client fetches this endpoint on app launch or resume
+        2. Compares server version with local version (from package_info_plus)
+        3. If server > local, shows update notification
+
+        **Error Handling**:
+        - 404: Gracefully ignored (treat as no update available)
+        - Network timeout: Gracefully ignored (treat as no update available)
+        - Invalid JSON: Gracefully ignored (treat as no update available)
+
+        **Performance**:
+        - File size: < 1KB
+        - Expected latency: < 500ms
+        - Timeout: 2 seconds client-side
+
+      operationId: getVersion
+      tags:
+        - Version
+
+      parameters:
+        - name: _
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: |
+            Optional cache-busting parameter (timestamp).
+            Example: /version.json?_=1234567890
+            Not required as GitHub Pages has short cache (10 minutes).
+
+      responses:
+        '200':
+          description: Version information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+              examples:
+                current:
+                  summary: Current production version
+                  value:
+                    version: "1.0.1+2"
+                newer:
+                  summary: Newer version with build increment
+                  value:
+                    version: "1.0.2+3"
+                major:
+                  summary: Major version bump
+                  value:
+                    version: "2.0.0+1"
+
+        '404':
+          description: |
+            Version file not found (e.g., deployment in progress).
+            Client should treat this as "no update available" and retry on next resume.
+          content:
+            text/html:
+              schema:
+                type: string
+              example: "404 Not Found"
+
+        '5xx':
+          description: |
+            Server error (rare on GitHub Pages).
+            Client should treat as network failure and retry on next resume.
+
+      x-code-samples:
+        - lang: Dart
+          label: Fetch version with error handling
+          source: |
+            import 'package:http/http.dart' as http;
+            import 'dart:convert';
+
+            Future<String?> fetchServerVersion() async {
+              try {
+                final uri = Uri.parse('https://example.github.io/expense_tracker/version.json');
+                final response = await http.get(uri).timeout(Duration(seconds: 2));
+
+                if (response.statusCode == 200) {
+                  final json = jsonDecode(response.body);
+                  return json['version'] as String;
+                }
+                return null; // Non-200 status
+              } on TimeoutException {
+                print('Version check timeout');
+                return null;
+              } catch (e) {
+                print('Version check failed: $e');
+                return null;
+              }
+            }
+
+components:
+  schemas:
+    VersionResponse:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          pattern: '^\d+\.\d+\.\d+\+\d+$'
+          description: |
+            Semantic version string in format "major.minor.patch+build".
+
+            **Format Rules**:
+            - major: Non-negative integer (breaking changes)
+            - minor: Non-negative integer (new features)
+            - patch: Non-negative integer (bug fixes)
+            - build: Non-negative integer after '+' (build number)
+
+            **Examples**:
+            - "1.0.0+1" - Initial release
+            - "1.0.1+2" - Patch with second build
+            - "1.1.0+1" - Minor version bump
+            - "2.0.0+1" - Major version bump
+
+            **Comparison**:
+            Versions are compared numerically: major > minor > patch > build.
+            Example: "1.0.2+3" > "1.0.1+2" (patch is higher)
+          example: "1.0.1+2"
+          minLength: 7
+          maxLength: 20
+
+      example:
+        version: "1.0.1+2"
+
+  securitySchemes: {}  # No authentication required (public static file)
+
+tags:
+  - name: Version
+    description: Version checking operations
+
+externalDocs:
+  description: Flutter version.json generation
+  url: https://docs.flutter.dev/deployment/web#deploying-to-github-pages
+
+x-assumptions:
+  - GitHub Pages serves files with default cache headers (max-age=600)
+  - Version format matches pubspec.yaml format exactly
+  - File is always UTF-8 encoded
+  - File is generated automatically by Flutter build process
+  - No manual editing of version.json required
+
+x-testing:
+  manual:
+    - description: Verify version.json exists after deployment
+      command: curl https://example.github.io/expense_tracker/version.json
+      expected: '{"version":"1.0.1+2"}'
+
+    - description: Verify version matches pubspec.yaml
+      command: |
+        grep 'version:' pubspec.yaml
+        # Compare with deployed version.json
+
+    - description: Test 404 handling
+      command: curl https://example.github.io/nonexistent.json
+      expected: 404 error (gracefully handled by client)
+
+  automated:
+    - description: Unit test version parsing
+      file: test/core/services/version_check_service_test.dart
+      test: |
+        test('parses valid version response', () {
+          final json = {'version': '1.0.1+2'};
+          final response = VersionResponse.fromJson(json);
+          expect(response.version, '1.0.1+2');
+        });
+
+    - description: Integration test update detection
+      file: test/integration/update_flow_test.dart
+      test: |
+        testWidgets('shows notification when server version is newer', (tester) async {
+          // Mock HTTP response with newer version
+          // Verify notification appears
+        });
