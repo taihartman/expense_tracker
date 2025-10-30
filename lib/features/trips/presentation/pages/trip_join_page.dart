@@ -328,6 +328,42 @@ class _TripJoinPageState extends State<TripJoinPage> {
     }
   }
 
+  /// Build step indicator widget
+  Widget _buildStepIndicator(int currentStep, int totalSteps) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spacing2,
+        vertical: AppTheme.spacing1,
+      ),
+      margin: const EdgeInsets.only(bottom: AppTheme.spacing2),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 16,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: AppTheme.spacing1),
+          Text(
+            context.l10n.tripJoinStepIndicator(currentStep, totalSteps),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Step 1: Enter trip code
   Widget _buildEnterCodeStep() {
     final hasInviteCode =
@@ -338,6 +374,9 @@ class _TripJoinPageState extends State<TripJoinPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Step indicator
+          _buildStepIndicator(1, 2),
+
           // Invite link banner (shown when code is pre-filled from URL)
           if (hasInviteCode) ...[
             Container(
@@ -392,10 +431,14 @@ class _TripJoinPageState extends State<TripJoinPage> {
           Container(
             padding: const EdgeInsets.all(AppTheme.spacing2),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              color: Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.3),
               ),
             ),
             child: Row(
@@ -424,7 +467,9 @@ class _TripJoinPageState extends State<TripJoinPage> {
                         context.l10n.tripJoinQrScanMessage,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
@@ -533,6 +578,9 @@ class _TripJoinPageState extends State<TripJoinPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Step indicator
+          _buildStepIndicator(2, 2),
+
           // Trip preview card
           Card(
             elevation: 2,

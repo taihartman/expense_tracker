@@ -1860,6 +1860,24 @@ abstract class AppLocalizations {
   /// **'Scan this QR code with your phone camera or any QR scanner app to join the trip.'**
   String get tripInviteQrDialogDescription;
 
+  /// No description provided for @tripInviteCopyFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Invite Message'**
+  String get tripInviteCopyFallbackTitle;
+
+  /// No description provided for @tripInviteCopyFallbackMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic copy failed. Please manually select and copy the text below:'**
+  String get tripInviteCopyFallbackMessage;
+
+  /// No description provided for @tripInviteCopyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to copy message. Please try again.'**
+  String get tripInviteCopyError;
+
   /// No description provided for @tripInviteInstructionsTitle.
   ///
   /// In en, this message translates to:
@@ -2139,7 +2157,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripJoinLoadButton.
   ///
   /// In en, this message translates to:
-  /// **'Load Trip'**
+  /// **'Continue'**
   String get tripJoinLoadButton;
 
   /// No description provided for @tripJoinSelectIdentityTitle.
@@ -2223,7 +2241,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripJoinInviteBannerMessage.
   ///
   /// In en, this message translates to:
-  /// **'The invite code has been pre-filled for you. Tap \'Load Trip\' to continue.'**
+  /// **'The invite code has been pre-filled for you. Tap \'Continue\' to proceed.'**
   String get tripJoinInviteBannerMessage;
 
   /// No description provided for @tripJoinNoParticipants.
@@ -2253,8 +2271,14 @@ abstract class AppLocalizations {
   /// No description provided for @tripJoinLoadError.
   ///
   /// In en, this message translates to:
-  /// **'Could not load trip. Please check your internet connection and try again.'**
+  /// **'Could not verify trip code. Please check your internet connection and try again.'**
   String get tripJoinLoadError;
+
+  /// No description provided for @tripJoinStepIndicator.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {current} of {total}'**
+  String tripJoinStepIndicator(int current, int total);
 
   /// No description provided for @tripJoinGenericError.
   ///

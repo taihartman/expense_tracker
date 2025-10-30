@@ -6,24 +6,26 @@
 import 'dart:async' as _i6;
 
 import 'package:expense_tracker/core/services/local_storage_service.dart'
-    as _i11;
+    as _i12;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
     as _i3;
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart'
-    as _i10;
+    as _i11;
 import 'package:expense_tracker/features/device_pairing/domain/models/device_link_code.dart'
     as _i4;
 import 'package:expense_tracker/features/device_pairing/domain/repositories/device_link_code_repository.dart'
-    as _i12;
+    as _i13;
 import 'package:expense_tracker/features/trips/domain/models/activity_log.dart'
-    as _i8;
+    as _i9;
 import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i2;
-import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart'
+import 'package:expense_tracker/features/trips/domain/models/verified_member.dart'
     as _i7;
+import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart'
+    as _i8;
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart'
     as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i9;
+import 'package:mockito/src/dummies.dart' as _i10;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -115,44 +117,86 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
             returnValue: _i6.Future<bool>.value(false),
           )
           as _i6.Future<bool>);
+
+  @override
+  _i6.Future<void> addVerifiedMember({
+    required String? tripId,
+    required String? participantId,
+    required String? participantName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#addVerifiedMember, [], {
+              #tripId: tripId,
+              #participantId: participantId,
+              #participantName: participantName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<List<_i7.VerifiedMember>> getVerifiedMembers(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getVerifiedMembers, [tripId]),
+            returnValue: _i6.Future<List<_i7.VerifiedMember>>.value(
+              <_i7.VerifiedMember>[],
+            ),
+          )
+          as _i6.Future<List<_i7.VerifiedMember>>);
+
+  @override
+  _i6.Future<void> removeVerifiedMember({
+    required String? tripId,
+    required String? participantId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#removeVerifiedMember, [], {
+              #tripId: tripId,
+              #participantId: participantId,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
 }
 
 /// A class which mocks [ActivityLogRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockActivityLogRepository extends _i1.Mock
-    implements _i7.ActivityLogRepository {
+    implements _i8.ActivityLogRepository {
   MockActivityLogRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i6.Future<String> addLog(_i8.ActivityLog? log) =>
+  _i6.Future<String> addLog(_i9.ActivityLog? log) =>
       (super.noSuchMethod(
             Invocation.method(#addLog, [log]),
             returnValue: _i6.Future<String>.value(
-              _i9.dummyValue<String>(this, Invocation.method(#addLog, [log])),
+              _i10.dummyValue<String>(this, Invocation.method(#addLog, [log])),
             ),
           )
           as _i6.Future<String>);
 
   @override
-  _i6.Stream<List<_i8.ActivityLog>> getActivityLogs(
+  _i6.Stream<List<_i9.ActivityLog>> getActivityLogs(
     String? tripId, {
     int? limit = 50,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#getActivityLogs, [tripId], {#limit: limit}),
-            returnValue: _i6.Stream<List<_i8.ActivityLog>>.empty(),
+            returnValue: _i6.Stream<List<_i9.ActivityLog>>.empty(),
           )
-          as _i6.Stream<List<_i8.ActivityLog>>);
+          as _i6.Stream<List<_i9.ActivityLog>>);
 }
 
 /// A class which mocks [CategoryRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCategoryRepository extends _i1.Mock
-    implements _i10.CategoryRepository {
+    implements _i11.CategoryRepository {
   MockCategoryRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -229,7 +273,7 @@ class MockCategoryRepository extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLocalStorageService extends _i1.Mock
-    implements _i11.LocalStorageService {
+    implements _i12.LocalStorageService {
   MockLocalStorageService() {
     _i1.throwOnMissingStub(this);
   }
@@ -260,6 +304,14 @@ class MockLocalStorageService extends _i1.Mock
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
+
+  @override
+  bool verifyJoinedTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#verifyJoinedTrip, [tripId]),
+            returnValue: false,
+          )
+          as bool);
 
   @override
   List<String> getJoinedTripIds() =>
@@ -321,7 +373,7 @@ class MockLocalStorageService extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockDeviceLinkCodeRepository extends _i1.Mock
-    implements _i12.DeviceLinkCodeRepository {
+    implements _i13.DeviceLinkCodeRepository {
   MockDeviceLinkCodeRepository() {
     _i1.throwOnMissingStub(this);
   }

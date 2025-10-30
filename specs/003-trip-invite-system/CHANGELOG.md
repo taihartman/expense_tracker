@@ -26,6 +26,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <!-- Add entries below in reverse chronological order (newest first) -->
 
+## 2025-10-30
+
+### Fixed
+- Mobile web clipboard issue on trip invite page. Pre-loaded verified members in `initState()` to eliminate async gap between user tap and clipboard access (mobile browsers require synchronous clipboard calls within user gesture context). Added fallback dialog with selectable text when clipboard API fails. Added detailed developer logging for debugging clipboard issues on different mobile browsers.
+
 ## 2025-10-29 - ✅ FEATURE COMPLETE: Trip Invite System (003)
 
 ### Summary

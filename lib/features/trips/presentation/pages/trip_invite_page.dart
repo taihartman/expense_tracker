@@ -1,8 +1,10 @@
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../domain/models/trip.dart';
+import '../../domain/models/verified_member.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../core/utils/link_utils.dart';
@@ -20,6 +22,14 @@ class TripInvitePage extends StatefulWidget {
 
 class _TripInvitePageState extends State<TripInvitePage> {
   bool _isLoadingMessage = false;
+  late Future<List<VerifiedMember>> _verifiedMembersFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-load verified members to avoid async gap during clipboard operation
+    _verifiedMembersFuture = context.read<TripCubit>().getVerifiedMembers(widget.trip.id);
+  }
 
   void _copyInviteCode(BuildContext context) {
     Clipboard.setData(ClipboardData(text: widget.trip.id));
@@ -97,8 +107,8 @@ class _TripInvitePageState extends State<TripInvitePage> {
     try {
       final tripCubit = context.read<TripCubit>();
 
-      // Load verified members from Firestore
-      final verifiedMembers = await tripCubit.getVerifiedMembers(widget.trip.id);
+      // Use pre-loaded verified members (no async gap!)
+      final verifiedMembers = await _verifiedMembersFuture;
 
       // Get current user to track who shared this link
       final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
@@ -110,8 +120,10 @@ class _TripInvitePageState extends State<TripInvitePage> {
         sharedByParticipantId: currentUser?.id,
       );
 
-      // Copy to clipboard
+      // Copy to clipboard (synchronous - no async gap from user gesture)
       await Clipboard.setData(ClipboardData(text: message));
+
+      developer.log('✅ Clipboard copy successful', name: 'TripInvitePage');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -123,20 +135,86 @@ class _TripInvitePageState extends State<TripInvitePage> {
         );
       }
     } catch (e) {
+      developer.log('❌ Clipboard copy failed: $e', name: 'TripInvitePage', error: e);
+
+      // Show fallback dialog with selectable text
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to copy message'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        await _showManualCopyDialog(context);
       }
     } finally {
       if (mounted) {
         setState(() {
           _isLoadingMessage = false;
         });
+      }
+    }
+  }
+
+  Future<void> _showManualCopyDialog(BuildContext context) async {
+    try {
+      final tripCubit = context.read<TripCubit>();
+      final verifiedMembers = await _verifiedMembersFuture;
+      final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
+
+      final message = generateShareMessage(
+        trip: widget.trip,
+        verifiedMembers: verifiedMembers,
+        sharedByParticipantId: currentUser?.id,
+      );
+
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(context.l10n.tripInviteCopyFallbackTitle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.tripInviteCopyFallbackMessage,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                const SizedBox(height: AppTheme.spacing2),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppTheme.spacing2),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                  child: SelectableText(
+                    message,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(context.l10n.commonClose),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      developer.log('❌ Failed to show fallback dialog: $e', name: 'TripInvitePage', error: e);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.tripInviteCopyError),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }

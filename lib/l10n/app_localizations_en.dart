@@ -1043,6 +1043,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Scan this QR code with your phone camera or any QR scanner app to join the trip.';
 
   @override
+  String get tripInviteCopyFallbackTitle => 'Copy Invite Message';
+
+  @override
+  String get tripInviteCopyFallbackMessage =>
+      'Automatic copy failed. Please manually select and copy the text below:';
+
+  @override
+  String get tripInviteCopyError => 'Failed to copy message. Please try again.';
+
+  @override
   String get tripInviteInstructionsTitle => 'How to invite friends';
 
   @override
@@ -1215,7 +1225,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tripJoinLoadButton => 'Load Trip';
+  String get tripJoinLoadButton => 'Continue';
 
   @override
   String get tripJoinSelectIdentityTitle => 'Select Your Identity';
@@ -1263,7 +1273,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tripJoinInviteBannerMessage =>
-      'The invite code has been pre-filled for you. Tap \'Load Trip\' to continue.';
+      'The invite code has been pre-filled for you. Tap \'Continue\' to proceed.';
 
   @override
   String get tripJoinNoParticipants => 'This trip has no participants yet.';
@@ -1280,7 +1290,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tripJoinLoadError =>
-      'Could not load trip. Please check your internet connection and try again.';
+      'Could not verify trip code. Please check your internet connection and try again.';
+
+  @override
+  String tripJoinStepIndicator(int current, int total) {
+    return 'Step $current of $total';
+  }
 
   @override
   String get tripJoinGenericError => 'An error occurred. Please try again.';

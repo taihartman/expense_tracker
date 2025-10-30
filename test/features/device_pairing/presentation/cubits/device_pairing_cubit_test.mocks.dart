@@ -140,6 +140,14 @@ class MockLocalStorageService extends _i1.Mock
           as _i4.Future<void>);
 
   @override
+  bool verifyJoinedTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#verifyJoinedTrip, [tripId]),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   List<String> getJoinedTripIds() =>
       (super.noSuchMethod(
             Invocation.method(#getJoinedTripIds, []),

@@ -17,6 +17,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-10-30 - Trip Join UX Enhancement
+
+### Changed
+- **Improved trip join flow terminology and clarity**:
+  - Changed "Load Trip" button to "Continue" for better user understanding
+  - "Load Trip" was technical jargon; "Continue" is familiar multi-step form language
+  - Updated banner message: "Tap 'Continue' to proceed" (previously "Tap 'Load Trip' to continue")
+  - Updated error message: "Could not verify trip code" (previously "Could not load trip")
+- **Added step indicators** to clarify two-step join process:
+  - Step 1 of 2: Verify Trip Code (enter code → Continue)
+  - Step 2 of 2: Select Your Identity (choose participant → Verify Identity)
+  - Consistent visual design with info icon and primary color theme
+- Files modified:
+  - `lib/l10n/app_en.arb` - Updated `tripJoinLoadButton`, `tripJoinInviteBannerMessage`, `tripJoinLoadError`; added `tripJoinStepIndicator`
+  - `lib/features/trips/presentation/pages/trip_join_page.dart` - Added `_buildStepIndicator()` widget
+
+### Impact
+- Clearer user journey - users now understand it's a multi-step process
+- Reduced confusion about what "Load Trip" means (technical vs user language)
+- Standard multi-step form UX pattern improves familiarity
+
 ## 2025-10-29 - Automated Documentation Workflow
 
 ### Added
