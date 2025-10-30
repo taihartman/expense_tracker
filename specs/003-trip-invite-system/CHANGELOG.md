@@ -52,14 +52,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Falls back to manual copy dialog if message not ready or clipboard fails
   - Works reliably on iOS Safari, Chrome Mobile, and all mobile browsers
 
-- **Invite link deep linking issue (FINALLY RESOLVED after 3 attempts)**:
+- **Invite link deep linking issue (FINALLY RESOLVED after 4 attempts)**:
   - **Attempt 1 (commit e109158)**: Removed redundant `context.go(AppRoutes.splash)` from SplashPage - fixed warm start ✅
   - **Attempt 2 (commit 275afad)**: Removed `initialLocation: AppRoutes.splash` - BROKE cold start ❌
-  - **Attempt 3 (commit 62804ed)**: Added back `initialLocation: AppRoutes.splash` + debug logging - fixes cold start ✅
-  - **Root cause understanding**: WITHOUT `initialLocation`, GoRouter defaults to `/` on cold start, causing `_originalLocation` to capture `/` instead of the invite link. WITH `initialLocation: AppRoutes.splash`, GoRouter properly captures the invite link when user navigates to it.
-  - **Final solution**: Keep `initialLocation: AppRoutes.splash` AND remove redundant SplashPage navigation
+  - **Attempt 3 (commit 62804ed)**: Added back `initialLocation: AppRoutes.splash` + debug logging - still broken ❌
+  - **Attempt 4 (commit baaf8d2) - THE ACTUAL FIX**: Capture browser URL using `PlatformDispatcher` in `main()` before widget tree creation ✅
+    - **Root cause discovered via debug panel**: The URL was being lost BEFORE GoRouter even saw it. Flutter had already normalized it to `/` by the time the router was created.
+    - **Solution**: Capture `PlatformDispatcher.instance.defaultRouteName` in `main()` BEFORE `runApp()`, store it in `AppRouter._capturedInitialUrl`, then restore it via redirect logic after initialization completes.
+    - **Files changed**:
+      - `lib/main.dart`: Added URL capture before runApp()
+      - `lib/core/router/app_router.dart`: Added `setInitialUrl()` method and restore logic
+    - **Expected behavior**: Deep links now work correctly on mobile cold start - user lands on join page with invite code pre-filled
   - Deep links now work correctly on both cold start (app closed/refreshed) and warm start (app already open)
-  - Added comprehensive debug logging to track routing flow in browser console (and now on-screen via debug panel)
+  - Debug panel was instrumental in diagnosing this issue by showing that GoRouter never saw the invite URL
 
 ## 2025-10-29 - ✅ FEATURE COMPLETE: Trip Invite System (003)
 
