@@ -108,6 +108,7 @@
   "tripCurrencyChangedInfo": "Changing base currency only affects how settlements are displayed. Individual expense amounts remain unchanged.",
 
   "tripEmptyStateTitle": "No trips yet",
+  "tripEmptyStateDescription": "Create a new trip or join an existing one",
   "tripLoadError": "Failed to load trips: {error}",
   "@tripLoadError": {
     "placeholders": {

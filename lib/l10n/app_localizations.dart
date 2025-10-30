@@ -418,6 +418,12 @@ abstract class AppLocalizations {
   /// **'No trips yet'**
   String get tripEmptyStateTitle;
 
+  /// No description provided for @tripEmptyStateDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a new trip or join an existing one'**
+  String get tripEmptyStateDescription;
+
   /// No description provided for @tripLoadError.
   ///
   /// In en, this message translates to:
