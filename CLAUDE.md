@@ -97,9 +97,10 @@ flutter format --set-exit-if-changed .
   - Workflow commits version change back to master
 
 **Version Display**:
-- Version is displayed at bottom center of the screen in super small text (8px)
+- Version is displayed at top left of the screen in super small text (8px)
 - Format: `1.0.0+1` (semantic version + build number)
 - Automatically reads from `pubspec.yaml` via `package_info_plus`
+- Positioned to be visible on mobile web (not obscured by browser chrome)
 
 ## Architecture & Conventions
 

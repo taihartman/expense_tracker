@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - **Comprehensive version tracking and display system**:
   - `lib/core/services/version_service.dart` - VersionService for runtime version access via package_info_plus
-  - `lib/core/presentation/widgets/version_footer.dart` - Super small (8px) version display widget positioned at bottom center
+  - `lib/core/presentation/widgets/version_footer.dart` - Super small (8px) version display widget positioned at top left
   - Integrated version footer into home page using Stack wrapper in `lib/core/router/app_router.dart`
   - Initialized VersionService in `lib/main.dart` during app startup
 - **Automated version bumping infrastructure**:
@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Changed
 - Version format displayed: `1.0.0+1` (semantic version with build number)
-- Version display location: Bottom center of screen (non-intrusive, super small text)
+- Version display location: Top left of screen (visible on mobile web, not obscured by browser chrome)
 - Version source: Single source of truth in `pubspec.yaml`, automatically read at runtime
 
 ### Impact
