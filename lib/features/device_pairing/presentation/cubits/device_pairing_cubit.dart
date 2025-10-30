@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/local_storage_service.dart';
+import '../../../../core/services/activity_logger_service.dart';
 import '../../domain/repositories/device_link_code_repository.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
 import '../../../../core/models/participant.dart';
@@ -12,14 +13,17 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
   final DeviceLinkCodeRepository _repository;
   final LocalStorageService _localStorageService;
   final TripRepository? _tripRepository;
+  final ActivityLoggerService? _activityLoggerService;
 
   DevicePairingCubit({
     required DeviceLinkCodeRepository repository,
     required LocalStorageService localStorageService,
     TripRepository? tripRepository,
+    ActivityLoggerService? activityLoggerService,
   })  : _repository = repository,
         _localStorageService = localStorageService,
         _tripRepository = tripRepository,
+        _activityLoggerService = activityLoggerService,
         super(const DevicePairingInitial());
 
   /// Generates a new device link code for the specified member.
@@ -56,6 +60,17 @@ class DevicePairingCubit extends Cubit<DevicePairingState> {
 
       // Grant trip access by saving tripId to local storage and adding to verified members
       await _grantTripAccess(tripId, memberName);
+
+      // Log device verification via centralized service
+      if (_activityLoggerService != null) {
+        // Use last 4 characters of code for reference (not the full code for security)
+        final deviceCode = code.length >= 4 ? code.substring(code.length - 4) : code;
+        await _activityLoggerService.logDeviceVerified(
+          tripId: tripId,
+          memberName: memberName,
+          deviceCode: deviceCode,
+        );
+      }
 
       // Emit success state with tripId
       emit(CodeValidated(tripId));

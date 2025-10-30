@@ -329,6 +329,7 @@ class ExpenseTrackerApp extends StatelessWidget {
                 repository: _deviceLinkCodeRepository,
                 localStorageService: localStorageService,
                 tripRepository: _tripRepository,
+                activityLoggerService: _activityLoggerService,
               );
             },
           ),
