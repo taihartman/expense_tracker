@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/l10n_extensions.dart';
+import '../../router/app_routes.dart';
 import '../widgets/animated_dots.dart';
 import '../../../features/trips/presentation/cubits/trip_cubit.dart';
 import '../../../features/trips/presentation/cubits/trip_state.dart';
@@ -13,7 +14,7 @@ import '../../../features/trips/presentation/cubits/trip_state.dart';
 /// - Trip data loads from Firestore
 /// - User preferences are loaded
 ///
-/// Automatically navigates to home page when loading completes.
+/// Navigation is handled by AppRouter's redirect logic, which preserves deep links.
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -40,12 +41,7 @@ class _SplashPageState extends State<SplashPage>
     _scaleAnimation = Tween<double>(
       begin: 0.9,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _scaleController,
-        curve: Curves.easeOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeOut));
 
     // Trigger trip data loading
     Future.microtask(() {
@@ -76,27 +72,23 @@ class _SplashPageState extends State<SplashPage>
     super.dispose();
   }
 
-  void _navigateToHome() {
-    // Prevent multiple navigation attempts
-    if (_hasNavigated) return;
-    _hasNavigated = true;
-
-    // Navigate with fade transition
-    context.go('/');
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocListener<TripCubit, TripState>(
       listener: (context, state) {
-        // Navigate when trips are loaded (success or error)
+        // When trips are loaded, trigger navigation which will invoke the router's redirect
+        // The redirect will navigate to the preserved deep link or home
         if (state is TripLoaded || state is TripError) {
-          // Small delay to ensure smooth transition
-          Future.delayed(const Duration(milliseconds: 100), () {
-            if (mounted) {
-              _navigateToHome();
-            }
-          });
+          if (!_hasNavigated && mounted) {
+            _hasNavigated = true;
+            // Navigate to splash itself - this triggers the redirect callback
+            // which will then navigate to the preserved deep link or home
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                context.go(AppRoutes.splash);
+              }
+            });
+          }
         }
       },
       child: Scaffold(
@@ -109,15 +101,20 @@ class _SplashPageState extends State<SplashPage>
                 builder: (context, constraints) {
                   // Responsive sizing
                   final isMobile = constraints.maxWidth < 768;
-                  final isTablet = constraints.maxWidth >= 768 &&
+                  final isTablet =
+                      constraints.maxWidth >= 768 &&
                       constraints.maxWidth <= 1920;
 
                   final iconSize = isMobile ? 80.0 : (isTablet ? 100.0 : 120.0);
-                  final appNameSize = isMobile ? 28.0 : (isTablet ? 30.0 : 32.0);
+                  final appNameSize = isMobile
+                      ? 28.0
+                      : (isTablet ? 30.0 : 32.0);
                   final horizontalPadding = isMobile ? 32.0 : 64.0;
 
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

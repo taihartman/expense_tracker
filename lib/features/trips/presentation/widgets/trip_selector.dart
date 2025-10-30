@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -96,7 +97,7 @@ class TripSelectorWidget extends StatelessWidget {
         // No trip selected or error
         return TextButton.icon(
           onPressed: () {
-            context.push('/trips/create');
+            context.push(AppRoutes.tripCreate);
           },
           icon: const Icon(Icons.add),
           label: Text(context.l10n.tripCreateButton),
@@ -162,7 +163,7 @@ class TripSelectorWidget extends StatelessWidget {
                   trailing: Text('($archivedCount)'),
                   onTap: () {
                     Navigator.of(bottomSheetContext).pop();
-                    context.push('/trips/archived');
+                    context.push(AppRoutes.tripArchived);
                   },
                 ),
               ],
@@ -187,7 +188,7 @@ class TripSelectorWidget extends StatelessWidget {
               subtitle: Text(context.l10n.tripCreateTitle),
               onTap: () {
                 Navigator.of(bottomSheetContext).pop();
-                context.push('/trips/create');
+                context.push(AppRoutes.tripCreate);
               },
             ),
             ListTile(
@@ -196,7 +197,7 @@ class TripSelectorWidget extends StatelessWidget {
               subtitle: Text(context.l10n.tripJoinTitle),
               onTap: () {
                 Navigator.of(bottomSheetContext).pop();
-                context.push('/trips/join');
+                context.push(AppRoutes.tripJoin);
               },
             ),
           ],

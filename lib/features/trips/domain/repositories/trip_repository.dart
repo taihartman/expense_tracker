@@ -1,4 +1,5 @@
 import '../models/trip.dart';
+import '../models/verified_member.dart';
 
 /// Repository interface for Trip operations
 ///
@@ -27,4 +28,25 @@ abstract class TripRepository {
 
   /// Check if a trip exists
   Future<bool> tripExists(String tripId);
+
+  /// Add a verified member to a trip
+  /// Called when a participant successfully joins via device pairing or recovery code
+  /// Stores verification status in Firestore for cross-device visibility
+  Future<void> addVerifiedMember({
+    required String tripId,
+    required String participantId,
+    required String participantName,
+  });
+
+  /// Get all verified members for a trip
+  /// Returns list of participants who have verified their identity
+  /// Ordered by verifiedAt descending (most recent first)
+  Future<List<VerifiedMember>> getVerifiedMembers(String tripId);
+
+  /// Remove a verified member (for leaving trip functionality)
+  /// Note: Not exposed in MVP UI
+  Future<void> removeVerifiedMember({
+    required String tripId,
+    required String participantId,
+  });
 }

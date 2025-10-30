@@ -25,6 +25,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Trip ID and trip name display in recovery code dialogs with explanatory text
 - Contextual help text explaining the purpose of Trip ID (for inviting members) and Recovery Code (for emergency access)
 - Complete localization support with 16 new l10n strings
+- Cross-device verified member tracking system:
+  - `VerifiedMember` model to track who has actually joined trips
+  - Firestore subcollection at `/trips/{tripId}/verifiedMembers/{participantId}`
+  - Repository methods: `addVerifiedMember()`, `getVerifiedMembers()`, `removeVerifiedMember()`
+  - Automatic verification writes in `TripCubit.joinTrip()` and `DevicePairingCubit`
+  - Firestore security rules for verified members subcollection
+  - Enables invite messages to show verified participants across all devices
 
 ### Changed
 - Extended trip join flow to detect duplicate member names (case-insensitive)
@@ -40,6 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Updated TripActivityPage to use localized string (context.l10n.activityLogTitle) instead of hardcoded "Trip Activity" text
 - Fixed invite link 404 errors - Updated `link_utils.dart` to use correct GitHub Pages URL (`taihartman.github.io/expense_tracker`) with hash-based routing (`#/`). Added `web/404.html` fallback for SPA redirect support. Links now generate as `https://taihartman.github.io/expense_tracker/#/trips/join?code={tripId}` instead of broken `https://expense-tracker.app` URLs
 - Fixed 888ms startup blank screen by inverting initialization pattern. Created InitializationCubit to handle async Firebase/auth/storage/migration initialization in background. Refactored main.dart to call runApp() immediately after WidgetsFlutterBinding (~19ms). Created InitializationSplashPage shown during Firebase init. ExpenseTrackerApp now uses BlocBuilder to show splash during initialization, error UI on failure, and full app on success. Result: Splash screen now appears in 19ms instead of 925ms - 906ms (98%) faster perceived startup time
+- Fixed deep link routing bug during splash screen initialization. Invite links now work correctly when app is loading - users are properly navigated to join trip page instead of being redirected to home. Implementation uses go_router redirect callback to preserve original deep link URL during splash phase. Files modified: `lib/core/router/app_router.dart`, `lib/core/presentation/pages/splash_page.dart`
 
 ### Removed
 - [Removed features or files will be logged here]
@@ -51,6 +59,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 <!-- Add entries below in reverse chronological order (newest first) -->
 
 ## 2025-10-30
+
+### Added
+- Enhanced invite screen with personalized Share Message button that generates human-friendly messages with verified member context. Converts `trip_invite_page.dart` to StatefulWidget with async verified member loading. Message format varies by member count: 0 members (be first to join), 1-2 members (shows names), 3+ members (shows first 2 names + N others). All hardcoded strings replaced with localization. Supports cross-device verification tracking via Firestore.
+
+### Changed
+- Updated app base URL from GitHub Pages URL to custom domain `expenses.taihartman.com` in `app_config.dart`. All invite links and shareable URLs now use the custom domain for better branding. Updated documentation in `link_utils.dart` to reflect custom domain usage.
+- Major UX improvements to Join Trip page (`trip_join_page.dart`):
+  - Added invite link banner when code is pre-filled from URL to provide context that user clicked an invite link
+  - Simplified recovery code flow by moving toggle from Step 1 (Enter Code) to Step 2 (Identity Selection), reducing cognitive load
+  - Localized all hardcoded strings - added 15+ new strings to `app_en.arb` including instructions, error messages, and help text
+  - Added help tooltips with info icons explaining identity selection and recovery code usage
+  - Implemented retry mechanism with inline error display and retry button for failed trip loads
+  - Added loading indicator in Step 1 during trip load with "Loading..." text
+  - Enhanced trip preview card in Step 2 with member count, base currency display, and improved visual design with icon background
+  - Added confirmation dialog before final join to prevent accidental identity selection ("Join {tripName} as {participantName}?")
+
+### Changed
+- Simplified Trip Invite page (`trip_invite_page.dart`) by removing separate "Share Message" section. The "Copy Link" button now copies the personalized message by default (includes trip name, member list, and invite link). Shows loading state while fetching verified members from Firestore.
 
 ### Fixed
 - Fixed 888ms startup blank screen by inverting initialization pattern. Created `InitializationCubit` to handle async Firebase/auth/storage/migration initialization in background. Refactored `main.dart` to call `runApp()` immediately after `WidgetsFlutterBinding` (~19ms). Created `InitializationSplashPage` shown during Firebase init. `ExpenseTrackerApp` now uses `BlocBuilder` to show splash during initialization, error UI on failure, and full app on success. Result: Splash screen now appears in 19ms instead of 925ms - **906ms (98%) faster perceived startup time**.

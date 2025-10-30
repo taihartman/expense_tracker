@@ -9,6 +9,7 @@ import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
 import '../../../../core/models/participant.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -39,14 +40,14 @@ class ExpenseListPage extends StatelessWidget {
             icon: const Icon(Icons.settings),
             tooltip: context.l10n.tripSettingsTitle,
             onPressed: () {
-              context.push('/trips/$tripId/settings');
+              context.push(AppRoutes.tripSettings(tripId));
             },
           ),
           IconButton(
             icon: const Icon(Icons.account_balance_wallet),
             tooltip: context.l10n.settlementViewTooltip,
             onPressed: () {
-              context.push('/trips/$tripId/settlement');
+              context.push(AppRoutes.settlement(tripId));
             },
           ),
           IconButton(

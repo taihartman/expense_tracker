@@ -1,7 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'app_routes.dart';
 import '../presentation/pages/splash_page.dart';
+import '../cubits/initialization_cubit.dart';
 import '../../features/trips/presentation/cubits/trip_cubit.dart';
 import '../../features/trips/presentation/widgets/trip_selector.dart';
 import '../../features/trips/presentation/cubits/trip_state.dart';
@@ -55,34 +57,66 @@ import '../l10n/l10n_extensions.dart';
 /// Note: BLoC providers are now managed at the app root level in main.dart
 /// This ensures singleton cubit instances across all routes for proper caching
 class AppRouter {
+  // Store the original requested location for deep link preservation
+  static String? _originalLocation;
+
   static final GoRouter router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: AppRoutes.splash,
+    redirect: (context, state) {
+      // Store the very first location request (the deep link)
+      // This captures invite links like /trips/join?code=xxx
+      if (_originalLocation == null &&
+          state.matchedLocation != AppRoutes.splash) {
+        _originalLocation = state.uri.toString();
+      }
+
+      // Check if initialization is complete
+      final initializationState = context.read<InitializationCubit>().state;
+      final isInitialized = initializationState is InitializationComplete;
+      final isOnSplash = state.matchedLocation == AppRoutes.splash;
+
+      // If not initialized and not on splash, redirect to splash
+      // This preserves the original location in _originalLocation
+      if (!isInitialized && !isOnSplash) {
+        return AppRoutes.splash;
+      }
+
+      // If initialized and still on splash, navigate to the original deep link or home
+      if (isInitialized && isOnSplash) {
+        final destination = _originalLocation ?? AppRoutes.home;
+        _originalLocation = null; // Clear after use
+        return destination;
+      }
+
+      // Allow all other navigation
+      return null;
+    },
     routes: [
       GoRoute(
-        path: '/splash',
+        path: AppRoutes.splash,
         builder: (context, state) => const SplashPage(),
       ),
       GoRoute(
-        path: '/',
+        path: AppRoutes.home,
         builder: (context, state) => const HomePage(),
       ),
       GoRoute(
-        path: '/trips',
+        path: AppRoutes.trips,
         builder: (context, state) => const TripListPage(),
       ),
       GoRoute(
-        path: '/trips/create',
+        path: AppRoutes.tripCreate,
         builder: (context, state) => const TripCreatePage(),
       ),
       GoRoute(
-        path: '/trips/join',
+        path: AppRoutes.tripJoin,
         builder: (context, state) {
           final inviteCode = state.uri.queryParameters['code'];
           return TripJoinPage(inviteCode: inviteCode);
         },
       ),
       GoRoute(
-        path: '/trips/archived',
+        path: AppRoutes.tripArchived,
         builder: (context, state) => const ArchivedTripsPage(),
       ),
       GoRoute(
@@ -97,7 +131,7 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/unauthorized',
+        path: AppRoutes.unauthorized,
         builder: (context, state) {
           final tripId = state.uri.queryParameters['tripId'];
           return _UnauthorizedPage(tripId: tripId);
@@ -247,7 +281,7 @@ class _HomePageContent extends StatelessWidget {
                   ),
                   const SizedBox(height: AppTheme.spacing3),
                   ElevatedButton.icon(
-                    onPressed: () => context.go('/trips/create'),
+                    onPressed: () => context.go(AppRoutes.tripCreate),
                     icon: const Icon(Icons.add),
                     label: Text(context.l10n.tripCreateButton),
                     style: ElevatedButton.styleFrom(
@@ -256,7 +290,7 @@ class _HomePageContent extends StatelessWidget {
                   ),
                   const SizedBox(height: AppTheme.spacing2),
                   OutlinedButton.icon(
-                    onPressed: () => context.push('/trips/join'),
+                    onPressed: () => context.push(AppRoutes.tripJoin),
                     icon: const Icon(Icons.group_add),
                     label: Text(context.l10n.tripJoinButton),
                     style: OutlinedButton.styleFrom(
@@ -327,14 +361,15 @@ class _UnauthorizedPage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
-                onPressed: () => context.go('/'),
+                onPressed: () => context.go(AppRoutes.home),
                 icon: const Icon(Icons.home),
                 label: const Text('Go to Home'),
               ),
               const SizedBox(height: 12),
               if (tripId != null)
                 TextButton.icon(
-                  onPressed: () => context.go('/trips/join?code=$tripId'),
+                  onPressed: () =>
+                      context.go('${AppRoutes.tripJoin}?code=$tripId'),
                   icon: const Icon(Icons.vpn_key),
                   label: const Text('Try Joining This Trip'),
                 ),
@@ -374,7 +409,7 @@ class _ErrorPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => context.go('/'),
+              onPressed: () => context.go(AppRoutes.home),
               icon: const Icon(Icons.home),
               label: const Text('Go to Home'),
             ),

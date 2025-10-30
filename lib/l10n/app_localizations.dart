@@ -1812,6 +1812,60 @@ abstract class AppLocalizations {
   /// **'Join my trip on Expense Tracker! Use code: {code} or click: {link}'**
   String tripInviteShareMessage(String code, String link);
 
+  /// No description provided for @tripInviteShareMessageButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Message'**
+  String get tripInviteShareMessageButton;
+
+  /// No description provided for @tripInviteMessageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied to clipboard'**
+  String get tripInviteMessageCopied;
+
+  /// No description provided for @tripInviteShareableLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Shareable Link'**
+  String get tripInviteShareableLinkLabel;
+
+  /// No description provided for @tripInviteCopyLinkButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get tripInviteCopyLinkButton;
+
+  /// No description provided for @tripInviteLinkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard'**
+  String get tripInviteLinkCopied;
+
+  /// No description provided for @tripInviteInstructionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to invite friends'**
+  String get tripInviteInstructionsTitle;
+
+  /// No description provided for @tripInviteInstructionStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the message, code, or link with your friends'**
+  String get tripInviteInstructionStep1;
+
+  /// No description provided for @tripInviteInstructionStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'They click the link or enter the code on the Join Trip page'**
+  String get tripInviteInstructionStep2;
+
+  /// No description provided for @tripInviteInstructionStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'They select their identity and verify via device pairing or recovery code'**
+  String get tripInviteInstructionStep3;
+
   /// No description provided for @activityLogTitle.
   ///
   /// In en, this message translates to:
@@ -2087,6 +2141,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Invalid recovery code. Please check and try again.'**
   String get tripJoinRecoveryCodeInvalid;
+
+  /// No description provided for @tripJoinInstructionStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the trip invite code shared by a trip member'**
+  String get tripJoinInstructionStep1;
+
+  /// No description provided for @tripJoinInstructionStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your identity. Members will see expenses under this name.'**
+  String get tripJoinInstructionStep2;
+
+  /// No description provided for @tripJoinInviteBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve been invited to join a trip!'**
+  String get tripJoinInviteBannerTitle;
+
+  /// No description provided for @tripJoinInviteBannerMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The invite code has been pre-filled for you. Tap \'Load Trip\' to continue.'**
+  String get tripJoinInviteBannerMessage;
+
+  /// No description provided for @tripJoinNoParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'This trip has no participants yet.'**
+  String get tripJoinNoParticipants;
+
+  /// No description provided for @tripJoinTripLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip'**
+  String get tripJoinTripLabel;
+
+  /// No description provided for @tripJoinNoTripLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'No trip loaded'**
+  String get tripJoinNoTripLoaded;
+
+  /// No description provided for @tripJoinRecoveryCodeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bypass verification with recovery code'**
+  String get tripJoinRecoveryCodeSubtitle;
+
+  /// No description provided for @tripJoinLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load trip. Please check your internet connection and try again.'**
+  String get tripJoinLoadError;
+
+  /// No description provided for @tripJoinGenericError.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred. Please try again.'**
+  String get tripJoinGenericError;
+
+  /// No description provided for @tripJoinVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please try again.'**
+  String get tripJoinVerificationFailed;
+
+  /// No description provided for @tripJoinHelpDeviceVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Device verification ensures only authorized members can access the trip.'**
+  String get tripJoinHelpDeviceVerification;
+
+  /// No description provided for @tripJoinHelpRecoveryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery code is a 12-digit code provided when the trip was created.'**
+  String get tripJoinHelpRecoveryCode;
+
+  /// No description provided for @tripJoinHelpWhereToFindCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a trip member to generate a code for you via Trip Settings.'**
+  String get tripJoinHelpWhereToFindCode;
+
+  /// No description provided for @tripJoinRetryButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get tripJoinRetryButton;
+
+  /// No description provided for @tripJoinConfirmDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Your Identity'**
+  String get tripJoinConfirmDialogTitle;
+
+  /// No description provided for @tripJoinConfirmDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Join {tripName} as {participantName}?'**
+  String tripJoinConfirmDialogMessage(String tripName, String participantName);
+
+  /// No description provided for @tripJoinConfirmButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm & Join'**
+  String get tripJoinConfirmButton;
 
   /// No description provided for @tripVerificationPromptTitle.
   ///

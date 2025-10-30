@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Widget displayed when user tries to access trip content without verifying identity.
@@ -59,7 +60,7 @@ class TripVerificationPrompt extends StatelessWidget {
                 // Navigate to identity selection with current path as return path
                 final currentPath = GoRouterState.of(context).uri.toString();
                 final returnPath = Uri.encodeComponent(currentPath);
-                context.go('/trips/$tripId/identify?returnTo=$returnPath');
+                context.go(AppRoutes.tripIdentify(tripId, returnPath));
               },
               icon: const Icon(Icons.check_circle_outline),
               label: Text(context.l10n.tripVerificationPromptButton),
@@ -73,7 +74,7 @@ class TripVerificationPrompt extends StatelessWidget {
             // Secondary button - Go Back
             TextButton.icon(
               onPressed: () {
-                context.go('/');
+                context.go(AppRoutes.home);
               },
               icon: const Icon(Icons.arrow_back),
               label: Text(context.l10n.tripVerificationPromptBackButton),

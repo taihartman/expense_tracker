@@ -678,6 +678,15 @@
       }
     }
   },
+  "tripInviteShareMessageButton": "Share Message",
+  "tripInviteMessageCopied": "Message copied to clipboard",
+  "tripInviteShareableLinkLabel": "Shareable Link",
+  "tripInviteCopyLinkButton": "Copy Link",
+  "tripInviteLinkCopied": "Link copied to clipboard",
+  "tripInviteInstructionsTitle": "How to invite friends",
+  "tripInviteInstructionStep1": "Share the message, code, or link with your friends",
+  "tripInviteInstructionStep2": "They click the link or enter the code on the Join Trip page",
+  "tripInviteInstructionStep3": "They select their identity and verify via device pairing or recovery code",
 
 
   "activityLogTitle": "Activity Log",
@@ -816,6 +825,34 @@
   "tripJoinRecoveryCodeLabel": "Recovery Code",
   "tripJoinRecoveryCodeHint": "Enter 12-digit recovery code",
   "tripJoinRecoveryCodeInvalid": "Invalid recovery code. Please check and try again.",
+  "tripJoinInstructionStep1": "Enter the trip invite code shared by a trip member",
+  "tripJoinInstructionStep2": "Select your identity. Members will see expenses under this name.",
+  "tripJoinInviteBannerTitle": "You've been invited to join a trip!",
+  "tripJoinInviteBannerMessage": "The invite code has been pre-filled for you. Tap 'Load Trip' to continue.",
+  "tripJoinNoParticipants": "This trip has no participants yet.",
+  "tripJoinTripLabel": "Trip",
+  "tripJoinNoTripLoaded": "No trip loaded",
+  "tripJoinRecoveryCodeSubtitle": "Bypass verification with recovery code",
+  "tripJoinLoadError": "Could not load trip. Please check your internet connection and try again.",
+  "tripJoinGenericError": "An error occurred. Please try again.",
+  "tripJoinVerificationFailed": "Verification failed. Please try again.",
+  "tripJoinHelpDeviceVerification": "Device verification ensures only authorized members can access the trip.",
+  "tripJoinHelpRecoveryCode": "Recovery code is a 12-digit code provided when the trip was created.",
+  "tripJoinHelpWhereToFindCode": "Ask a trip member to generate a code for you via Trip Settings.",
+  "tripJoinRetryButton": "Retry",
+  "tripJoinConfirmDialogTitle": "Confirm Your Identity",
+  "tripJoinConfirmDialogMessage": "Join {tripName} as {participantName}?",
+  "@tripJoinConfirmDialogMessage": {
+    "placeholders": {
+      "tripName": {
+        "type": "String"
+      },
+      "participantName": {
+        "type": "String"
+      }
+    }
+  },
+  "tripJoinConfirmButton": "Confirm & Join",
 
 
   "tripVerificationPromptTitle": "Select Your Identity",

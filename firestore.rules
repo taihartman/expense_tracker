@@ -136,6 +136,25 @@ service cloud.firestore {
         allow delete: if false;
       }
 
+      // Verified Members: Track who has actually joined the trip
+      match /verifiedMembers/{participantId} {
+        // Anyone can read verified members (needed for invite messages)
+        allow read: if isAuthenticated();
+
+        // Anyone can add themselves as a verified member (via join/device pairing)
+        allow create: if isAuthenticated()
+                      && request.resource.data.participantName is string
+                      && request.resource.data.participantName.size() > 0
+                      && request.resource.data.verifiedAt is timestamp;
+
+        // Allow updating verification timestamp (re-verification)
+        allow update: if isAuthenticated()
+                      && request.resource.data.participantName == resource.data.participantName;
+
+        // Allow members to leave (remove their verification)
+        allow delete: if isAuthenticated();
+      }
+
       // Categories, fxRates, expenses: Inherit trip permissions
       match /{document=**} {
         allow read, write: if isAuthenticated();

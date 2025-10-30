@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../domain/models/trip.dart';
+import '../../domain/models/verified_member.dart';
 import '../../domain/repositories/trip_repository.dart';
 import '../models/trip_model.dart';
 
@@ -138,6 +140,79 @@ class TripRepositoryImpl implements TripRepository {
       return doc.exists;
     } catch (e) {
       throw Exception('Failed to check if trip exists: $e');
+    }
+  }
+
+  @override
+  Future<void> addVerifiedMember({
+    required String tripId,
+    required String participantId,
+    required String participantName,
+  }) async {
+    try {
+      _log('➕ Adding verified member: $participantName (ID: $participantId) to trip $tripId');
+
+      final verifiedMember = VerifiedMember(
+        participantId: participantId,
+        participantName: participantName,
+        verifiedAt: DateTime.now(),
+      );
+
+      // Use participantId as document ID for deduplication
+      await _firestoreService.trips
+          .doc(tripId)
+          .collection('verifiedMembers')
+          .doc(participantId)
+          .set(verifiedMember.toFirestore());
+
+      _log('✅ Successfully added verified member: $participantName');
+    } catch (e) {
+      _log('❌ Failed to add verified member: $e');
+      throw Exception('Failed to add verified member: $e');
+    }
+  }
+
+  @override
+  Future<List<VerifiedMember>> getVerifiedMembers(String tripId) async {
+    try {
+      _log('📥 Getting verified members for trip: $tripId');
+
+      final snapshot = await _firestoreService.trips
+          .doc(tripId)
+          .collection('verifiedMembers')
+          .orderBy('verifiedAt', descending: true)
+          .get();
+
+      final members = snapshot.docs
+          .map((doc) => VerifiedMember.fromFirestore(doc.data(), doc.id))
+          .toList();
+
+      _log('✅ Retrieved ${members.length} verified members');
+      return members;
+    } catch (e) {
+      _log('❌ Failed to get verified members: $e');
+      throw Exception('Failed to get verified members: $e');
+    }
+  }
+
+  @override
+  Future<void> removeVerifiedMember({
+    required String tripId,
+    required String participantId,
+  }) async {
+    try {
+      _log('🗑️ Removing verified member (ID: $participantId) from trip $tripId');
+
+      await _firestoreService.trips
+          .doc(tripId)
+          .collection('verifiedMembers')
+          .doc(participantId)
+          .delete();
+
+      _log('✅ Successfully removed verified member');
+    } catch (e) {
+      _log('❌ Failed to remove verified member: $e');
+      throw Exception('Failed to remove verified member: $e');
     }
   }
 }

@@ -5,6 +5,7 @@ import '../cubits/trip_cubit.dart';
 import '../cubits/trip_state.dart';
 import '../widgets/recovery_code_dialog.dart';
 import '../../../../core/models/currency_code.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
@@ -53,7 +54,7 @@ class _TripCreatePageState extends State<TripCreatePage> {
 
       if (!mounted || recoveryCode == null) {
         // If code not found or widget unmounted, still navigate
-        if (mounted) context.go('/');
+        if (mounted) context.go(AppRoutes.home);
         return;
       }
 
@@ -72,12 +73,12 @@ class _TripCreatePageState extends State<TripCreatePage> {
       if (!mounted) return;
 
       // Navigate to home after user closes dialog
-      context.go('/');
+      context.go(AppRoutes.home);
     } catch (e) {
       // If recovery code fetch fails, still navigate (non-fatal)
       debugPrint('Failed to fetch recovery code after creation: $e');
       if (mounted) {
-        context.go('/');
+        context.go(AppRoutes.home);
       }
     }
   }
