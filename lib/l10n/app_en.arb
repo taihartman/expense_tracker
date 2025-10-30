@@ -341,10 +341,21 @@
   "receiptSplitWizardUpdatedSuccess": "Expense updated successfully!",
   "receiptSplitWizardSaving": "Saving expense...",
 
+  "receiptSplitWizardStepReceiptInfo": "Receipt",
   "receiptSplitWizardStepPeople": "People",
   "receiptSplitWizardStepItems": "Items",
-  "receiptSplitWizardStepExtras": "Extras",
+  "receiptSplitWizardStepExtras": "Tip",
   "receiptSplitWizardStepReview": "Review",
+
+  "receiptSplitReceiptInfoTitle": "Receipt Details",
+  "receiptSplitReceiptInfoDescription": "Enter the subtotal and tax from your receipt",
+  "receiptSplitReceiptInfoSubtotalLabel": "Subtotal (before tax & tip) *",
+  "receiptSplitReceiptInfoSubtotalHint": "0.00",
+  "receiptSplitReceiptInfoSubtotalHelper": "Items you add should sum to this amount",
+  "receiptSplitReceiptInfoTaxLabel": "Tax Amount",
+  "receiptSplitReceiptInfoTaxHint": "0.00",
+  "receiptSplitReceiptInfoTaxHelper": "Leave blank if no tax",
+  "receiptSplitReceiptInfoContinueButton": "Continue to Payer",
 
   "receiptSplitPeopleTitle": "Who paid for this expense? *",
   "receiptSplitPeopleDescription": "Select the person who paid",
@@ -368,7 +379,13 @@
   "receiptSplitItemsFieldPriceHint": "0.00",
   "receiptSplitItemsAddButton": "Add Item",
   "receiptSplitItemsUpdateButton": "Update Item",
-  "receiptSplitItemsContinueButton": "Continue to Extras",
+  "receiptSplitItemsContinueButton": "Continue to Tip",
+  "receiptSplitItemsExpectedSubtotal": "Expected Subtotal",
+  "receiptSplitItemsCurrentTotal": "Current Items Total",
+  "receiptSplitItemsDifference": "Difference",
+  "receiptSplitItemsSubtotalMatch": "✓ Items match expected subtotal",
+  "receiptSplitItemsSubtotalMismatch": "Items don't match expected subtotal",
+  "receiptSplitItemsValidationHelper": "Keep adding items until total matches subtotal",
   "receiptSplitItemsAssignDialogTitle": "Assign: {itemName}",
   "@itemizedItemsAssignDialogTitle": {
     "placeholders": {
@@ -378,23 +395,39 @@
     }
   },
 
-  "receiptSplitExtrasTitle": "Add tax & tip",
+  "receiptSplitExtrasTitle": "Add tip",
   "receiptSplitExtrasDescription": "Optional - leave blank if not applicable",
-  "receiptSplitExtrasTaxCardTitle": "Sales Tax",
-  "receiptSplitExtrasTaxRateLabel": "Tax Rate (%)",
-  "receiptSplitExtrasTaxRateHint": "e.g., 8.875",
-  "receiptSplitExtrasTaxRateHelper": "Applies to all taxable items",
   "receiptSplitExtrasTipCardTitle": "Tip / Gratuity",
-  "receiptSplitExtrasTipRateLabel": "Tip Rate (%)",
+  "receiptSplitExtrasTipAmountLabel": "Tip Amount",
+  "receiptSplitExtrasTipAmountHint": "0.00",
+  "receiptSplitExtrasTipRateLabel": "Or Tip Rate (%)",
   "receiptSplitExtrasTipRateHint": "e.g., 18",
-  "receiptSplitExtrasTipRateHelper": "Calculated on pre-tax subtotal",
-  "receiptSplitExtrasInfoMessage": "Tax and tip will be split proportionally based on each person's item subtotal",
+  "receiptSplitExtrasTipRateHelper": "Calculated on items subtotal",
+  "receiptSplitExtrasInfoMessage": "Tip will be split proportionally based on each person's item subtotal",
   "receiptSplitExtrasContinueButton": "Continue to Review",
 
   "receiptSplitReviewTitle": "Review & Save",
   "receiptSplitReviewDescription": "Check the breakdown before saving",
   "receiptSplitReviewCannotSaveTitle": "Cannot Save",
   "receiptSplitReviewWarningTitle": "Warning",
+  "receiptSplitReviewSubtotalWarningTitle": "Subtotal Mismatch",
+  "receiptSplitReviewSubtotalWarningMessage": "Your items ({itemsTotal}) don't match the expected subtotal ({expectedSubtotal}). Difference: {difference}",
+  "@receiptSplitReviewSubtotalWarningMessage": {
+    "placeholders": {
+      "itemsTotal": {
+        "type": "String"
+      },
+      "expectedSubtotal": {
+        "type": "String"
+      },
+      "difference": {
+        "type": "String"
+      }
+    }
+  },
+  "receiptSplitReviewExpectedSubtotal": "Expected Subtotal",
+  "receiptSplitReviewItemsTotal": "Items Total",
+  "receiptSplitReviewTaxFromReceipt": "Tax (from receipt)",
   "receiptSplitReviewGrandTotal": "Grand Total",
   "receiptSplitReviewPeopleSplitting": "{count, plural, =1{1 person splitting} other{{count} people splitting}}",
   "@itemizedReviewPeopleSplitting": {

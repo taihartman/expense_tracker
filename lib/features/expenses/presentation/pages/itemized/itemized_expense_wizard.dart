@@ -5,18 +5,20 @@ import '../../cubits/itemized_expense_state.dart';
 import '../../../domain/models/expense.dart';
 import '../../../../../core/models/currency_code.dart';
 import '../../../../../core/l10n/l10n_extensions.dart';
+import 'steps/receipt_info_step_page.dart';
 import 'steps/people_step_page.dart';
 import 'steps/items_step_page.dart';
 import 'steps/extras_step_page.dart';
 import 'steps/review_step_page.dart';
 
-/// 4-step wizard for creating/editing itemized expenses
+/// 5-step wizard for creating/editing itemized expenses
 ///
 /// Steps:
-/// 1. People - Select participants and payer
-/// 2. Items - Add line items and assign to people
-/// 3. Extras - Configure tax, tip, fees, discounts
-/// 4. Review - Review breakdown and save
+/// 1. Receipt Info - Enter subtotal and tax from receipt
+/// 2. People - Select payer
+/// 3. Items - Add line items and assign to people
+/// 4. Tip - Configure tip
+/// 5. Review - Review breakdown and save
 class ItemizedExpenseWizard extends StatefulWidget {
   final String tripId;
   final List<String> participants;
@@ -85,7 +87,7 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
   }
 
   void _onStepContinue() {
-    if (_currentStep < 3) {
+    if (_currentStep < 4) {
       setState(() {
         _currentStep++;
       });
@@ -181,6 +183,11 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   children: [
+                    ReceiptInfoStepPage(
+                      currencyCode: widget.currency.code,
+                      onContinue: _onStepContinue,
+                      onCancel: _onStepCancel,
+                    ),
                     PeopleStepPage(
                       participants: widget.participants,
                       participantNames: widget.participantNames,
@@ -228,24 +235,30 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
         children: [
           _buildStepIndicator(
             0,
-            context.l10n.receiptSplitWizardStepPeople,
-            Icons.people,
+            context.l10n.receiptSplitWizardStepReceiptInfo,
+            Icons.receipt,
           ),
           _buildStepConnector(0),
           _buildStepIndicator(
             1,
-            context.l10n.receiptSplitWizardStepItems,
-            Icons.receipt_long,
+            context.l10n.receiptSplitWizardStepPeople,
+            Icons.people,
           ),
           _buildStepConnector(1),
           _buildStepIndicator(
             2,
-            context.l10n.receiptSplitWizardStepExtras,
-            Icons.add_circle_outline,
+            context.l10n.receiptSplitWizardStepItems,
+            Icons.receipt_long,
           ),
           _buildStepConnector(2),
           _buildStepIndicator(
             3,
+            context.l10n.receiptSplitWizardStepExtras,
+            Icons.monetization_on,
+          ),
+          _buildStepConnector(3),
+          _buildStepIndicator(
+            4,
             context.l10n.receiptSplitWizardStepReview,
             Icons.check_circle_outline,
           ),

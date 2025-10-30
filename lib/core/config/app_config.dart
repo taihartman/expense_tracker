@@ -33,6 +33,19 @@ class AppConfig {
   static const String appVersion = '1.0.2';
 
   // ============================================================================
+  // Debug & Development
+  // ============================================================================
+
+  /// Enable debug panel for mobile debugging.
+  ///
+  /// Set to `true` to show floating debug panel with routing logs.
+  /// Set to `false` to completely disable (zero overhead).
+  /// Uses `kDebugMode` by default (only enabled in debug builds).
+  ///
+  /// To disable: Change to `static const bool enableDebugPanel = false;`
+  static const bool enableDebugPanel = true;  // TODO: Set to `kDebugMode` or `false` for production
+
+  // ============================================================================
   // Future Configuration
   // ============================================================================
 

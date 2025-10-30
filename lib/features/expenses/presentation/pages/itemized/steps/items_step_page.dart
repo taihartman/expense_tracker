@@ -46,7 +46,8 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
       builder: (context, state) {
         final items = _getItems(state);
         final participants = _getParticipants(state);
-        _getCurrency(state);
+        final currency = _getCurrency(state);
+        final expectedSubtotal = _getExpectedSubtotal(state);
 
         return Padding(
           padding: const EdgeInsets.all(16),
@@ -65,7 +66,10 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                 context.l10n.receiptSplitItemsDescription,
                 style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              if (expectedSubtotal != null)
+                _buildValidationBanner(expectedSubtotal, items, currency),
+              const SizedBox(height: 16),
               Expanded(
                 child: items.isEmpty
                     ? _buildEmptyState()
@@ -480,5 +484,126 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
       currencyCode = state.draft.currencyCode;
     }
     return CurrencyCode.fromString(currencyCode) ?? CurrencyCode.usd;
+  }
+
+  Decimal? _getExpectedSubtotal(ItemizedExpenseState state) {
+    if (state is ItemizedExpenseEditing) {
+      return state.expectedSubtotal;
+    } else if (state is ItemizedExpenseCalculating) {
+      return state.draft.expectedSubtotal;
+    } else if (state is ItemizedExpenseReady) {
+      return state.draft.expectedSubtotal;
+    }
+    return null;
+  }
+
+  Widget _buildValidationBanner(
+    Decimal expectedSubtotal,
+    List<LineItem> items,
+    CurrencyCode currency,
+  ) {
+    // Calculate current items total
+    final currentTotal = items.fold<Decimal>(
+      Decimal.zero,
+      (sum, item) => sum + item.itemTotal,
+    );
+
+    // Calculate difference
+    final difference = (currentTotal - expectedSubtotal).abs();
+    final tolerance = Decimal.parse('0.01');
+    final isMatch = difference <= tolerance;
+
+    return Card(
+      elevation: 2,
+      color: isMatch ? Colors.green.shade50 : Colors.orange.shade50,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isMatch ? Colors.green : Colors.orange,
+          width: 2,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  isMatch ? Icons.check_circle : Icons.warning,
+                  color: isMatch ? Colors.green : Colors.orange,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    isMatch
+                        ? context.l10n.receiptSplitItemsSubtotalMatch
+                        : context.l10n.receiptSplitItemsSubtotalMismatch,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isMatch
+                          ? Colors.green.shade900
+                          : Colors.orange.shade900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildValidationRow(
+              context.l10n.receiptSplitItemsExpectedSubtotal,
+              '${currency.code} ${expectedSubtotal.toStringAsFixed(2)}',
+              Colors.grey.shade700,
+            ),
+            const SizedBox(height: 8),
+            _buildValidationRow(
+              context.l10n.receiptSplitItemsCurrentTotal,
+              '${currency.code} ${currentTotal.toStringAsFixed(2)}',
+              isMatch ? Colors.green.shade900 : Colors.orange.shade900,
+            ),
+            const SizedBox(height: 8),
+            _buildValidationRow(
+              context.l10n.receiptSplitItemsDifference,
+              '${currency.code} ${difference.toStringAsFixed(2)}',
+              isMatch ? Colors.green.shade900 : Colors.orange.shade900,
+            ),
+            if (!isMatch) ...[
+              const SizedBox(height: 12),
+              Text(
+                context.l10n.receiptSplitItemsValidationHelper,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildValidationRow(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
   }
 }

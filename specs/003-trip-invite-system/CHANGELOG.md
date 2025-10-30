@@ -28,6 +28,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## 2025-10-30
 
+### Added
+- **On-screen Debug Panel for Mobile Debugging**: Implemented comprehensive debug panel system to diagnose deep link routing issues on mobile devices where browser console is not accessible
+  - `lib/core/config/app_config.dart`: Added `enableDebugPanel` constant for single-line enable/disable
+  - `lib/core/utils/debug_logger.dart`: Global logging system with automatic no-op when disabled
+  - `lib/core/widgets/debug_panel.dart`: Floating debug panel widget with:
+    - Minimizable orange FAB button
+    - Expandable panel showing routing state (current URI, matched location, query params)
+    - Real-time logs with color coding (red for errors, green for success, cyan for redirects)
+    - "Copy logs" button to clipboard for sharing
+    - Auto-hide when `AppConfig.enableDebugPanel = false`
+  - `lib/core/widgets/debug_overlay.dart`: Wrapper that injects debug panel into app with zero overhead when disabled
+  - Updated `lib/core/router/app_router.dart`: Replaced `debugPrint` with `DebugLogger.log` for on-screen visibility
+  - Updated `lib/main.dart`: Wrapped MaterialApp with `DebugOverlay` builder
+  - **Design Goal**: Easy to disable - just change one line in AppConfig from `true` to `false`
+  - **Use Case**: Diagnose deep link capture and routing flow directly on mobile device screen
+
 ### Fixed
 - **Mobile web clipboard issue (RESOLVED)**: Completely rewrote clipboard logic to be 100% synchronous. The previous fix still had an async gap (`await _verifiedMembersFuture`) that broke mobile clipboard access. New implementation:
   - Pre-computes complete share message in `initState()` and stores in `_shareMessage` state variable
@@ -39,11 +55,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - **Invite link deep linking issue (FINALLY RESOLVED after 3 attempts)**:
   - **Attempt 1 (commit e109158)**: Removed redundant `context.go(AppRoutes.splash)` from SplashPage - fixed warm start ✅
   - **Attempt 2 (commit 275afad)**: Removed `initialLocation: AppRoutes.splash` - BROKE cold start ❌
-  - **Attempt 3 (this commit)**: Added back `initialLocation: AppRoutes.splash` + debug logging - fixes cold start ✅
+  - **Attempt 3 (commit 62804ed)**: Added back `initialLocation: AppRoutes.splash` + debug logging - fixes cold start ✅
   - **Root cause understanding**: WITHOUT `initialLocation`, GoRouter defaults to `/` on cold start, causing `_originalLocation` to capture `/` instead of the invite link. WITH `initialLocation: AppRoutes.splash`, GoRouter properly captures the invite link when user navigates to it.
   - **Final solution**: Keep `initialLocation: AppRoutes.splash` AND remove redundant SplashPage navigation
   - Deep links now work correctly on both cold start (app closed/refreshed) and warm start (app already open)
-  - Added comprehensive debug logging to track routing flow in browser console
+  - Added comprehensive debug logging to track routing flow in browser console (and now on-screen via debug panel)
 
 ## 2025-10-29 - ✅ FEATURE COMPLETE: Trip Invite System (003)
 

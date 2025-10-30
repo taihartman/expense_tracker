@@ -47,6 +47,12 @@ class ItemizedExpenseEditing extends ItemizedExpenseState {
   /// Allocation rules
   final AllocationRule allocation;
 
+  /// Expected subtotal from receipt (items should sum to this)
+  final Decimal? expectedSubtotal;
+
+  /// Tax amount from receipt (absolute amount, not percentage)
+  final Decimal? taxAmount;
+
   /// Validation errors (empty if valid)
   final List<String> validationErrors;
 
@@ -74,6 +80,8 @@ class ItemizedExpenseEditing extends ItemizedExpenseState {
     required this.items,
     required this.extras,
     required this.allocation,
+    this.expectedSubtotal,
+    this.taxAmount,
     this.validationErrors = const [],
     this.validationWarnings = const [],
     this.originalDate,
@@ -101,6 +109,8 @@ class ItemizedExpenseEditing extends ItemizedExpenseState {
     List<LineItem>? items,
     Extras? extras,
     AllocationRule? allocation,
+    Decimal? expectedSubtotal,
+    Decimal? taxAmount,
     List<String>? validationErrors,
     List<String>? validationWarnings,
     DateTime? originalDate,
@@ -117,6 +127,8 @@ class ItemizedExpenseEditing extends ItemizedExpenseState {
       items: items ?? this.items,
       extras: extras ?? this.extras,
       allocation: allocation ?? this.allocation,
+      expectedSubtotal: expectedSubtotal ?? this.expectedSubtotal,
+      taxAmount: taxAmount ?? this.taxAmount,
       validationErrors: validationErrors ?? this.validationErrors,
       validationWarnings: validationWarnings ?? this.validationWarnings,
       originalDate: originalDate ?? this.originalDate,
@@ -136,6 +148,8 @@ class ItemizedExpenseEditing extends ItemizedExpenseState {
     items,
     extras,
     allocation,
+    expectedSubtotal,
+    taxAmount,
     validationErrors,
     validationWarnings,
     originalDate,

@@ -95,8 +95,24 @@ class ActivityLog {
   /// Optional metadata about the activity
   ///
   /// Examples:
-  /// - For expenses: {'expenseId': 'xxx', 'amount': 100.0}
   /// - For memberJoined: {'joinMethod': 'qrCode', 'invitedBy': 'participant-id'}
+  /// - For expenseEdited: {
+  ///     'expenseId': 'exp-123',
+  ///     'changes': {
+  ///       'amount': {'old': '100.00', 'new': '150.00'},
+  ///       'currency': {'old': 'USD', 'new': 'VND'},
+  ///       'description': {'old': 'Dinner', 'new': 'Lunch'},
+  ///       'category': {'oldId': null, 'newId': 'cat-1', 'oldName': 'None', 'newName': 'Food'},
+  ///       'payer': {'oldId': 'bob-id', 'newId': 'alice-id', 'oldName': 'Bob', 'newName': 'Alice'},
+  ///       'date': {'old': '2025-01-01', 'new': '2025-01-02'},
+  ///       'splitType': {'old': 'equal', 'new': 'weighted'},
+  ///       'participants': {
+  ///         'added': [{'id': 'charlie-id', 'name': 'Charlie', 'weight': 1}],
+  ///         'removed': [{'id': 'dave-id', 'name': 'Dave', 'weight': 1}],
+  ///         'weightsChanged': [{'id': 'bob-id', 'name': 'Bob', 'oldWeight': 1, 'newWeight': 2}]
+  ///       }
+  ///     }
+  ///   }
   final Map<String, dynamic>? metadata;
 
   const ActivityLog({

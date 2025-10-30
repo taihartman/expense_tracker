@@ -54,12 +54,15 @@ class ExpenseListPage extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: ExpenseFabSpeedDial(
-        tripId: tripId,
-        onQuickExpenseTap: () {
-          showExpenseFormBottomSheet(context: context, tripId: tripId);
-        },
-        onReceiptSplitTap: () async {
+      floatingActionButton: SizedBox(
+        height: 200,
+        width: 200,
+        child: ExpenseFabSpeedDial(
+          tripId: tripId,
+          onQuickExpenseTap: () {
+            showExpenseFormBottomSheet(context: context, tripId: tripId);
+          },
+          onReceiptSplitTap: () async {
           // Get trip info and current user
           final tripCubit = context.read<TripCubit>();
           final tripState = tripCubit.state;
@@ -96,6 +99,7 @@ class ExpenseListPage extends StatelessWidget {
             ),
           );
         },
+        ),
       ),
       body: BlocBuilder<ExpenseCubit, ExpenseState>(
         builder: (context, state) {

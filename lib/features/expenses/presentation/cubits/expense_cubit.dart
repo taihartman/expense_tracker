@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/expense.dart';
 import '../../domain/repositories/expense_repository.dart';
+import '../../domain/utils/expense_change_detector.dart';
 import '../../../trips/domain/models/activity_log.dart';
 import '../../../trips/domain/repositories/activity_log_repository.dart';
+import '../../../trips/domain/repositories/trip_repository.dart';
 import 'expense_state.dart';
 
 /// Helper function to log with timestamps
@@ -16,14 +18,17 @@ void _log(String message) {
 class ExpenseCubit extends Cubit<ExpenseState> {
   final ExpenseRepository _expenseRepository;
   final ActivityLogRepository? _activityLogRepository;
+  final TripRepository? _tripRepository;
   String? _currentTripId;
   StreamSubscription<List<Expense>>? _expensesSubscription;
 
   ExpenseCubit({
     required ExpenseRepository expenseRepository,
     ActivityLogRepository? activityLogRepository,
+    TripRepository? tripRepository,
   }) : _expenseRepository = expenseRepository,
        _activityLogRepository = activityLogRepository,
+       _tripRepository = tripRepository,
        super(const ExpenseInitial());
 
   /// Load all expenses for a trip
@@ -159,31 +164,63 @@ class ExpenseCubit extends Cubit<ExpenseState> {
     try {
       emit(const ExpenseUpdating());
 
+      // Fetch old expense for change detection (before updating)
+      Expense? oldExpense;
+      if (state is ExpenseLoaded) {
+        final currentState = state as ExpenseLoaded;
+        oldExpense = currentState.expenses.firstWhere(
+          (e) => e.id == expense.id,
+          orElse: () => throw Exception('Expense not found'),
+        );
+      }
+
       await _expenseRepository.updateExpense(expense);
 
       emit(ExpenseUpdated(expense));
 
-      // Log activity
+      // Log activity with detailed change tracking
       if (_activityLogRepository != null &&
           actorName != null &&
-          actorName.isNotEmpty) {
-        _log('📝 Logging expense_edited activity...');
+          actorName.isNotEmpty &&
+          oldExpense != null) {
+        _log('📝 Logging expense_edited activity with change detection...');
         try {
-          final description =
+          // Fetch trip to get participant names for change descriptions
+          final trip = _tripRepository != null
+              ? await _tripRepository.getTripById(expense.tripId)
+              : null;
+
+          // Detect all changes between old and new expense
+          final expenseChanges = trip != null
+              ? ExpenseChangeDetector.detectChanges(
+                  oldExpense,
+                  expense,
+                  trip.participants,
+                )
+              : ExpenseChanges({}); // Fallback if trip not available
+
+          // Build description for activity log
+          final expenseName =
               expense.description != null && expense.description!.isNotEmpty
               ? expense.description!
-              : '${expense.amount} ${expense.currency.name.toUpperCase()}';
+              : '${expense.amount} ${expense.currency.code}';
 
+          // Create activity log with rich metadata
           final activityLog = ActivityLog(
             id: '', // Firestore will generate this
             tripId: expense.tripId,
             type: ActivityType.expenseEdited,
             actorName: actorName,
-            description: description,
+            description: expenseName,
             timestamp: DateTime.now(),
+            metadata: expenseChanges.hasChanges
+                ? expenseChanges.toMetadata(expense.id)
+                : null,
           );
           await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
+          _log(
+            '✅ Activity logged with ${expenseChanges.changes.length} changes tracked',
+          );
         } catch (e) {
           _log('⚠️ Failed to log activity (non-fatal): $e');
           // Don't fail expense update if activity logging fails

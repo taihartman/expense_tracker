@@ -92,33 +92,32 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
   @override
   Widget build(BuildContext context) {
     return Stack(
-      alignment: Alignment.bottomRight,
+      alignment: Alignment.bottomCenter,
       children: [
-        // Backdrop (dismisses Speed Dial when tapped)
-        // Must be FIRST in Stack so FABs are painted on top and receive taps
-        if (_isOpen)
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: _close,
-              child: Container(color: Colors.black.withValues(alpha: 0.3)),
-            ),
-          ),
-
         // Mini FAB 2: Receipt Split (144dp above main)
         if (_isOpen)
           Positioned(
-            right: 0,
             bottom: 144,
             child: FadeTransition(
               opacity: _opacityAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Builder(
-                  builder: (context) => FloatingActionButton.small(
-                    heroTag: 'receiptSplit',
-                    onPressed: _handleReceiptSplitTap,
-                    tooltip: context.l10n.expenseFabReceiptSplitTooltip,
-                    child: const Icon(Icons.receipt_long),
+                  builder: (context) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Receipt Split',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(width: 16),
+                      FloatingActionButton(
+                        heroTag: 'receiptSplit',
+                        onPressed: _handleReceiptSplitTap,
+                        tooltip: context.l10n.expenseFabReceiptSplitTooltip,
+                        child: const Icon(Icons.receipt_long),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -128,18 +127,27 @@ class _ExpenseFabSpeedDialState extends State<ExpenseFabSpeedDial>
         // Mini FAB 1: Quick Expense (72dp above main)
         if (_isOpen)
           Positioned(
-            right: 0,
             bottom: 72,
             child: FadeTransition(
               opacity: _opacityAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Builder(
-                  builder: (context) => FloatingActionButton.small(
-                    heroTag: 'quickExpense',
-                    onPressed: _handleQuickExpenseTap,
-                    tooltip: context.l10n.expenseFabQuickExpenseTooltip,
-                    child: const Icon(Icons.flash_on),
+                  builder: (context) => Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Quick Expense',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(width: 16),
+                      FloatingActionButton(
+                        heroTag: 'quickExpense',
+                        onPressed: _handleQuickExpenseTap,
+                        tooltip: context.l10n.expenseFabQuickExpenseTooltip,
+                        child: const Icon(Icons.flash_on),
+                      ),
+                    ],
                   ),
                 ),
               ),

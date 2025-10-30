@@ -74,6 +74,8 @@ class ReviewStepPage extends StatelessWidget {
               const SizedBox(height: 16),
               if (validationErrors.isNotEmpty)
                 _buildErrorBanner(context, validationErrors),
+              if (state.draft.expectedSubtotal != null)
+                _buildSubtotalMismatchWarning(context, state),
               if (validationWarnings.isNotEmpty)
                 _buildWarningBanner(context, validationWarnings),
               const SizedBox(height: 8),
@@ -410,5 +412,120 @@ class ReviewStepPage extends StatelessWidget {
     if (key.startsWith('fee_')) return key.substring(4);
     if (key.startsWith('discount_')) return key.substring(9);
     return key;
+  }
+
+  Widget _buildSubtotalMismatchWarning(
+    BuildContext context,
+    ItemizedExpenseReady state,
+  ) {
+    final expectedSubtotal = state.draft.expectedSubtotal;
+    if (expectedSubtotal == null) return const SizedBox.shrink();
+
+    // Calculate actual items total
+    final itemsTotal = state.draft.items.fold<Decimal>(
+      Decimal.zero,
+      (sum, item) => sum + item.itemTotal,
+    );
+
+    // Calculate difference
+    final difference = (itemsTotal - expectedSubtotal).abs();
+    final tolerance = Decimal.parse('0.01');
+    final isMatch = difference <= tolerance;
+
+    // Only show warning if there's a mismatch
+    if (isMatch) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        elevation: 2,
+        color: Colors.orange.shade50,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.orange.shade700, width: 2),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: Colors.orange.shade700,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      context.l10n.receiptSplitReviewSubtotalWarningTitle,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.orange.shade900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                context.l10n.receiptSplitReviewSubtotalWarningMessage(
+                  '${currency.code} ${itemsTotal.toStringAsFixed(2)}',
+                  '${currency.code} ${expectedSubtotal.toStringAsFixed(2)}',
+                  '${currency.code} ${difference.toStringAsFixed(2)}',
+                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade800),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  children: [
+                    _buildComparisonRow(
+                      context.l10n.receiptSplitReviewExpectedSubtotal,
+                      '${currency.code} ${expectedSubtotal.toStringAsFixed(2)}',
+                      Colors.grey.shade700,
+                    ),
+                    const Divider(height: 16),
+                    _buildComparisonRow(
+                      context.l10n.receiptSplitReviewItemsTotal,
+                      '${currency.code} ${itemsTotal.toStringAsFixed(2)}',
+                      Colors.orange.shade900,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildComparisonRow(String label, String value, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: valueColor,
+          ),
+        ),
+      ],
+    );
   }
 }
