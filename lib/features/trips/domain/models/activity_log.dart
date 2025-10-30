@@ -28,6 +28,12 @@ enum ActivityType {
   /// Trip was deleted
   tripDeleted,
 
+  /// Trip was archived
+  tripArchived,
+
+  /// Trip was unarchived/restored
+  tripUnarchived,
+
   // Participant Activities
   /// A member joined the trip
   memberJoined,

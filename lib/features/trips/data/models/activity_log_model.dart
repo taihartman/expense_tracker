@@ -90,6 +90,10 @@ class ActivityLogModel extends ActivityLog {
         return 'tripUpdated';
       case ActivityType.tripDeleted:
         return 'tripDeleted';
+      case ActivityType.tripArchived:
+        return 'tripArchived';
+      case ActivityType.tripUnarchived:
+        return 'tripUnarchived';
       case ActivityType.memberJoined:
         return 'memberJoined';
       case ActivityType.participantAdded:
@@ -126,6 +130,10 @@ class ActivityLogModel extends ActivityLog {
         return ActivityType.tripUpdated;
       case 'tripDeleted':
         return ActivityType.tripDeleted;
+      case 'tripArchived':
+        return ActivityType.tripArchived;
+      case 'tripUnarchived':
+        return ActivityType.tripUnarchived;
       case 'memberJoined':
         return ActivityType.memberJoined;
       case 'participantAdded':

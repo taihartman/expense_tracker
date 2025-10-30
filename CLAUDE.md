@@ -114,6 +114,183 @@ flutter format --set-exit-if-changed .
 - `specs/` - Feature specifications managed by Spec-Kit
 - `.specify/` - Spec-Kit configuration and templates
 
+### Mobile-First Design Principles
+
+**⚠️ CRITICAL: This is a mobile-first application.** All features MUST be designed and tested for mobile devices first, then enhanced for larger screens.
+
+#### Core Principles
+
+1. **Mobile is the primary target** - Design for 375x667px (iPhone SE) first
+2. **Touch-first interactions** - All touch targets minimum 44x44px
+3. **Vertical scrolling preferred** - Avoid horizontal scrolling
+4. **Progressive enhancement** - Start with mobile, add desktop features
+5. **Keyboard-aware layouts** - Forms must remain visible when keyboard appears
+
+#### Responsive Breakpoints
+
+```dart
+final screenWidth = MediaQuery.of(context).size.width;
+final isMobile = screenWidth < 600;      // Phones
+final isTablet = screenWidth >= 600 && screenWidth < 1024;  // Tablets
+final isDesktop = screenWidth >= 1024;   // Desktop browsers
+```
+
+#### Required Responsive Patterns
+
+**1. Spacing & Padding**
+```dart
+// Use MediaQuery to adjust spacing
+final horizontalPadding = isMobile ? 12.0 : 16.0;
+final verticalSpacing = isMobile ? 12.0 : 16.0;
+
+Padding(
+  padding: EdgeInsets.symmetric(
+    horizontal: horizontalPadding,
+    vertical: verticalSpacing,
+  ),
+  child: ...
+)
+```
+
+**2. Font Sizes**
+```dart
+// Reduce font sizes on mobile for better space utilization
+Text(
+  title,
+  style: TextStyle(
+    fontSize: isMobile ? 18 : 20,
+    fontWeight: FontWeight.bold,
+  ),
+)
+
+Text(
+  description,
+  style: TextStyle(
+    fontSize: isMobile ? 13 : 14,
+    color: Colors.grey.shade600,
+  ),
+)
+```
+
+**3. Button & Icon Sizes**
+```dart
+// Smaller icons/buttons on mobile to save space
+IconButton(
+  icon: Icon(Icons.edit, size: isMobile ? 20 : 24),
+  padding: isMobile ? EdgeInsets.all(4) : null,
+  constraints: isMobile
+    ? BoxConstraints(minWidth: 36, minHeight: 36)
+    : null,
+)
+```
+
+**4. Scrollable Forms**
+```dart
+// ALWAYS wrap forms in SingleChildScrollView
+SingleChildScrollView(
+  child: Form(
+    child: Column(
+      children: [
+        // Form fields...
+      ],
+    ),
+  ),
+)
+```
+
+**5. Modal Bottom Sheets for Complex Input**
+```dart
+// Use modals for multi-field forms on mobile
+showModalBottomSheet(
+  context: context,
+  isScrollControlled: true,  // Critical for keyboard handling
+  backgroundColor: Colors.transparent,
+  builder: (context) => Container(
+    padding: EdgeInsets.only(
+      bottom: MediaQuery.of(context).viewInsets.bottom,  // Keyboard padding
+    ),
+    child: SingleChildScrollView(
+      child: YourFormWidget(),
+    ),
+  ),
+)
+```
+
+#### Common Mobile Anti-Patterns to Avoid
+
+**❌ DON'T:**
+- Use fixed-height layouts that compete for vertical space
+- Place forms at the bottom where keyboards will hide them
+- Use `Expanded` widgets inside non-scrollable Columns with many children
+- Hardcode padding/spacing values without responsive adjustment
+- Create touch targets smaller than 44x44px
+- Assume landscape orientation
+- Use desktop-first design
+
+**✅ DO:**
+- Use `SingleChildScrollView` for all form pages
+- Use modal bottom sheets for complex input flows on mobile
+- Test on 375x667px viewport before considering it "done"
+- Make all text visible when keyboard appears
+- Use `MediaQuery` for responsive spacing and sizing
+- Design for portrait-first, then adapt
+- Implement mobile-first, enhance for desktop
+
+#### Mobile Testing Checklist
+
+Before marking any UI feature as complete, verify:
+
+- [ ] Tested on mobile viewport (375x667px in Chrome DevTools)
+- [ ] All text fields visible when keyboard appears
+- [ ] No horizontal scrolling required
+- [ ] Touch targets are minimum 44x44px
+- [ ] Forms use `SingleChildScrollView`
+- [ ] Responsive spacing using `MediaQuery` (`isMobile` checks)
+- [ ] Font sizes adjusted for mobile
+- [ ] Icons/buttons sized appropriately for mobile
+- [ ] No fixed-height layouts competing for vertical space
+- [ ] Modals/bottom sheets used for complex input on mobile
+
+#### Testing Commands
+
+```bash
+# Run with mobile viewport in Chrome
+flutter run -d chrome --web-browser-flag "--window-size=375,667"
+
+# Test specific mobile scenarios
+# Open Chrome DevTools (F12) → Toggle device toolbar → Select iPhone SE
+flutter run -d chrome
+```
+
+#### Helper Utilities
+
+Use these helpers from `lib/core/utils/responsive.dart` (if available):
+
+```dart
+import 'package:expense_tracker/core/utils/responsive.dart';
+
+// Check device type
+if (isMobile(context)) { ... }
+if (isTablet(context)) { ... }
+if (isDesktop(context)) { ... }
+
+// Get responsive values
+final padding = responsivePadding(context);  // 12 mobile, 16 desktop
+final fontSize = responsiveFontSize(context, base: 16);  // 14 mobile, 16 desktop
+```
+
+#### Real-World Example: Items Step Page
+
+See `lib/features/expenses/presentation/pages/itemized/steps/items_step_page.dart` for a complete mobile-first implementation:
+
+- ✅ Uses modal bottom sheet for add/edit form
+- ✅ ListView uses full available height
+- ✅ Responsive padding/spacing with `MediaQuery`
+- ✅ Responsive font sizes (18px mobile vs 20px desktop)
+- ✅ Smaller icons on mobile (20px vs 24px)
+- ✅ Auto-scroll animation when adding items
+- ✅ FAB positioned for thumb access
+
 ### Localization & String Management
 
 The app uses **Flutter's built-in localization system** (`flutter_localizations` + `intl`) for all user-facing strings.
@@ -241,6 +418,229 @@ To add a new language (e.g., Vietnamese):
 3. Run `flutter pub get` to regenerate localization files
 
 The system will automatically use the user's device locale.
+
+### Currency Input System
+
+The app uses a **unified currency input system** that automatically formats amounts with thousand separators and currency-specific decimal places.
+
+**Key Files**:
+- `lib/shared/widgets/currency_text_field.dart` - Reusable currency input widget
+- `lib/shared/utils/currency_input_formatter.dart` - Currency-aware input formatter
+- `lib/core/models/currency_code.dart` - Currency enum with metadata
+
+#### When to Use CurrencyTextField
+
+**ALWAYS use `CurrencyTextField`** for any monetary amount input in the app. This provides:
+- ✅ Automatic thousand separators (1,000,000)
+- ✅ Currency-aware decimal places (USD = 2, VND = 0)
+- ✅ Built-in validation (required, valid number, > 0)
+- ✅ Localized error messages
+- ✅ Consistent styling across app
+
+#### Basic Usage
+
+```dart
+final _amountController = TextEditingController();
+
+// In your widget build method:
+CurrencyTextField(
+  controller: _amountController,
+  currencyCode: CurrencyCode.usd,  // or CurrencyCode.vnd
+  label: context.l10n.expenseFieldAmountLabel,
+)
+```
+
+#### Advanced Usage
+
+```dart
+CurrencyTextField(
+  controller: _amountController,
+  currencyCode: selectedCurrency,
+  label: context.l10n.expenseFieldAmountLabel,
+  hint: 'Enter amount',
+  isRequired: false,        // Optional field (default: true)
+  allowZero: true,          // Allow 0 as valid (default: false)
+  prefixIcon: Icons.money,  // Optional icon
+  onAmountChanged: (amount) {
+    // Called with parsed Decimal value (or null if invalid)
+    print('Amount: $amount');
+  },
+)
+```
+
+#### Pre-filling Values When Editing
+
+When editing an existing expense, use the `formatAmountForInput` helper to properly format the initial value:
+
+```dart
+final _amountController = TextEditingController(
+  text: expense != null
+      ? formatAmountForInput(expense.amount, expense.currency)
+      : '',
+);
+```
+
+This ensures the value displays with thousand separators (e.g., "1,000.50" instead of "1000.5").
+
+#### Parsing User Input
+
+The `CurrencyTextField` handles parsing internally, but if you need to manually parse the formatted text:
+
+```dart
+final cleanValue = stripCurrencyFormatting(_amountController.text);
+final amount = Decimal.parse(cleanValue);
+```
+
+#### Currency-Specific Behavior
+
+The widget automatically adapts to the selected currency:
+
+**USD (2 decimal places)**:
+- User can enter: `1000.50` → Displays: `1,000.50`
+- Maximum 2 decimals enforced
+
+**VND (0 decimal places)**:
+- User can enter: `1000000` → Displays: `1,000,000`
+- No decimal point allowed
+
+#### Validation
+
+`CurrencyTextField` provides built-in validation:
+
+- **Required**: Shows `context.l10n.validationRequired` if empty (when `isRequired: true`)
+- **Invalid number**: Shows `context.l10n.validationInvalidNumber` if not a valid number
+- **Must be > 0**: Shows `context.l10n.validationMustBeGreaterThanZero` (when `allowZero: false`)
+
+All validation messages are automatically localized.
+
+#### Best Practices
+
+**DO**:
+- ✅ Always use `CurrencyTextField` for monetary amounts
+- ✅ Use `formatAmountForInput()` when pre-filling edit forms
+- ✅ Pass the correct `CurrencyCode` enum (not a string)
+- ✅ Use `stripCurrencyFormatting()` before parsing manually
+
+**DON'T**:
+- ❌ Never use plain `TextField` or `TextFormField` for currency amounts
+- ❌ Don't use `FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))` directly
+- ❌ Don't hardcode decimal places - let the currency code determine it
+- ❌ Don't parse `_controller.text` directly - use `stripCurrencyFormatting()` first
+
+#### Example: Complete Form Implementation
+
+```dart
+class ExpenseFormPage extends StatefulWidget {
+  final Expense? expense;
+  // ...
+}
+
+class _ExpenseFormPageState extends State<ExpenseFormPage> {
+  late final TextEditingController _amountController;
+  CurrencyCode _selectedCurrency = CurrencyCode.usd;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Pre-fill when editing
+    _amountController = TextEditingController(
+      text: widget.expense != null
+          ? formatAmountForInput(
+              widget.expense!.amount,
+              widget.expense!.currency,
+            )
+          : '',
+    );
+
+    if (widget.expense != null) {
+      _selectedCurrency = widget.expense!.currency;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      child: Column(
+        children: [
+          // Currency input field
+          CurrencyTextField(
+            controller: _amountController,
+            currencyCode: _selectedCurrency,
+            label: context.l10n.expenseFieldAmountLabel,
+          ),
+
+          // Currency selector
+          DropdownButtonFormField<CurrencyCode>(
+            value: _selectedCurrency,
+            items: CurrencyCode.values.map((currency) {
+              return DropdownMenuItem(
+                value: currency,
+                child: Text(currency.code),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() => _selectedCurrency = value!);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveExpense() {
+    // Parse the amount
+    final cleanValue = stripCurrencyFormatting(_amountController.text);
+    final amount = Decimal.parse(cleanValue);
+
+    // Create/update expense with parsed amount
+    final expense = Expense(
+      amount: amount,
+      currency: _selectedCurrency,
+      // ... other fields
+    );
+  }
+}
+```
+
+#### Adding New Currencies
+
+To add support for a new currency:
+
+1. **Add to `CurrencyCode` enum** (`lib/core/models/currency_code.dart`):
+   ```dart
+   enum CurrencyCode {
+     usd('USD', 2),
+     vnd('VND', 0),
+     eur('EUR', 2),  // New currency
+   }
+   ```
+
+2. **Add display name to localization** (`lib/l10n/app_en.arb`):
+   ```json
+   "currencyEUR": "Euro"
+   ```
+
+3. **Add symbol and display name** to `CurrencyCode`:
+   ```dart
+   String get symbol {
+     switch (this) {
+       case CurrencyCode.eur:
+         return '€';
+       // ... other cases
+     }
+   }
+
+   String displayName(BuildContext context) {
+     switch (this) {
+       case CurrencyCode.eur:
+         return context.l10n.currencyEUR;
+       // ... other cases
+     }
+   }
+   ```
+
+The `CurrencyTextField` and `CurrencyInputFormatter` will automatically handle the new currency's decimal places.
 
 ### Activity Tracking & Audit Trail
 

@@ -3,8 +3,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:expense_tracker/features/trips/domain/models/trip.dart';
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart';
-import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart';
-import 'package:expense_tracker/features/trips/domain/models/activity_log.dart';
+import 'package:expense_tracker/core/services/activity_logger_service.dart';
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart';
 import 'package:expense_tracker/core/services/local_storage_service.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
@@ -15,7 +14,7 @@ import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.da
 // Generate mocks
 @GenerateMocks([
   TripRepository,
-  ActivityLogRepository,
+  ActivityLoggerService,
   CategoryRepository,
   LocalStorageService,
 ])
@@ -24,13 +23,13 @@ import 'trip_cubit_test.mocks.dart';
 void main() {
   late TripCubit cubit;
   late MockTripRepository mockTripRepository;
-  late MockActivityLogRepository mockActivityLogRepository;
+  late MockActivityLoggerService mockActivityLoggerService;
   late MockCategoryRepository mockCategoryRepository;
   late MockLocalStorageService mockLocalStorageService;
 
   setUp(() {
     mockTripRepository = MockTripRepository();
-    mockActivityLogRepository = MockActivityLogRepository();
+    mockActivityLoggerService = MockActivityLoggerService();
     mockCategoryRepository = MockCategoryRepository();
     mockLocalStorageService = MockLocalStorageService();
 
@@ -41,7 +40,7 @@ void main() {
     cubit = TripCubit(
       tripRepository: mockTripRepository,
       localStorageService: mockLocalStorageService,
-      activityLogRepository: mockActivityLogRepository,
+      activityLoggerService: mockActivityLoggerService,
       categoryRepository: mockCategoryRepository,
     );
   });
@@ -69,7 +68,7 @@ void main() {
 
       when(mockTripRepository.createTrip(any)).thenAnswer((_) async => createdTrip);
       when(mockCategoryRepository.seedDefaultCategories(any)).thenAnswer((_) async => []);
-      when(mockActivityLogRepository.addLog(any)).thenAnswer((_) async => 'log-123');
+      when(mockActivityLoggerService.logTripCreated(any, any)).thenAnswer((_) async {});
       when(mockLocalStorageService.addJoinedTrip(any)).thenAnswer((_) async => {});
       when(mockTripRepository.getAllTrips()).thenAnswer((_) => Stream.value([createdTrip]));
 
@@ -109,7 +108,7 @@ void main() {
 
       when(mockTripRepository.createTrip(any)).thenAnswer((_) async => createdTrip);
       when(mockCategoryRepository.seedDefaultCategories(any)).thenAnswer((_) async => []);
-      when(mockActivityLogRepository.addLog(any)).thenAnswer((_) async => 'log-123');
+      when(mockActivityLoggerService.logTripCreated(any, any)).thenAnswer((_) async {});
       when(mockLocalStorageService.addJoinedTrip(any)).thenAnswer((_) async => {});
       when(mockTripRepository.getAllTrips()).thenAnswer((_) => Stream.value([createdTrip]));
 
@@ -123,12 +122,11 @@ void main() {
       // Wait for stream to complete
       await Future.delayed(const Duration(milliseconds: 100));
 
-      // Assert
-      final capturedLog = verify(mockActivityLogRepository.addLog(captureAny)).captured.single as ActivityLog;
-      expect(capturedLog.type, ActivityType.tripCreated);
-      expect(capturedLog.actorName, creatorName);
-      expect(capturedLog.tripId, createdTrip.id);
-      expect(capturedLog.description, contains(tripName));
+      // Assert - verify service method was called
+      verify(mockActivityLoggerService.logTripCreated(
+        argThat(predicate((Trip t) => t.id == createdTrip.id)),
+        creatorName,
+      )).called(1);
     });
   });
 
@@ -151,7 +149,7 @@ void main() {
 
       when(mockTripRepository.createTrip(any)).thenAnswer((_) async => createdTrip);
       when(mockCategoryRepository.seedDefaultCategories(any)).thenAnswer((_) async => []);
-      when(mockActivityLogRepository.addLog(any)).thenAnswer((_) async => 'log-123');
+      when(mockActivityLoggerService.logTripCreated(any, any)).thenAnswer((_) async {});
       when(mockLocalStorageService.addJoinedTrip(any)).thenAnswer((_) async => {});
       when(mockTripRepository.getAllTrips()).thenAnswer((_) => Stream.value([createdTrip]));
 
@@ -275,7 +273,12 @@ void main() {
 
       when(mockTripRepository.getTripById(tripId)).thenAnswer((_) async => existingTrip);
       when(mockTripRepository.updateTrip(any)).thenAnswer((_) async => updatedTrip);
-      when(mockActivityLogRepository.addLog(any)).thenAnswer((_) async => 'log-456');
+      when(mockActivityLoggerService.logMemberJoined(
+        tripId: anyNamed('tripId'),
+        memberName: anyNamed('memberName'),
+        joinMethod: anyNamed('joinMethod'),
+        inviterId: anyNamed('inviterId'),
+      )).thenAnswer((_) async {});
       when(mockLocalStorageService.addJoinedTrip(tripId)).thenAnswer((_) async => {});
       when(mockTripRepository.getAllTrips()).thenAnswer((_) => Stream.value([updatedTrip]));
 
@@ -292,10 +295,12 @@ void main() {
       expect(capturedTrip.participants.last.name, userName);
 
       // Assert: Check activity was logged
-      final capturedLog = verify(mockActivityLogRepository.addLog(captureAny)).captured.single as ActivityLog;
-      expect(capturedLog.type, ActivityType.memberJoined);
-      expect(capturedLog.actorName, userName);
-      expect(capturedLog.tripId, tripId);
+      verify(mockActivityLoggerService.logMemberJoined(
+        tripId: tripId,
+        memberName: userName,
+        joinMethod: anyNamed('joinMethod'),
+        inviterId: anyNamed('inviterId'),
+      )).called(1);
 
       // Assert: Check trip ID was cached
       verify(mockLocalStorageService.addJoinedTrip(tripId)).called(1);
@@ -332,7 +337,7 @@ void main() {
 
       // Assert: Should not update trip or log activity
       verifyNever(mockTripRepository.updateTrip(any));
-      verifyNever(mockActivityLogRepository.addLog(any));
+      verifyNever(mockActivityLoggerService.logTripCreated(any, any));
 
       // But should still cache the trip ID (idempotent)
       verify(mockLocalStorageService.addJoinedTrip(tripId)).called(1);
@@ -357,7 +362,7 @@ void main() {
 
       // Should not update anything
       verifyNever(mockTripRepository.updateTrip(any));
-      verifyNever(mockActivityLogRepository.addLog(any));
+      verifyNever(mockActivityLoggerService.logTripCreated(any, any));
       verifyNever(mockLocalStorageService.addJoinedTrip(any));
     });
   });

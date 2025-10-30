@@ -4,15 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/models/trip_recovery_code.dart';
 import '../../domain/models/verified_member.dart';
-import '../../domain/repositories/trip_repository.dart';
-import '../../domain/repositories/activity_log_repository.dart';
-import '../../domain/repositories/trip_recovery_code_repository.dart';
 import '../../domain/models/activity_log.dart';
+import '../../domain/repositories/trip_repository.dart';
+import '../../domain/repositories/trip_recovery_code_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
 import 'trip_state.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/services/local_storage_service.dart';
+import '../../../../core/services/activity_logger_service.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -21,7 +21,7 @@ void _log(String message) {
 
 class TripCubit extends Cubit<TripState> {
   final TripRepository _tripRepository;
-  final ActivityLogRepository? _activityLogRepository;
+  final ActivityLoggerService? _activityLoggerService;
   final CategoryRepository? _categoryRepository;
   final TripRecoveryCodeRepository? _recoveryCodeRepository;
   final LocalStorageService _localStorageService;
@@ -33,11 +33,11 @@ class TripCubit extends Cubit<TripState> {
   TripCubit({
     required TripRepository tripRepository,
     required LocalStorageService localStorageService,
-    ActivityLogRepository? activityLogRepository,
+    ActivityLoggerService? activityLoggerService,
     CategoryRepository? categoryRepository,
     TripRecoveryCodeRepository? recoveryCodeRepository,
   }) : _tripRepository = tripRepository,
-       _activityLogRepository = activityLogRepository,
+       _activityLoggerService = activityLoggerService,
        _categoryRepository = categoryRepository,
        _recoveryCodeRepository = recoveryCodeRepository,
        _localStorageService = localStorageService,
@@ -237,29 +237,13 @@ class TripCubit extends Cubit<TripState> {
       }
 
       // Log trip creation activity if repository is available
-      if (_activityLogRepository != null &&
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
           creatorName != null &&
           creatorName.isNotEmpty) {
-        _log('📝 Logging trip_created activity...');
-        try {
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: createdTrip.id,
-            type: ActivityType.tripCreated,
-            actorName: creatorName,
-            description: 'Created trip "$name"',
-            timestamp: DateTime.now(),
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-          // Don't fail trip creation if activity logging fails
-        }
-      } else {
-        _log(
-          '⚠️ ActivityLogRepository not provided or no creator name, skipping activity logging',
-        );
+        _log('📝 Logging trip creation via ActivityLoggerService...');
+        await _activityLoggerService.logTripCreated(createdTrip, creatorName);
+        _log('✅ Activity logged');
       }
 
       // Seed default categories for the new trip
@@ -351,6 +335,7 @@ class TripCubit extends Cubit<TripState> {
     required String tripId,
     required String name,
     required CurrencyCode baseCurrency,
+    String? actorName,
   }) async {
     try {
       _log(
@@ -372,6 +357,19 @@ class TripCubit extends Cubit<TripState> {
       // Use existing updateTrip method
       await updateTrip(updatedTrip);
       _log('✅ Trip details updated successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip update via ActivityLoggerService...');
+        await _activityLoggerService.logTripUpdated(
+          currentTrip,
+          updatedTrip,
+          actorName,
+        );
+        _log('✅ Activity logged');
+      }
     } catch (e) {
       _log('❌ Failed to update trip details: $e');
       emit(TripError('Failed to update trip: ${e.toString()}'));
@@ -379,9 +377,22 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Delete a trip
-  Future<void> deleteTrip(String tripId) async {
+  Future<void> deleteTrip(String tripId, {String? actorName}) async {
     try {
+      // Get trip details before deletion for logging
+      final trip = await _tripRepository.getTripById(tripId);
+
       await _tripRepository.deleteTrip(tripId);
+
+      // Log activity using centralized service (before clearing selection)
+      if (_activityLoggerService != null &&
+          trip != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip deletion via ActivityLoggerService...');
+        await _activityLoggerService.logTripDeleted(trip, actorName);
+        _log('✅ Activity logged');
+      }
 
       // If deleted trip was selected, clear selection
       if (_selectedTripId == tripId) {
@@ -405,7 +416,7 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Archive a trip (hide from active trip list)
-  Future<void> archiveTrip(String tripId) async {
+  Future<void> archiveTrip(String tripId, {String? actorName}) async {
     try {
       _log('📦 Archiving trip: $tripId');
 
@@ -427,6 +438,15 @@ class TripCubit extends Cubit<TripState> {
       await _tripRepository.updateTrip(updatedTrip);
       _log('✅ Trip archived successfully');
 
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip archive via ActivityLoggerService...');
+        await _activityLoggerService.logTripArchived(updatedTrip, actorName);
+        _log('✅ Activity logged');
+      }
+
       // If archiving current trip, clear selection
       if (isCurrentlySelected) {
         _selectedTripId = null;
@@ -443,7 +463,7 @@ class TripCubit extends Cubit<TripState> {
   }
 
   /// Unarchive a trip (restore to active trip list)
-  Future<void> unarchiveTrip(String tripId) async {
+  Future<void> unarchiveTrip(String tripId, {String? actorName}) async {
     try {
       _log('📤 Unarchiving trip: $tripId');
 
@@ -461,6 +481,15 @@ class TripCubit extends Cubit<TripState> {
 
       await _tripRepository.updateTrip(updatedTrip);
       _log('✅ Trip unarchived successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip unarchive via ActivityLoggerService...');
+        await _activityLoggerService.logTripUnarchived(updatedTrip, actorName);
+        _log('✅ Activity logged');
+      }
 
       // Reload trips to refresh the list
       await loadTrips();
@@ -496,6 +525,112 @@ class TripCubit extends Cubit<TripState> {
     } catch (e) {
       _log('❌ Failed to leave trip: $e');
       emit(TripError('Failed to leave trip: ${e.toString()}'));
+    }
+  }
+
+  /// Add a participant to a trip
+  Future<void> addParticipant({
+    required String tripId,
+    required Participant participant,
+    String? actorName,
+  }) async {
+    try {
+      _log('➕ Adding participant ${participant.name} to trip $tripId');
+
+      // Get the current trip
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Check for duplicate participant
+      final isDuplicate = currentTrip.participants.any(
+        (p) => p.id == participant.id,
+      );
+      if (isDuplicate) {
+        throw Exception('Participant with ID ${participant.id} already exists');
+      }
+
+      // Add participant to trip
+      final updatedParticipants = [
+        ...currentTrip.participants,
+        participant,
+      ];
+      final updatedTrip = currentTrip.copyWith(
+        participants: updatedParticipants,
+        updatedAt: DateTime.now(),
+      );
+
+      await _tripRepository.updateTrip(updatedTrip);
+      _log('✅ Participant added successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging participant addition via ActivityLoggerService...');
+        await _activityLoggerService.logParticipantAdded(
+          tripId: tripId,
+          participantName: participant.name,
+          actorName: actorName,
+        );
+        _log('✅ Activity logged');
+      }
+
+      // Reload trips to refresh the list
+      await loadTrips();
+    } catch (e) {
+      _log('❌ Failed to add participant: $e');
+      emit(TripError('Failed to add participant: ${e.toString()}'));
+    }
+  }
+
+  /// Remove a participant from a trip
+  Future<void> removeParticipant({
+    required String tripId,
+    required Participant participant,
+    String? actorName,
+  }) async {
+    try {
+      _log('➖ Removing participant ${participant.name} from trip $tripId');
+
+      // Get the current trip
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Remove participant from trip
+      final updatedParticipants = List<Participant>.from(
+        currentTrip.participants,
+      )..remove(participant);
+
+      final updatedTrip = currentTrip.copyWith(
+        participants: updatedParticipants,
+        updatedAt: DateTime.now(),
+      );
+
+      await _tripRepository.updateTrip(updatedTrip);
+      _log('✅ Participant removed successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging participant removal via ActivityLoggerService...');
+        await _activityLoggerService.logParticipantRemoved(
+          tripId: tripId,
+          participantName: participant.name,
+          actorName: actorName,
+        );
+        _log('✅ Activity logged');
+      }
+
+      // Reload trips to refresh the list
+      await loadTrips();
+    } catch (e) {
+      _log('❌ Failed to remove participant: $e');
+      emit(TripError('Failed to remove participant: ${e.toString()}'));
     }
   }
 
@@ -569,27 +704,15 @@ class TripCubit extends Cubit<TripState> {
         }
 
         // Log join activity (every join attempt, including re-joins)
-        if (_activityLogRepository != null) {
-          _log('📝 Logging member_joined activity...');
-          try {
-            final activityLog = ActivityLog(
-              id: '', // Firestore will generate this
-              tripId: tripId,
-              type: ActivityType.memberJoined,
-              actorName: userName,
-              description: '$userName joined the trip',
-              timestamp: DateTime.now(),
-              metadata: {
-                if (joinMethod != null) 'joinMethod': joinMethod.name,
-                if (invitedByParticipantId != null)
-                  'invitedBy': invitedByParticipantId,
-              },
-            );
-            await _activityLogRepository.addLog(activityLog);
-            _log('✅ Activity logged');
-          } catch (e) {
-            _log('⚠️ Failed to log activity (non-fatal): $e');
-          }
+        if (_activityLoggerService != null) {
+          _log('📝 Logging member joined via ActivityLoggerService...');
+          await _activityLoggerService.logMemberJoined(
+            tripId: tripId,
+            memberName: userName,
+            joinMethod: joinMethod?.name ?? 'unknown',
+            inviterId: invitedByParticipantId,
+          );
+          _log('✅ Activity logged');
         }
 
         emit(TripJoined(trip));
@@ -606,28 +729,16 @@ class TripCubit extends Cubit<TripState> {
       await _tripRepository.updateTrip(updatedTrip);
       _log('✅ User added to trip');
 
-      // Log activity
-      if (_activityLogRepository != null) {
-        _log('📝 Logging member_joined activity...');
-        try {
-          final activityLog = ActivityLog(
-            id: '', // Firestore will generate this
-            tripId: tripId,
-            type: ActivityType.memberJoined,
-            actorName: userName,
-            description: '$userName joined the trip',
-            timestamp: DateTime.now(),
-            metadata: {
-              if (joinMethod != null) 'joinMethod': joinMethod.name,
-              if (invitedByParticipantId != null)
-                'invitedBy': invitedByParticipantId,
-            },
-          );
-          await _activityLogRepository.addLog(activityLog);
-          _log('✅ Activity logged');
-        } catch (e) {
-          _log('⚠️ Failed to log activity (non-fatal): $e');
-        }
+      // Log activity using centralized service
+      if (_activityLoggerService != null) {
+        _log('📝 Logging member joined via ActivityLoggerService...');
+        await _activityLoggerService.logMemberJoined(
+          tripId: tripId,
+          memberName: userName,
+          joinMethod: joinMethod?.name ?? 'unknown',
+          inviterId: invitedByParticipantId,
+        );
+        _log('✅ Activity logged');
       }
 
       // Add to verified members for cross-device visibility
@@ -818,6 +929,17 @@ class TripCubit extends Cubit<TripState> {
         userName: userName,
         joinMethod: JoinMethod.recoveryCode,
       );
+
+      // Log recovery code usage via centralized service
+      if (_activityLoggerService != null) {
+        _log('📝 Logging recovery code usage via ActivityLoggerService...');
+        await _activityLoggerService.logRecoveryCodeUsed(
+          tripId: tripId,
+          memberName: userName,
+          usageCount: recoveryCode.usedCount,
+        );
+        _log('✅ Activity logged');
+      }
 
       return true;
     } catch (e) {

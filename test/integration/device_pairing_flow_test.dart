@@ -7,7 +7,7 @@ import 'package:expense_tracker/features/trips/presentation/pages/trip_join_page
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart';
 import 'package:expense_tracker/features/trips/domain/models/trip.dart';
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart';
-import 'package:expense_tracker/features/trips/domain/repositories/activity_log_repository.dart';
+import 'package:expense_tracker/core/services/activity_logger_service.dart';
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart';
 import 'package:expense_tracker/features/device_pairing/presentation/cubits/device_pairing_cubit.dart';
 import 'package:expense_tracker/features/device_pairing/presentation/cubits/device_pairing_state.dart';
@@ -23,7 +23,7 @@ import 'package:expense_tracker/l10n/app_localizations.dart';
 
 @GenerateMocks([
   TripRepository,
-  ActivityLogRepository,
+  ActivityLoggerService,
   CategoryRepository,
   LocalStorageService,
   DeviceLinkCodeRepository,
@@ -41,14 +41,14 @@ void main() {
     late TripCubit tripCubit;
     late DevicePairingCubit devicePairingCubit;
     late MockTripRepository mockTripRepository;
-    late MockActivityLogRepository mockActivityLogRepository;
+    late MockActivityLoggerService mockActivityLoggerService;
     late MockCategoryRepository mockCategoryRepository;
     late MockLocalStorageService mockLocalStorageService;
     late MockDeviceLinkCodeRepository mockDeviceLinkCodeRepository;
 
     setUp(() {
       mockTripRepository = MockTripRepository();
-      mockActivityLogRepository = MockActivityLogRepository();
+      mockActivityLoggerService = MockActivityLoggerService();
       mockCategoryRepository = MockCategoryRepository();
       mockLocalStorageService = MockLocalStorageService();
       mockDeviceLinkCodeRepository = MockDeviceLinkCodeRepository();
@@ -62,7 +62,7 @@ void main() {
       tripCubit = TripCubit(
         tripRepository: mockTripRepository,
         localStorageService: mockLocalStorageService,
-        activityLogRepository: mockActivityLogRepository,
+        activityLoggerService: mockActivityLoggerService,
         categoryRepository: mockCategoryRepository,
       );
 
@@ -123,8 +123,13 @@ void main() {
         (invocation) async => invocation.positionalArguments[0] as Trip,
       );
 
-      // Mock activity log
-      when(mockActivityLogRepository.addLog(any)).thenAnswer((_) async => 'log-id-123');
+      // Mock activity logger service
+      when(mockActivityLoggerService.logMemberJoined(
+        tripId: anyNamed('tripId'),
+        memberName: anyNamed('memberName'),
+        joinMethod: anyNamed('joinMethod'),
+        inviterId: anyNamed('inviterId'),
+      )).thenAnswer((_) async {});
 
       await tester.pumpWidget(createTestApp());
       await tester.pumpAndSettle();

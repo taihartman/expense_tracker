@@ -1,17 +1,36 @@
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import '../../core/models/currency_code.dart';
 
 /// TextInputFormatter that formats currency input with thousand separators (commas)
 /// and supports decimal places.
+///
+/// Can be configured either with a specific [CurrencyCode] or a manual [decimalDigits] count.
+/// When [currencyCode] is provided, decimal places are automatically set based on currency
+/// (e.g., USD = 2 decimals, VND = 0 decimals).
 ///
 /// Examples:
 /// - "1000" → "1,000"
 /// - "1000000.50" → "1,000,000.50"
 /// - "1234.5" → "1,234.5"
+///
+/// Usage:
+/// ```dart
+/// // Currency-aware (recommended)
+/// inputFormatters: [CurrencyInputFormatter(currencyCode: CurrencyCode.usd)]
+///
+/// // Manual decimal places
+/// inputFormatters: [CurrencyInputFormatter(decimalDigits: 2)]
+/// ```
 class CurrencyInputFormatter extends TextInputFormatter {
   final int decimalDigits;
 
-  CurrencyInputFormatter({this.decimalDigits = 2});
+  /// Creates a currency input formatter.
+  ///
+  /// If [currencyCode] is provided, decimal places are automatically configured.
+  /// Otherwise, [decimalDigits] is used (defaults to 2).
+  CurrencyInputFormatter({CurrencyCode? currencyCode, int? decimalDigits})
+    : decimalDigits = currencyCode?.decimalPlaces ?? decimalDigits ?? 2;
 
   @override
   TextEditingValue formatEditUpdate(

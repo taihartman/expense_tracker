@@ -146,8 +146,13 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                               const Duration(milliseconds: 100),
                             );
                             if (context.mounted) {
+                              // Get current user for activity logging
+                              final currentUser = context.read<TripCubit>().getCurrentUserForTrip(trip.id);
+                              final actorName = currentUser?.name;
+
                               await context.read<TripCubit>().unarchiveTrip(
                                 trip.id,
+                                actorName: actorName,
                               );
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(

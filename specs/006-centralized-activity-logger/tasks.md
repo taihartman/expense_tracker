@@ -16,8 +16,8 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create directory structure for service in `lib/core/services/`
-- [ ] T002 Create directory structure for tests in `test/core/services/`
+- [X] T001 Create directory structure for service in `lib/core/services/`
+- [X] T002 Create directory structure for tests in `test/core/services/`
 
 **Checkpoint**: Directory structure ready
 
@@ -31,20 +31,20 @@
 
 ### Tests First (TDD - Write Before Implementation)
 
-- [ ] T003 [P] Write test for ActivityLoggerService interface structure in `test/core/services/activity_logger_service_test.dart`
-- [ ] T004 [P] Write test for fire-and-forget error handling (service never throws) in `test/core/services/activity_logger_service_test.dart`
-- [ ] T004b [P] Write test for partial failure scenario (ActivityLog saved but metadata generation fails) in `test/core/services/activity_logger_service_test.dart`
-- [ ] T005 [P] Write test for graceful degradation when trip data unavailable in `test/core/services/activity_logger_service_test.dart`
-- [ ] T005b [P] Write test for _getTripContext() failure handling (network error, deleted trip) in `test/core/services/activity_logger_service_test.dart`
-- [ ] T006 [P] Write test for handling null/empty actorName in `test/core/services/activity_logger_service_test.dart`
+- [X] T003 [P] Write test for ActivityLoggerService interface structure in `test/core/services/activity_logger_service_test.dart`
+- [X] T004 [P] Write test for fire-and-forget error handling (service never throws) in `test/core/services/activity_logger_service_test.dart`
+- [X] T004b [P] Write test for partial failure scenario (ActivityLog saved but metadata generation fails) in `test/core/services/activity_logger_service_test.dart`
+- [X] T005 [P] Write test for graceful degradation when trip data unavailable in `test/core/services/activity_logger_service_test.dart`
+- [X] T005b [P] Write test for _getTripContext() failure handling (network error, deleted trip) in `test/core/services/activity_logger_service_test.dart`
+- [X] T006 [P] Write test for handling null/empty actorName in `test/core/services/activity_logger_service_test.dart`
 
 ### Implementation (After Tests Fail)
 
-- [ ] T007 Create ActivityLoggerService abstract interface in `lib/core/services/activity_logger_service.dart` with method signatures for all 7 logging methods (logExpenseAdded, logExpenseEdited, logExpenseDeleted, logTransferSettled, logTransferUnsettled, logMemberJoined, logTripCreated) and clearCache method
-- [ ] T008 Create ActivityLoggerServiceImpl skeleton in `lib/core/services/activity_logger_service_impl.dart` with constructor accepting ActivityLogRepository and TripRepository
-- [ ] T009 Implement private helper methods in ActivityLoggerServiceImpl: `_getTripContext()`, `_logActivity()`, `_logError()`, `_formatJoinMethod()`
-- [ ] T010 Implement error handling pattern (try-catch with _logError) in all public methods
-- [ ] T011 Add service to dependency injection in `lib/main.dart` (RepositoryProvider for ActivityLoggerService)
+- [X] T007 Create ActivityLoggerService abstract interface in `lib/core/services/activity_logger_service.dart` with method signatures for all 7 logging methods (logExpenseAdded, logExpenseEdited, logExpenseDeleted, logTransferSettled, logTransferUnsettled, logMemberJoined, logTripCreated) and clearCache method
+- [X] T008 Create ActivityLoggerServiceImpl skeleton in `lib/core/services/activity_logger_service_impl.dart` with constructor accepting ActivityLogRepository and TripRepository
+- [X] T009 Implement private helper methods in ActivityLoggerServiceImpl: `_getTripContext()`, `_logActivity()`, `_logError()`, `_formatJoinMethod()`
+- [X] T010 Implement error handling pattern (try-catch with _logError) in all public methods
+- [X] T011 Add service to dependency injection in `lib/main.dart` (RepositoryProvider for ActivityLoggerService)
 - [ ] T011b Establish baseline performance measurement for manual activity logging (measure ExpenseCubit.updateExpense with manual logging overhead)
 
 **Checkpoint**: Foundation ready - verify all foundational tests pass, user story implementation can now begin in parallel
@@ -61,40 +61,40 @@
 
 **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T012 [P] [US1] Write test for logExpenseAdded with participant name resolution in `test/core/services/activity_logger_service_test.dart`
-- [ ] T013 [P] [US1] Write test for logExpenseEdited with ExpenseChangeDetector integration in `test/core/services/activity_logger_service_test.dart`
-- [ ] T014 [P] [US1] Write test for logExpenseEdited with no changes detected (identical old/new) - verify BOTH skip-logging AND log-with-empty-metadata scenarios in `test/core/services/activity_logger_service_test.dart`
-- [ ] T015 [P] [US1] Write test for logExpenseDeleted with all required metadata in `test/core/services/activity_logger_service_test.dart`
-- [ ] T016 [P] [US1] Write test for logTransferSettled with participant name lookup in `test/core/services/activity_logger_service_test.dart`
-- [ ] T017 [P] [US1] Write test for logTransferUnsettled with participant name lookup in `test/core/services/activity_logger_service_test.dart`
-- [ ] T018 [P] [US1] Write test for logMemberJoined with invite tracking in `test/core/services/activity_logger_service_test.dart`
-- [ ] T019 [P] [US1] Write test for logTripCreated with trip metadata in `test/core/services/activity_logger_service_test.dart`
-- [ ] T020 [P] [US1] Write test for clearCache invalidates cached trip data in `test/core/services/activity_logger_service_test.dart`
+- [X] T012 [P] [US1] Write test for logExpenseAdded with participant name resolution in `test/core/services/activity_logger_service_test.dart`
+- [X] T013 [P] [US1] Write test for logExpenseEdited with ExpenseChangeDetector integration in `test/core/services/activity_logger_service_test.dart`
+- [X] T014 [P] [US1] Write test for logExpenseEdited with no changes detected (identical old/new) - verify BOTH skip-logging AND log-with-empty-metadata scenarios in `test/core/services/activity_logger_service_test.dart`
+- [X] T015 [P] [US1] Write test for logExpenseDeleted with all required metadata in `test/core/services/activity_logger_service_test.dart`
+- [X] T016 [P] [US1] Write test for logTransferSettled with participant name lookup in `test/core/services/activity_logger_service_test.dart`
+- [X] T017 [P] [US1] Write test for logTransferUnsettled with participant name lookup in `test/core/services/activity_logger_service_test.dart`
+- [X] T018 [P] [US1] Write test for logMemberJoined with invite tracking in `test/core/services/activity_logger_service_test.dart`
+- [X] T019 [P] [US1] Write test for logTripCreated with trip metadata in `test/core/services/activity_logger_service_test.dart`
+- [X] T020 [P] [US1] Write test for logClearCache invalidates cached trip data in `test/core/services/activity_logger_service_test.dart`
 
 ### Implementation for User Story 1 (After Tests Written and Failing)
 
 **TDD CHECKPOINT**: Before starting implementation, run all T012-T020 tests and verify they FAIL with expected error messages (e.g., "Method not implemented", "Null check failed"). Do NOT proceed if tests pass prematurely.
 
-- [ ] T021 [US1] Implement logExpenseAdded method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve payer name, create activity log with metadata) - **PREREQUISITE: Verify T012 fails first**
-- [ ] T022 [US1] Implement logExpenseEdited method in `lib/core/services/activity_logger_service_impl.dart` (use ExpenseChangeDetector.detectChanges, generate description with change count, create activity log with change metadata) - **PREREQUISITE: Verify T013 fails first**
-- [ ] T022b [US1] Verify ExpenseChangeDetector.detectChanges() is reused (not reimplemented) in logExpenseEdited - check imports and method calls
-- [ ] T023 [US1] Implement logExpenseDeleted method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with expense details in metadata) - **PREREQUISITE: Verify T015 fails first**
-- [ ] T024 [US1] Implement logTransferSettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details) - **PREREQUISITE: Verify T016 fails first**
-- [ ] T025 [US1] Implement logTransferUnsettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details) - **PREREQUISITE: Verify T017 fails first**
-- [ ] T026 [US1] Implement logMemberJoined method in `lib/core/services/activity_logger_service_impl.dart` (format join method, optionally lookup inviter name, create activity log with join metadata) - **PREREQUISITE: Verify T018 fails first**
-- [ ] T027 [US1] Implement logTripCreated method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with trip name and base currency in metadata) - **PREREQUISITE: Verify T019 fails first**
-- [ ] T028 [US1] Implement clearCache method in `lib/core/services/activity_logger_service_impl.dart` (set _tripContextCache to null) - **PREREQUISITE: Verify T020 fails first**
+- [X] T021 [US1] Implement logExpenseAdded method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve payer name, create activity log with metadata) - **PREREQUISITE: Verify T012 fails first**
+- [X] T022 [US1] Implement logExpenseEdited method in `lib/core/services/activity_logger_service_impl.dart` (use ExpenseChangeDetector.detectChanges, generate description with change count, create activity log with change metadata) - **PREREQUISITE: Verify T013 fails first**
+- [X] T022b [US1] Verify ExpenseChangeDetector.detectChanges() is reused (not reimplemented) in logExpenseEdited - check imports and method calls
+- [X] T023 [US1] Implement logExpenseDeleted method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with expense details in metadata) - **PREREQUISITE: Verify T015 fails first**
+- [X] T024 [US1] Implement logTransferSettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details) - **PREREQUISITE: Verify T016 fails first**
+- [X] T025 [US1] Implement logTransferUnsettled method in `lib/core/services/activity_logger_service_impl.dart` (fetch trip context, resolve participant names, create activity log with transfer details) - **PREREQUISITE: Verify T017 fails first**
+- [X] T026 [US1] Implement logMemberJoined method in `lib/core/services/activity_logger_service_impl.dart` (format join method, optionally lookup inviter name, create activity log with join metadata) - **PREREQUISITE: Verify T018 fails first**
+- [X] T027 [US1] Implement logTripCreated method in `lib/core/services/activity_logger_service_impl.dart` (create activity log with trip name and base currency in metadata) - **PREREQUISITE: Verify T019 fails first**
+- [X] T028 [US1] Implement clearCache method in `lib/core/services/activity_logger_service_impl.dart` (set _tripContextCache to null) - **PREREQUISITE: Verify T020 fails first**
 - [ ] T029 [US1] Verify all US1 tests pass (run `flutter test test/core/services/activity_logger_service_test.dart`)
 - [ ] T029b [US1] Measure baseline LOC for activity logging in ExpenseCubit before migration (for SC-001, SC-004 verification) - count lines in updateExpense method dedicated to activity logging
 - [ ] T029c [US1] Verify 80%+ code coverage for US1 service implementation (run `flutter test --coverage`)
 
 ### Migration: ExpenseCubit (Pilot Feature)
 
-- [ ] T030 [US1] Add ActivityLoggerService injection to ExpenseCubit in `lib/features/expenses/presentation/cubits/expense_cubit.dart` (keep old repositories for now)
-- [ ] T031 [US1] Update ExpenseCubit provider in `lib/main.dart` to inject ActivityLoggerService
-- [ ] T032 [US1] Replace manual logging in ExpenseCubit.addExpense() with activityLogger.logExpenseAdded() in `lib/features/expenses/presentation/cubits/expense_cubit.dart`
-- [ ] T033 [US1] Replace manual logging in ExpenseCubit.updateExpense() with activityLogger.logExpenseEdited() in `lib/features/expenses/presentation/cubits/expense_cubit.dart`
-- [ ] T034 [US1] Replace manual logging in ExpenseCubit.deleteExpense() with activityLogger.logExpenseDeleted() in `lib/features/expenses/presentation/cubits/expense_cubit.dart`
+- [X] T030 [US1] Add ActivityLoggerService injection to ExpenseCubit in `lib/features/expenses/presentation/cubits/expense_cubit.dart` (keep old repositories for now)
+- [X] T031 [US1] Update ExpenseCubit provider in `lib/main.dart` to inject ActivityLoggerService
+- [X] T032 [US1] Replace manual logging in ExpenseCubit.createExpense() with activityLogger.logExpenseAdded() in `lib/features/expenses/presentation/cubits/expense_cubit.dart`
+- [X] T033 [US1] Replace manual logging in ExpenseCubit.updateExpense() with activityLogger.logExpenseEdited() in `lib/features/expenses/presentation/cubits/expense_cubit.dart`
+- [X] T034 [US1] Replace manual logging in ExpenseCubit.deleteExpense() with activityLogger.logExpenseDeleted() in `lib/features/expenses/presentation/cubits/expense_cubit.dart`
 - [ ] T035 [US1] Update ExpenseCubit tests in `test/features/expenses/presentation/cubits/expense_cubit_test.dart` to use MockActivityLoggerService and verify service calls
 - [ ] T036 [US1] Run all ExpenseCubit tests to verify migration (`flutter test test/features/expenses/`)
 - [ ] T037 [US1] Manual test: Add/edit/delete expense and verify activity logs appear correctly in UI

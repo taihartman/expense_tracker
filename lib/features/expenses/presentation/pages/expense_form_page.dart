@@ -17,6 +17,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/currency_text_field.dart';
 import '../../../../shared/utils/currency_input_formatter.dart';
 import 'itemized/itemized_expense_wizard.dart';
 
@@ -49,9 +50,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
 
     if (widget.expense != null) {
       // Editing existing expense - format the amount with commas
-      final formatter = NumberFormat('#,##0.##', 'en_US');
-      _amountController.text = formatter.format(
-        widget.expense!.amount.toDouble(),
+      _amountController.text = formatAmountForInput(
+        widget.expense!.amount,
+        widget.expense!.currency,
       );
       _descriptionController.text = widget.expense!.description ?? '';
       _selectedCurrency = widget.expense!.currency;
@@ -442,26 +443,10 @@ class ExpenseFormContent extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: Builder(
-                  builder: (context) => CustomTextField(
+                  builder: (context) => CurrencyTextField(
                     controller: amountController,
+                    currencyCode: selectedCurrency,
                     label: context.l10n.expenseFieldAmountLabel,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [CurrencyInputFormatter()],
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return context.l10n.validationRequired;
-                      }
-                      try {
-                        final cleanValue = stripCurrencyFormatting(value);
-                        final amount = Decimal.parse(cleanValue);
-                        if (amount <= Decimal.zero) {
-                          return context.l10n.validationMustBeGreaterThanZero;
-                        }
-                      } catch (e) {
-                        return context.l10n.validationInvalidNumber;
-                      }
-                      return null;
-                    },
                   ),
                 ),
               ),

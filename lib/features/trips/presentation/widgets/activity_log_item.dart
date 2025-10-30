@@ -106,6 +106,10 @@ class _ActivityLogItemState extends State<ActivityLogItem> {
         return Icons.edit_note;
       case ActivityType.tripDeleted:
         return Icons.delete_forever;
+      case ActivityType.tripArchived:
+        return Icons.archive;
+      case ActivityType.tripUnarchived:
+        return Icons.unarchive;
 
       // Participant Activities
       case ActivityType.memberJoined:
@@ -150,6 +154,10 @@ class _ActivityLogItemState extends State<ActivityLogItem> {
         return colorScheme.primary;
       case ActivityType.tripDeleted:
         return colorScheme.error;
+      case ActivityType.tripArchived:
+        return Colors.grey;
+      case ActivityType.tripUnarchived:
+        return colorScheme.primary;
 
       // Participant Activities - Primary color
       case ActivityType.memberJoined:
@@ -190,6 +198,10 @@ class _ActivityLogItemState extends State<ActivityLogItem> {
         return 'updated the trip';
       case ActivityType.tripDeleted:
         return 'deleted the trip';
+      case ActivityType.tripArchived:
+        return 'archived the trip';
+      case ActivityType.tripUnarchived:
+        return 'unarchived the trip';
 
       // Participant Activities
       case ActivityType.memberJoined:

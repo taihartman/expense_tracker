@@ -8,6 +8,7 @@ import '../../../../domain/models/item_assignment.dart';
 import '../../../../domain/models/assignment_mode.dart';
 import '../../../../../../core/models/currency_code.dart';
 import '../../../../../../core/l10n/l10n_extensions.dart';
+import '../widgets/add_item_modal.dart';
 
 /// Step 2: Add line items and assign to people
 class ItemsStepPage extends StatefulWidget {
@@ -27,16 +28,11 @@ class ItemsStepPage extends StatefulWidget {
 }
 
 class _ItemsStepPageState extends State<ItemsStepPage> {
-  final _nameController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _quantityController = TextEditingController(text: '1');
-  String? _editingItemId; // Track which item is being edited
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _priceController.dispose();
-    _quantityController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -48,80 +44,146 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
         final participants = _getParticipants(state);
         final currency = _getCurrency(state);
         final expectedSubtotal = _getExpectedSubtotal(state);
+        final screenWidth = MediaQuery.of(context).size.width;
+        final isMobile = screenWidth < 600;
+        final horizontalPadding = isMobile ? 12.0 : 16.0;
 
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.receiptSplitItemsTitle,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+        return Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: isMobile ? 12 : 16,
               ),
-              const SizedBox(height: 8),
-              Text(
-                context.l10n.receiptSplitItemsDescription,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    context.l10n.receiptSplitItemsTitle,
+                    style: TextStyle(
+                      fontSize: isMobile ? 18 : 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: isMobile ? 6 : 8),
+                  Text(
+                    context.l10n.receiptSplitItemsDescription,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: isMobile ? 13 : 14,
+                    ),
+                  ),
+                  SizedBox(height: isMobile ? 12 : 16),
+                  if (expectedSubtotal != null)
+                    _buildValidationBanner(
+                      expectedSubtotal,
+                      items,
+                      currency,
+                      isMobile,
+                    ),
+                  if (expectedSubtotal != null)
+                    SizedBox(height: isMobile ? 12 : 16),
+                  // Item count badge
+                  if (items.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.receipt_long,
+                            size: 18,
+                            color: Colors.grey.shade600,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${items.length} ${items.length == 1 ? 'item' : 'items'}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: items.isEmpty
+                        ? _buildEmptyState(isMobile)
+                        : _buildItemsList(items, participants, isMobile),
+                  ),
+                  SizedBox(height: isMobile ? 12 : 16),
+                  _buildNavigationButtons(items.isNotEmpty, isMobile),
+                ],
               ),
-              const SizedBox(height: 16),
-              if (expectedSubtotal != null)
-                _buildValidationBanner(expectedSubtotal, items, currency),
-              const SizedBox(height: 16),
-              Expanded(
-                child: items.isEmpty
-                    ? _buildEmptyState()
-                    : _buildItemsList(items, participants),
+            ),
+            // Floating Action Button
+            Positioned(
+              right: 16,
+              bottom: 80,
+              child: FloatingActionButton(
+                onPressed: () => _showAddItemModal(context),
+                tooltip: context.l10n.receiptSplitItemsAddButton,
+                child: const Icon(Icons.add),
               ),
-              const SizedBox(height: 16),
-              _buildAddItemCard(),
-              const SizedBox(height: 16),
-              _buildNavigationButtons(items.isNotEmpty),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(bool isMobile) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.receipt_long_outlined,
-            size: 64,
+            size: isMobile ? 56 : 64,
             color: Colors.grey.shade300,
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isMobile ? 12 : 16),
           Text(
             context.l10n.receiptSplitItemsEmptyTitle,
-            style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
+            style: TextStyle(
+              fontSize: isMobile ? 16 : 18,
+              color: Colors.grey.shade600,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             context.l10n.receiptSplitItemsEmptyDescription,
-            style: TextStyle(color: Colors.grey.shade500),
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: isMobile ? 13 : 14,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildItemsList(List<LineItem> items, List<String> participants) {
+  Widget _buildItemsList(
+    List<LineItem> items,
+    List<String> participants,
+    bool isMobile,
+  ) {
     return ListView.builder(
+      controller: _scrollController,
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return _buildItemCard(item, participants);
+        return _buildItemCard(item, participants, isMobile);
       },
     );
   }
 
-  Widget _buildItemCard(LineItem item, List<String> participants) {
+  Widget _buildItemCard(
+    LineItem item,
+    List<String> participants,
+    bool isMobile,
+  ) {
     final currency = _getCurrency(context.read<ItemizedExpenseCubit>().state);
     final isAssigned = item.assignment.users.isNotEmpty;
     final assignmentText = isAssigned
@@ -131,12 +193,15 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
         : context.l10n.receiptSplitItemsNotAssigned;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: isMobile ? 8 : 12),
       child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
+        contentPadding: EdgeInsets.all(isMobile ? 12 : 16),
         title: Text(
           item.name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: isMobile ? 15 : 16,
+          ),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,6 +209,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
             const SizedBox(height: 4),
             Text(
               '${item.quantity} × ${currency.symbol}${item.unitPrice} = ${currency.symbol}${item.itemTotal}',
+              style: TextStyle(fontSize: isMobile ? 13 : 14),
             ),
             const SizedBox(height: 4),
             Row(
@@ -154,11 +220,15 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                   color: isAssigned ? Colors.green : Colors.orange,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  assignmentText,
-                  style: TextStyle(
-                    color: isAssigned ? Colors.green : Colors.orange,
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    assignmentText,
+                    style: TextStyle(
+                      color: isAssigned ? Colors.green : Colors.orange,
+                      fontWeight: FontWeight.w500,
+                      fontSize: isMobile ? 12 : 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -169,21 +239,33 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: const Icon(Icons.people_alt),
+              icon: Icon(Icons.people_alt, size: isMobile ? 20 : 24),
               tooltip: context.l10n.receiptSplitItemsAssignTooltip,
               onPressed: () => _showAssignDialog(item, participants),
+              padding: isMobile ? const EdgeInsets.all(4) : null,
+              constraints: isMobile
+                  ? const BoxConstraints(minWidth: 36, minHeight: 36)
+                  : null,
             ),
             IconButton(
-              icon: const Icon(Icons.edit_outlined),
+              icon: Icon(Icons.edit_outlined, size: isMobile ? 20 : 24),
               tooltip: context.l10n.receiptSplitItemsEditTooltip,
-              onPressed: () => _startEditItem(item),
+              onPressed: () => _showEditItemModal(context, item),
+              padding: isMobile ? const EdgeInsets.all(4) : null,
+              constraints: isMobile
+                  ? const BoxConstraints(minWidth: 36, minHeight: 36)
+                  : null,
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
+              icon: Icon(Icons.delete_outline, size: isMobile ? 20 : 24),
               tooltip: context.l10n.receiptSplitItemsRemoveTooltip,
               onPressed: () {
                 context.read<ItemizedExpenseCubit>().removeItem(item.id);
               },
+              padding: isMobile ? const EdgeInsets.all(4) : null,
+              constraints: isMobile
+                  ? const BoxConstraints(minWidth: 36, minHeight: 36)
+                  : null,
             ),
           ],
         ),
@@ -191,107 +273,38 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
     );
   }
 
-  Widget _buildAddItemCard() {
-    final isEditMode = _editingItemId != null;
-
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  isEditMode
-                      ? context.l10n.receiptSplitItemsEditCardTitle
-                      : context.l10n.receiptSplitItemsAddCardTitle,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                if (isEditMode) ...[
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: _cancelEdit,
-                    icon: const Icon(Icons.close, size: 18),
-                    label: Text(context.l10n.commonCancel),
-                    style: TextButton.styleFrom(foregroundColor: Colors.grey),
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: context.l10n.receiptSplitItemsFieldNameLabel,
-                hintText: context.l10n.receiptSplitItemsFieldNameHint,
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.shopping_basket),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _quantityController,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.receiptSplitItemsFieldQtyLabel,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.numbers),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _priceController,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.receiptSplitItemsFieldPriceLabel,
-                      hintText: context.l10n.receiptSplitItemsFieldPriceHint,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.attach_money),
-                    ),
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _saveItem,
-                icon: Icon(isEditMode ? Icons.check : Icons.add),
-                label: Text(
-                  isEditMode
-                      ? context.l10n.receiptSplitItemsUpdateButton
-                      : context.l10n.receiptSplitItemsAddButton,
-                ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(14),
-                  backgroundColor: isEditMode ? Colors.orange : null,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  void _showAddItemModal(BuildContext context) {
+    final currency = _getCurrency(context.read<ItemizedExpenseCubit>().state);
+    showAddItemModal(
+      context: context,
+      currencyCode: currency,
+      onSave: (name, quantity, price) {
+        _addItem(name, quantity, price);
+      },
     );
   }
 
-  Widget _buildNavigationButtons(bool hasItems) {
+  void _showEditItemModal(BuildContext context, LineItem item) {
+    final currency = _getCurrency(context.read<ItemizedExpenseCubit>().state);
+    showAddItemModal(
+      context: context,
+      currencyCode: currency,
+      editingItem: item,
+      onSave: (name, quantity, price) {
+        _updateItem(item.id, name, quantity, price);
+      },
+    );
+  }
+
+  Widget _buildNavigationButtons(bool hasItems, bool isMobile) {
     return Row(
       children: [
         Expanded(
           child: OutlinedButton(
             onPressed: widget.onBack,
-            style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
+            ),
             child: Text(context.l10n.commonBack),
           ),
         ),
@@ -300,7 +313,9 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
           flex: 2,
           child: ElevatedButton(
             onPressed: hasItems ? widget.onContinue : null,
-            style: ElevatedButton.styleFrom(padding: const EdgeInsets.all(16)),
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.all(isMobile ? 12 : 16),
+            ),
             child: Text(context.l10n.receiptSplitItemsContinueButton),
           ),
         ),
@@ -308,92 +323,53 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
     );
   }
 
-  void _saveItem() {
-    final name = _nameController.text.trim();
-    final quantityText = _quantityController.text.trim();
-    final priceText = _priceController.text.trim();
+  void _addItem(String name, Decimal quantity, Decimal price) {
+    final item = LineItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: name,
+      quantity: quantity,
+      unitPrice: price,
+      taxable: true,
+      serviceChargeable: false,
+      assignment: const ItemAssignment(mode: AssignmentMode.even, users: []),
+    );
 
-    if (name.isEmpty || quantityText.isEmpty || priceText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.validationPleaseFillAllFields)),
-      );
-      return;
-    }
+    context.read<ItemizedExpenseCubit>().addItem(item);
 
-    try {
-      final quantity = Decimal.parse(quantityText);
-      final price = Decimal.parse(priceText);
-
-      if (_editingItemId != null) {
-        // Update existing item
-        final cubit = context.read<ItemizedExpenseCubit>();
-        final state = cubit.state;
-        final items = _getItems(state);
-        final existingItem = items.firstWhere(
-          (item) => item.id == _editingItemId,
+    // Scroll to bottom to show new item with animation
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
         );
-
-        final updatedItem = LineItem(
-          id: existingItem.id,
-          name: name,
-          quantity: quantity,
-          unitPrice: price,
-          taxable: existingItem.taxable,
-          serviceChargeable: existingItem.serviceChargeable,
-          assignment: existingItem.assignment, // Preserve assignment
-        );
-
-        cubit.updateItem(_editingItemId!, updatedItem);
-      } else {
-        // Add new item
-        final item = LineItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          name: name,
-          quantity: quantity,
-          unitPrice: price,
-          taxable: true,
-          serviceChargeable: false,
-          assignment: const ItemAssignment(
-            mode: AssignmentMode.even,
-            users: [],
-          ),
-        );
-
-        context.read<ItemizedExpenseCubit>().addItem(item);
       }
-
-      // Clear form
-      _nameController.clear();
-      _priceController.clear();
-      _quantityController.text = '1';
-      setState(() {
-        _editingItemId = null;
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.validationInvalidInput(e.toString())),
-        ),
-      );
-    }
-  }
-
-  void _startEditItem(LineItem item) {
-    setState(() {
-      _editingItemId = item.id;
-      _nameController.text = item.name;
-      _quantityController.text = item.quantity.toString();
-      _priceController.text = item.unitPrice.toString();
     });
   }
 
-  void _cancelEdit() {
-    setState(() {
-      _editingItemId = null;
-      _nameController.clear();
-      _priceController.clear();
-      _quantityController.text = '1';
-    });
+  void _updateItem(
+    String itemId,
+    String name,
+    Decimal quantity,
+    Decimal price,
+  ) {
+    final cubit = context.read<ItemizedExpenseCubit>();
+    final state = cubit.state;
+    final items = _getItems(state);
+    final existingItem = items.firstWhere((item) => item.id == itemId);
+
+    final updatedItem = LineItem(
+      id: existingItem.id,
+      name: name,
+      quantity: quantity,
+      unitPrice: price,
+      taxable: existingItem.taxable,
+      serviceChargeable: existingItem.serviceChargeable,
+      assignment: existingItem.assignment, // Preserve assignment
+    );
+
+    cubit.updateItem(itemId, updatedItem);
   }
 
   void _showAssignDialog(LineItem item, List<String> participants) {
@@ -501,6 +477,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
     Decimal expectedSubtotal,
     List<LineItem> items,
     CurrencyCode currency,
+    bool isMobile,
   ) {
     // Calculate current items total
     final currentTotal = items.fold<Decimal>(
@@ -524,7 +501,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(isMobile ? 12 : 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -533,9 +510,9 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                 Icon(
                   isMatch ? Icons.check_circle : Icons.warning,
                   color: isMatch ? Colors.green : Colors.orange,
-                  size: 24,
+                  size: isMobile ? 20 : 24,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: isMobile ? 8 : 12),
                 Expanded(
                   child: Text(
                     isMatch
@@ -543,7 +520,7 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                         : context.l10n.receiptSplitItemsSubtotalMismatch,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: isMobile ? 14 : 16,
                       color: isMatch
                           ? Colors.green.shade900
                           : Colors.orange.shade900,
@@ -552,30 +529,33 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: isMobile ? 8 : 12),
             _buildValidationRow(
               context.l10n.receiptSplitItemsExpectedSubtotal,
               '${currency.code} ${expectedSubtotal.toStringAsFixed(2)}',
               Colors.grey.shade700,
+              isMobile,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: isMobile ? 6 : 8),
             _buildValidationRow(
               context.l10n.receiptSplitItemsCurrentTotal,
               '${currency.code} ${currentTotal.toStringAsFixed(2)}',
               isMatch ? Colors.green.shade900 : Colors.orange.shade900,
+              isMobile,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: isMobile ? 6 : 8),
             _buildValidationRow(
               context.l10n.receiptSplitItemsDifference,
               '${currency.code} ${difference.toStringAsFixed(2)}',
               isMatch ? Colors.green.shade900 : Colors.orange.shade900,
+              isMobile,
             ),
             if (!isMatch) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: isMobile ? 8 : 12),
               Text(
                 context.l10n.receiptSplitItemsValidationHelper,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: isMobile ? 11 : 12,
                   fontStyle: FontStyle.italic,
                   color: Colors.grey.shade600,
                 ),
@@ -587,18 +567,26 @@ class _ItemsStepPageState extends State<ItemsStepPage> {
     );
   }
 
-  Widget _buildValidationRow(String label, String value, Color color) {
+  Widget _buildValidationRow(
+    String label,
+    String value,
+    Color color,
+    bool isMobile,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+          style: TextStyle(
+            fontSize: isMobile ? 12 : 14,
+            color: Colors.grey.shade600,
+          ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: isMobile ? 12 : 14,
             fontWeight: FontWeight.bold,
             color: color,
           ),
