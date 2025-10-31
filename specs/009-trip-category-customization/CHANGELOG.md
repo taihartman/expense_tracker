@@ -26,6 +26,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <!-- Add entries below in reverse chronological order (newest first) -->
 
+## 2025-10-31 - Phase 1 Setup Complete
+
+### Added
+- Firestore security rules for `/trips/{tripId}/categoryCustomizations/{categoryId}` subcollection
+- Directory structure: `lib/core/{models,repositories,validators}`
+- Directory structure: `lib/features/categories/data/{models,repositories}`
+- Directory structure: `lib/features/categories/presentation/{cubit,widgets}`
+- Directory structure: `test/features/categories/{cubit,data,presentation/widgets}` and `test/integration`
+
+### Security Rules
+- Read: Authenticated users (TODO: restrict to trip members)
+- Create/Update: Validates tripId, updatedAt, and at least one customization (icon or color)
+- Delete: Allowed (reset to global defaults)
+
+### Tasks Completed
+- T001: Firestore security rules
+- T002-T005: Directory structures
+
 ## 2025-10-31 - Task Breakdown Generated
 
 ### Added
