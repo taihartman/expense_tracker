@@ -1,5 +1,6 @@
 import '../models/settlement_summary.dart';
 import '../models/minimal_transfer.dart';
+import '../../../expenses/domain/models/expense.dart';
 
 /// Repository interface for Settlement operations
 ///
@@ -22,6 +23,15 @@ abstract class SettlementRepository {
   /// Normally triggered automatically by Cloud Function on expense changes
   /// Returns the computed settlement summary
   Future<SettlementSummary> computeSettlement(String tripId);
+
+  /// Compute settlement with provided expenses (performance optimization)
+  /// Avoids re-fetching expenses when they're already available from a stream
+  /// [tripId] - The ID of the trip
+  /// [expenses] - The expenses to use for computation (from stream)
+  Future<SettlementSummary> computeSettlementWithExpenses(
+    String tripId,
+    List<Expense> expenses,
+  );
 
   /// Check if settlement exists for a trip
   Future<bool> settlementExists(String tripId);

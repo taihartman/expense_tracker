@@ -2,7 +2,9 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
+import '../../../expenses/domain/models/expense.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
+import '../../../trips/domain/models/trip.dart';
 import '../../domain/models/settlement_summary.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/person_summary.dart';
@@ -133,6 +135,29 @@ class SettlementRepositoryImpl implements SettlementRepository {
   }
 
   @override
+  Future<SettlementSummary> computeSettlementWithExpenses(
+    String tripId,
+    List<Expense> expenses,
+  ) async {
+    try {
+      _log('🔄 computeSettlementWithExpenses() called for trip: $tripId');
+      _log('⚡ Using provided ${expenses.length} expenses - skipping Firestore fetch!');
+
+      // Get trip to determine base currency
+      final trip = await _tripRepository.getTripById(tripId);
+      if (trip == null) {
+        throw Exception('Trip not found: $tripId');
+      }
+      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
+
+      return await _computeSettlementInternal(tripId, trip, expenses);
+    } catch (e) {
+      _log('❌ Error in computeSettlementWithExpenses: $e');
+      throw Exception('Failed to compute settlement: $e');
+    }
+  }
+
+  @override
   Future<SettlementSummary> computeSettlement(String tripId) async {
     try {
       _log('🔄 computeSettlement() called for trip: $tripId');
@@ -149,8 +174,24 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
       _log('📦 Retrieved ${expenses.length} expenses from Firestore');
 
-      // Calculate person summaries from expenses (raw calculation)
-      _log('\n=== CALCULATING PERSON SUMMARIES ===');
+      return await _computeSettlementInternal(tripId, trip, expenses);
+    } catch (e) {
+      _log('❌ Error in computeSettlement: $e');
+      throw Exception('Failed to compute settlement: $e');
+    }
+  }
+
+  /// Internal method containing the core settlement computation logic
+  /// Shared by both computeSettlement() and computeSettlementWithExpenses()
+  Future<SettlementSummary> _computeSettlementInternal(
+    String tripId,
+    Trip trip,
+    List<Expense> expenses,
+  ) async {
+    _log('📦 Computing settlement with ${expenses.length} expenses');
+
+    // Calculate person summaries from expenses (raw calculation)
+    _log('\n=== CALCULATING PERSON SUMMARIES ===');
       var personSummaries = _calculator.calculatePersonSummaries(
         expenses: expenses,
         baseCurrency: trip.baseCurrency,
@@ -379,10 +420,6 @@ class SettlementRepositoryImpl implements SettlementRepository {
       _log('   ${personSummaries.length} person summaries saved\n');
 
       return settlementSummary;
-    } catch (e) {
-      _log('❌ Error in computeSettlement: $e');
-      throw Exception('Failed to compute settlement: $e');
-    }
   }
 
   @override

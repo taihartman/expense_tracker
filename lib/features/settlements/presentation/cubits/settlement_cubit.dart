@@ -198,8 +198,10 @@ class SettlementCubit extends Cubit<SettlementState> {
                   _log(
                     '🔄 Recomputing settlement (expenses changed or first load)',
                   );
-                  summary = await _settlementRepository.computeSettlement(
+                  _log('⚡ Using expenses from stream - no re-fetch!');
+                  summary = await _settlementRepository.computeSettlementWithExpenses(
                     tripId,
+                    data.expenses,
                   );
 
                   // Cache timestamps for future comparisons
@@ -221,8 +223,10 @@ class SettlementCubit extends Cubit<SettlementState> {
                   if (cachedSummary == null) {
                     // No cache exists, must compute
                     _log('⚠️ No cached settlement found, computing...');
-                    summary = await _settlementRepository.computeSettlement(
+                    _log('⚡ Using expenses from stream - no re-fetch!');
+                    summary = await _settlementRepository.computeSettlementWithExpenses(
                       tripId,
+                      data.expenses,
                     );
                     _cachedLastComputedAt = summary.lastComputedAt;
                   } else {

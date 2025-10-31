@@ -112,6 +112,10 @@ class AllPeopleSummaryTable extends StatelessWidget {
                     headingRowColor: WidgetStateProperty.all(
                       Theme.of(context).colorScheme.surfaceContainerHighest,
                     ),
+                    onSelectAll: (bool? selected) {
+                      // Header checkbox clears filter when clicked
+                      context.read<SettlementCubit>().clearUserFilter();
+                    },
                     columns: [
                       DataColumn(
                         label: Text(context.l10n.summaryTableColumnPerson),
