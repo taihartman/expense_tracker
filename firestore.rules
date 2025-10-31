@@ -15,23 +15,10 @@ service cloud.firestore {
           && name.matches('^[\\p{L}\\p{N}\\s\'\\-&]+$');
     }
 
-    // Helper: Check if user is rate limited (3 creations in 5 minutes)
-    function isRateLimited(userId) {
-      let fiveMinutesAgo = request.time - duration.value(5, 'm');
-      let recentLogs = firestore.get(/databases/$(database)/documents/categoryCreationLogs)
-        .data
-        .where('userId', '==', userId)
-        .where('createdAt', '>', fiveMinutesAgo);
-      return recentLogs.size() >= 3;
-    }
-
-    // Helper: Check if category name already exists (case-insensitive)
-    function isDuplicateCategoryName(nameLowercase) {
-      let existing = firestore.get(/databases/$(database)/documents/categories)
-        .data
-        .where('nameLowercase', '==', nameLowercase);
-      return existing.size() > 0;
-    }
+    // TODO: Rate limiting and duplicate checking removed from security rules
+    // because firestore.get() cannot query collections (only specific documents).
+    // These validations are enforced client-side via RateLimiterService.
+    // For production, implement server-side validation via Cloud Functions.
 
     // Global Categories: Top-level shared collection
     // Anyone can read, create with validation, but updates/deletes forbidden

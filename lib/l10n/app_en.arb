@@ -695,10 +695,11 @@
 
   "categoryMeals": "Meals",
   "categoryTransport": "Transport",
+  "categoryOther": "Other",
   "categoryAccommodation": "Accommodation",
   "categoryActivities": "Activities",
   "categoryShopping": "Shopping",
-  "categoryOther": "Other",
+  "categoryBrowseAndCreate": "Browse & Create",
 
 
   "tripJoinTitle": "Join Trip",
@@ -1030,5 +1031,36 @@
 
   "categoryColorPickerTitle": "Select Color",
 
-  "categoryDefaultIconLabel": "label"
+  "categoryDefaultIconLabel": "label",
+
+
+  "categorySimilarWarningTitle": "Similar category exists",
+  "categorySimilarWarningMessage": "{existingName} ({icon}, used {usageCount, plural, =1{1 time} other{{usageCount} times}})",
+  "@categorySimilarWarningMessage": {
+    "placeholders": {
+      "existingName": {
+        "type": "String"
+      },
+      "icon": {
+        "type": "String"
+      },
+      "usageCount": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySimilarWarningUseExisting": "Use Existing",
+  "categorySimilarWarningCreateAnyway": "Create Anyway",
+
+
+  "categoryCustomizationTitle": "Customize Categories",
+  "categoryCustomizationDescription": "Customize category icons and colors for this trip only",
+  "categoryCustomizationBadgeCustomized": "Customized",
+  "categoryCustomizationBadgeDefault": "Using global default",
+  "categoryCustomizationResetIcon": "Reset Icon",
+  "categoryCustomizationResetColor": "Reset Color",
+  "categoryCustomizationResetBoth": "Reset to Default",
+  "categoryCustomizationNoCategories": "No categories used in this trip yet",
+  "categoryCustomizationResetSuccess": "Reset to default successfully",
+  "categoryCustomizationSaveSuccess": "Category customized successfully"
 }

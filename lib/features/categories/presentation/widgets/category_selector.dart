@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/category.dart';
 import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
+import '../cubit/category_customization_cubit.dart';
 import 'category_browser_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../../shared/utils/category_display_helper.dart';
 
 /// Horizontal scrollable category selector with top 5 popular categories
 ///
@@ -70,8 +72,18 @@ class _CategorySelectorState extends State<CategorySelector> {
     required bool isSelected,
     required ThemeData theme,
   }) {
-    final color = _getColor(category.color);
-    final icon = _getIconData(category.icon);
+    // Get customization from CategoryCustomizationCubit if available
+    final customizationCubit = context.read<CategoryCustomizationCubit?>();
+    final customization = customizationCubit?.getCustomization(category.id);
+
+    // Merge global category with trip-specific customizations
+    final displayCategory = DisplayCategory.fromGlobalAndCustomization(
+      globalCategory: category,
+      customization: customization,
+    );
+
+    final color = _getColor(displayCategory.color);
+    final icon = _getIconData(displayCategory.icon);
 
     return FilterChip(
       selected: isSelected,
@@ -84,7 +96,7 @@ class _CategorySelectorState extends State<CategorySelector> {
             color: isSelected ? theme.colorScheme.onPrimaryContainer : color,
           ),
           const SizedBox(width: 6),
-          Text(category.name),
+          Text(displayCategory.name),
         ],
       ),
       onSelected: (selected) {
@@ -109,26 +121,34 @@ class _CategorySelectorState extends State<CategorySelector> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.more_horiz,
+            Icons.search,
             size: 18,
             color: isSelected ? theme.colorScheme.onPrimaryContainer : color,
           ),
           const SizedBox(width: 6),
-          Text(context.l10n.categoryOther),
+          Text(context.l10n.categoryBrowseAndCreate),
         ],
       ),
-      onSelected: (selected) {
+      onSelected: (selected) async {
         // Open CategoryBrowserBottomSheet when tapped
         if (selected) {
-          showModalBottomSheet(
+          await showModalBottomSheet<String?>(
             context: context,
             isScrollControlled: true,
             builder: (context) => CategoryBrowserBottomSheet(
               onCategorySelected: (category) {
                 widget.onCategoryChanged(category.id);
+                Navigator.of(context).pop(category.id);
               },
             ),
           );
+
+          // Restore top categories state when sheet closes (with 24h cache)
+          // This ensures chips remain visible even if user cancels
+          // Only queries Firebase if cache is stale (24+ hours old)
+          if (mounted) {
+            context.read<CategoryCubit>().loadTopCategoriesIfStale(limit: 5);
+          }
         }
       },
       selectedColor: color.withValues(alpha: 0.3),
@@ -175,10 +195,10 @@ class _CategorySelectorState extends State<CategorySelector> {
 
               // Loaded state
               if (state is CategoryTopLoaded) {
-                final categories = state.categories;
+                final allCategories = state.categories;
 
-                // Empty state - show only "Other" chip
-                if (categories.isEmpty) {
+                // Empty state - show only "Browse & Create" button
+                if (allCategories.isEmpty) {
                   return ListView(
                     scrollDirection: Axis.horizontal,
                     children: [
@@ -187,27 +207,52 @@ class _CategorySelectorState extends State<CategorySelector> {
                   );
                 }
 
-                // Build category chips + "Other" chip
+                // Extract "Other" category and build display order
+                // Order: Top 4 popular (non-Other) → "Other" → "Browse & Create"
+                final otherCategory = allCategories
+                    .where((c) => c.id.toLowerCase() == 'other')
+                    .firstOrNull;
+
+                final nonOtherCategories = allCategories
+                    .where((c) => c.id.toLowerCase() != 'other')
+                    .take(4)
+                    .toList();
+
+                // Calculate total items: top 4 + "Other" (if exists) + "Browse & Create"
+                final hasOtherCategory = otherCategory != null;
+                final itemCount = nonOtherCategories.length +
+                    (hasOtherCategory ? 1 : 0) +
+                    1; // +1 for "Browse & Create"
+
                 return ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: categories.length + 1, // +1 for "Other" chip
+                  itemCount: itemCount,
                   separatorBuilder: (context, index) =>
                       const SizedBox(width: AppTheme.spacing1),
                   itemBuilder: (context, index) {
-                    // Last item is "Other" chip
-                    if (index == categories.length) {
-                      return _buildOtherChip(isSelected: false, theme: theme);
+                    // First 4 positions: non-Other categories
+                    if (index < nonOtherCategories.length) {
+                      final category = nonOtherCategories[index];
+                      final isSelected = widget.selectedCategoryId == category.id;
+                      return _buildCategoryChip(
+                        category: category,
+                        isSelected: isSelected,
+                        theme: theme,
+                      );
                     }
 
-                    // Regular category chips
-                    final category = categories[index];
-                    final isSelected = widget.selectedCategoryId == category.id;
+                    // Next position: "Other" category (if it exists)
+                    if (hasOtherCategory && index == nonOtherCategories.length) {
+                      final isSelected = widget.selectedCategoryId == otherCategory.id;
+                      return _buildCategoryChip(
+                        category: otherCategory,
+                        isSelected: isSelected,
+                        theme: theme,
+                      );
+                    }
 
-                    return _buildCategoryChip(
-                      category: category,
-                      isSelected: isSelected,
-                      theme: theme,
-                    );
+                    // Last position: "Browse & Create" button
+                    return _buildOtherChip(isSelected: false, theme: theme);
                   },
                 );
               }

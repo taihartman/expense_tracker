@@ -21,6 +21,10 @@ class CategoryCubit extends Cubit<CategoryState> {
   StreamSubscription? _topCategoriesSubscription;
   StreamSubscription? _searchSubscription;
 
+  // Cache tracking for top categories (24-hour TTL)
+  DateTime? _lastTopCategoriesRefresh;
+  static const _cacheDuration = Duration(hours: 24);
+
   CategoryCubit({
     required CategoryRepository categoryRepository,
     required RateLimiterService rateLimiterService,
@@ -47,6 +51,8 @@ class CategoryCubit extends Cubit<CategoryState> {
         .listen(
           (categories) {
             emit(CategoryTopLoaded(categories: categories));
+            // Track refresh time for cache invalidation
+            _lastTopCategoriesRefresh = DateTime.now();
           },
           onError: (error) {
             emit(
@@ -57,6 +63,37 @@ class CategoryCubit extends Cubit<CategoryState> {
             );
           },
         );
+  }
+
+  /// Load top categories only if cache is stale (24+ hours old)
+  ///
+  /// This reduces Firebase reads by using a 24-hour TTL cache.
+  /// If categories were loaded within the last 24 hours, does nothing.
+  /// Otherwise, triggers a fresh query from Firebase.
+  ///
+  /// Use this instead of loadTopCategories() when restoring state
+  /// (e.g., after closing "Browse & Create" bottom sheet).
+  void loadTopCategoriesIfStale({int limit = 5}) {
+    final now = DateTime.now();
+    final isStale = _lastTopCategoriesRefresh == null ||
+        now.difference(_lastTopCategoriesRefresh!) > _cacheDuration;
+
+    if (isStale) {
+      loadTopCategories(limit: limit);
+    }
+    // Otherwise, do nothing - use existing CategoryTopLoaded state
+  }
+
+  /// Invalidate top categories cache, forcing next load to be fresh
+  ///
+  /// Call this after:
+  /// - Creating a new expense (to show updated usage counts)
+  /// - Creating a new category
+  /// - Any operation that might affect category popularity
+  ///
+  /// Next call to loadTopCategoriesIfStale() will fetch from Firebase.
+  void invalidateTopCategoriesCache() {
+    _lastTopCategoriesRefresh = null;
   }
 
   /// Search categories by name (case-insensitive, partial matching)
@@ -167,6 +204,9 @@ class CategoryCubit extends Cubit<CategoryState> {
       );
 
       emit(CategoryCreated(category: category));
+
+      // Invalidate cache so newly created category appears in selector
+      invalidateTopCategoriesCache();
     } catch (e) {
       emit(
         CategoryError(

@@ -1,547 +1,304 @@
-# Quickstart Guide: Per-Trip Category Customization
+# Developer Quickstart: Feature 009
 
-**Feature**: 009-trip-category-customization
-**Audience**: Developers working on this feature
-**Last Updated**: 2025-10-31
+**Feature**: Per-Trip Category Visual Customization + Icon System Improvements
+**Branch**: `009-trip-category-customization`
+**Status**: In Development
 
-This guide helps you quickly understand and work with the category customization feature.
+## Quick Links
 
----
+- **Spec**: [spec.md](./spec.md)
+- **Implementation Plan**: [plan.md](./plan.md)
+- **Data Model**: [data-model.md](./data-model.md)
+- **Contracts**: [contracts/](./contracts/)
+- **Tasks**: [tasks.md](./tasks.md) (pending generation)
 
-## 🎯 What This Feature Does
+## Getting Started
 
-Allows trips to customize the visual appearance (icon and color) of global categories **without affecting other trips**. Think of it as a "skin" for categories that's trip-specific.
+### Prerequisites
 
-**Example**: Your "Japan Trip" can show "Meals" with a ramen bowl icon 🍜, while your "Work Trip" keeps the default restaurant icon 🍽️.
+```bash
+# Ensure you're on the feature branch
+git checkout 009-trip-category-customization
 
----
+# Install dependencies
+flutter pub get
 
-## 🏗️ Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Presentation Layer                    │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  CategoryCustomizationCubit                        │ │
-│  │  - Manages state (loading, loaded, error)          │ │
-│  │  - Caches customizations in memory                 │ │
-│  │  - Provides fast lookups (getCustomization)        │ │
-│  └────────────────────────────────────────────────────┘ │
-│                          ↓                               │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  CustomizeCategoriesScreen                         │ │
-│  │  - Lists categories used in trip                   │ │
-│  │  - Shows current icon/color                        │ │
-│  │  - Allows editing with pickers                     │ │
-│  └────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                     Domain Layer                         │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  CategoryCustomization (Entity)                    │ │
-│  │  - categoryId, tripId, customIcon?, customColor?   │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  CategoryCustomizationRepository (Interface)       │ │
-│  │  - getCustomizationsForTrip(tripId)                │ │
-│  │  - saveCustomization(customization)                │ │
-│  │  - deleteCustomization(tripId, categoryId)         │ │
-│  └────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
-                          ↓
-┌─────────────────────────────────────────────────────────┐
-│                      Data Layer                          │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │  CategoryCustomizationRepositoryImpl               │ │
-│  │  - Firestore operations                            │ │
-│  │  - Streams for real-time updates                   │ │
-│  └────────────────────────────────────────────────────┘ │
-│                          ↓                               │
-│           Firestore: /trips/{id}/categoryCustomizations │
-└─────────────────────────────────────────────────────────┘
+# Generate mocks if needed
+dart run build_runner build --delete-conflicting-outputs
 ```
 
----
+### Running Tests
 
-## 🚀 Quick Start
+```bash
+# Run all tests for this feature
+flutter test test/features/categories/
 
-### 1. Display a Category with Customization
+# Run specific test suites
+flutter test test/shared/utils/icon_helper_test.dart
+flutter test test/integration/icon_voting_flow_test.dart
 
-Use the `CategoryDisplayHelper` to merge global defaults with customizations:
+# Run with coverage
+flutter test --coverage
+genhtml coverage/lcov.info -o coverage/html
+open coverage/html/index.html
+```
 
+### Local Development
+
+```bash
+# Run app in Chrome (mobile viewport)
+flutter run -d chrome --web-browser-flag "--window-size=375,667"
+
+# Run with hot reload
+flutter run -d chrome
+
+# Check for lint errors
+flutter analyze
+
+# Format code
+flutter format .
+```
+
+## Feature Components
+
+### 1. Icon System (Core)
+
+**Files**:
+- `lib/core/enums/category_icon.dart` - Type-safe icon enum (30 icons)
+- `lib/shared/utils/icon_helper.dart` - Shared conversion utilities
+- `test/shared/utils/icon_helper_test.dart` - Comprehensive icon tests
+
+**Key Classes**:
 ```dart
-import 'package:expense_tracker/shared/utils/category_display_helper.dart';
+// Using the enum
+CategoryIcon icon = CategoryIcon.restaurant;
+String firestore = icon.iconName;  // "restaurant"
+IconData flutter = icon.iconData;  // Icons.restaurant
 
-// In your widget
-Widget buildCategoryChip(Category category, String tripId) {
-  return BlocBuilder<CategoryCustomizationCubit, CategoryCustomizationState>(
-    builder: (context, state) {
-      if (state is! CategoryCustomizationLoaded) {
-        // Fallback to global category while loading
-        return CategoryChip(icon: category.icon, color: category.color);
-      }
-
-      // Get customization for this category (if exists)
-      final customization = state.getCustomization(category.id);
-
-      // Merge global + customization
-      final displayCategory = DisplayCategory.fromGlobalAndCustomization(
-        globalCategory: category,
-        customization: customization,
-      );
-
-      // Render with display icon/color
-      return CategoryChip(
-        icon: displayCategory.icon,
-        color: displayCategory.color,
-        name: displayCategory.name,
-        isCustomized: displayCategory.isCustomized, // Show indicator
-      );
-    },
-  );
-}
+// Using the helper
+IconData icon = IconHelper.getIconData("restaurant");
 ```
 
-### 2. Save a Customization
-
-```dart
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-Future<void> customizeCategory(
-  BuildContext context,
-  String categoryId,
-  String? customIcon,
-  String? customColor,
-) async {
-  // Get actor name for activity logging
-  final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
-
-  // Save customization via cubit
-  await context.read<CategoryCustomizationCubit>().saveCustomization(
-    categoryId: categoryId,
-    customIcon: customIcon,
-    customColor: customColor,
-    actorName: currentUser?.name,
-  );
-}
+**Testing**:
+```bash
+flutter test test/shared/utils/icon_helper_test.dart
 ```
 
-### 3. Reset a Customization
+### 2. Voting System (Domain)
 
+**Files**:
+- `lib/features/categories/domain/models/category_icon_preference.dart` - Vote model
+- `lib/core/services/category_icon_updater_service.dart` - Vote logic
+- `lib/features/categories/data/repositories/category_customization_repository_impl.dart` - Vote recording
+
+**Key Flow**:
 ```dart
-Future<void> resetToDefaults(BuildContext context, String categoryId) async {
-  final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
+// User customizes icon
+await cubit.customizeCategory(iconName: 'ski');
 
-  await context.read<CategoryCustomizationCubit>().resetCustomization(
-    categoryId: categoryId,
-    actorName: currentUser?.name,
-  );
-}
-```
-
-### 4. Check if Category is Customized
-
-```dart
-final cubit = context.read<CategoryCustomizationCubit>();
-final isCustomized = cubit.isCustomized(categoryId);
-
-if (isCustomized) {
-  // Show "Customized" badge
-}
-```
-
----
-
-## 📁 Key Files
-
-### Domain Layer
-- **Entity**: `lib/core/models/category_customization.dart`
-- **Repository Interface**: `lib/core/repositories/category_customization_repository.dart`
-- **Validator**: `lib/core/validators/category_customization_validator.dart`
-
-### Data Layer
-- **Repository Impl**: `lib/features/categories/data/repositories/category_customization_repository_impl.dart`
-- **Firestore Model**: `lib/features/categories/data/models/category_customization_model.dart`
-
-### Presentation Layer
-- **Cubit**: `lib/features/categories/presentation/cubit/category_customization_cubit.dart`
-- **State**: `lib/features/categories/presentation/cubit/category_customization_state.dart`
-- **Screen**: `lib/features/categories/presentation/widgets/customize_categories_screen.dart`
-- **Icon Picker**: `lib/features/categories/presentation/widgets/category_icon_picker.dart`
-- **Color Picker**: `lib/features/categories/presentation/widgets/category_color_picker.dart`
-
-### Shared Utilities
-- **Display Helper**: `lib/shared/utils/category_display_helper.dart`
-
----
-
-## 🧪 Testing
-
-### Unit Test: Cubit
-
-```dart
-// test/features/categories/presentation/cubit/category_customization_cubit_test.dart
-
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
-
-@GenerateMocks([CategoryCustomizationRepository, ActivityLogRepository])
-void main() {
-  late MockCategoryCustomizationRepository mockRepository;
-  late CategoryCustomizationCubit cubit;
-
-  setUp(() {
-    mockRepository = MockCategoryCustomizationRepository();
-    cubit = CategoryCustomizationCubit(
-      repository: mockRepository,
-      tripId: 'test-trip',
-    );
-  });
-
-  tearDown(() {
-    cubit.close();
-  });
-
-  test('should load customizations', () async {
-    // Arrange
-    final customizations = [
-      CategoryCustomization(
-        categoryId: 'cat-1',
-        tripId: 'test-trip',
-        customIcon: 'fastfood',
-        customColor: '#FF5722',
-        updatedAt: DateTime.now(),
-      ),
-    ];
-
-    when(mockRepository.getCustomizationsForTrip('test-trip'))
-        .thenAnswer((_) => Stream.value(customizations));
-
-    // Act
-    cubit.loadCustomizations();
-
-    // Assert
-    await expectLater(
-      cubit.stream,
-      emitsInOrder([
-        isA<CategoryCustomizationLoading>(),
-        isA<CategoryCustomizationLoaded>()
-            .having((s) => s.customizations.length, 'count', 1),
-      ]),
-    );
-  });
-}
-```
-
-### Widget Test: Customize Screen
-
-```dart
-// test/features/categories/presentation/widgets/customize_categories_screen_test.dart
-
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
-void main() {
-  testWidgets('should show categories with customization indicators', (tester) async {
-    // Arrange
-    final cubit = CategoryCustomizationCubit(
-      repository: mockRepository,
-      tripId: 'test-trip',
-    );
-
-    await tester.pumpWidget(
-      MaterialApp(
-        home: BlocProvider.value(
-          value: cubit,
-          child: CustomizeCategoriesScreen(tripId: 'test-trip'),
-        ),
-      ),
-    );
-
-    // Act
-    await tester.pumpAndSettle();
-
-    // Assert
-    expect(find.text('Customize Categories'), findsOneWidget);
-    expect(find.byType(CategoryListTile), findsWidgets);
-  });
-}
-```
-
-### Integration Test
-
-```dart
-// test/integration/category_customization_flow_test.dart
-
-void main() {
-  testWidgets('complete customization flow', (tester) async {
-    // 1. Navigate to trip settings
-    await tester.tap(find.text('Trip Settings'));
-    await tester.pumpAndSettle();
-
-    // 2. Open customize categories
-    await tester.tap(find.text('Customize Categories'));
-    await tester.pumpAndSettle();
-
-    // 3. Select a category
-    await tester.tap(find.text('Meals'));
-    await tester.pumpAndSettle();
-
-    // 4. Change icon
-    await tester.tap(find.byIcon(Icons.fastfood));
-    await tester.pumpAndSettle();
-
-    // 5. Save
-    await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
-
-    // 6. Verify in expense list
-    await tester.tap(find.text('Back to Trip'));
-    await tester.pumpAndSettle();
-
-    expect(find.byIcon(Icons.fastfood), findsWidgets);
-  });
-}
-```
-
----
-
-## 🔧 Common Tasks
-
-### Task 1: Add a New Icon to Picker
-
-1. Add icon to `CategoryIconPicker._availableIcons`:
-
-```dart
-// lib/features/categories/presentation/widgets/category_icon_picker.dart
-
-final List<Map<String, dynamic>> _availableIcons = [
-  // ... existing icons
-  {'icon': Icons.new_icon, 'name': 'new_icon'}, // Add here
-];
-```
-
-2. Add to validator:
-
-```dart
-// lib/core/validators/category_customization_validator.dart
-
-static const Set<String> validIcons = {
-  // ... existing icons
-  'new_icon', // Add here
-};
-```
-
-### Task 2: Add a New Color to Picker
-
-1. Add color to `CategoryColorPicker._availableColors`:
-
-```dart
-// lib/features/categories/presentation/widgets/category_color_picker.dart
-
-final List<String> _availableColors = [
-  // ... existing colors
-  '#XXXXXX', // Add hex code here
-];
-```
-
-2. Add to validator:
-
-```dart
-// lib/core/validators/category_customization_validator.dart
-
-static const Set<String> validColors = {
-  // ... existing colors
-  '#XXXXXX', // Add here
-};
-```
-
-### Task 3: Display Customization in New Widget
-
-Follow the pattern from "Quick Start #1":
-
-```dart
-import 'package:expense_tracker/shared/utils/category_display_helper.dart';
-
-// Get customization from cubit state
-final customization = context
-    .read<CategoryCustomizationCubit>()
-    .getCustomization(category.id);
-
-// Merge with global category
-final displayCategory = DisplayCategory.fromGlobalAndCustomization(
-  globalCategory: category,
-  customization: customization,
+// Behind the scenes (non-blocking)
+await repository.recordIconPreference(
+  categoryId: category.id,
+  iconName: 'ski',
 );
-
-// Use displayCategory.icon, displayCategory.color for rendering
+// → Increments vote count
+// → Updates global icon if threshold reached (3 votes)
 ```
 
----
+**Testing**:
+```bash
+flutter test test/features/categories/data/repositories/
+```
 
-## 🐛 Debugging
+### 3. Similar Category Detection (Repository)
 
-### Issue: Customizations Not Loading
+**Files**:
+- `lib/features/categories/data/repositories/category_repository_impl.dart` - Fuzzy matching
+- `lib/features/categories/presentation/widgets/category_creation_bottom_sheet.dart` - Warning UI
 
-**Check**:
-1. Is CategoryCustomizationCubit provided at trip scope?
-2. Was `loadCustomizations()` called on cubit creation?
-3. Check Firestore security rules allow reading customizations
-
-**Debug**:
+**Key Flow**:
 ```dart
-BlocObserver to log state transitions:
+// User types "Ski"
+final similar = await repository.findSimilarCategories(name: 'Ski');
+// Returns: [Category(name: 'Skiing', similarity: 0.87)]
 
-class CustomizationObserver extends BlocObserver {
-  @override
-  void onTransition(Bloc bloc, Transition transition) {
-    if (bloc is CategoryCustomizationCubit) {
-      print('Customization State: ${transition.currentState} → ${transition.nextState}');
-    }
-    super.onTransition(bloc, transition);
+// Show warning banner
+if (similar.isNotEmpty) {
+  showBanner('Similar category exists: ${similar.first.name}');
+}
+```
+
+**Testing**:
+```bash
+flutter test test/features/categories/presentation/widgets/category_creation_bottom_sheet_test.dart
+```
+
+### 4. UI Enhancements (Presentation)
+
+**Modified Widgets**:
+- `category_icon_picker.dart` - Dynamic grid from CategoryIcon.values
+- `category_selector.dart` - Uses IconHelper (removed _getIconData)
+- `category_browser_bottom_sheet.dart` - Uses IconHelper
+- `customize_categories_screen.dart` - Uses IconHelper
+
+**Pattern**:
+```dart
+// Before (duplicated in 3 places)
+IconData _getIconData(String name) {
+  switch (name) {
+    case 'restaurant': return Icons.restaurant;
+    // ...
+  }
+}
+
+// After (shared utility)
+import 'package:expense_tracker/shared/utils/icon_helper.dart';
+final icon = IconHelper.getIconData(category.icon);
+```
+
+## Common Tasks
+
+### Adding a New Icon
+
+1. Add enum value to `CategoryIcon`:
+```dart
+enum CategoryIcon {
+  // ...
+  newIcon,  // NEW
+}
+```
+
+2. Add mapping in `iconName` getter:
+```dart
+String get iconName {
+  switch (this) {
+    // ...
+    case CategoryIcon.newIcon: return 'new_icon';
   }
 }
 ```
 
-### Issue: Customization Not Appearing in UI
-
-**Check**:
-1. Is widget using `BlocBuilder<CategoryCustomizationCubit, ...>`?
-2. Is state a `CategoryCustomizationLoaded`?
-3. Is `DisplayCategory.fromGlobalAndCustomization` being called?
-
-**Debug**:
+3. Add mapping in `iconData` getter:
 ```dart
-print('Customization for category: ${cubit.getCustomization(categoryId)}');
-print('Current state: ${cubit.state}');
+IconData get iconData {
+  switch (this) {
+    // ...
+    case CategoryIcon.newIcon: return Icons.new_icon;
+  }
+}
 ```
 
-### Issue: Save Failing Silently
-
-**Check**:
-1. Is `BlocListener` set up to show errors?
-2. Check Firestore console for write errors
-3. Verify icon/color values are valid
-
-**Debug**:
+4. Update `IconHelper.getIconData()`:
 ```dart
-BlocListener<CategoryCustomizationCubit, CategoryCustomizationState>(
-  listener: (context, state) {
-    if (state is CategoryCustomizationError) {
-      print('Error type: ${state.type}');
-      print('Error message: ${state.message}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
-      );
-    }
-  },
+static IconData getIconData(String iconName) {
+  switch (iconName) {
+    // ...
+    case 'new_icon': return Icons.new_icon;
+  }
+}
+```
+
+5. Add validator entry:
+```dart
+// lib/core/validators/category_customization_validator.dart
+static const Set<String> validIcons = {
   // ...
-)
+  'new_icon',  // NEW
+};
 ```
 
----
+6. Write tests for all 4 changes
 
-## 📊 Performance Tips
-
-### Tip 1: Batch Reads on Trip Load
-
-Always load all customizations at once when entering a trip:
+### Testing Icon Voting Flow
 
 ```dart
-@override
-void initState() {
-  super.initState();
-  // Load once, cache in memory
-  context.read<CategoryCustomizationCubit>().loadCustomizations();
+// Integration test example
+test('icon voting updates global default after 3 votes', () async {
+  // Create category with suboptimal icon
+  await createCategory(name: 'Skiing', icon: 'tree');
+
+  // User 1 votes for ski
+  await customizeCategory(tripId: 'trip1', icon: 'ski');
+  expect(await getGlobalIcon('Skiing'), 'tree');  // Not updated yet
+
+  // User 2 votes for ski
+  await customizeCategory(tripId: 'trip2', icon: 'ski');
+  expect(await getGlobalIcon('Skiing'), 'tree');  // Not updated yet
+
+  // User 3 votes for ski (threshold reached)
+  await customizeCategory(tripId: 'trip3', icon: 'ski');
+  expect(await getGlobalIcon('Skiing'), 'ski');  // Updated!
+});
+```
+
+### Testing Similar Category Detection
+
+```dart
+test('warns about similar category during creation', () async {
+  // Seed existing category
+  await createCategory(name: 'Skiing', usageCount: 45);
+
+  // User types similar name
+  final similar = await findSimilarCategories(name: 'Ski');
+
+  expect(similar, hasLength(1));
+  expect(similar.first.name, 'Skiing');
+  expect(similar.first.similarity, greaterThan(0.80));
+});
+```
+
+## Troubleshooting
+
+### Issue: Icons not rendering (shows default)
+
+**Cause**: Icon name not in IconHelper switch statement
+
+**Fix**: Add icon to `IconHelper.getIconData()` method
+
+### Issue: Voting not working
+
+**Cause**: Firestore transaction failing silently
+
+**Fix**: Enable debug logging:
+```dart
+// In repository_impl.dart
+try {
+  await recordIconPreference(...);
+} catch (e) {
+  print('Vote failed: $e');  // Add logging
 }
 ```
 
-### Tip 2: Use In-Memory Cache
+### Issue: Similar category detection too sensitive
 
-Don't query repository directly. Use cubit's cached state:
+**Cause**: Threshold too low (0.80)
 
+**Fix**: Adjust threshold in `findSimilarCategories()`:
 ```dart
-// ❌ Bad: Queries repository every time
-final customization = await repository.getCustomization(tripId, categoryId);
-
-// ✅ Good: Uses in-memory cache
-final customization = context.read<CategoryCustomizationCubit>()
-    .getCustomization(categoryId);
+double similarityThreshold = 0.85;  // Increase from 0.80
 ```
 
-### Tip 3: Dispose Cubit When Leaving Trip
+## Code Review Checklist
 
-Ensure cubit is disposed to free memory and cancel streams:
+Before submitting PR:
 
-```dart
-MultiBlocProvider(
-  providers: [
-    BlocProvider(
-      create: (context) => CategoryCustomizationCubit(...)
-        ..loadCustomizations(),
-    ),
-  ],
-  child: TripDetailScreen(), // Cubit disposed when navigating away
-)
-```
+- [ ] All tests passing (`flutter test`)
+- [ ] Code formatted (`flutter format .`)
+- [ ] No lint warnings (`flutter analyze`)
+- [ ] Icon enum has all 30 icons
+- [ ] IconHelper covers all 30 icons
+- [ ] Voting logic uses Firestore transactions
+- [ ] Similar category detection shows top 3 matches
+- [ ] Mobile viewport tested (375x667px)
+- [ ] Documentation updated (CLAUDE.md, CHANGELOG.md)
 
----
+## Next Steps
 
-## 🔐 Security
-
-### Firestore Rules
-
-Customizations are protected by trip membership:
-
-```javascript
-match /trips/{tripId}/categoryCustomizations/{categoryId} {
-  allow read, write: if isAuthenticated() && isTripMember(tripId);
-}
-```
-
-### Client-Side
-
-- Repository does NOT enforce security (trusts Firestore rules)
-- Cubit assumes user has permission (Firestore will reject if not)
-- UI should hide customization options for non-members
+1. **Generate tasks**: Run `/speckit.tasks` to create task breakdown
+2. **Implement TDD**: Write tests first, then implementation
+3. **Follow tasks**: Complete tasks in dependency order
+4. **Document progress**: Use `/docs.log` frequently
 
 ---
 
-## 📚 Related Documentation
-
-- **Feature Spec**: [spec.md](spec.md)
-- **Implementation Plan**: [plan.md](plan.md)
-- **Data Model**: [data-model.md](data-model.md)
-- **Repository Contract**: [contracts/repository_contract.md](contracts/repository_contract.md)
-- **Cubit Contract**: [contracts/cubit_contract.md](contracts/cubit_contract.md)
-
----
-
-## ❓ FAQs
-
-### Q: Can users rename categories per trip?
-
-**A**: No. Only icon and color can be customized. Category names must remain global for consistency across trips. This is by design (see spec.md "Out of Scope").
-
-### Q: What happens if a customized category is deleted globally?
-
-**A**: The customization becomes orphaned. UI should gracefully handle this by showing "Unknown Category" and allowing cleanup.
-
-### Q: Do customizations sync across devices?
-
-**A**: Yes. Firestore automatically syncs customizations. The stream-based approach ensures real-time updates across all devices.
-
-### Q: Can I bulk customize all categories at once?
-
-**A**: Not in v1.0.0. Future enhancement (see cubit_contract.md "Future Additions").
-
-### Q: Performance impact of 50 customizations?
-
-**A**: Minimal (<200ms load time, <5KB memory). Tested and meets success criteria SC-003 and SC-006.
-
----
-
-**Need help?** Check the contracts in `/contracts/` or refer to Feature 008 (Global Category System) for similar patterns.
+**Questions?** Check the spec, plan, or data model documents linked above.

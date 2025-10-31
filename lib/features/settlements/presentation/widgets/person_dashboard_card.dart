@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:decimal/decimal.dart';
 import '../../domain/models/category_spending.dart';
+import '../../domain/models/minimal_transfer.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
@@ -9,17 +10,21 @@ import 'category_spending_pie_chart.dart';
 
 /// Dashboard card showing per-person spending summary and category breakdown
 ///
-/// Displays financial summary (paid/owed/net) and category spending pie chart
+/// Displays financial summary (paid/owed/net) and category spending pie chart.
+/// Calculates "Total Owed" from active transfers to ensure consistency with
+/// the settlement summary table and properly exclude settled transfers.
 class PersonDashboardCard extends StatefulWidget {
   final PersonCategorySpending person;
   final Participant participant;
   final CurrencyCode baseCurrency;
+  final List<MinimalTransfer> activeTransfers;
 
   const PersonDashboardCard({
     super.key,
     required this.person,
     required this.participant,
     required this.baseCurrency,
+    required this.activeTransfers,
   });
 
   @override
@@ -29,14 +34,34 @@ class PersonDashboardCard extends StatefulWidget {
 class _PersonDashboardCardState extends State<PersonDashboardCard> {
   bool _isExpanded = false;
 
+  /// Calculate amounts from active transfers for this person
+  ({Decimal toReceive, Decimal toPay, Decimal net}) _calculateTransferAmounts() {
+    final userId = widget.participant.id;
+    var toReceive = Decimal.zero;
+    var toPay = Decimal.zero;
+
+    for (final transfer in widget.activeTransfers) {
+      if (transfer.toUserId == userId) {
+        toReceive += transfer.amountBase;
+      } else if (transfer.fromUserId == userId) {
+        toPay += transfer.amountBase;
+      }
+    }
+
+    return (toReceive: toReceive, toPay: toPay, net: toReceive - toPay);
+  }
+
   @override
   Widget build(BuildContext context) {
     final person = widget.person;
     final participant = widget.participant;
 
+    // Calculate amounts from transfers (excludes settled transfers)
+    final transferAmounts = _calculateTransferAmounts();
+
     // Determine net balance color
-    final isPositive = person.netBase > Decimal.zero;
-    final isNegative = person.netBase < Decimal.zero;
+    final isPositive = transferAmounts.net > Decimal.zero;
+    final isNegative = transferAmounts.net < Decimal.zero;
     final balanceColor = isPositive
         ? Colors.green.shade700
         : isNegative
@@ -89,14 +114,14 @@ class _PersonDashboardCardState extends State<PersonDashboardCard> {
                 _buildSummaryRow(
                   context,
                   'Total Owed',
-                  person.totalOwedBase,
+                  transferAmounts.toPay,
                   null,
                 ),
                 const Divider(),
                 _buildSummaryRow(
                   context,
                   'Net Balance',
-                  person.netBase.abs(),
+                  transferAmounts.net.abs(),
                   balanceColor,
                   prefix: isPositive
                       ? '↑ Will receive'

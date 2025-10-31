@@ -5,6 +5,8 @@ import '../cubit/category_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/validators/category_validator.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import 'category_icon_picker.dart';
+import 'category_color_picker.dart';
 
 /// Bottom sheet for creating new custom categories
 ///
@@ -41,63 +43,6 @@ class _CategoryCreationBottomSheetState
   // Validation error
   String? _nameError;
 
-  // Available icons for categories
-  final List<Map<String, dynamic>> _availableIcons = [
-    {'icon': Icons.category, 'name': 'category'},
-    {'icon': Icons.restaurant, 'name': 'restaurant'},
-    {'icon': Icons.directions_car, 'name': 'directions_car'},
-    {'icon': Icons.hotel, 'name': 'hotel'},
-    {'icon': Icons.local_activity, 'name': 'local_activity'},
-    {'icon': Icons.shopping_bag, 'name': 'shopping_bag'},
-    {'icon': Icons.local_cafe, 'name': 'local_cafe'},
-    {'icon': Icons.flight, 'name': 'flight'},
-    {'icon': Icons.train, 'name': 'train'},
-    {'icon': Icons.directions_bus, 'name': 'directions_bus'},
-    {'icon': Icons.local_taxi, 'name': 'local_taxi'},
-    {'icon': Icons.local_gas_station, 'name': 'local_gas_station'},
-    {'icon': Icons.fastfood, 'name': 'fastfood'},
-    {'icon': Icons.local_grocery_store, 'name': 'local_grocery_store'},
-    {'icon': Icons.local_pharmacy, 'name': 'local_pharmacy'},
-    {'icon': Icons.local_hospital, 'name': 'local_hospital'},
-    {'icon': Icons.fitness_center, 'name': 'fitness_center'},
-    {'icon': Icons.spa, 'name': 'spa'},
-    {'icon': Icons.beach_access, 'name': 'beach_access'},
-    {'icon': Icons.camera_alt, 'name': 'camera_alt'},
-    {'icon': Icons.movie, 'name': 'movie'},
-    {'icon': Icons.music_note, 'name': 'music_note'},
-    {'icon': Icons.sports_soccer, 'name': 'sports_soccer'},
-    {'icon': Icons.pets, 'name': 'pets'},
-    {'icon': Icons.school, 'name': 'school'},
-    {'icon': Icons.work, 'name': 'work'},
-    {'icon': Icons.home, 'name': 'home'},
-    {'icon': Icons.phone, 'name': 'phone'},
-    {'icon': Icons.laptop, 'name': 'laptop'},
-    {'icon': Icons.book, 'name': 'book'},
-  ];
-
-  // Available colors for categories
-  final List<String> _availableColors = [
-    '#9E9E9E', // Grey (default)
-    '#F44336', // Red
-    '#E91E63', // Pink
-    '#9C27B0', // Purple
-    '#673AB7', // Deep Purple
-    '#3F51B5', // Indigo
-    '#2196F3', // Blue
-    '#03A9F4', // Light Blue
-    '#00BCD4', // Cyan
-    '#009688', // Teal
-    '#4CAF50', // Green
-    '#8BC34A', // Light Green
-    '#CDDC39', // Lime
-    '#FFEB3B', // Yellow
-    '#FFC107', // Amber
-    '#FF9800', // Orange
-    '#FF5722', // Deep Orange
-    '#795548', // Brown
-    '#607D8B', // Blue Grey
-  ];
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -131,14 +76,6 @@ class _CategoryCreationBottomSheetState
         color: _selectedColor,
         userId: 'current-user', // TODO: Get from auth
       );
-    }
-  }
-
-  Color _parseColor(String colorHex) {
-    try {
-      return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
-    } catch (e) {
-      return Colors.grey;
     }
   }
 
@@ -287,52 +224,12 @@ class _CategoryCreationBottomSheetState
                                 ),
                               ),
                               const SizedBox(height: AppTheme.spacing1),
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 6,
-                                      crossAxisSpacing: AppTheme.spacing1,
-                                      mainAxisSpacing: AppTheme.spacing1,
-                                    ),
-                                itemCount: _availableIcons.length,
-                                itemBuilder: (context, index) {
-                                  final iconData = _availableIcons[index];
-                                  final isSelected =
-                                      _selectedIcon == iconData['name'];
-
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedIcon = iconData['name'];
-                                      });
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? theme.colorScheme.primary
-                                              : theme.colorScheme.outline,
-                                          width: isSelected ? 2 : 1,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          AppTheme.spacing1,
-                                        ),
-                                        color: isSelected
-                                            ? theme.colorScheme.primaryContainer
-                                            : null,
-                                      ),
-                                      child: Icon(
-                                        iconData['icon'],
-                                        color: isSelected
-                                            ? theme.colorScheme.primary
-                                            : theme
-                                                  .colorScheme
-                                                  .onSurfaceVariant,
-                                      ),
-                                    ),
-                                  );
+                              CategoryIconPicker(
+                                selectedIcon: _selectedIcon,
+                                onIconSelected: (iconName) {
+                                  setState(() {
+                                    _selectedIcon = iconName;
+                                  });
                                 },
                               ),
 
@@ -346,46 +243,12 @@ class _CategoryCreationBottomSheetState
                                 ),
                               ),
                               const SizedBox(height: AppTheme.spacing1),
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 6,
-                                      crossAxisSpacing: AppTheme.spacing1,
-                                      mainAxisSpacing: AppTheme.spacing1,
-                                    ),
-                                itemCount: _availableColors.length,
-                                itemBuilder: (context, index) {
-                                  final colorHex = _availableColors[index];
-                                  final isSelected = _selectedColor == colorHex;
-                                  final color = _parseColor(colorHex);
-
-                                  return InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        _selectedColor = colorHex;
-                                      });
-                                    },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: color,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? theme.colorScheme.primary
-                                              : Colors.transparent,
-                                          width: 3,
-                                        ),
-                                      ),
-                                      child: isSelected
-                                          ? const Icon(
-                                              Icons.check,
-                                              color: Colors.white,
-                                            )
-                                          : null,
-                                    ),
-                                  );
+                              CategoryColorPicker(
+                                selectedColor: _selectedColor,
+                                onColorSelected: (colorHex) {
+                                  setState(() {
+                                    _selectedColor = colorHex;
+                                  });
                                 },
                               ),
 

@@ -1061,6 +1061,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryTransport => 'Transport';
 
   @override
+  String get categoryOther => 'Other';
+
+  @override
   String get categoryAccommodation => 'Accommodation';
 
   @override
@@ -1070,7 +1073,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryShopping => 'Shopping';
 
   @override
-  String get categoryOther => 'Other';
+  String get categoryBrowseAndCreate => 'Browse & Create';
 
   @override
   String get tripJoinTitle => 'Join Trip';
@@ -1629,4 +1632,62 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDefaultIconLabel => 'label';
+
+  @override
+  String get categorySimilarWarningTitle => 'Similar category exists';
+
+  @override
+  String categorySimilarWarningMessage(
+    String existingName,
+    String icon,
+    int usageCount,
+  ) {
+    String _temp0 = intl.Intl.pluralLogic(
+      usageCount,
+      locale: localeName,
+      other: '$usageCount times',
+      one: '1 time',
+    );
+    return '$existingName ($icon, used $_temp0)';
+  }
+
+  @override
+  String get categorySimilarWarningUseExisting => 'Use Existing';
+
+  @override
+  String get categorySimilarWarningCreateAnyway => 'Create Anyway';
+
+  @override
+  String get categoryCustomizationTitle => 'Customize Categories';
+
+  @override
+  String get categoryCustomizationDescription =>
+      'Customize category icons and colors for this trip only';
+
+  @override
+  String get categoryCustomizationBadgeCustomized => 'Customized';
+
+  @override
+  String get categoryCustomizationBadgeDefault => 'Using global default';
+
+  @override
+  String get categoryCustomizationResetIcon => 'Reset Icon';
+
+  @override
+  String get categoryCustomizationResetColor => 'Reset Color';
+
+  @override
+  String get categoryCustomizationResetBoth => 'Reset to Default';
+
+  @override
+  String get categoryCustomizationNoCategories =>
+      'No categories used in this trip yet';
+
+  @override
+  String get categoryCustomizationResetSuccess =>
+      'Reset to default successfully';
+
+  @override
+  String get categoryCustomizationSaveSuccess =>
+      'Category customized successfully';
 }

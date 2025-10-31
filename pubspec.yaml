@@ -56,6 +56,7 @@ dependencies:
   pub_semver: ^2.1.4
   http: ^1.1.0
   web: ^1.0.0
+  string_similarity: ^2.0.0
 
   # UI/Navigation
   go_router: ^12.1.1

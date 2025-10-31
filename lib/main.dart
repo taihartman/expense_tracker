@@ -20,6 +20,8 @@ import 'features/expenses/data/repositories/expense_repository_impl.dart';
 import 'features/expenses/domain/repositories/expense_repository.dart';
 import 'features/categories/data/repositories/category_repository_impl.dart';
 import 'features/categories/domain/repositories/category_repository.dart';
+import 'features/categories/data/repositories/category_customization_repository_impl.dart';
+import 'core/repositories/category_customization_repository.dart';
 import 'features/categories/data/services/rate_limiter_service.dart';
 import 'features/categories/presentation/cubit/category_cubit.dart';
 import 'features/settlements/data/repositories/settlement_repository_impl.dart';
@@ -169,6 +171,10 @@ class ExpenseTrackerApp extends StatelessWidget {
     firestoreService: _firestoreService,
     rateLimiterService: _rateLimiterService,
   );
+  static final _categoryCustomizationRepository =
+      CategoryCustomizationRepositoryImpl(
+    firestoreService: _firestoreService,
+  );
   static final _settledTransferRepository = SettledTransferRepositoryImpl(
     firestoreService: _firestoreService,
   );
@@ -264,6 +270,9 @@ class ExpenseTrackerApp extends StatelessWidget {
         RepositoryProvider<ExpenseRepository>.value(value: _expenseRepository),
         RepositoryProvider<CategoryRepository>.value(
           value: _categoryRepository,
+        ),
+        RepositoryProvider<CategoryCustomizationRepository>.value(
+          value: _categoryCustomizationRepository,
         ),
         RepositoryProvider<SettlementRepository>.value(
           value: _settlementRepository,

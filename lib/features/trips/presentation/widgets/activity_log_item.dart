@@ -137,6 +137,12 @@ class _ActivityLogItemState extends State<ActivityLogItem> {
       case ActivityType.transferMarkedUnsettled:
         return Icons.cancel;
 
+      // Category Customization
+      case ActivityType.categoryCustomized:
+        return Icons.palette;
+      case ActivityType.categoryResetToDefault:
+        return Icons.refresh;
+
       // Device Pairing & Security
       case ActivityType.deviceVerified:
         return Icons.verified_user;
@@ -180,6 +186,12 @@ class _ActivityLogItemState extends State<ActivityLogItem> {
       case ActivityType.transferMarkedSettled:
         return Colors.green;
       case ActivityType.transferMarkedUnsettled:
+        return Colors.orange;
+
+      // Category Customization - Purple for customization
+      case ActivityType.categoryCustomized:
+        return Colors.purple;
+      case ActivityType.categoryResetToDefault:
         return Colors.orange;
 
       // Device Pairing & Security - Purple/blue for security
@@ -228,6 +240,12 @@ class _ActivityLogItemState extends State<ActivityLogItem> {
         return 'marked a transfer as settled';
       case ActivityType.transferMarkedUnsettled:
         return 'marked a transfer as unsettled';
+
+      // Category Customization
+      case ActivityType.categoryCustomized:
+        return 'customized a category';
+      case ActivityType.categoryResetToDefault:
+        return 'reset a category to default';
 
       // Device Pairing & Security
       case ActivityType.deviceVerified:

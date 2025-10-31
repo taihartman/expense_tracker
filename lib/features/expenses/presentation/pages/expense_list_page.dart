@@ -11,6 +11,7 @@ import '../../domain/repositories/expense_repository.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
+import '../../../categories/presentation/cubit/category_cubit.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -19,19 +20,31 @@ import 'itemized/itemized_expense_wizard.dart';
 import '../../../../core/services/activity_logger_service.dart';
 
 /// Page displaying list of expenses for a trip
-class ExpenseListPage extends StatelessWidget {
+class ExpenseListPage extends StatefulWidget {
   final String tripId;
 
   const ExpenseListPage({required this.tripId, super.key});
 
   @override
+  State<ExpenseListPage> createState() => _ExpenseListPageState();
+}
+
+class _ExpenseListPageState extends State<ExpenseListPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Load top categories for expense cards to display icons
+    context.read<CategoryCubit>().loadTopCategories(limit: 10);
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Check if user has verified their identity for this trip
     final tripCubit = context.read<TripCubit>();
-    if (!tripCubit.isUserMemberOf(tripId)) {
+    if (!tripCubit.isUserMemberOf(widget.tripId)) {
       return Scaffold(
         appBar: AppBar(title: Text(context.l10n.expenseListTitle)),
-        body: TripVerificationPrompt(tripId: tripId),
+        body: TripVerificationPrompt(tripId: widget.tripId),
       );
     }
 
@@ -43,14 +56,14 @@ class ExpenseListPage extends StatelessWidget {
             icon: const Icon(Icons.settings),
             tooltip: context.l10n.tripSettingsTitle,
             onPressed: () {
-              context.push(AppRoutes.tripSettings(tripId));
+              context.push(AppRoutes.tripSettings(widget.tripId));
             },
           ),
           IconButton(
             icon: const Icon(Icons.account_balance_wallet),
             tooltip: context.l10n.settlementViewTooltip,
             onPressed: () {
-              context.push(AppRoutes.settlement(tripId));
+              context.push(AppRoutes.settlement(widget.tripId));
             },
           ),
         ],
@@ -59,9 +72,9 @@ class ExpenseListPage extends StatelessWidget {
         height: 200,
         width: 56,
         child: ExpenseFabSpeedDial(
-          tripId: tripId,
+          tripId: widget.tripId,
           onQuickExpenseTap: () {
-            showExpenseFormBottomSheet(context: context, tripId: tripId);
+            showExpenseFormBottomSheet(context: context, tripId: widget.tripId);
           },
           onReceiptSplitTap: () async {
             // Get trip info and current user
@@ -72,12 +85,12 @@ class ExpenseListPage extends StatelessWidget {
 
             // Find the current trip
             final trip = tripState.trips.firstWhere(
-              (t) => t.id == tripId,
+              (t) => t.id == widget.tripId,
               orElse: () => tripState.selectedTrip!,
             );
 
             // Get current user for this trip
-            final currentUser = tripCubit.getCurrentUserForTrip(tripId);
+            final currentUser = tripCubit.getCurrentUserForTrip(widget.tripId);
 
             // Navigate to Receipt Split wizard
             final expenseRepository = context.read<ExpenseRepository>();
@@ -90,7 +103,7 @@ class ExpenseListPage extends StatelessWidget {
                     activityLoggerService: activityLoggerService,
                   ),
                   child: ItemizedExpenseWizard(
-                    tripId: tripId,
+                    tripId: widget.tripId,
                     participants: trip.participants.map((p) => p.id).toList(),
                     participantNames: {
                       for (var p in trip.participants) p.id: p.name,
@@ -137,7 +150,7 @@ class ExpenseListPage extends StatelessWidget {
                   const SizedBox(height: AppTheme.spacing2),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<ExpenseCubit>().loadExpenses(tripId);
+                      context.read<ExpenseCubit>().loadExpenses(widget.tripId);
                     },
                     child: Text(context.l10n.commonRetry),
                   ),
@@ -180,7 +193,7 @@ class ExpenseListPage extends StatelessWidget {
                 final List<Participant> participants = tripState is TripLoaded
                     ? tripState.trips
                           .firstWhere(
-                            (t) => t.id == tripId,
+                            (t) => t.id == widget.tripId,
                             orElse: () => tripState.selectedTrip!,
                           )
                           .participants
@@ -202,7 +215,7 @@ class ExpenseListPage extends StatelessWidget {
                         // Show bottom sheet for editing
                         showExpenseFormBottomSheet(
                           context: context,
-                          tripId: tripId,
+                          tripId: widget.tripId,
                           expense: expense,
                         );
                       },

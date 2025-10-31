@@ -154,6 +154,22 @@ class TripSettingsPage extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: AppTheme.spacing2),
+
+                  // Category Customization Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(
+                        AppRoutes.tripCategoryCustomization(tripId),
+                      ),
+                      icon: const Icon(Icons.palette),
+                      label: const Text('Customize Categories'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(AppTheme.spacing2),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: AppTheme.spacing4),
 
                   // Participants Section

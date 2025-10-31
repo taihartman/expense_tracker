@@ -18,6 +18,13 @@ import '../../features/trips/presentation/pages/trip_activity_page.dart';
 import '../../features/trips/presentation/pages/trip_edit_page.dart';
 import '../../features/trips/presentation/pages/trip_settings_page.dart';
 import '../../features/trips/presentation/pages/archived_trips_page.dart';
+import '../../features/categories/presentation/widgets/customize_categories_screen.dart';
+import '../../features/categories/presentation/cubit/category_cubit.dart';
+import '../../features/categories/presentation/cubit/category_state.dart';
+import '../../features/categories/domain/models/category.dart';
+import '../../features/categories/presentation/cubit/category_customization_cubit.dart';
+import '../../core/repositories/category_customization_repository.dart';
+import '../../features/trips/domain/repositories/activity_log_repository.dart';
 import '../../features/expenses/presentation/pages/expense_list_page.dart';
 import '../../features/expenses/presentation/pages/expense_form_page.dart';
 import '../../features/expenses/presentation/cubits/expense_cubit.dart';
@@ -241,6 +248,31 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: '/trips/:tripId/categories/customize',
+        builder: (context, state) {
+          final tripId = state.pathParameters['tripId']!;
+
+          // Get categories from CategoryCubit state
+          final categoryState = context.read<CategoryCubit>().state;
+          final categories = categoryState is CategoryTopLoaded
+              ? categoryState.categories
+              : <Category>[];
+
+          // Wrap with trip-scoped CategoryCustomizationCubit
+          return BlocProvider(
+            create: (context) => CategoryCustomizationCubit(
+              repository: context.read<CategoryCustomizationRepository>(),
+              tripId: tripId,
+              activityLogRepository: context.read<ActivityLogRepository>(),
+            )..loadCustomizations(),
+            child: CustomizeCategoriesScreen(
+              tripId: tripId,
+              categories: categories,
+            ),
+          );
+        },
+      ),
+      GoRoute(
         path: '/trips/:tripId/expenses',
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
@@ -251,7 +283,16 @@ class AppRouter {
         path: '/trips/:tripId/expenses/create',
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
-          return ExpenseFormPage(tripId: tripId);
+
+          // Wrap with trip-scoped CategoryCustomizationCubit for category display
+          return BlocProvider(
+            create: (context) => CategoryCustomizationCubit(
+              repository: context.read<CategoryCustomizationRepository>(),
+              tripId: tripId,
+              activityLogRepository: context.read<ActivityLogRepository>(),
+            )..loadCustomizations(),
+            child: ExpenseFormPage(tripId: tripId),
+          );
         },
       ),
       GoRoute(
@@ -265,7 +306,15 @@ class AppRouter {
             (e) => e.id == expenseId,
           );
 
-          return ExpenseFormPage(tripId: tripId, expense: expense);
+          // Wrap with trip-scoped CategoryCustomizationCubit for category display
+          return BlocProvider(
+            create: (context) => CategoryCustomizationCubit(
+              repository: context.read<CategoryCustomizationRepository>(),
+              tripId: tripId,
+              activityLogRepository: context.read<ActivityLogRepository>(),
+            )..loadCustomizations(),
+            child: ExpenseFormPage(tripId: tripId, expense: expense),
+          );
         },
       ),
       GoRoute(

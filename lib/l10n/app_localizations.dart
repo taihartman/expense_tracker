@@ -1870,6 +1870,12 @@ abstract class AppLocalizations {
   /// **'Transport'**
   String get categoryTransport;
 
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
+
   /// No description provided for @categoryAccommodation.
   ///
   /// In en, this message translates to:
@@ -1888,11 +1894,11 @@ abstract class AppLocalizations {
   /// **'Shopping'**
   String get categoryShopping;
 
-  /// No description provided for @categoryOther.
+  /// No description provided for @categoryBrowseAndCreate.
   ///
   /// In en, this message translates to:
-  /// **'Other'**
-  String get categoryOther;
+  /// **'Browse & Create'**
+  String get categoryBrowseAndCreate;
 
   /// No description provided for @tripJoinTitle.
   ///
@@ -2847,6 +2853,94 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'label'**
   String get categoryDefaultIconLabel;
+
+  /// No description provided for @categorySimilarWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar category exists'**
+  String get categorySimilarWarningTitle;
+
+  /// No description provided for @categorySimilarWarningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{existingName} ({icon}, used {usageCount, plural, =1{1 time} other{{usageCount} times}})'**
+  String categorySimilarWarningMessage(
+    String existingName,
+    String icon,
+    int usageCount,
+  );
+
+  /// No description provided for @categorySimilarWarningUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Existing'**
+  String get categorySimilarWarningUseExisting;
+
+  /// No description provided for @categorySimilarWarningCreateAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Anyway'**
+  String get categorySimilarWarningCreateAnyway;
+
+  /// No description provided for @categoryCustomizationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Categories'**
+  String get categoryCustomizationTitle;
+
+  /// No description provided for @categoryCustomizationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize category icons and colors for this trip only'**
+  String get categoryCustomizationDescription;
+
+  /// No description provided for @categoryCustomizationBadgeCustomized.
+  ///
+  /// In en, this message translates to:
+  /// **'Customized'**
+  String get categoryCustomizationBadgeCustomized;
+
+  /// No description provided for @categoryCustomizationBadgeDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Using global default'**
+  String get categoryCustomizationBadgeDefault;
+
+  /// No description provided for @categoryCustomizationResetIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Icon'**
+  String get categoryCustomizationResetIcon;
+
+  /// No description provided for @categoryCustomizationResetColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Color'**
+  String get categoryCustomizationResetColor;
+
+  /// No description provided for @categoryCustomizationResetBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Default'**
+  String get categoryCustomizationResetBoth;
+
+  /// No description provided for @categoryCustomizationNoCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories used in this trip yet'**
+  String get categoryCustomizationNoCategories;
+
+  /// No description provided for @categoryCustomizationResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default successfully'**
+  String get categoryCustomizationResetSuccess;
+
+  /// No description provided for @categoryCustomizationSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category customized successfully'**
+  String get categoryCustomizationSaveSuccess;
 }
 
 class _AppLocalizationsDelegate

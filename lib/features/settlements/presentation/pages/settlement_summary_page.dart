@@ -227,6 +227,7 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                                 bottom: AppTheme.spacing2,
                               ),
                               child: PersonDashboardCard(
+                                activeTransfers: state.activeTransfers,
                                 person: personSpending,
                                 participant: participant,
                                 baseCurrency: state.summary.baseCurrency,
