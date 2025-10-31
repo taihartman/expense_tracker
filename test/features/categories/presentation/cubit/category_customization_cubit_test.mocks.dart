@@ -78,6 +78,15 @@ class MockCategoryCustomizationRepository extends _i1.Mock
             returnValueForMissingStub: _i3.Future<void>.value(),
           )
           as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> recordIconPreference(String? categoryId, String? iconName) =>
+      (super.noSuchMethod(
+            Invocation.method(#recordIconPreference, [categoryId, iconName]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }
 
 /// A class which mocks [ActivityLogRepository].

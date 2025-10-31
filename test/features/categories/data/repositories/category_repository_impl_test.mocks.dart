@@ -147,6 +147,17 @@ class MockFirestoreService extends _i1.Mock implements _i4.FirestoreService {
           as _i2.CollectionReference<Object?>);
 
   @override
+  _i2.CollectionReference<Object?> get categoryIconPreferences =>
+      (super.noSuchMethod(
+            Invocation.getter(#categoryIconPreferences),
+            returnValue: _FakeCollectionReference_1<Object?>(
+              this,
+              Invocation.getter(#categoryIconPreferences),
+            ),
+          )
+          as _i2.CollectionReference<Object?>);
+
+  @override
   _i2.CollectionReference<Object?> get exchangeRates =>
       (super.noSuchMethod(
             Invocation.getter(#exchangeRates),

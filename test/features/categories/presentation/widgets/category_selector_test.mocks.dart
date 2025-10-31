@@ -67,6 +67,18 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
   );
 
   @override
+  void loadTopCategoriesIfStale({int? limit = 5}) => super.noSuchMethod(
+    Invocation.method(#loadTopCategoriesIfStale, [], {#limit: limit}),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void invalidateTopCategoriesCache() => super.noSuchMethod(
+    Invocation.method(#invalidateTopCategoriesCache, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void searchCategories(String? query) => super.noSuchMethod(
     Invocation.method(#searchCategories, [query]),
     returnValueForMissingStub: null,
@@ -77,14 +89,12 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
     required String? name,
     String? icon = 'label',
     required String? color,
-    required String? userId,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#createCategory, [], {
               #name: name,
               #icon: icon,
               #color: color,
-              #userId: userId,
             }),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
@@ -101,9 +111,9 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
           as _i4.Future<void>);
 
   @override
-  _i4.Future<void> checkRateLimit(String? userId) =>
+  _i4.Future<void> checkRateLimit() =>
       (super.noSuchMethod(
-            Invocation.method(#checkRateLimit, [userId]),
+            Invocation.method(#checkRateLimit, []),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

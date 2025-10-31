@@ -189,7 +189,6 @@ void main() {
             name: anyNamed('name'),
             icon: anyNamed('icon'),
             color: anyNamed('color'),
-            userId: anyNamed('userId'),
           ),
         ).thenAnswer((_) async {});
 
@@ -210,7 +209,6 @@ void main() {
             name: 'Groceries',
             icon: anyNamed('icon'),
             color: anyNamed('color'),
-            userId: anyNamed('userId'),
           ),
         ).called(1);
       });
@@ -251,7 +249,6 @@ void main() {
             name: anyNamed('name'),
             icon: 'restaurant',
             color: anyNamed('color'),
-            userId: anyNamed('userId'),
           ),
         ).called(greaterThanOrEqualTo(0));
       });
@@ -341,7 +338,6 @@ void main() {
             name: anyNamed('name'),
             icon: anyNamed('icon'),
             color: anyNamed('color'),
-            userId: anyNamed('userId'),
           ),
         ).thenAnswer((_) async {});
 
@@ -361,7 +357,6 @@ void main() {
             name: 'Groceries',
             icon: anyNamed('icon'),
             color: anyNamed('color'),
-            userId: anyNamed('userId'),
           ),
         ).called(1);
       });

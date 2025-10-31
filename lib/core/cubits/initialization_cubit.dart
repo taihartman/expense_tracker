@@ -1,5 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../firebase_options.dart';
 import '../services/local_storage_service.dart';
 import '../services/migration_service.dart';
+import '../services/auth_service.dart';
 import '../../shared/services/firestore_service.dart';
 
 /// Helper function to log with timestamps
@@ -63,7 +63,11 @@ class InitializationError extends InitializationState {
 
 /// Cubit that manages async initialization of Firebase and other services
 class InitializationCubit extends Cubit<InitializationState> {
-  InitializationCubit() : super(InitializationInitial());
+  final AuthService _authService;
+
+  InitializationCubit({AuthService? authService})
+    : _authService = authService ?? AuthService(),
+      super(InitializationInitial());
 
   /// Initialize all required services
   Future<void> initialize() async {
@@ -87,7 +91,7 @@ class InitializationCubit extends Cubit<InitializationState> {
       _log('🔐 Step 2/5: Signing in anonymously...');
       final authStart = DateTime.now();
       try {
-        final userCredential = await FirebaseAuth.instance.signInAnonymously();
+        final userCredential = await _authService.signInAnonymously();
         _log(
           '✅ Anonymous auth successful - UID: ${userCredential.user?.uid} (${DateTime.now().difference(authStart).inMilliseconds}ms)',
         );

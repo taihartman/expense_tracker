@@ -108,6 +108,106 @@ Data Layer (Implementation)
 
 **For detailed architecture**: See [PROJECT_KNOWLEDGE.md](PROJECT_KNOWLEDGE.md)
 
+## 🔐 Authentication Architecture
+
+**⚠️ CRITICAL**: This app uses TWO SEPARATE identity systems. **DO NOT confuse them!**
+
+### Two Identity Systems
+
+#### 1. Firebase Auth UID (Internal Security)
+
+**Purpose**: Firestore security rules validation and rate limiting
+**Access**: Via `AuthService.getAuthUidForRateLimiting()`
+**When to use**: ONLY for rate limiting and security rule validation
+
+```dart
+// ✅ CORRECT - Rate limiting
+final userId = _authService.getAuthUidForRateLimiting();
+await _rateLimiter.logCategoryCreation(userId: userId);
+```
+
+```dart
+// ❌ WRONG - Don't use for business logic
+final userId = _authService.getAuthUidForRateLimiting();
+await activityLog.add(actorId: userId); // Should use Participant name!
+```
+
+**Never use Firebase Auth UID for**:
+- Business logic (use Participant ID instead)
+- User identity display (use Participant.name instead)
+- Activity logging (use Participant.name instead)
+- Associating data with users (use Participant ID instead)
+
+#### 2. Participant ID (Business Logic)
+
+**Purpose**: User identity within trips (business logic)
+**Access**: Via `TripCubit.getCurrentUserForTrip(tripId)`
+**When to use**: All business logic, activity logging, user references
+
+```dart
+// ✅ CORRECT - Activity logging
+final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
+await activityLog.add(actorName: currentUser?.name);
+```
+
+```dart
+// ✅ CORRECT - Expense creation
+final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
+final expense = Expense(payerId: currentUser?.id, ...);
+```
+
+### Quick Reference: Which Identity to Use?
+
+| Task | Use Firebase Auth UID? | Use Participant? |
+|------|------------------------|------------------|
+| Creating categories | ✅ (rate limiting) | ❌ |
+| Creating expenses | ❌ | ✅ |
+| Activity logging | ❌ | ✅ |
+| Settlement calculations | ❌ | ✅ |
+| Showing user name | ❌ | ✅ |
+| Rate limit enforcement | ✅ | ❌ |
+
+### Why Two Systems?
+
+**Firebase Auth UID**:
+- Every device gets a unique anonymous auth UID on first launch
+- Used ONLY to enforce Firestore security rules (e.g., `userId == request.auth.uid`)
+- Prevents abuse (rate limiting, spam prevention)
+- Never exposed to users or used in business logic
+
+**Participant ID**:
+- Generated from user's display name (e.g., "Sarah Johnson" → "sarahjohnson")
+- Stored locally per trip: `LocalStorageService.getUserIdentityForTrip(tripId)`
+- Users can have different identities in different trips
+- Used for ALL business operations (expenses, settlements, activity logs)
+
+### AuthService API
+
+```dart
+// Check if user is authenticated
+if (_authService.isAuthenticated) { ... }
+
+// Get auth UID for rate limiting ONLY
+final userId = _authService.getAuthUidForRateLimiting();
+
+// Sign in anonymously (done automatically during app init)
+await _authService.signInAnonymously();
+```
+
+### Architecture Rules
+
+**DO**:
+- ✅ Use `AuthService` to access Firebase Auth (never import `firebase_auth` directly)
+- ✅ Get auth UID from `AuthService.getAuthUidForRateLimiting()` for rate limiting
+- ✅ Get participant from `TripCubit.getCurrentUserForTrip()` for business logic
+- ✅ Document clearly when auth UID is needed vs participant ID
+
+**DON'T**:
+- ❌ Never import `firebase_auth` in presentation layer
+- ❌ Never use `FirebaseAuth.instance.currentUser` directly
+- ❌ Never use auth UID for business logic or user display
+- ❌ Never pass auth UID to domain/business logic layers
+
 ## 📱 Mobile-First Philosophy
 
 **⚠️ CRITICAL**: This is a mobile-first application. Design for 375x667px (iPhone SE) FIRST.

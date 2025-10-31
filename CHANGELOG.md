@@ -13,6 +13,25 @@ and this project follows feature-driven versioning with Spec-Kit.
 
 ### Fixed
 
+**[2025-10-31] Category Creation Authentication Bug** - Fixed Firestore permission denied error when creating categories and implemented centralized authentication architecture:
+
+- **Root Cause**: Widget was hardcoding `'current-user'` string instead of using actual Firebase Auth UID, causing security rule validation to fail
+- **Solution**: Created `AuthService` to centralize Firebase Auth access and enforce proper separation of concerns
+- **Architecture Improvement**: Removed all direct `FirebaseAuth` imports from presentation layer
+- **Documentation**: Added comprehensive authentication architecture section to `CLAUDE.md` explaining the two-identity system:
+  - Firebase Auth UID: For rate limiting and security rule validation only
+  - Participant ID: For all business logic, activity logging, and user identity
+- **Files Created**:
+  - `lib/core/services/auth_service.dart` (new centralized auth service with extensive documentation)
+- **Files Modified**:
+  - `lib/core/cubits/initialization_cubit.dart` (uses AuthService)
+  - `lib/features/categories/presentation/cubit/category_cubit.dart` (gets auth UID from AuthService internally, removed userId parameter)
+  - `lib/features/categories/presentation/widgets/category_creation_bottom_sheet.dart` (removed Firebase Auth import and userId logic)
+  - `lib/main.dart` (provides AuthService to CategoryCubit)
+  - `CLAUDE.md` (added authentication architecture section with clear guidelines)
+  - All related tests updated and mocks regenerated
+- **Impact**: Prevents future authentication bugs by enforcing architectural boundaries and providing clear patterns for when to use auth UID vs participant ID
+
 **[2025-10-31] Settlement Display Inconsistency** - Fixed UX bug where Individual Balance Card and Everyone's Summary showed different amounts:
 
 - **Individual Balance Card** now calculates "Total Owed" from active transfers (matching Everyone's Summary) instead of raw expense shares

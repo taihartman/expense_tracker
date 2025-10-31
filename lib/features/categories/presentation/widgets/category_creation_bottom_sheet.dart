@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -8,6 +7,7 @@ import '../../../../core/validators/category_validator.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../domain/models/category.dart';
 import '../../domain/repositories/category_repository.dart';
+import '../../../../core/repositories/category_customization_repository.dart';
 import 'category_icon_picker.dart';
 import 'category_color_picker.dart';
 
@@ -48,8 +48,6 @@ class _CategoryCreationBottomSheetState
 
   // Similar category detection
   List<SimilarCategoryMatch> _similarCategories = [];
-  bool _checkingSimilarity = false;
-  bool _dismissedSimilarityWarning = false;
 
   @override
   void dispose() {
@@ -63,14 +61,9 @@ class _CategoryCreationBottomSheetState
       // Don't check until user has typed at least 3 characters
       setState(() {
         _similarCategories = [];
-        _dismissedSimilarityWarning = false;
       });
       return;
     }
-
-    setState(() {
-      _checkingSimilarity = true;
-    });
 
     try {
       final repository = context.read<CategoryRepository>();
@@ -79,26 +72,71 @@ class _CategoryCreationBottomSheetState
       if (mounted) {
         setState(() {
           _similarCategories = matches;
-          _checkingSimilarity = false;
-          _dismissedSimilarityWarning = false;
         });
       }
     } catch (e) {
+      // Silent failure - if similarity check fails, just continue
       if (mounted) {
         setState(() {
-          _checkingSimilarity = false;
+          _similarCategories = [];
         });
       }
     }
   }
 
-  /// User selected an existing similar category
-  void _useExistingCategory(Category category) {
-    // Select the category (same as if they tapped it in search)
-    widget.onCategoryCreated();
-    Navigator.of(context).pop();
-    // Note: The actual category selection happens in the parent widget
-    // This just dismisses the creation sheet
+  /// User selected an existing similar category - show icon picker
+  Future<void> _useExistingCategory(Category category) async {
+    try {
+      // Get the most popular icon for this category (or use global icon as fallback)
+      final repository = context.read<CategoryRepository>();
+      final customizationRepository = context
+          .read<CategoryCustomizationRepository>();
+
+      final mostPopularIcon = await repository.getMostPopularIcon(category.id);
+      final defaultIcon = mostPopularIcon ?? category.icon;
+
+      if (!mounted) return;
+
+      // Show icon picker dialog with most popular icon preselected
+      await showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('Customize "${category.name}" Icon'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: CategoryIconPicker(
+              selectedIcon: defaultIcon,
+              onIconSelected: (selectedIcon) async {
+                // Record the icon preference vote
+                try {
+                  await customizationRepository.recordIconPreference(
+                    category.id,
+                    selectedIcon,
+                  );
+                } catch (e) {
+                  // Silent failure - voting is non-critical
+                }
+
+                // Close the dialog and the creation sheet
+                if (dialogContext.mounted) {
+                  Navigator.of(dialogContext).pop();
+                }
+                if (mounted) {
+                  widget.onCategoryCreated();
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      // If anything fails, just close the sheet
+      if (mounted) {
+        widget.onCategoryCreated();
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   String? _validateName(String? value) {
@@ -112,7 +150,8 @@ class _CategoryCreationBottomSheetState
 
   bool get _isFormValid {
     return _nameController.text.trim().isNotEmpty &&
-        _validateName(_nameController.text) == null;
+        _validateName(_nameController.text) == null &&
+        _similarCategories.isEmpty; // Disable if similar category found
   }
 
   void _onCreateTapped() {
@@ -121,23 +160,12 @@ class _CategoryCreationBottomSheetState
     });
 
     if (_nameError == null) {
-      // Get current user ID from Firebase Auth
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-
-      if (userId == null) {
-        // Handle case where user is not authenticated
-        setState(() {
-          _nameError = 'You must be logged in to create categories';
-        });
-        return;
-      }
-
       // Call cubit to create category
+      // Note: userId is obtained internally by the cubit from AuthService
       context.read<CategoryCubit>().createCategory(
         name: _nameController.text.trim(),
         icon: _selectedIcon,
         color: _selectedColor,
-        userId: userId,
       );
     }
   }
@@ -282,8 +310,7 @@ class _CategoryCreationBottomSheetState
                               const SizedBox(height: AppTheme.spacing2),
 
                               // Similar Category Warning
-                              if (_similarCategories.isNotEmpty &&
-                                  !_dismissedSimilarityWarning)
+                              if (_similarCategories.isNotEmpty)
                                 _buildSimilarityWarning(theme),
 
                               const SizedBox(height: AppTheme.spacing2),
@@ -403,23 +430,12 @@ class _CategoryCreationBottomSheetState
               const SizedBox(width: AppTheme.spacing1),
               Expanded(
                 child: Text(
-                  'Similar category found',
+                  'Category already exists',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: theme.colorScheme.onTertiaryContainer,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                color: theme.colorScheme.onTertiaryContainer,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: () {
-                  setState(() {
-                    _dismissedSimilarityWarning = true;
-                  });
-                },
               ),
             ],
           ),
@@ -431,36 +447,17 @@ class _CategoryCreationBottomSheetState
             ),
           ),
           const SizedBox(height: AppTheme.spacing2),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _useExistingCategory(topMatch.category),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: theme.colorScheme.onTertiaryContainer,
-                    side: BorderSide(
-                      color: theme.colorScheme.onTertiaryContainer,
-                    ),
-                  ),
-                  child: const Text('Use Existing'),
-                ),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () => _useExistingCategory(topMatch.category),
+              style: FilledButton.styleFrom(
+                backgroundColor: theme.colorScheme.onTertiaryContainer,
+                foregroundColor: theme.colorScheme.tertiaryContainer,
               ),
-              const SizedBox(width: AppTheme.spacing1),
-              Expanded(
-                child: FilledButton(
-                  onPressed: () {
-                    setState(() {
-                      _dismissedSimilarityWarning = true;
-                    });
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: theme.colorScheme.onTertiaryContainer,
-                    foregroundColor: theme.colorScheme.tertiaryContainer,
-                  ),
-                  child: const Text('Create Anyway'),
-                ),
-              ),
-            ],
+              icon: const Icon(Icons.edit, size: 18),
+              label: const Text('Use & Customize Icon'),
+            ),
           ),
         ],
       ),

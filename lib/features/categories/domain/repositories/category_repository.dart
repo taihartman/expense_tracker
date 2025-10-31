@@ -126,6 +126,24 @@ abstract class CategoryRepository {
     double threshold = 0.8,
     int limit = 3,
   });
+
+  /// Get the most popular icon for a category based on icon votes
+  ///
+  /// Queries the categoryIconPreferences collection to find the icon
+  /// with the mostPopular flag set to true. This icon represents the
+  /// community consensus on the best icon for this category.
+  ///
+  /// Parameters:
+  /// - categoryId: The category ID to get the most popular icon for
+  ///
+  /// Returns:
+  /// - The icon name (e.g., "restaurant") if a popular icon exists
+  /// - null if no icon preferences exist (use global category icon)
+  ///
+  /// Used for:
+  /// - Preselecting the most voted icon when customizing categories
+  /// - Showing users which icon is most popular before customizing
+  Future<String?> getMostPopularIcon(String categoryId);
 }
 
 /// Result of a similarity search containing category and similarity score

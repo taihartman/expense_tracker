@@ -4,16 +4,18 @@ import 'package:mockito/mockito.dart';
 import 'package:expense_tracker/features/categories/domain/models/category.dart';
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart';
 import 'package:expense_tracker/features/categories/data/services/rate_limiter_service.dart';
+import 'package:expense_tracker/core/services/auth_service.dart';
 import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart';
 import 'package:expense_tracker/features/categories/presentation/cubit/category_state.dart';
 
-@GenerateMocks([CategoryRepository, RateLimiterService])
+@GenerateMocks([CategoryRepository, RateLimiterService, AuthService])
 import 'category_cubit_test.mocks.dart';
 
 void main() {
   late CategoryCubit cubit;
   late MockCategoryRepository mockCategoryRepository;
   late MockRateLimiterService mockRateLimiterService;
+  late MockAuthService mockAuthService;
 
   final now = DateTime(2025, 10, 31, 12, 0, 0);
 
@@ -40,10 +42,15 @@ void main() {
   setUp(() {
     mockCategoryRepository = MockCategoryRepository();
     mockRateLimiterService = MockRateLimiterService();
+    mockAuthService = MockAuthService();
+
+    // Default auth behavior - user is authenticated
+    when(mockAuthService.getAuthUidForRateLimiting()).thenReturn('test-uid');
 
     cubit = CategoryCubit(
       categoryRepository: mockCategoryRepository,
       rateLimiterService: mockRateLimiterService,
+      authService: mockAuthService,
     );
   });
 
@@ -259,7 +266,7 @@ void main() {
             name: 'New Category',
             icon: 'label',
             color: '#FF5722',
-            userId: 'user1',
+            userId: 'test-uid',
           ),
         ).thenAnswer(
           (_) async => Category(
@@ -293,7 +300,7 @@ void main() {
           name: 'New Category',
           icon: 'label',
           color: '#FF5722',
-          userId: 'user1',
+          
         );
       });
 
@@ -321,7 +328,7 @@ void main() {
           name: '',
           icon: 'label',
           color: '#FF5722',
-          userId: 'user1',
+          
         );
       });
 
@@ -351,7 +358,7 @@ void main() {
             name: 'Invalid@Category',
             icon: 'label',
             color: '#FF5722',
-            userId: 'user1',
+            
           );
         },
       );
@@ -384,7 +391,7 @@ void main() {
             name: longName,
             icon: 'label',
             color: '#FF5722',
-            userId: 'user1',
+            
           );
         },
       );
@@ -420,7 +427,7 @@ void main() {
             name: 'Meals',
             icon: 'label',
             color: '#FF5722',
-            userId: 'user1',
+            
           );
         },
       );
@@ -461,7 +468,7 @@ void main() {
           name: 'New Category',
           icon: 'label',
           color: '#FF5722',
-          userId: 'user1',
+          
         );
       });
 
@@ -502,7 +509,7 @@ void main() {
           name: 'New Category',
           icon: 'label',
           color: '#FF5722',
-          userId: 'user1',
+          
         );
       });
     });
@@ -586,7 +593,7 @@ void main() {
           );
 
           // Act
-          await cubit.checkRateLimit('user1');
+          await cubit.checkRateLimit();
         },
       );
 
@@ -624,7 +631,7 @@ void main() {
           );
 
           // Act
-          await cubit.checkRateLimit('user1');
+          await cubit.checkRateLimit();
         },
       );
 
@@ -649,7 +656,7 @@ void main() {
         );
 
         // Act
-        await cubit.checkRateLimit('user1');
+        await cubit.checkRateLimit();
       });
     });
   });

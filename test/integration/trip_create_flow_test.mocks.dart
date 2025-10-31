@@ -456,6 +456,32 @@ class MockCategoryRepository extends _i1.Mock
             returnValue: _i5.Future<List<_i3.Category>>.value(<_i3.Category>[]),
           )
           as _i5.Future<List<_i3.Category>>);
+
+  @override
+  _i5.Future<List<_i10.SimilarCategoryMatch>> findSimilarCategories(
+    String? query, {
+    double? threshold = 0.8,
+    int? limit = 3,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #findSimilarCategories,
+              [query],
+              {#threshold: threshold, #limit: limit},
+            ),
+            returnValue: _i5.Future<List<_i10.SimilarCategoryMatch>>.value(
+              <_i10.SimilarCategoryMatch>[],
+            ),
+          )
+          as _i5.Future<List<_i10.SimilarCategoryMatch>>);
+
+  @override
+  _i5.Future<String?> getMostPopularIcon(String? categoryId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMostPopularIcon, [categoryId]),
+            returnValue: _i5.Future<String?>.value(),
+          )
+          as _i5.Future<String?>);
 }
 
 /// A class which mocks [LocalStorageService].

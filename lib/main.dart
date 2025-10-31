@@ -8,6 +8,7 @@ import 'core/router/app_router.dart';
 import 'core/services/local_storage_service.dart';
 import 'core/services/activity_logger_service.dart';
 import 'core/services/activity_logger_service_impl.dart';
+import 'core/services/auth_service.dart';
 import 'core/cubits/initialization_cubit.dart';
 import 'core/presentation/pages/initialization_splash_page.dart';
 import 'core/widgets/debug_overlay.dart';
@@ -172,9 +173,7 @@ class ExpenseTrackerApp extends StatelessWidget {
     rateLimiterService: _rateLimiterService,
   );
   static final _categoryCustomizationRepository =
-      CategoryCustomizationRepositoryImpl(
-    firestoreService: _firestoreService,
-  );
+      CategoryCustomizationRepositoryImpl(firestoreService: _firestoreService);
   static final _settledTransferRepository = SettledTransferRepositoryImpl(
     firestoreService: _firestoreService,
   );
@@ -355,6 +354,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               return CategoryCubit(
                 categoryRepository: _categoryRepository,
                 rateLimiterService: _rateLimiterService,
+                authService: AuthService(),
               );
             },
           ),

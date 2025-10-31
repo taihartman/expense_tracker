@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/validators/category_validator.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../data/services/rate_limiter_service.dart';
 import '../../domain/repositories/category_repository.dart';
 import 'category_state.dart';
@@ -17,6 +18,7 @@ import 'category_state.dart';
 class CategoryCubit extends Cubit<CategoryState> {
   final CategoryRepository _categoryRepository;
   final RateLimiterService _rateLimiterService;
+  final AuthService _authService;
 
   // Stream subscriptions for cleanup
   StreamSubscription? _topCategoriesSubscription;
@@ -29,8 +31,10 @@ class CategoryCubit extends Cubit<CategoryState> {
   CategoryCubit({
     required CategoryRepository categoryRepository,
     required RateLimiterService rateLimiterService,
+    required AuthService authService,
   }) : _categoryRepository = categoryRepository,
        _rateLimiterService = rateLimiterService,
+       _authService = authService,
        super(const CategoryInitial());
 
   /// Load top N popular categories (default: 5 for chip selector)
@@ -136,9 +140,10 @@ class CategoryCubit extends Cubit<CategoryState> {
   /// Create a new category in the global pool
   ///
   /// Performs validation:
-  /// 1. Name validation (1-50 chars, allowed characters)
-  /// 2. Duplicate check (case-insensitive)
-  /// 3. Rate limiting (3 per 5 minutes per user)
+  /// 1. Authentication check
+  /// 2. Name validation (1-50 chars, allowed characters)
+  /// 3. Duplicate check (case-insensitive)
+  /// 4. Rate limiting (3 per 5 minutes per user)
   ///
   /// Emits:
   /// - CategoryCreating while creating
@@ -149,15 +154,27 @@ class CategoryCubit extends Cubit<CategoryState> {
   /// - name: Category display name (required)
   /// - icon: Material icon name (defaults to 'label')
   /// - color: Hex color code (required)
-  /// - userId: Current user ID for rate limiting (required)
+  ///
+  /// Note: userId is obtained internally from AuthService for rate limiting.
   Future<void> createCategory({
     required String name,
     String icon = 'label',
     required String color,
-    required String userId,
   }) async {
     try {
-      // 1. Validate category name
+      // 1. Get authenticated user ID for rate limiting
+      final userId = _authService.getAuthUidForRateLimiting();
+      if (userId == null) {
+        emit(
+          CategoryError(
+            message: 'You must be logged in to create categories',
+            type: CategoryErrorType.generic,
+          ),
+        );
+        return;
+      }
+
+      // 2. Validate category name
       final validationError = CategoryValidator.validateCategoryName(name);
       if (validationError != null) {
         emit(
@@ -169,20 +186,25 @@ class CategoryCubit extends Cubit<CategoryState> {
         return;
       }
 
-      // 2. Check for duplicates
-      final exists = await _categoryRepository.categoryExists(name);
-      if (exists) {
+      // 3. Check for similar categories (prevents vote splitting)
+      final similarCategories = await _categoryRepository.findSimilarCategories(
+        name,
+        threshold: 0.8,
+        limit: 1,
+      );
+      if (similarCategories.isNotEmpty) {
+        final similar = similarCategories.first;
         emit(
           CategoryError(
             message:
-                'Category "$name" already exists. Please choose a different name.',
+                'Category "${similar.category.name}" already exists. Please use the existing category instead.',
             type: CategoryErrorType.duplicate,
           ),
         );
         return;
       }
 
-      // 3. Check rate limiting
+      // 4. Check rate limiting
       final canCreate = await _rateLimiterService.canUserCreateCategory(userId);
       if (!canCreate) {
         final timeUntilNext = await _rateLimiterService
@@ -199,7 +221,7 @@ class CategoryCubit extends Cubit<CategoryState> {
         return;
       }
 
-      // 4. Create category
+      // 5. Create category
       emit(CategoryCreating(name: name));
 
       final category = await _categoryRepository.createCategory(
@@ -263,8 +285,21 @@ class CategoryCubit extends Cubit<CategoryState> {
   /// - Disabling "Create" button when rate-limited
   /// - Showing "X/3 categories created" counter
   /// - Displaying countdown timer when rate-limited
-  Future<void> checkRateLimit(String userId) async {
+  ///
+  /// Note: userId is obtained internally from AuthService for rate limiting.
+  Future<void> checkRateLimit() async {
     try {
+      final userId = _authService.getAuthUidForRateLimiting();
+      if (userId == null) {
+        emit(
+          CategoryError(
+            message: 'You must be logged in to check rate limits',
+            type: CategoryErrorType.generic,
+          ),
+        );
+        return;
+      }
+
       final canCreate = await _rateLimiterService.canUserCreateCategory(userId);
       final recentCount = await _rateLimiterService.getRecentCreationCount(
         userId,

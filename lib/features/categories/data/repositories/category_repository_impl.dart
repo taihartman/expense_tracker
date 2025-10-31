@@ -295,4 +295,30 @@ class CategoryRepositoryImpl implements CategoryRepository {
       throw Exception('Failed to find similar categories: $e');
     }
   }
+
+  @override
+  Future<String?> getMostPopularIcon(String categoryId) async {
+    try {
+      // Query categoryIconPreferences collection for this category
+      // Find the preference with mostPopular flag set to true
+      final querySnapshot = await _firestoreService.categoryIconPreferences
+          .where('categoryId', isEqualTo: categoryId)
+          .where('mostPopular', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        // No icon preferences exist, return null (use global category icon)
+        return null;
+      }
+
+      // Return the icon name from the most popular preference
+      final data = querySnapshot.docs.first.data() as Map<String, dynamic>;
+      return data['iconName'] as String?;
+    } catch (e) {
+      // Silent failure - if we can't get the most popular icon,
+      // just return null and let the caller use the global category icon
+      return null;
+    }
+  }
 }

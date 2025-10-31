@@ -74,12 +74,17 @@ class _TripCreatePageState extends State<TripCreatePage> {
 
       if (!mounted) return;
 
-      // Navigate to home after user closes dialog
+      // Reload trips to update the list, then navigate to home
+      await context.read<TripCubit>().loadTrips();
+      if (!mounted) return;
       context.go(AppRoutes.home);
     } catch (e) {
       // If recovery code fetch fails, still navigate (non-fatal)
       debugPrint('Failed to fetch recovery code after creation: $e');
       if (mounted) {
+        // Reload trips to update the list, then navigate to home
+        await context.read<TripCubit>().loadTrips();
+        if (!mounted) return;
         context.go(AppRoutes.home);
       }
     }

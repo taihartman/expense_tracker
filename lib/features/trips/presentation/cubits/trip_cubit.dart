@@ -271,8 +271,8 @@ class TripCubit extends Cubit<TripState> {
       await _localStorageService.saveSelectedTripId(createdTrip.id);
       _log('🎯 Auto-selected newly created trip: ${createdTrip.name}');
 
-      // Reload trips to update the list
-      await loadTrips();
+      // Don't reload trips here - let UI handle it after recovery code dialog is dismissed
+      // This prevents state from being overwritten while dialog is showing
     } catch (e) {
       _log('❌ Failed to create trip: $e');
       emit(TripError('Failed to create trip: ${e.toString()}'));
