@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -120,12 +121,23 @@ class _CategoryCreationBottomSheetState
     });
 
     if (_nameError == null) {
+      // Get current user ID from Firebase Auth
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+
+      if (userId == null) {
+        // Handle case where user is not authenticated
+        setState(() {
+          _nameError = 'You must be logged in to create categories';
+        });
+        return;
+      }
+
       // Call cubit to create category
       context.read<CategoryCubit>().createCategory(
         name: _nameController.text.trim(),
         icon: _selectedIcon,
         color: _selectedColor,
-        userId: 'current-user', // TODO: Get from auth
+        userId: userId,
       );
     }
   }
@@ -376,10 +388,7 @@ class _CategoryCreationBottomSheetState
       decoration: BoxDecoration(
         color: theme.colorScheme.tertiaryContainer,
         borderRadius: BorderRadius.circular(AppTheme.spacing1),
-        border: Border.all(
-          color: theme.colorScheme.tertiary,
-          width: 1,
-        ),
+        border: Border.all(color: theme.colorScheme.tertiary, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
