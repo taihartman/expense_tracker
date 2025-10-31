@@ -7,17 +7,201 @@ import '../models/minimal_transfer.dart';
 import '../models/category_spending.dart';
 import '../../../../core/models/currency_code.dart';
 
-/// Helper function to log with timestamps
+/// Helper function to log with timestamps (only in debug mode)
 void _log(String message) {
-  debugPrint(
-    '[${DateTime.now().toIso8601String()}] [SettlementCalculator] $message',
-  );
+  if (kDebugMode) {
+    debugPrint(
+      '[${DateTime.now().toIso8601String()}] [SettlementCalculator] $message',
+    );
+  }
 }
 
 /// Service for calculating settlements from expenses
 ///
 /// Implements pairwise debt netting and minimal transfer algorithms
 class SettlementCalculator {
+  /// Calculate both person summaries AND category spending in a single pass
+  ///
+  /// This is an optimized version that processes expenses only once
+  /// instead of iterating twice (once for summaries, once for category spending).
+  ({
+    Map<String, PersonSummary> personSummaries,
+    Map<String, PersonCategorySpending>? categorySpending,
+  })
+  calculateSettlementData({
+    required List<Expense> expenses,
+    required CurrencyCode baseCurrency,
+    List<cat.Category>? categories,
+  }) {
+    _log(
+      '🧮 calculateSettlementData() called with ${expenses.length} expenses (single-pass optimization)',
+    );
+
+    final summaries = <String, _MutablePersonSummary>{};
+    final userCategorySpending = <String, Map<String, Decimal>>{};
+
+    // Build category lookup map if categories provided
+    final categoryMap = <String, cat.Category>{};
+    if (categories != null) {
+      for (final category in categories) {
+        categoryMap[category.id] = category;
+      }
+    }
+
+    // SINGLE PASS through all expenses
+    for (int i = 0; i < expenses.length; i++) {
+      final expense = expenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+      _log('  ID: ${expense.id}');
+      _log('  Description: ${expense.description ?? "No description"}');
+      _log('  Payer: ${expense.payerUserId}');
+      _log('  Amount: ${expense.amount} ${expense.currency.code}');
+
+      // Convert amount to base currency (TODO: FX conversion)
+      final amountInBase = expense.amount;
+
+      // Update payer's total paid
+      summaries.putIfAbsent(
+        expense.payerUserId,
+        () => _MutablePersonSummary(userId: expense.payerUserId),
+      );
+      summaries[expense.payerUserId]!.totalPaidBase += amountInBase;
+      _log('  → ${expense.payerUserId} paid: $amountInBase');
+
+      // Calculate shares
+      final Map<String, Decimal> shares;
+      if (expense.participantAmounts != null &&
+          expense.participantAmounts!.isNotEmpty) {
+        shares = expense.participantAmounts!;
+        _log('  Using pre-calculated participantAmounts (itemized):');
+      } else {
+        shares = expense.calculateShares();
+        _log('  Calculated shares (equal/weighted):');
+      }
+
+      final categoryId = expense.categoryId ?? 'uncategorized';
+
+      // Process each participant's share
+      for (final entry in shares.entries) {
+        final userId = entry.key;
+        final shareAmount = entry.value;
+        _log('    → $userId owes: $shareAmount');
+
+        // Update person summary
+        summaries.putIfAbsent(
+          userId,
+          () => _MutablePersonSummary(userId: userId),
+        );
+        summaries[userId]!.totalOwedBase += shareAmount;
+
+        // Update category spending (if categories provided)
+        if (categories != null) {
+          userCategorySpending.putIfAbsent(userId, () => <String, Decimal>{});
+          userCategorySpending[userId]!.update(
+            categoryId,
+            (current) => current + shareAmount,
+            ifAbsent: () => shareAmount,
+          );
+        }
+      }
+    }
+
+    _log('\n💰 Raw Person Summaries (before adjustments):');
+    summaries.forEach((userId, summary) {
+      _log('  $userId:');
+      _log('    Total Paid: ${summary.totalPaidBase}');
+      _log('    Total Owed: ${summary.totalOwedBase}');
+    });
+
+    // Convert to immutable PersonSummary and calculate net
+    final personSummaries = summaries.map((userId, mutable) {
+      final netBase = mutable.totalPaidBase - mutable.totalOwedBase;
+      return MapEntry(
+        userId,
+        PersonSummary(
+          userId: userId,
+          totalPaidBase: mutable.totalPaidBase,
+          totalOwedBase: mutable.totalOwedBase,
+          netBase: netBase,
+        ),
+      );
+    });
+
+    _log('\n✅ Final Person Summaries (with net balances):');
+    personSummaries.forEach((userId, summary) {
+      final status = summary.netBase > Decimal.zero
+          ? 'Should RECEIVE ${summary.netBase.abs()}'
+          : summary.netBase < Decimal.zero
+          ? 'Should PAY ${summary.netBase.abs()}'
+          : 'EVEN';
+      _log('  $userId:');
+      _log('    Total Paid: ${summary.totalPaidBase}');
+      _log('    Total Owed: ${summary.totalOwedBase}');
+      _log('    Net Balance: ${summary.netBase}');
+      _log('    Status: $status');
+    });
+
+    // Build category spending if categories were provided
+    Map<String, PersonCategorySpending>? categorySpending;
+    if (categories != null && userCategorySpending.isNotEmpty) {
+      _log('\n💰 Building PersonCategorySpending results:');
+      categorySpending = <String, PersonCategorySpending>{};
+
+      for (final userId in summaries.keys) {
+        final summary = personSummaries[userId]!;
+        final userCategories = userCategorySpending[userId] ?? {};
+
+        // Build category breakdown list
+        final categoryBreakdown = <CategorySpending>[];
+        for (final categoryEntry in userCategories.entries) {
+          final categoryId = categoryEntry.key;
+          final amount = categoryEntry.value;
+
+          // Get category metadata
+          final category = categoryMap[categoryId];
+          final categoryName =
+              category?.name ??
+              (categoryId == 'uncategorized' ? 'Uncategorized' : categoryId);
+          final color = category?.color;
+          final icon = category?.icon;
+
+          categoryBreakdown.add(
+            CategorySpending(
+              categoryId: categoryId,
+              categoryName: categoryName,
+              amount: amount,
+              color: color,
+              icon: icon,
+            ),
+          );
+
+          _log('  $userId - $categoryName: $amount');
+        }
+
+        // Sort by amount descending
+        categoryBreakdown.sort((a, b) => b.amount.compareTo(a.amount));
+
+        categorySpending[userId] = PersonCategorySpending(
+          userId: userId,
+          totalPaidBase: summary.totalPaidBase,
+          totalOwedBase: summary.totalOwedBase,
+          netBase: summary.netBase,
+          categoryBreakdown: categoryBreakdown,
+        );
+      }
+
+      _log(
+        '\n✅ Category spending calculated for ${categorySpending.length} users',
+      );
+    }
+
+    _log('\n✅ Single-pass calculation complete');
+    return (
+      personSummaries: personSummaries,
+      categorySpending: categorySpending,
+    );
+  }
+
   /// Calculate person summaries from expenses
   ///
   /// Returns map of userId -> PersonSummary with totals in base currency

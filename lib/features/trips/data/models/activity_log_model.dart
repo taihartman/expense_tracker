@@ -114,6 +114,10 @@ class ActivityLogModel extends ActivityLog {
         return 'transferMarkedSettled';
       case ActivityType.transferMarkedUnsettled:
         return 'transferMarkedUnsettled';
+      case ActivityType.categoryCustomized:
+        return 'categoryCustomized';
+      case ActivityType.categoryResetToDefault:
+        return 'categoryResetToDefault';
       case ActivityType.deviceVerified:
         return 'deviceVerified';
       case ActivityType.recoveryCodeUsed:
@@ -154,6 +158,10 @@ class ActivityLogModel extends ActivityLog {
         return ActivityType.transferMarkedSettled;
       case 'transferMarkedUnsettled':
         return ActivityType.transferMarkedUnsettled;
+      case 'categoryCustomized':
+        return ActivityType.categoryCustomized;
+      case 'categoryResetToDefault':
+        return ActivityType.categoryResetToDefault;
       case 'deviceVerified':
         return ActivityType.deviceVerified;
       case 'recoveryCodeUsed':

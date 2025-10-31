@@ -383,17 +383,20 @@ class MockCategoryRepository extends _i1.Mock
   }
 
   @override
-  _i6.Future<_i3.Category> createCategory(_i3.Category? category) =>
+  _i6.Stream<List<_i3.Category>> getTopCategories({int? limit = 5}) =>
       (super.noSuchMethod(
-            Invocation.method(#createCategory, [category]),
-            returnValue: _i6.Future<_i3.Category>.value(
-              _FakeCategory_1(
-                this,
-                Invocation.method(#createCategory, [category]),
-              ),
-            ),
+            Invocation.method(#getTopCategories, [], {#limit: limit}),
+            returnValue: _i6.Stream<List<_i3.Category>>.empty(),
           )
-          as _i6.Future<_i3.Category>);
+          as _i6.Stream<List<_i3.Category>>);
+
+  @override
+  _i6.Stream<List<_i3.Category>> searchCategories(String? query) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchCategories, [query]),
+            returnValue: _i6.Stream<List<_i3.Category>>.empty(),
+          )
+          as _i6.Stream<List<_i3.Category>>);
 
   @override
   _i6.Future<_i3.Category?> getCategoryById(String? categoryId) =>
@@ -404,47 +407,62 @@ class MockCategoryRepository extends _i1.Mock
           as _i6.Future<_i3.Category?>);
 
   @override
-  _i6.Stream<List<_i3.Category>> getCategoriesByTrip(String? tripId) =>
+  _i6.Future<_i3.Category> createCategory({
+    required String? name,
+    String? icon = 'label',
+    required String? color,
+    required String? userId,
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#getCategoriesByTrip, [tripId]),
-            returnValue: _i6.Stream<List<_i3.Category>>.empty(),
-          )
-          as _i6.Stream<List<_i3.Category>>);
-
-  @override
-  _i6.Future<_i3.Category> updateCategory(_i3.Category? category) =>
-      (super.noSuchMethod(
-            Invocation.method(#updateCategory, [category]),
+            Invocation.method(#createCategory, [], {
+              #name: name,
+              #icon: icon,
+              #color: color,
+              #userId: userId,
+            }),
             returnValue: _i6.Future<_i3.Category>.value(
               _FakeCategory_1(
                 this,
-                Invocation.method(#updateCategory, [category]),
+                Invocation.method(#createCategory, [], {
+                  #name: name,
+                  #icon: icon,
+                  #color: color,
+                  #userId: userId,
+                }),
               ),
             ),
           )
           as _i6.Future<_i3.Category>);
 
   @override
-  _i6.Future<void> deleteCategory(String? categoryId) =>
+  _i6.Future<void> incrementCategoryUsage(String? categoryId) =>
       (super.noSuchMethod(
-            Invocation.method(#deleteCategory, [categoryId]),
+            Invocation.method(#incrementCategoryUsage, [categoryId]),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
 
   @override
-  _i6.Future<bool> categoryExists(String? categoryId) =>
+  _i6.Future<bool> categoryExists(String? name) =>
       (super.noSuchMethod(
-            Invocation.method(#categoryExists, [categoryId]),
+            Invocation.method(#categoryExists, [name]),
             returnValue: _i6.Future<bool>.value(false),
           )
           as _i6.Future<bool>);
 
   @override
-  _i6.Future<List<_i3.Category>> seedDefaultCategories(String? tripId) =>
+  _i6.Future<bool> canUserCreateCategory(String? userId) =>
       (super.noSuchMethod(
-            Invocation.method(#seedDefaultCategories, [tripId]),
+            Invocation.method(#canUserCreateCategory, [userId]),
+            returnValue: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  _i6.Future<List<_i3.Category>> seedDefaultCategories() =>
+      (super.noSuchMethod(
+            Invocation.method(#seedDefaultCategories, []),
             returnValue: _i6.Future<List<_i3.Category>>.value(<_i3.Category>[]),
           )
           as _i6.Future<List<_i3.Category>>);

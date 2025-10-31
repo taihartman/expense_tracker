@@ -644,6 +644,29 @@
   "transferBreakdownPaidPrefix": "Paid: ",
   "transferBreakdownOwesPrefix": "Owes: ",
 
+  "transferFilterAll": "All",
+  "transferFilterOwes": "Owes",
+  "transferFilterOwed": "Owed",
+  "transferFilterActive": "Filtering {name}'s transfers",
+  "@transferFilterActive": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferFilterClear": "Clear filter",
+  "transferFilterHint": "Tap any person above to filter transfers",
+  "transferFilterNoResults": "No transfers for {name}",
+  "@transferFilterNoResults": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferNameChipHint": "Tip: Tap any name to filter transfers",
+
   "summaryTableTitle": "Everyone's Summary",
   "summaryTableColumnPerson": "Person",
   "summaryTableColumnToReceive": "To Receive",
@@ -672,10 +695,11 @@
 
   "categoryMeals": "Meals",
   "categoryTransport": "Transport",
+  "categoryOther": "Other",
   "categoryAccommodation": "Accommodation",
   "categoryActivities": "Activities",
   "categoryShopping": "Shopping",
-  "categoryOther": "Other",
+  "categoryBrowseAndCreate": "Browse & Create",
 
 
   "tripJoinTitle": "Join Trip",
@@ -966,5 +990,77 @@
         "type": "String"
       }
     }
-  }
+  },
+
+
+  "categoryBrowserTitle": "Select Category",
+  "categoryBrowserSearchHint": "Search categories...",
+  "categoryBrowserNoResults": "No categories found",
+  "categoryBrowserLoading": "Loading categories...",
+  "categoryBrowserCreateNew": "Create \"{name}\"",
+  "@categoryBrowserCreateNew": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryBrowserOtherChip": "Other",
+
+  "categoryCreationDialogTitle": "Create Category",
+  "categoryCreationFieldName": "Category Name",
+  "categoryCreationFieldNameHint": "e.g., Groceries, Gas, Dining",
+  "categoryCreationFieldIcon": "Icon",
+  "categoryCreationFieldColor": "Color",
+  "categoryCreationButtonCreate": "Create",
+  "categoryCreationButtonCreateNew": "Create New Category",
+  "categoryCreationButtonCancel": "Cancel",
+  "categoryCreationSuccess": "Category created successfully",
+
+  "categoryValidationEmpty": "Category name cannot be empty",
+  "categoryValidationTooLong": "Category name must be 50 characters or less",
+  "categoryValidationInvalidChars": "Category names can only contain letters, numbers, spaces, and basic punctuation",
+  "categoryValidationDuplicate": "This category already exists",
+
+  "categoryRateLimitError": "Please wait a moment before creating more categories",
+  "categoryRateLimitDisabled": "Please wait before creating more categories",
+
+  "categoryIconPickerTitle": "Select Icon",
+  "categoryIconPickerSearchHint": "Search icons...",
+  "categoryIconPickerNoResults": "No icons found",
+
+  "categoryColorPickerTitle": "Select Color",
+
+  "categoryDefaultIconLabel": "label",
+
+
+  "categorySimilarWarningTitle": "Similar category exists",
+  "categorySimilarWarningMessage": "{existingName} ({icon}, used {usageCount, plural, =1{1 time} other{{usageCount} times}})",
+  "@categorySimilarWarningMessage": {
+    "placeholders": {
+      "existingName": {
+        "type": "String"
+      },
+      "icon": {
+        "type": "String"
+      },
+      "usageCount": {
+        "type": "int"
+      }
+    }
+  },
+  "categorySimilarWarningUseExisting": "Use Existing",
+  "categorySimilarWarningCreateAnyway": "Create Anyway",
+
+
+  "categoryCustomizationTitle": "Customize Categories",
+  "categoryCustomizationDescription": "Customize category icons and colors for this trip only",
+  "categoryCustomizationBadgeCustomized": "Customized",
+  "categoryCustomizationBadgeDefault": "Using global default",
+  "categoryCustomizationResetIcon": "Reset Icon",
+  "categoryCustomizationResetColor": "Reset Color",
+  "categoryCustomizationResetBoth": "Reset to Default",
+  "categoryCustomizationNoCategories": "No categories used in this trip yet",
+  "categoryCustomizationResetSuccess": "Reset to default successfully",
+  "categoryCustomizationSaveSuccess": "Category customized successfully"
 }

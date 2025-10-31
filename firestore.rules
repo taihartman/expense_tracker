@@ -7,10 +7,45 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Categories: Top-level collection (read/write if authenticated)
-    // TODO: Move to subcollection under trips for better security and data isolation
+    // Helper: Validate category name format
+    function isValidCategoryName(name) {
+      return name is string
+          && name.size() >= 1
+          && name.size() <= 50
+          && name.matches('^[\\p{L}\\p{N}\\s\'\\-&]+$');
+    }
+
+    // TODO: Rate limiting and duplicate checking removed from security rules
+    // because firestore.get() cannot query collections (only specific documents).
+    // These validations are enforced client-side via RateLimiterService.
+    // For production, implement server-side validation via Cloud Functions.
+
+    // Global Categories: Top-level shared collection
+    // Anyone can read, create with validation, but updates/deletes forbidden
     match /categories/{categoryId} {
-      allow read, write: if isAuthenticated();
+      // Anyone can read categories
+      allow read: if isAuthenticated();
+
+      // Create with validation, rate limiting, and duplicate checking
+      allow create: if isAuthenticated()
+                    && isValidCategoryName(request.resource.data.name)
+                    && !isRateLimited(request.auth.uid)
+                    && !isDuplicateCategoryName(request.resource.data.nameLowercase);
+
+      // No updates or deletes (categories are immutable to preserve expense references)
+      allow update, delete: if false;
+    }
+
+    // Category Creation Logs: Rate limiting tracking
+    match /categoryCreationLogs/{logId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.createdAt == request.time;
+
+      // No updates or deletes
+      allow update, delete: if false;
     }
 
     // Expenses: Top-level collection (read/write if authenticated)
@@ -152,6 +187,27 @@ service cloud.firestore {
                       && request.resource.data.participantName == resource.data.participantName;
 
         // Allow members to leave (remove their verification)
+        allow delete: if isAuthenticated();
+      }
+
+      // Category Customizations: Per-trip visual overrides for global categories
+      // Allows trips to customize icon and color for any category
+      match /categoryCustomizations/{categoryId} {
+        // Allow reading customizations if authenticated
+        // TODO: Restrict to trip members once trip membership enforcement is added
+        allow read: if isAuthenticated();
+
+        // Allow creating/updating customizations if authenticated
+        // Validation: Must have valid icon or color, and updatedAt timestamp
+        allow create, update: if isAuthenticated()
+                              && request.resource.data.tripId == tripId
+                              && request.resource.data.updatedAt is timestamp
+                              && (
+                                // Must have at least one customization (icon or color)
+                                request.resource.data.keys().hasAny(['customIcon', 'customColor'])
+                              );
+
+        // Allow deleting customizations (reset to global defaults)
         allow delete: if isAuthenticated();
       }
 

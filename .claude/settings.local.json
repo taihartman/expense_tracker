@@ -37,7 +37,8 @@
       "SlashCommand(/docs.log \"Fixed UX bug: After archiving a trip from Trip Settings, users now navigate to home page instead of remaining stuck on the archived trip's settings page. Added context.go('/') after successful archive confirmation.\")",
       "SlashCommand(/docs.log \"Enhanced archive UX: When archiving the currently selected trip, system now auto-clears selection and auto-selects the first available active trip, ensuring users land on a valid trip context after archiving.\")",
       "Bash(git log:*)",
-      "WebSearch"
+      "WebSearch",
+      "SlashCommand(/speckit.tasks)"
     ],
     "deny": [],
     "ask": []

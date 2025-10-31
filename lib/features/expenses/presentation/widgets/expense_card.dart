@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/expense.dart';
 import '../../../../core/models/participant.dart';
@@ -6,6 +7,10 @@ import '../../../../core/models/split_type.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../categories/presentation/cubit/category_cubit.dart';
+import '../../../categories/presentation/cubit/category_state.dart';
+import '../../../categories/presentation/cubit/category_customization_cubit.dart';
+import '../../../../shared/utils/category_display_helper.dart';
 
 /// Card widget displaying expense details
 ///
@@ -74,12 +79,9 @@ class _ExpenseCardState extends State<ExpenseCard> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      // Category icon (if available)
+                      // Category icon with customization support (if available)
                       if (expense.categoryId != null)
-                        Icon(
-                          _getCategoryIcon(expense.categoryId!),
-                          color: theme.colorScheme.primary,
-                        ),
+                        _buildCategoryIcon(context, expense.categoryId!)
                     ],
                   ),
                   const SizedBox(height: AppTheme.spacing1),
@@ -460,20 +462,87 @@ class _ExpenseCardState extends State<ExpenseCard> {
     );
   }
 
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId.toLowerCase()) {
-      case 'meals':
+  /// Builds category icon with customization support
+  Widget _buildCategoryIcon(BuildContext context, String categoryId) {
+    final categoryCubit = context.read<CategoryCubit>();
+    final categoryState = categoryCubit.state;
+
+    // Try to get customization if available
+    final customizationCubit = context.read<CategoryCustomizationCubit?>();
+
+    // If top categories are loaded, check if our category is there
+    if (categoryState is CategoryTopLoaded) {
+      final category = categoryState.categories
+          .where((c) => c.id == categoryId)
+          .firstOrNull;
+
+      if (category != null) {
+        final customization = customizationCubit?.getCustomization(categoryId);
+        final displayCategory = DisplayCategory.fromGlobalAndCustomization(
+          globalCategory: category,
+          customization: customization,
+        );
+
+        final iconData = _getIconData(displayCategory.icon);
+        final color = _parseColor(displayCategory.color);
+
+        return Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            iconData,
+            color: color,
+            size: 20,
+          ),
+        );
+      }
+    }
+
+    // Fallback: Show generic icon
+    final theme = Theme.of(context);
+    return Icon(
+      Icons.category,
+      color: theme.colorScheme.primary,
+    );
+  }
+
+  /// Maps icon name string to IconData
+  IconData _getIconData(String iconName) {
+    switch (iconName) {
+      case 'restaurant':
         return Icons.restaurant;
-      case 'transport':
+      case 'directions_car':
         return Icons.directions_car;
-      case 'accommodation':
+      case 'hotel':
         return Icons.hotel;
-      case 'activities':
+      case 'local_activity':
+        return Icons.local_activity;
+      case 'attractions':
         return Icons.attractions;
-      case 'shopping':
+      case 'shopping_bag':
+        return Icons.shopping_bag;
+      case 'shopping_cart':
         return Icons.shopping_cart;
-      default:
+      case 'fastfood':
+        return Icons.fastfood;
+      case 'more_horiz':
         return Icons.more_horiz;
+      case 'label':
+        return Icons.label;
+      default:
+        return Icons.category;
+    }
+  }
+
+  /// Parses hex color string to Color
+  Color _parseColor(String colorHex) {
+    try {
+      return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
+    } catch (e) {
+      return Colors.grey;
     }
   }
 }

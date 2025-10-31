@@ -250,13 +250,11 @@ class TripCubit extends Cubit<TripState> {
         _log('✅ Activity logged');
       }
 
-      // Seed default categories for the new trip
+      // Seed default categories in global pool (if not already seeded)
       if (_categoryRepository != null) {
-        _log('🌱 Seeding default categories for trip ${createdTrip.id}...');
+        _log('🌱 Seeding default categories in global pool (if needed)...');
         try {
-          final categories = await _categoryRepository.seedDefaultCategories(
-            createdTrip.id,
-          );
+          final categories = await _categoryRepository.seedDefaultCategories();
           _log('✅ Seeded ${categories.length} default categories');
         } catch (e) {
           _log('⚠️ Failed to seed categories (non-fatal): $e');

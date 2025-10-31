@@ -7,6 +7,7 @@ import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
 import '../../../../core/theme/app_theme.dart';
 import '../cubits/settlement_cubit.dart';
+import '../cubits/settlement_state.dart';
 import 'transfer_breakdown_bottom_sheet.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
@@ -34,180 +35,310 @@ class MinimalTransfersView extends StatelessWidget {
     required this.expenseRepository,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    // If no transfers at all (both active and settled), show all settled message
-    if (activeTransfers.isEmpty && settledTransfers.isEmpty) {
-      return Card(
-        child: Padding(
-          padding: const EdgeInsets.all(AppTheme.spacing3),
-          child: Column(
-            children: [
-              Icon(
-                Icons.check_circle_outline,
-                size: 64,
-                color: Colors.green.shade400,
-              ),
-              const SizedBox(height: AppTheme.spacing2),
-              Text(
-                context.l10n.transfersAllSettledTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: AppTheme.spacing1),
-              Text(
-                context.l10n.transfersAllSettledDescription,
-                style: Theme.of(context).textTheme.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
+  /// Filter transfers based on selected user and filter mode
+  List<MinimalTransfer> _filterTransfers(
+    List<MinimalTransfer> transfers,
+    String? selectedUserId,
+    TransferFilterMode filterMode,
+  ) {
+    if (selectedUserId == null) {
+      return transfers;
     }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.spacing2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    switch (filterMode) {
+      case TransferFilterMode.all:
+        return transfers
+            .where(
+              (t) =>
+                  t.fromUserId == selectedUserId ||
+                  t.toUserId == selectedUserId,
+            )
+            .toList();
+      case TransferFilterMode.owes:
+        return transfers.where((t) => t.fromUserId == selectedUserId).toList();
+      case TransferFilterMode.owed:
+        return transfers.where((t) => t.toUserId == selectedUserId).toList();
+    }
+  }
+
+  String _getParticipantName(String userId) {
+    try {
+      return participants.firstWhere((p) => p.id == userId).name;
+    } catch (e) {
+      return userId;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SettlementCubit, SettlementState>(
+      builder: (context, state) {
+        // Get filter state
+        final selectedUserId = state is SettlementLoaded
+            ? state.selectedUserId
+            : null;
+        final filterMode = state is SettlementLoaded
+            ? state.filterMode
+            : TransferFilterMode.all;
+
+        // Apply filtering
+        final filteredActiveTransfers = _filterTransfers(
+          activeTransfers,
+          selectedUserId,
+          filterMode,
+        );
+        final filteredSettledTransfers = _filterTransfers(
+          settledTransfers,
+          selectedUserId,
+          filterMode,
+        );
+
+        // If no transfers at all (both active and settled), show all settled message
+        if (activeTransfers.isEmpty && settledTransfers.isEmpty) {
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spacing3),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 64,
+                    color: Colors.green.shade400,
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+                  Text(
+                    context.l10n.transfersAllSettledTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: AppTheme.spacing1),
+                  Text(
+                    context.l10n.transfersAllSettledDescription,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spacing2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  context.l10n.transfersCardTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      context.l10n.transfersCardTitle,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      context.l10n.transfersCountTotal(
+                        activeTransfers.length + settledTransfers.length,
+                      ),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: AppTheme.spacing1),
                 Text(
-                  context.l10n.transfersCountTotal(
-                    activeTransfers.length + settledTransfers.length,
-                  ),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+                  context.l10n.transfersHintTapToSettle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
+                const SizedBox(height: AppTheme.spacing2),
+                const Divider(),
+                const SizedBox(height: AppTheme.spacing1),
+
+                // Active Transfers Section
+                if (filteredActiveTransfers.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.pending_actions,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: AppTheme.spacing1),
+                      Text(
+                        context.l10n.transfersPendingTitle,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(width: AppTheme.spacing1),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${filteredActiveTransfers.length}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+
+                  // Filter UI
+                  if (selectedUserId != null) ...[
+                    _FilterChipRow(
+                      selectedUserId: selectedUserId,
+                      filterMode: filterMode,
+                      userName: _getParticipantName(selectedUserId),
+                      participants: participants,
+                    ),
+                    const SizedBox(height: AppTheme.spacing2),
+                  ],
+
+                  ...filteredActiveTransfers.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final transfer = entry.value;
+                    return _TransferCard(
+                      tripId: tripId,
+                      transfer: transfer,
+                      baseCurrency: baseCurrency,
+                      participants: participants,
+                      expenseRepository: expenseRepository,
+                      index: index + 1,
+                      isSettled: false,
+                    );
+                  }),
+
+                  // Hint text for tapping names
+                  const SizedBox(height: AppTheme.spacing2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppTheme.spacing1),
+                      Expanded(
+                        child: Text(
+                          context.l10n.transferNameChipHint,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontStyle: FontStyle.italic,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
+                // Settled Transfers Section
+                if (filteredSettledTransfers.isNotEmpty) ...[
+                  if (filteredActiveTransfers.isNotEmpty)
+                    const SizedBox(height: AppTheme.spacing3),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        size: 20,
+                        color: Colors.green.shade600,
+                      ),
+                      const SizedBox(width: AppTheme.spacing1),
+                      Text(
+                        context.l10n.transfersSettledTitle,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade700,
+                            ),
+                      ),
+                      const SizedBox(width: AppTheme.spacing1),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${filteredSettledTransfers.length}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.spacing2),
+                  ...filteredSettledTransfers.map((transfer) {
+                    return _TransferCard(
+                      tripId: tripId,
+                      transfer: transfer,
+                      baseCurrency: baseCurrency,
+                      participants: participants,
+                      expenseRepository: expenseRepository,
+                      index: null, // No step number for settled transfers
+                      isSettled: true,
+                    );
+                  }),
+                ],
+
+                // Empty state when filter returns no results
+                if (selectedUserId != null &&
+                    filteredActiveTransfers.isEmpty &&
+                    filteredSettledTransfers.isEmpty) ...[
+                  const SizedBox(height: AppTheme.spacing2),
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppTheme.spacing3),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.filter_list_off,
+                            size: 48,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: AppTheme.spacing2),
+                          Text(
+                            context.l10n.transferFilterNoResults(
+                              _getParticipantName(selectedUserId),
+                            ),
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: AppTheme.spacing1),
-            Text(
-              context.l10n.transfersHintTapToSettle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacing2),
-            const Divider(),
-            const SizedBox(height: AppTheme.spacing1),
-
-            // Active Transfers Section
-            if (activeTransfers.isNotEmpty) ...[
-              Row(
-                children: [
-                  Icon(
-                    Icons.pending_actions,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: AppTheme.spacing1),
-                  Text(
-                    context.l10n.transfersPendingTitle,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: AppTheme.spacing1),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${activeTransfers.length}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppTheme.spacing2),
-              ...activeTransfers.asMap().entries.map((entry) {
-                final index = entry.key;
-                final transfer = entry.value;
-                return _TransferCard(
-                  tripId: tripId,
-                  transfer: transfer,
-                  baseCurrency: baseCurrency,
-                  participants: participants,
-                  expenseRepository: expenseRepository,
-                  index: index + 1,
-                  isSettled: false,
-                );
-              }),
-            ],
-
-            // Settled Transfers Section
-            if (settledTransfers.isNotEmpty) ...[
-              if (activeTransfers.isNotEmpty)
-                const SizedBox(height: AppTheme.spacing3),
-              Row(
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    size: 20,
-                    color: Colors.green.shade600,
-                  ),
-                  const SizedBox(width: AppTheme.spacing1),
-                  Text(
-                    context.l10n.transfersSettledTitle,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green.shade700,
-                    ),
-                  ),
-                  const SizedBox(width: AppTheme.spacing1),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '${settledTransfers.length}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.green.shade700,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppTheme.spacing2),
-              ...settledTransfers.map((transfer) {
-                return _TransferCard(
-                  tripId: tripId,
-                  transfer: transfer,
-                  baseCurrency: baseCurrency,
-                  participants: participants,
-                  expenseRepository: expenseRepository,
-                  index: null, // No step number for settled transfers
-                  isSettled: true,
-                );
-              }),
-            ],
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -369,11 +500,31 @@ class _TransferCardState extends State<_TransferCard> {
                     children: [
                       Row(
                         children: [
-                          _buildPersonChip(context, fromName, isFrom: true),
+                          _buildPersonChip(
+                            context,
+                            fromName,
+                            isFrom: true,
+                            onTap: () {
+                              context.read<SettlementCubit>().setUserFilter(
+                                widget.transfer.fromUserId,
+                                TransferFilterMode.all,
+                              );
+                            },
+                          ),
                           const SizedBox(width: AppTheme.spacing1),
                           const Icon(Icons.arrow_forward, size: 20),
                           const SizedBox(width: AppTheme.spacing1),
-                          _buildPersonChip(context, toName, isFrom: false),
+                          _buildPersonChip(
+                            context,
+                            toName,
+                            isFrom: false,
+                            onTap: () {
+                              context.read<SettlementCubit>().setUserFilter(
+                                widget.transfer.toUserId,
+                                TransferFilterMode.all,
+                              );
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -467,18 +618,182 @@ class _TransferCardState extends State<_TransferCard> {
     BuildContext context,
     String name, {
     required bool isFrom,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isFrom ? Colors.red.shade50 : Colors.green.shade50,
-        borderRadius: BorderRadius.circular(4),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isFrom ? Colors.red.shade50 : Colors.green.shade50,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          name,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isFrom ? Colors.red.shade700 : Colors.green.shade700,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
-      child: Text(
-        name,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: isFrom ? Colors.red.shade700 : Colors.green.shade700,
-          fontWeight: FontWeight.w600,
+    );
+  }
+}
+
+/// Filter chip row for filtering transfers by user
+class _FilterChipRow extends StatelessWidget {
+  final String selectedUserId;
+  final TransferFilterMode filterMode;
+  final String userName;
+  final List<Participant> participants;
+
+  const _FilterChipRow({
+    required this.selectedUserId,
+    required this.filterMode,
+    required this.userName,
+    required this.participants,
+  });
+
+  Color _getAvatarColor(String userId) {
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+    ];
+    final index = participants.indexWhere((p) => p.id == userId);
+    return colors[index >= 0 ? index % colors.length : 0];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacing2),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // User chip with clear button
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: _getAvatarColor(selectedUserId),
+                child: Text(
+                  userName.substring(0, 1).toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacing1),
+              Text(
+                context.l10n.transferFilterActive(userName),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                tooltip: context.l10n.transferFilterClear,
+                onPressed: () {
+                  context.read<SettlementCubit>().clearUserFilter();
+                },
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacing1),
+          // Filter mode toggle buttons
+          Wrap(
+            spacing: AppTheme.spacing1,
+            runSpacing: AppTheme.spacing1,
+            children: [
+              _FilterModeChip(
+                label: context.l10n.transferFilterAll,
+                isSelected: filterMode == TransferFilterMode.all,
+                onTap: () {
+                  context.read<SettlementCubit>().setFilterMode(
+                    TransferFilterMode.all,
+                  );
+                },
+              ),
+              _FilterModeChip(
+                label: context.l10n.transferFilterOwes,
+                isSelected: filterMode == TransferFilterMode.owes,
+                onTap: () {
+                  context.read<SettlementCubit>().setFilterMode(
+                    TransferFilterMode.owes,
+                  );
+                },
+              ),
+              _FilterModeChip(
+                label: context.l10n.transferFilterOwed,
+                isSelected: filterMode == TransferFilterMode.owed,
+                onTap: () {
+                  context.read<SettlementCubit>().setFilterMode(
+                    TransferFilterMode.owed,
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Individual filter mode chip (toggle button)
+class _FilterModeChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterModeChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: isSelected
+                ? Theme.of(context).colorScheme.onPrimary
+                : Theme.of(context).colorScheme.onSurface,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );

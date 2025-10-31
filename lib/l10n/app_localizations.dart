@@ -1732,6 +1732,54 @@ abstract class AppLocalizations {
   /// **'Owes: '**
   String get transferBreakdownOwesPrefix;
 
+  /// No description provided for @transferFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get transferFilterAll;
+
+  /// No description provided for @transferFilterOwes.
+  ///
+  /// In en, this message translates to:
+  /// **'Owes'**
+  String get transferFilterOwes;
+
+  /// No description provided for @transferFilterOwed.
+  ///
+  /// In en, this message translates to:
+  /// **'Owed'**
+  String get transferFilterOwed;
+
+  /// No description provided for @transferFilterActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Filtering {name}\'s transfers'**
+  String transferFilterActive(String name);
+
+  /// No description provided for @transferFilterClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get transferFilterClear;
+
+  /// No description provided for @transferFilterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any person above to filter transfers'**
+  String get transferFilterHint;
+
+  /// No description provided for @transferFilterNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No transfers for {name}'**
+  String transferFilterNoResults(String name);
+
+  /// No description provided for @transferNameChipHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: Tap any name to filter transfers'**
+  String get transferNameChipHint;
+
   /// No description provided for @summaryTableTitle.
   ///
   /// In en, this message translates to:
@@ -1822,6 +1870,12 @@ abstract class AppLocalizations {
   /// **'Transport'**
   String get categoryTransport;
 
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
+
   /// No description provided for @categoryAccommodation.
   ///
   /// In en, this message translates to:
@@ -1840,11 +1894,11 @@ abstract class AppLocalizations {
   /// **'Shopping'**
   String get categoryShopping;
 
-  /// No description provided for @categoryOther.
+  /// No description provided for @categoryBrowseAndCreate.
   ///
   /// In en, this message translates to:
-  /// **'Other'**
-  String get categoryOther;
+  /// **'Browse & Create'**
+  String get categoryBrowseAndCreate;
 
   /// No description provided for @tripJoinTitle.
   ///
@@ -2643,6 +2697,250 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to copy: {error}'**
   String tripRecoveryCopyFailed(String error);
+
+  /// No description provided for @categoryBrowserTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Category'**
+  String get categoryBrowserTitle;
+
+  /// No description provided for @categoryBrowserSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search categories...'**
+  String get categoryBrowserSearchHint;
+
+  /// No description provided for @categoryBrowserNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories found'**
+  String get categoryBrowserNoResults;
+
+  /// No description provided for @categoryBrowserLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading categories...'**
+  String get categoryBrowserLoading;
+
+  /// No description provided for @categoryBrowserCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create \"{name}\"'**
+  String categoryBrowserCreateNew(String name);
+
+  /// No description provided for @categoryBrowserOtherChip.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryBrowserOtherChip;
+
+  /// No description provided for @categoryCreationDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Category'**
+  String get categoryCreationDialogTitle;
+
+  /// No description provided for @categoryCreationFieldName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Name'**
+  String get categoryCreationFieldName;
+
+  /// No description provided for @categoryCreationFieldNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Groceries, Gas, Dining'**
+  String get categoryCreationFieldNameHint;
+
+  /// No description provided for @categoryCreationFieldIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get categoryCreationFieldIcon;
+
+  /// No description provided for @categoryCreationFieldColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get categoryCreationFieldColor;
+
+  /// No description provided for @categoryCreationButtonCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get categoryCreationButtonCreate;
+
+  /// No description provided for @categoryCreationButtonCreateNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Category'**
+  String get categoryCreationButtonCreateNew;
+
+  /// No description provided for @categoryCreationButtonCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get categoryCreationButtonCancel;
+
+  /// No description provided for @categoryCreationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category created successfully'**
+  String get categoryCreationSuccess;
+
+  /// No description provided for @categoryValidationEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name cannot be empty'**
+  String get categoryValidationEmpty;
+
+  /// No description provided for @categoryValidationTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name must be 50 characters or less'**
+  String get categoryValidationTooLong;
+
+  /// No description provided for @categoryValidationInvalidChars.
+  ///
+  /// In en, this message translates to:
+  /// **'Category names can only contain letters, numbers, spaces, and basic punctuation'**
+  String get categoryValidationInvalidChars;
+
+  /// No description provided for @categoryValidationDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'This category already exists'**
+  String get categoryValidationDuplicate;
+
+  /// No description provided for @categoryRateLimitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait a moment before creating more categories'**
+  String get categoryRateLimitError;
+
+  /// No description provided for @categoryRateLimitDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait before creating more categories'**
+  String get categoryRateLimitDisabled;
+
+  /// No description provided for @categoryIconPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Icon'**
+  String get categoryIconPickerTitle;
+
+  /// No description provided for @categoryIconPickerSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search icons...'**
+  String get categoryIconPickerSearchHint;
+
+  /// No description provided for @categoryIconPickerNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No icons found'**
+  String get categoryIconPickerNoResults;
+
+  /// No description provided for @categoryColorPickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Color'**
+  String get categoryColorPickerTitle;
+
+  /// No description provided for @categoryDefaultIconLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'label'**
+  String get categoryDefaultIconLabel;
+
+  /// No description provided for @categorySimilarWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar category exists'**
+  String get categorySimilarWarningTitle;
+
+  /// No description provided for @categorySimilarWarningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{existingName} ({icon}, used {usageCount, plural, =1{1 time} other{{usageCount} times}})'**
+  String categorySimilarWarningMessage(
+    String existingName,
+    String icon,
+    int usageCount,
+  );
+
+  /// No description provided for @categorySimilarWarningUseExisting.
+  ///
+  /// In en, this message translates to:
+  /// **'Use Existing'**
+  String get categorySimilarWarningUseExisting;
+
+  /// No description provided for @categorySimilarWarningCreateAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Anyway'**
+  String get categorySimilarWarningCreateAnyway;
+
+  /// No description provided for @categoryCustomizationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Categories'**
+  String get categoryCustomizationTitle;
+
+  /// No description provided for @categoryCustomizationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize category icons and colors for this trip only'**
+  String get categoryCustomizationDescription;
+
+  /// No description provided for @categoryCustomizationBadgeCustomized.
+  ///
+  /// In en, this message translates to:
+  /// **'Customized'**
+  String get categoryCustomizationBadgeCustomized;
+
+  /// No description provided for @categoryCustomizationBadgeDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Using global default'**
+  String get categoryCustomizationBadgeDefault;
+
+  /// No description provided for @categoryCustomizationResetIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Icon'**
+  String get categoryCustomizationResetIcon;
+
+  /// No description provided for @categoryCustomizationResetColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Color'**
+  String get categoryCustomizationResetColor;
+
+  /// No description provided for @categoryCustomizationResetBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to Default'**
+  String get categoryCustomizationResetBoth;
+
+  /// No description provided for @categoryCustomizationNoCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories used in this trip yet'**
+  String get categoryCustomizationNoCategories;
+
+  /// No description provided for @categoryCustomizationResetSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default successfully'**
+  String get categoryCustomizationResetSuccess;
+
+  /// No description provided for @categoryCustomizationSaveSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Category customized successfully'**
+  String get categoryCustomizationSaveSuccess;
 }
 
 class _AppLocalizationsDelegate

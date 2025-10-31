@@ -73,6 +73,10 @@ class AppRoutes {
   /// Trip activity log page
   static String tripActivity(String tripId) => '/trips/$tripId/activity';
 
+  /// Trip category customization page
+  static String tripCategoryCustomization(String tripId) =>
+      '/trips/$tripId/categories/customize';
+
   /// Trip expenses list page
   static String tripExpenses(String tripId) => '/trips/$tripId/expenses';
 

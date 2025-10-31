@@ -11,6 +11,18 @@ and this project follows feature-driven versioning with Spec-Kit.
 
 - [001-group-expense-tracker] Group expense tracker with multi-currency support
 
+### Fixed
+
+**[2025-10-31] Settlement Display Inconsistency** - Fixed UX bug where Individual Balance Card and Everyone's Summary showed different amounts:
+
+- **Individual Balance Card** now calculates "Total Owed" from active transfers (matching Everyone's Summary) instead of raw expense shares
+- Both views now show consistent values and properly exclude settled transfers
+- Modified `PersonDashboardCard` to accept `activeTransfers` and calculate payment obligations from netted transfers
+- Updated `settlement_summary_page.dart` to pass active transfers to dashboard cards
+- Files changed:
+  - `lib/features/settlements/presentation/widgets/person_dashboard_card.dart`
+  - `lib/features/settlements/presentation/pages/settlement_summary_page.dart`
+
 ### Added - Infrastructure
 
 **[2025-01-30] Claude Code Workflow Improvements** - Implemented Reddit post recommendations for improved development experience:

@@ -1,23 +1,28 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../../core/services/activity_logger_service.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/category_spending.dart';
+import '../../domain/models/settlement_summary.dart';
 import '../../domain/repositories/settlement_repository.dart';
 import '../../domain/repositories/settled_transfer_repository.dart';
 import '../../domain/services/settlement_calculator.dart';
 import 'settlement_state.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
+import '../../../categories/domain/models/category.dart' as cat;
 import '../../../trips/domain/repositories/trip_repository.dart';
+import '../../../trips/domain/models/trip.dart';
 
-/// Helper function to log with timestamps
+/// Helper function to log with timestamps (only in debug mode)
 void _log(String message) {
-  debugPrint(
-    '[${DateTime.now().toIso8601String()}] [SettlementCubit] $message',
-  );
+  if (kDebugMode) {
+    debugPrint(
+      '[${DateTime.now().toIso8601String()}] [SettlementCubit] $message',
+    );
+  }
 }
 
 /// Settlement Cubit using Pure Derived State Pattern
@@ -41,6 +46,11 @@ class SettlementCubit extends Cubit<SettlementState> {
 
   StreamSubscription? _combinedSubscription;
   String? _currentTripId;
+
+  // Cache for performance optimization
+  Trip? _cachedTrip;
+  List<cat.Category>? _cachedCategories;
+  DateTime? _cachedLastComputedAt;
 
   SettlementCubit({
     required SettlementRepository settlementRepository,
@@ -83,6 +93,42 @@ class SettlementCubit extends Cubit<SettlementState> {
     return (active: active, settled: settledTransfers);
   }
 
+  /// Fast in-memory check if settlement needs recomputation
+  ///
+  /// Returns true if:
+  /// - First load (no cached timestamps)
+  /// - Expenses modified after last settlement computation
+  bool _shouldRecomputeInMemory() {
+    // First load - must compute
+    if (_cachedLastComputedAt == null) {
+      _log('⚡ First load - must compute settlement');
+      return true;
+    }
+
+    // No expense modifications tracked - assume need to recompute
+    if (_cachedTrip?.lastExpenseModifiedAt == null) {
+      _log('⚡ No expense modification timestamp - recomputing');
+      return true;
+    }
+
+    // Check if expenses modified after last computation
+    final expensesChanged = _cachedTrip!.lastExpenseModifiedAt!.isAfter(
+      _cachedLastComputedAt!,
+    );
+
+    if (expensesChanged) {
+      _log(
+        '⚡ Expenses modified (${_cachedTrip!.lastExpenseModifiedAt}) after last computation ($_cachedLastComputedAt)',
+      );
+    } else {
+      _log(
+        '⚡ No expense changes detected (last modified: ${_cachedTrip!.lastExpenseModifiedAt}, last computed: $_cachedLastComputedAt)',
+      );
+    }
+
+    return expensesChanged;
+  }
+
   /// Load settlement by calculating from current expenses
   ///
   /// Subscribes to both expense stream and settled transfer stream,
@@ -95,14 +141,38 @@ class SettlementCubit extends Cubit<SettlementState> {
       await _combinedSubscription?.cancel();
       emit(const SettlementLoading());
 
-      // Get trip for base currency
-      final trip = await _tripRepository.getTripById(tripId);
-      if (trip == null) {
+      // Parallelize initial data fetching for faster load
+      await Future.wait([
+        _tripRepository.getTripById(tripId).then((t) => _cachedTrip = t),
+        _expenseRepository.getExpensesByTrip(tripId).first,
+        _settledTransferRepository.getSettledTransfers(tripId).first,
+        _categoryRepository
+            .searchCategories('')
+            .first
+            .then((c) {
+              _cachedCategories = c;
+              _log('📂 Cached ${c.length} categories for category spending');
+            })
+            .catchError((e) {
+              _log(
+                '⚠️ Failed to load categories: $e (continuing without category spending)',
+              );
+              _cachedCategories = [];
+            }),
+      ]);
+
+      if (_cachedTrip == null) {
         throw Exception('Trip not found: $tripId');
       }
 
-      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
+      _log(
+        '📍 Trip: ${_cachedTrip!.name}, Base Currency: ${_cachedTrip!.baseCurrency.code}',
+      );
+      _log(
+        '⚡ Parallel fetch complete - trip, expenses, settled transfers, and ${_cachedCategories?.length ?? 0} categories loaded',
+      );
 
+      // Now subscribe to streams for real-time updates
       // Combine expense stream with settled transfer stream
       // Recalculate whenever EITHER changes
       _combinedSubscription =
@@ -118,19 +188,60 @@ class SettlementCubit extends Cubit<SettlementState> {
               );
 
               try {
-                // Calculate settlement from current expenses
-                final summary = await _settlementRepository.computeSettlement(
-                  tripId,
-                );
+                // Fast in-memory check if we need to recompute
+                final shouldRecompute = _shouldRecomputeInMemory();
 
-                _log(
-                  '✅ Settlement calculated: ${summary.personSummaries.length} people',
-                );
+                SettlementSummary summary;
+                List<MinimalTransfer> calculatedTransfers;
 
-                // Get calculated transfers
-                final calculatedTransfers = await _settlementRepository
-                    .getMinimalTransfers(tripId)
-                    .first;
+                if (shouldRecompute) {
+                  _log(
+                    '🔄 Recomputing settlement (expenses changed or first load)',
+                  );
+                  _log('⚡ Using expenses from stream - no re-fetch!');
+                  summary = await _settlementRepository.computeSettlementWithExpenses(
+                    tripId,
+                    data.expenses,
+                  );
+
+                  // Cache timestamps for future comparisons
+                  _cachedLastComputedAt = summary.lastComputedAt;
+
+                  // Get calculated transfers
+                  calculatedTransfers = await _settlementRepository
+                      .getMinimalTransfers(tripId)
+                      .first;
+
+                  _log(
+                    '✅ Settlement recomputed: ${summary.personSummaries.length} people',
+                  );
+                } else {
+                  _log('⚡ Using cached settlement (no changes detected)');
+                  final cachedSummary = await _settlementRepository
+                      .getSettlementSummary(tripId);
+
+                  if (cachedSummary == null) {
+                    // No cache exists, must compute
+                    _log('⚠️ No cached settlement found, computing...');
+                    _log('⚡ Using expenses from stream - no re-fetch!');
+                    summary = await _settlementRepository.computeSettlementWithExpenses(
+                      tripId,
+                      data.expenses,
+                    );
+                    _cachedLastComputedAt = summary.lastComputedAt;
+                  } else {
+                    summary = cachedSummary;
+                  }
+
+                  // Always fetch fresh transfers (they change when marked as settled)
+                  calculatedTransfers = await _settlementRepository
+                      .getMinimalTransfers(tripId)
+                      .first;
+
+                  _log(
+                    '✅ Using cached settlement: ${summary.personSummaries.length} people',
+                  );
+                }
 
                 // Separate active from settled
                 final separated = _separateTransfers(
@@ -141,21 +252,26 @@ class SettlementCubit extends Cubit<SettlementState> {
                   '📊 ${separated.active.length} active, ${separated.settled.length} settled',
                 );
 
-                // Calculate category spending breakdown
+                // Calculate category spending using single-pass optimization
+                // This reuses the expense iteration that already happened in person summary calc
                 Map<String, PersonCategorySpending>? categorySpending;
                 try {
-                  final categories = await _categoryRepository
-                      .getCategoriesByTrip(tripId)
-                      .first;
-                  categorySpending = _settlementCalculator
-                      .calculatePersonCategorySpending(
-                        expenses: data.expenses,
-                        categories: categories,
-                        baseCurrency: trip.baseCurrency,
-                      );
-                  _log(
-                    '✅ Category spending calculated for ${categorySpending.length} people',
-                  );
+                  // Use cached categories if available
+                  if (_cachedCategories != null && _cachedTrip != null) {
+                    // Use optimized single-pass calculation
+                    // Note: Person summaries already calculated in repository,
+                    // but we need category spending which is UI-only
+                    final result = _settlementCalculator
+                        .calculateSettlementData(
+                          expenses: data.expenses,
+                          baseCurrency: _cachedTrip!.baseCurrency,
+                          categories: _cachedCategories,
+                        );
+                    categorySpending = result.categorySpending;
+                    _log(
+                      '✅ Category spending calculated (single-pass): ${categorySpending?.length ?? 0} people',
+                    );
+                  }
                 } catch (e) {
                   _log('⚠️ Failed to calculate category spending: $e');
                   // Continue without category spending if it fails
@@ -278,6 +394,40 @@ class SettlementCubit extends Cubit<SettlementState> {
   /// Smart refresh (simplified - just reload)
   Future<void> smartRefresh(String tripId) async {
     await loadSettlement(tripId);
+  }
+
+  /// Set user filter for transfers
+  ///
+  /// Filters transfers to show only those involving the specified user.
+  /// [userId] - The ID of the user to filter by
+  /// [filterMode] - Whether to show all transfers, only what they owe, or only what they're owed
+  void setUserFilter(String userId, TransferFilterMode filterMode) {
+    final currentState = state;
+    if (currentState is SettlementLoaded) {
+      _log('🔍 Setting user filter: $userId, mode: $filterMode');
+      emit(
+        currentState.copyWith(selectedUserId: userId, filterMode: filterMode),
+      );
+    }
+  }
+
+  /// Clear the user filter
+  void clearUserFilter() {
+    final currentState = state;
+    if (currentState is SettlementLoaded) {
+      _log('🔍 Clearing user filter');
+      emit(currentState.copyWith(clearFilter: true));
+    }
+  }
+
+  /// Update filter mode without changing selected user
+  void setFilterMode(TransferFilterMode filterMode) {
+    final currentState = state;
+    if (currentState is SettlementLoaded &&
+        currentState.selectedUserId != null) {
+      _log('🔍 Updating filter mode: $filterMode');
+      emit(currentState.copyWith(filterMode: filterMode));
+    }
   }
 
   /// Get current trip ID

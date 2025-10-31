@@ -107,35 +107,37 @@ log_to_feature_changelog() {
     # Current date
     LOG_DATE=$(date +%Y-%m-%d)
 
-    # Create log entry with timestamp
-    LOG_ENTRY="
+    # Create a temporary file with the log entry
+    TEMP_ENTRY=$(mktemp)
+    cat > "$TEMP_ENTRY" << EOF
+
 ## $LOG_DATE
 
 ### Changed
 - $MESSAGE
-"
+
+EOF
 
     # Insert after "<!-- Add entries below in reverse chronological order (newest first) -->"
     # If that marker doesn't exist, insert after "## Development Log"
     if grep -q "<!-- Add entries below in reverse chronological order" "$FEATURE_CHANGELOG"; then
-        awk -v entry="$LOG_ENTRY" '
-            /<!-- Add entries below in reverse chronological order/ {
-                print
-                print entry
-                next
-            }
-            { print }
-        ' "$FEATURE_CHANGELOG" > "$FEATURE_CHANGELOG.tmp"
+        # Find the line number of the marker
+        LINE_NUM=$(grep -n "<!-- Add entries below in reverse chronological order" "$FEATURE_CHANGELOG" | cut -d: -f1)
+        # Insert the entry after the marker
+        head -n "$LINE_NUM" "$FEATURE_CHANGELOG" > "$FEATURE_CHANGELOG.tmp"
+        cat "$TEMP_ENTRY" >> "$FEATURE_CHANGELOG.tmp"
+        tail -n +"$((LINE_NUM + 1))" "$FEATURE_CHANGELOG" >> "$FEATURE_CHANGELOG.tmp"
     else
-        awk -v entry="$LOG_ENTRY" '
-            /## Development Log/ {
-                print
-                print entry
-                next
-            }
-            { print }
-        ' "$FEATURE_CHANGELOG" > "$FEATURE_CHANGELOG.tmp"
+        # Find the line number of "## Development Log"
+        LINE_NUM=$(grep -n "## Development Log" "$FEATURE_CHANGELOG" | cut -d: -f1)
+        # Insert the entry after "## Development Log"
+        head -n "$LINE_NUM" "$FEATURE_CHANGELOG" > "$FEATURE_CHANGELOG.tmp"
+        cat "$TEMP_ENTRY" >> "$FEATURE_CHANGELOG.tmp"
+        tail -n +"$((LINE_NUM + 1))" "$FEATURE_CHANGELOG" >> "$FEATURE_CHANGELOG.tmp"
     fi
+
+    # Clean up temp file
+    rm -f "$TEMP_ENTRY"
 
     mv "$FEATURE_CHANGELOG.tmp" "$FEATURE_CHANGELOG"
 

@@ -72,7 +72,7 @@ void main() {
           mockTripRepository.createTrip(any),
         ).thenAnswer((_) async => createdTrip);
         when(
-          mockCategoryRepository.seedDefaultCategories(any),
+          mockCategoryRepository.seedDefaultCategories(),
         ).thenAnswer((_) async => []);
         when(
           mockActivityLoggerService.logTripCreated(any, any),
@@ -125,7 +125,7 @@ void main() {
         mockTripRepository.createTrip(any),
       ).thenAnswer((_) async => createdTrip);
       when(
-        mockCategoryRepository.seedDefaultCategories(any),
+        mockCategoryRepository.seedDefaultCategories(),
       ).thenAnswer((_) async => []);
       when(
         mockActivityLoggerService.logTripCreated(any, any),
@@ -178,7 +178,7 @@ void main() {
         mockTripRepository.createTrip(any),
       ).thenAnswer((_) async => createdTrip);
       when(
-        mockCategoryRepository.seedDefaultCategories(any),
+        mockCategoryRepository.seedDefaultCategories(),
       ).thenAnswer((_) async => []);
       when(
         mockActivityLoggerService.logTripCreated(any, any),

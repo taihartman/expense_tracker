@@ -67,6 +67,13 @@ enum ActivityType {
   /// A settled transfer was marked as unsettled
   transferMarkedUnsettled,
 
+  // Category Customization Activities
+  /// A category's icon or color was customized for this trip
+  categoryCustomized,
+
+  /// A category was reset to use global defaults
+  categoryResetToDefault,
+
   // Device Pairing & Security Activities
   /// A device was successfully verified and joined
   deviceVerified,
