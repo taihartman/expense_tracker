@@ -15,9 +15,10 @@ class VersionFooter extends StatelessWidget {
       child: Text(
         VersionService.getFullVersion(),
         style: TextStyle(
-          fontSize: 8,
+          fontSize: 6,
           color: Colors.grey.shade500,
           fontWeight: FontWeight.w300,
+          decoration: TextDecoration.none,
         ),
       ),
     );
