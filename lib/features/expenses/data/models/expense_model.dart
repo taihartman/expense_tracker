@@ -52,6 +52,14 @@ class ExpenseModel {
       );
     }
 
+    // Add receipt info fields (backward compatible, optional)
+    if (expense.expectedSubtotal != null) {
+      json['expectedSubtotal'] = expense.expectedSubtotal!.toString();
+    }
+    if (expense.taxAmount != null) {
+      json['taxAmount'] = expense.taxAmount!.toString();
+    }
+
     return json;
   }
 
@@ -110,6 +118,14 @@ class ExpenseModel {
                 ),
               ),
             )
+          : null,
+      expectedSubtotal:
+          data.containsKey('expectedSubtotal') &&
+              data['expectedSubtotal'] != null
+          ? Decimal.parse(data['expectedSubtotal'] as String)
+          : null,
+      taxAmount: data.containsKey('taxAmount') && data['taxAmount'] != null
+          ? Decimal.parse(data['taxAmount'] as String)
           : null,
     );
   }

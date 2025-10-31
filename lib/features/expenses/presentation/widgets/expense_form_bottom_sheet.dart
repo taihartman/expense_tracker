@@ -125,9 +125,8 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
     debugPrint('🔵 [BottomSheet] Opening itemized wizard for edit mode');
     debugPrint('🔵 [BottomSheet] Expense ID: ${expense.id}');
 
-    // Capture navigator, cubit, and l10n before async operation
+    // Capture navigator and l10n before async operation
     final navigator = Navigator.of(context);
-    final expenseCubit = context.read<ExpenseCubit>();
     final l10n = context.l10n;
 
     try {
@@ -161,18 +160,11 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
 
       debugPrint('🔵 [BottomSheet] Wizard returned with result: $result');
 
-      // Close bottom sheet and reload expenses if updated
+      // Close bottom sheet - Firestore stream will automatically update
       if (mounted) {
-        if (result == true) {
-          debugPrint('🔵 [BottomSheet] Expense updated - reloading list');
-          // Force reload to get latest data from Firestore
-          await expenseCubit.loadExpenses(widget.tripId);
-          // Small delay to ensure stream emits
-          await Future.delayed(const Duration(milliseconds: 150));
-          debugPrint('🔵 [BottomSheet] Reload complete - closing bottom sheet');
-        } else {
-          debugPrint('🔵 [BottomSheet] No changes - closing bottom sheet');
-        }
+        debugPrint(
+          '🔵 [BottomSheet] Wizard closed - stream will handle updates',
+        );
         navigator.pop();
       }
     } catch (e, stackTrace) {

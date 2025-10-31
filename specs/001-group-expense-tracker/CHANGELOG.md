@@ -17,6 +17,144 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-10-31 - ExpenseLoaded State Equality Fix
+
+### Fixed
+- **ExpenseLoaded state now properly detects when expense field values change**:
+  - Root cause: `ExpenseLoaded` used Equatable with `props => [expenses]`, but `Expense.operator==` only compares by ID
+  - When Firestore emitted updated expenses with changed fields (amount, description, etc.) but same IDs, Equatable considered states equal
+  - Result: UI didn't rebuild, so changes weren't visually reflected in the expense list
+  - Solution: Changed props to use `identityHashCode(expenses)` instead of direct list comparison
+  - Now UI rebuilds whenever Firestore emits a new expense list instance, regardless of ID equality
+
+### Changed
+- **ExpenseState** (`lib/features/expenses/presentation/cubits/expense_state.dart`):
+  - Line 30: Changed `props => [expenses, selectedExpense]` to `props => [identityHashCode(expenses), selectedExpense]`
+
+### Impact
+- ✅ **Real-time field updates now visible**: Edit expense amount/description on Device A → immediately appears on Device B
+- ✅ **Works for all expense types**: Quick expenses (equal/weighted) and itemized/receipt splits
+- ✅ **Maintains list position**: Expenses stay ordered by date, only content updates
+
+## 2025-10-31 - Receipt Info Persistence Fix
+
+### Fixed
+- **Receipt info (expectedSubtotal, taxAmount) now persists to Firestore for itemized expenses**:
+  - Root cause: Receipt info was stored only in UI state (`ItemizedExpenseCubit`), not in Firestore
+  - When other devices loaded the expense, receipt info was missing
+  - `initFromExpense()` was recalculating expectedSubtotal from items instead of loading saved value
+  - Result: Receipt validation warnings appeared incorrectly, tax amounts were wrong on other devices
+
+### Added
+- **Expense Domain Model** (`lib/features/expenses/domain/models/expense.dart`):
+  - Added `expectedSubtotal` field (Decimal?) - User-entered receipt subtotal for validation
+  - Added `taxAmount` field (Decimal?) - User-entered tax amount for itemized splitting
+  - Both fields optional for backward compatibility
+
+- **Expense Serialization** (`lib/features/expenses/data/models/expense_model.dart`):
+  - Added `expectedSubtotal` and `taxAmount` serialization to Firestore (stored as strings for precision)
+  - Added deserialization with null-safe fallbacks
+  - Backward compatible: Existing expenses without these fields work correctly
+
+### Changed
+- **ItemizedExpenseCubit** (`lib/features/expenses/presentation/cubits/itemized_expense_cubit.dart`):
+  - `initFromExpense()`: Now loads receipt info from expense instead of recalculating
+  - Fallback: If receipt info not available, calculates from items (backward compat)
+  - `save()`: Now passes `expectedSubtotal` and `taxAmount` to Expense constructor
+  - Logs show whether receipt info came from saved data or was calculated
+
+### Impact
+- ✅ **Receipt info syncs across devices**: Edit receipt on Device A → appears correctly on Device B
+- ✅ **Validation warnings accurate**: Subtotal mismatches properly detected using saved receipt value
+- ✅ **Tax amounts persist**: Tax splitting uses saved tax amount, not recalculated
+- ✅ **Backward compatible**: Old expenses without receipt info work normally with fallback logic
+- ✅ **Data integrity**: Receipt metadata preserved as user entered it
+
+### Technical Details
+
+**The Problem:**
+1. User enters receipt with `expectedSubtotal: 22000` and `taxAmount: 10000`
+2. Values stored in `ItemizedExpenseEditing` state (in-memory only)
+3. Expense saved to Firestore WITHOUT these fields (domain model didn't have them)
+4. Other device loads expense → `initFromExpense()` calculates `expectedSubtotal: 20` from items → WRONG
+5. Receipt validation shows incorrect warnings
+
+**The Solution:**
+1. Added fields to Expense domain model (optional, Decimal?)
+2. Added Firestore serialization (strings for precision, null-safe)
+3. Updated `initFromExpense()` to load from expense first, calculate as fallback
+4. Updated `save()` to pass receipt info to Expense constructor
+5. All receipt metadata now persists and syncs across devices
+
+## 2025-10-31 - Real-Time Expense Edits Fix (Part 2) + List Refresh Fix
+
+### Fixed
+- **Itemized expense edits now reflect in real-time across devices**:
+  - Root cause: Manual `loadExpenses()` call in `expense_form_bottom_sheet.dart` (line 169) was missed in PR #22
+  - This call was interfering with Firestore stream emissions, creating race conditions
+  - The 150ms delay was a failed attempt to work around the timing issue
+  - Only affected itemized expense edits (regular expenses worked correctly)
+
+- **List no longer "refreshes" (disappears/reappears) when adding or editing expenses**:
+  - Root cause: Intermediate loading states (`ExpenseCreating`, `ExpenseUpdating`) caused BlocBuilder to show empty widget
+  - List would disappear → Firestore stream updates → List reappears (visual flash)
+  - Affected all expense operations (add/edit)
+
+### Changed
+- **Expense Form Bottom Sheet** (`lib/features/expenses/presentation/widgets/expense_form_bottom_sheet.dart`):
+  - Removed manual `loadExpenses()` call from `_openItemizedWizardForEdit()` method
+  - Removed 150ms delay workaround
+  - Removed unused `expenseCubit` variable
+  - Now trusts Firestore stream to handle all updates automatically
+
+- **ExpenseCubit** (`lib/features/expenses/presentation/cubits/expense_cubit.dart`):
+  - Removed `emit(ExpenseCreating())` from `createExpense()` method (line 121)
+  - Removed `emit(ExpenseUpdating())` from `updateExpense()` method (line 147)
+  - Kept success states (`ExpenseCreated`, `ExpenseUpdated`) for UI notifications
+  - Firestore stream now handles all list updates without intermediate states
+
+- **Expense List Page** (`lib/features/expenses/presentation/pages/expense_list_page.dart`):
+  - Added `buildWhen` optimization to BlocBuilder - only rebuilds for `ExpenseLoading`, `ExpenseError`, `ExpenseLoaded`
+  - Prevents rebuilds for transient states like `ExpenseCreated`, `ExpenseUpdated`
+  - Added `key: ValueKey(expense.id)` to ExpenseCard items for efficient Flutter widget updates
+
+### Impact
+- ✅ **Itemized expense edits now sync in real-time** across all devices
+- ✅ **List updates smoothly in-place** - no more disappearing/reappearing
+- ✅ **Scroll position maintained** during add/edit/delete operations
+- ✅ **No visual flash or flicker** when expense data changes
+- ✅ **Better performance**: Fewer unnecessary widget rebuilds
+- ✅ **Cleaner code**: Removed workarounds and unnecessary delays
+- ✅ **Consistent behavior**: All expense types use same update mechanism
+
+### Technical Details
+
+**Real-Time Sync Issue:**
+The issue occurred because:
+1. User edits itemized expense → Firestore updates → stream should emit
+2. Bottom sheet manually calls `loadExpenses()` after wizard closes
+3. Even with trip-switching detection, the timing of this call interfered with stream emissions
+4. Other devices' streams would miss updates due to race conditions
+
+**List Refresh Issue:**
+The "flash" happened because:
+1. User adds/edits expense
+2. Cubit emits `ExpenseCreating`/`ExpenseUpdating` (NOT `ExpenseLoaded`)
+3. BlocBuilder sees state is not `ExpenseLoaded` → returns `SizedBox.shrink()` (empty)
+4. List widget tree destroyed → **list disappears**
+5. Firestore stream emits updated data
+6. Cubit emits `ExpenseLoaded` → **list reappears**
+
+**Solution:**
+1. Remove intermediate loading states - trust stream for all updates
+2. Add `buildWhen` filter - only rebuild for states that affect display
+3. Add widget keys - help Flutter efficiently update changed items
+
+Now the flow is:
+1. User modifies expense → Firestore updates → stream emits automatically
+2. List updates in-place without disappearing
+3. Clean, predictable, smooth real-time sync
+
 ## 2025-10-30 - Real-Time Expense Updates Fix
 
 ### Fixed
