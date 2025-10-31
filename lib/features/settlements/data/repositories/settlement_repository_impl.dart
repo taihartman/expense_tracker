@@ -11,11 +11,13 @@ import '../../domain/services/settlement_calculator.dart';
 import '../models/settlement_summary_model.dart';
 import '../models/minimal_transfer_model.dart';
 
-/// Helper function to log with timestamps
+/// Helper function to log with timestamps (only in debug mode)
 void _log(String message) {
-  debugPrint(
-    '[${DateTime.now().toIso8601String()}] [SettlementRepository] $message',
-  );
+  if (kDebugMode) {
+    debugPrint(
+      '[${DateTime.now().toIso8601String()}] [SettlementRepository] $message',
+    );
+  }
 }
 
 /// Firestore implementation of SettlementRepository
@@ -289,33 +291,85 @@ class SettlementRepositoryImpl implements SettlementRepository {
           .doc(tripId)
           .set(SettlementSummaryModel.toJson(settlementSummary));
 
-      // Now save the transfers
+      // Optimize transfer storage: merge/update instead of delete+recreate
       final batch = _firestoreService.batch();
 
-      // Delete old transfers
+      // Build map of existing transfers by key for quick lookup
+      final existingByKey =
+          <String, ({String docId, MinimalTransfer transfer})>{};
       for (final doc in existingTransfers.docs) {
-        batch.delete(doc.reference);
+        final transfer = MinimalTransferModel.fromFirestore(doc);
+        final key = '${transfer.fromUserId}-${transfer.toUserId}';
+        existingByKey[key] = (docId: doc.id, transfer: transfer);
       }
 
-      // Add new transfers with preserved settled status
+      // Track which existing transfers to keep
+      final processedKeys = <String>{};
+
+      // Update or create transfers
       for (final transfer in transfersWithSettledStatus) {
-        final docRef = _firestoreService.settlements
-            .doc(tripId)
-            .collection('transfers')
-            .doc();
+        final key = '${transfer.fromUserId}-${transfer.toUserId}';
+        processedKeys.add(key);
 
-        final transferWithId = MinimalTransfer(
-          id: docRef.id,
-          tripId: transfer.tripId,
-          fromUserId: transfer.fromUserId,
-          toUserId: transfer.toUserId,
-          amountBase: transfer.amountBase,
-          computedAt: transfer.computedAt,
-          isSettled: transfer.isSettled,
-          settledAt: transfer.settledAt,
-        );
+        final existing = existingByKey[key];
+        if (existing != null) {
+          // Transfer exists - update if changed
+          if (existing.transfer.amountBase != transfer.amountBase ||
+              existing.transfer.isSettled != transfer.isSettled) {
+            final docRef = _firestoreService.settlements
+                .doc(tripId)
+                .collection('transfers')
+                .doc(existing.docId);
 
-        batch.set(docRef, MinimalTransferModel.toJson(transferWithId));
+            final updatedTransfer = MinimalTransfer(
+              id: existing.docId,
+              tripId: transfer.tripId,
+              fromUserId: transfer.fromUserId,
+              toUserId: transfer.toUserId,
+              amountBase: transfer.amountBase,
+              computedAt: transfer.computedAt,
+              isSettled: transfer.isSettled,
+              settledAt: transfer.settledAt,
+            );
+
+            batch.set(docRef, MinimalTransferModel.toJson(updatedTransfer));
+            _log('  Updated transfer: $key');
+          } else {
+            _log('  Unchanged transfer: $key');
+          }
+        } else {
+          // New transfer - create
+          final docRef = _firestoreService.settlements
+              .doc(tripId)
+              .collection('transfers')
+              .doc();
+
+          final newTransfer = MinimalTransfer(
+            id: docRef.id,
+            tripId: transfer.tripId,
+            fromUserId: transfer.fromUserId,
+            toUserId: transfer.toUserId,
+            amountBase: transfer.amountBase,
+            computedAt: transfer.computedAt,
+            isSettled: transfer.isSettled,
+            settledAt: transfer.settledAt,
+          );
+
+          batch.set(docRef, MinimalTransferModel.toJson(newTransfer));
+          _log('  Created new transfer: $key');
+        }
+      }
+
+      // Delete transfers that no longer exist
+      for (final entry in existingByKey.entries) {
+        if (!processedKeys.contains(entry.key)) {
+          final docRef = _firestoreService.settlements
+              .doc(tripId)
+              .collection('transfers')
+              .doc(entry.value.docId);
+          batch.delete(docRef);
+          _log('  Deleted obsolete transfer: ${entry.key}');
+        }
       }
 
       await batch.commit();

@@ -3,6 +3,13 @@ import '../../domain/models/settlement_summary.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/category_spending.dart';
 
+/// Filter mode for transfer filtering
+enum TransferFilterMode {
+  all, // Show all transfers involving the user
+  owes, // Show only transfers where user owes money
+  owed, // Show only transfers where user is owed money
+}
+
 /// Base state for SettlementCubit
 abstract class SettlementState extends Equatable {
   const SettlementState();
@@ -32,12 +39,16 @@ class SettlementLoaded extends SettlementState {
   final List<MinimalTransfer> activeTransfers;
   final List<MinimalTransfer> settledTransfers;
   final Map<String, PersonCategorySpending>? personCategorySpending;
+  final String? selectedUserId; // User ID for filtering transfers
+  final TransferFilterMode filterMode; // Filter mode (all/owes/owed)
 
   const SettlementLoaded({
     required this.summary,
     required this.activeTransfers,
     required this.settledTransfers,
     this.personCategorySpending,
+    this.selectedUserId,
+    this.filterMode = TransferFilterMode.all,
   });
 
   @override
@@ -46,6 +57,8 @@ class SettlementLoaded extends SettlementState {
     activeTransfers,
     settledTransfers,
     personCategorySpending,
+    selectedUserId,
+    filterMode,
   ];
 
   /// Get all transfers (active + settled)
@@ -59,6 +72,9 @@ class SettlementLoaded extends SettlementState {
     List<MinimalTransfer>? activeTransfers,
     List<MinimalTransfer>? settledTransfers,
     Map<String, PersonCategorySpending>? personCategorySpending,
+    String? selectedUserId,
+    TransferFilterMode? filterMode,
+    bool clearFilter = false, // Flag to clear selectedUserId
   }) {
     return SettlementLoaded(
       summary: summary ?? this.summary,
@@ -66,6 +82,10 @@ class SettlementLoaded extends SettlementState {
       settledTransfers: settledTransfers ?? this.settledTransfers,
       personCategorySpending:
           personCategorySpending ?? this.personCategorySpending,
+      selectedUserId: clearFilter
+          ? null
+          : (selectedUserId ?? this.selectedUserId),
+      filterMode: filterMode ?? this.filterMode,
     );
   }
 }

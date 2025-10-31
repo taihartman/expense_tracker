@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:decimal/decimal.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../../../core/models/participant.dart';
@@ -6,6 +7,8 @@ import '../../../../core/models/currency_code.dart';
 import '../../../../core/utils/formatters.dart' show Formatters;
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../cubits/settlement_cubit.dart';
+import '../cubits/settlement_state.dart';
 
 /// Summary data for a person based on settlement transfers
 class _PersonTransferSummary {
@@ -85,153 +88,191 @@ class AllPeopleSummaryTable extends StatelessWidget {
     final sortedEntries = transferSummaries.entries.toList()
       ..sort((a, b) => b.value.netBalance.compareTo(a.value.netBalance));
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppTheme.spacing2),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.summaryTableTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppTheme.spacing2),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columnSpacing: AppTheme.spacing2,
-                headingRowColor: WidgetStateProperty.all(
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
+    return BlocBuilder<SettlementCubit, SettlementState>(
+      builder: (context, state) {
+        final selectedUserId = state is SettlementLoaded
+            ? state.selectedUserId
+            : null;
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spacing2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.summaryTableTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                columns: [
-                  DataColumn(
-                    label: Text(context.l10n.summaryTableColumnPerson),
-                  ),
-                  DataColumn(
-                    label: Text(context.l10n.summaryTableColumnToReceive),
-                    numeric: true,
-                  ),
-                  DataColumn(
-                    label: Text(context.l10n.summaryTableColumnToPay),
-                    numeric: true,
-                  ),
-                  DataColumn(
-                    label: Text(context.l10n.summaryTableColumnNet),
-                    numeric: true,
-                  ),
-                ],
-                rows: sortedEntries.map((entry) {
-                  final userId = entry.key;
-                  final summary = entry.value;
-                  final userName = _getParticipantName(userId);
-
-                  // Determine color based on net balance
-                  final isPositive = summary.netBalance > Decimal.zero;
-                  final isNegative = summary.netBalance < Decimal.zero;
-                  final balanceColor = isPositive
-                      ? Colors.green.shade700
-                      : isNegative
-                      ? Colors.red.shade700
-                      : Theme.of(context).colorScheme.onSurface;
-
-                  return DataRow(
-                    cells: [
-                      DataCell(
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircleAvatar(
-                              radius: 16,
-                              backgroundColor: _getAvatarColor(userId),
-                              child: Text(
-                                userName.substring(0, 1).toUpperCase(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppTheme.spacing1),
-                            Text(userName),
-                          ],
-                        ),
+                const SizedBox(height: AppTheme.spacing2),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columnSpacing: AppTheme.spacing2,
+                    headingRowColor: WidgetStateProperty.all(
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                    ),
+                    columns: [
+                      DataColumn(
+                        label: Text(context.l10n.summaryTableColumnPerson),
                       ),
-                      DataCell(
-                        Text(
-                          Formatters.formatCurrency(
-                            summary.totalToReceive,
-                            baseCurrency,
-                          ),
-                        ),
+                      DataColumn(
+                        label: Text(context.l10n.summaryTableColumnToReceive),
+                        numeric: true,
                       ),
-                      DataCell(
-                        Text(
-                          Formatters.formatCurrency(
-                            summary.totalToPay,
-                            baseCurrency,
-                          ),
-                        ),
+                      DataColumn(
+                        label: Text(context.l10n.summaryTableColumnToPay),
+                        numeric: true,
                       ),
-                      DataCell(
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isPositive
-                                  ? Icons.arrow_upward
-                                  : isNegative
-                                  ? Icons.arrow_downward
-                                  : Icons.remove,
-                              size: 16,
-                              color: balanceColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              Formatters.formatCurrency(
-                                summary.netBalance.abs(),
-                                baseCurrency,
-                              ),
-                              style: TextStyle(
-                                color: balanceColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                      DataColumn(
+                        label: Text(context.l10n.summaryTableColumnNet),
+                        numeric: true,
                       ),
                     ],
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacing2),
-            // Legend
-            Wrap(
-              spacing: AppTheme.spacing2,
-              children: [
-                _buildLegendItem(
-                  context,
-                  Icons.arrow_upward,
-                  context.l10n.summaryTableLegendWillReceive,
-                  Colors.green.shade700,
+                    rows: sortedEntries.map((entry) {
+                      final userId = entry.key;
+                      final summary = entry.value;
+                      final userName = _getParticipantName(userId);
+
+                      // Determine color based on net balance
+                      final isPositive = summary.netBalance > Decimal.zero;
+                      final isNegative = summary.netBalance < Decimal.zero;
+                      final balanceColor = isPositive
+                          ? Colors.green.shade700
+                          : isNegative
+                          ? Colors.red.shade700
+                          : Theme.of(context).colorScheme.onSurface;
+
+                      final isSelected = selectedUserId == userId;
+
+                      return DataRow(
+                        selected: isSelected,
+                        onSelectChanged: (_) {
+                          // Toggle filter: if already selected, clear it; otherwise set it
+                          if (isSelected) {
+                            context.read<SettlementCubit>().clearUserFilter();
+                          } else {
+                            context.read<SettlementCubit>().setUserFilter(
+                              userId,
+                              TransferFilterMode.all,
+                            );
+                          }
+                        },
+                        color: isSelected
+                            ? WidgetStateProperty.all(
+                                Theme.of(context).colorScheme.primaryContainer
+                                    .withValues(alpha: 0.3),
+                              )
+                            : null,
+                        cells: [
+                          DataCell(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: _getAvatarColor(userId),
+                                  child: Text(
+                                    userName.substring(0, 1).toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: AppTheme.spacing1),
+                                Text(userName),
+                              ],
+                            ),
+                          ),
+                          DataCell(
+                            Text(
+                              Formatters.formatCurrency(
+                                summary.totalToReceive,
+                                baseCurrency,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Text(
+                              Formatters.formatCurrency(
+                                summary.totalToPay,
+                                baseCurrency,
+                              ),
+                            ),
+                          ),
+                          DataCell(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isPositive
+                                      ? Icons.arrow_upward
+                                      : isNegative
+                                      ? Icons.arrow_downward
+                                      : Icons.remove,
+                                  size: 16,
+                                  color: balanceColor,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  Formatters.formatCurrency(
+                                    summary.netBalance.abs(),
+                                    baseCurrency,
+                                  ),
+                                  style: TextStyle(
+                                    color: balanceColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
-                _buildLegendItem(
-                  context,
-                  Icons.arrow_downward,
-                  context.l10n.summaryTableLegendNeedsToPay,
-                  Colors.red.shade700,
+                const SizedBox(height: AppTheme.spacing2),
+                // Legend
+                Wrap(
+                  spacing: AppTheme.spacing2,
+                  runSpacing: AppTheme.spacing1,
+                  children: [
+                    _buildLegendItem(
+                      context,
+                      Icons.arrow_upward,
+                      context.l10n.summaryTableLegendWillReceive,
+                      Colors.green.shade700,
+                    ),
+                    _buildLegendItem(
+                      context,
+                      Icons.arrow_downward,
+                      context.l10n.summaryTableLegendNeedsToPay,
+                      Colors.red.shade700,
+                    ),
+                    _buildLegendItem(
+                      context,
+                      Icons.remove,
+                      context.l10n.summaryTableLegendEven,
+                      Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ],
                 ),
-                _buildLegendItem(
-                  context,
-                  Icons.remove,
-                  context.l10n.summaryTableLegendEven,
-                  Theme.of(context).colorScheme.onSurface,
+                const SizedBox(height: AppTheme.spacing1),
+                // Tap hint
+                Text(
+                  context.l10n.transferFilterHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
