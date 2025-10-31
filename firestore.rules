@@ -203,6 +203,27 @@ service cloud.firestore {
         allow delete: if isAuthenticated();
       }
 
+      // Category Customizations: Per-trip visual overrides for global categories
+      // Allows trips to customize icon and color for any category
+      match /categoryCustomizations/{categoryId} {
+        // Allow reading customizations if authenticated
+        // TODO: Restrict to trip members once trip membership enforcement is added
+        allow read: if isAuthenticated();
+
+        // Allow creating/updating customizations if authenticated
+        // Validation: Must have valid icon or color, and updatedAt timestamp
+        allow create, update: if isAuthenticated()
+                              && request.resource.data.tripId == tripId
+                              && request.resource.data.updatedAt is timestamp
+                              && (
+                                // Must have at least one customization (icon or color)
+                                request.resource.data.keys().hasAny(['customIcon', 'customColor'])
+                              );
+
+        // Allow deleting customizations (reset to global defaults)
+        allow delete: if isAuthenticated();
+      }
+
       // Categories, fxRates, expenses: Inherit trip permissions
       match /{document=**} {
         allow read, write: if isAuthenticated();
