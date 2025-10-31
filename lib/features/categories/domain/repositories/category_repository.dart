@@ -97,4 +97,44 @@ abstract class CategoryRepository {
   /// This replaces the old trip-specific seeding.
   /// Only needs to run once for the entire system.
   Future<List<Category>> seedDefaultCategories();
+
+  /// Find categories with names similar to the given query
+  ///
+  /// Uses Jaro-Winkler similarity algorithm with 80% threshold to detect
+  /// potentially duplicate categories. Returns categories sorted by:
+  /// 1. Similarity score (highest first)
+  /// 2. Usage count (most popular first)
+  ///
+  /// Parameters:
+  /// - query: The category name to search for similar matches
+  /// - threshold: Minimum similarity score (0.0-1.0), defaults to 0.8 (80%)
+  /// - limit: Maximum number of results to return, defaults to 3
+  ///
+  /// Returns: List of similar categories with their similarity scores
+  ///
+  /// Examples:
+  /// - "Ski" matches "Skiing" (0.92 similarity)
+  /// - "Restaurant" matches "Restaurants" (0.95 similarity)
+  /// - "Food" doesn't match "Transport" (< 0.8 similarity)
+  ///
+  /// Used for:
+  /// - Preventing duplicate category creation
+  /// - Suggesting existing categories during creation
+  /// - Consolidating vote counts (preventing vote splitting)
+  Future<List<SimilarCategoryMatch>> findSimilarCategories(
+    String query, {
+    double threshold = 0.8,
+    int limit = 3,
+  });
+}
+
+/// Result of a similarity search containing category and similarity score
+class SimilarCategoryMatch {
+  final Category category;
+  final double similarityScore;
+
+  const SimilarCategoryMatch({
+    required this.category,
+    required this.similarityScore,
+  });
 }

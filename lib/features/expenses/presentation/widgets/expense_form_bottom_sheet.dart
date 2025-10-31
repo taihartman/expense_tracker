@@ -16,6 +16,9 @@ import '../../../../shared/utils/currency_input_formatter.dart';
 import '../../../trips/presentation/cubits/trip_cubit.dart';
 import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../../core/services/activity_logger_service.dart';
+import '../../../categories/presentation/cubit/category_customization_cubit.dart';
+import '../../../../core/repositories/category_customization_repository.dart';
+import '../../../trips/domain/repositories/activity_log_repository.dart';
 
 /// Shows expense form in a Material 3 bottom sheet modal
 void showExpenseFormBottomSheet({
@@ -23,13 +26,24 @@ void showExpenseFormBottomSheet({
   required String tripId,
   Expense? expense,
 }) {
+  // Capture repository references before async operation (context changes in modal)
+  final categoryCustomizationRepo = context
+      .read<CategoryCustomizationRepository>();
+  final activityLogRepo = context.read<ActivityLogRepository>();
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
     showDragHandle: true,
-    builder: (context) =>
-        ExpenseFormBottomSheet(tripId: tripId, expense: expense),
+    builder: (bottomSheetContext) => BlocProvider(
+      create: (_) => CategoryCustomizationCubit(
+        repository: categoryCustomizationRepo,
+        tripId: tripId,
+        activityLogRepository: activityLogRepo,
+      )..loadCustomizations(),
+      child: ExpenseFormBottomSheet(tripId: tripId, expense: expense),
+    ),
   );
 }
 

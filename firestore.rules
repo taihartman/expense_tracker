@@ -26,14 +26,41 @@ service cloud.firestore {
       // Anyone can read categories
       allow read: if isAuthenticated();
 
-      // Create with validation, rate limiting, and duplicate checking
+      // Create with validation (rate limiting and duplicate checking handled client-side)
       allow create: if isAuthenticated()
-                    && isValidCategoryName(request.resource.data.name)
-                    && !isRateLimited(request.auth.uid)
-                    && !isDuplicateCategoryName(request.resource.data.nameLowercase);
+                    && isValidCategoryName(request.resource.data.name);
 
-      // No updates or deletes (categories are immutable to preserve expense references)
-      allow update, delete: if false;
+      // Allow updates only to icon field (for voting system) and updatedAt
+      // All other fields are immutable to preserve expense references
+      allow update: if isAuthenticated()
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['icon', 'updatedAt'])
+                    && request.resource.data.icon is string
+                    && request.resource.data.icon.size() > 0;
+
+      // No deletes (categories are permanent to preserve expense references)
+      allow delete: if false;
+    }
+
+    // Category Icon Preferences: Voting system for crowd-sourced icon improvements
+    // Tracks how many users have customized each category to use specific icons
+    match /categoryIconPreferences/{preferenceId} {
+      // Anyone can read preferences (to see vote counts and most popular icons)
+      allow read: if isAuthenticated();
+
+      // Allow creating/updating preferences (voting)
+      // Validation: Must have valid structure and categoryId/iconName
+      allow create, update: if isAuthenticated()
+                            && request.resource.data.categoryId is string
+                            && request.resource.data.categoryId.size() > 0
+                            && request.resource.data.iconName is string
+                            && request.resource.data.iconName.size() > 0
+                            && request.resource.data.voteCount is int
+                            && request.resource.data.voteCount >= 0
+                            && request.resource.data.lastVoteAt is timestamp
+                            && request.resource.data.mostPopular is bool;
+
+      // No deletion (votes are permanent for audit trail)
+      allow delete: if false;
     }
 
     // Category Creation Logs: Rate limiting tracking

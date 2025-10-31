@@ -64,7 +64,7 @@ class RateLimiterService {
         'userId': userId,
         'categoryId': categoryId,
         'categoryName': categoryName,
-        'createdAt': Timestamp.fromDate(DateTime.now()),
+        'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       throw Exception('Failed to log category creation: $e');

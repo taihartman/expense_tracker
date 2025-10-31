@@ -22,6 +22,10 @@ class FirestoreService {
   /// Get reference to categories collection
   CollectionReference get categories => _firestore.collection('categories');
 
+  /// Get reference to category icon preferences collection (voting system)
+  CollectionReference get categoryIconPreferences =>
+      _firestore.collection('categoryIconPreferences');
+
   /// Get reference to exchange rates collection
   CollectionReference get exchangeRates =>
       _firestore.collection('exchangeRates');

@@ -89,7 +89,7 @@ class _TripCreatePageState extends State<TripCreatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.tripCreateTitle)),
-      body: BlocListener<TripCubit, TripState>(
+      body: BlocConsumer<TripCubit, TripState>(
         listener: (context, state) {
           if (state is TripCreated) {
             // Show recovery code, then navigate
@@ -104,71 +104,96 @@ class _TripCreatePageState extends State<TripCreatePage> {
             );
           }
         },
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(AppTheme.spacing2),
-            children: [
-              CustomTextField(
-                controller: _tripNameController,
-                label: context.l10n.tripFieldNameLabel,
-                // e.g., Vietnam 2025
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.l10n.validationPleaseEnterTripName;
-                  }
-                  if (value.trim().length > 100) {
-                    return context.l10n.validationTripNameTooLong;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppTheme.spacing2),
-              CustomTextField(
-                controller: _creatorNameController,
-                label: context.l10n.tripFieldCreatorNameLabel,
-                hint: context.l10n.tripFieldCreatorNameHelper,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return context.l10n.validationNameRequired;
-                  }
-                  if (value.trim().length > 50) {
-                    return context.l10n.validationNameTooLong;
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppTheme.spacing2),
-              DropdownButtonFormField<CurrencyCode>(
-                initialValue: _selectedCurrency,
-                decoration: InputDecoration(
-                  labelText: context.l10n.tripFieldBaseCurrencyLabel,
-                  helperText: context.l10n.tripFieldBaseCurrencyHelper,
+        builder: (context, state) {
+          final isCreating = state is TripCreating;
+
+          return Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(AppTheme.spacing2),
+              children: [
+                CustomTextField(
+                  controller: _tripNameController,
+                  label: context.l10n.tripFieldNameLabel,
+                  enabled: !isCreating,
+                  // e.g., Vietnam 2025
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return context.l10n.validationPleaseEnterTripName;
+                    }
+                    if (value.trim().length > 100) {
+                      return context.l10n.validationTripNameTooLong;
+                    }
+                    return null;
+                  },
                 ),
-                items: CurrencyCode.values.map((currency) {
-                  return DropdownMenuItem(
-                    value: currency,
-                    child: Text(
-                      '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
+                const SizedBox(height: AppTheme.spacing2),
+                CustomTextField(
+                  controller: _creatorNameController,
+                  label: context.l10n.tripFieldCreatorNameLabel,
+                  hint: context.l10n.tripFieldCreatorNameHelper,
+                  enabled: !isCreating,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return context.l10n.validationNameRequired;
+                    }
+                    if (value.trim().length > 50) {
+                      return context.l10n.validationNameTooLong;
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: AppTheme.spacing2),
+                DropdownButtonFormField<CurrencyCode>(
+                  initialValue: _selectedCurrency,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.tripFieldBaseCurrencyLabel,
+                    helperText: context.l10n.tripFieldBaseCurrencyHelper,
+                  ),
+                  items: CurrencyCode.values.map((currency) {
+                    return DropdownMenuItem(
+                      value: currency,
+                      child: Text(
+                        '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: isCreating
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedCurrency = value;
+                            });
+                          }
+                        },
+                ),
+                const SizedBox(height: AppTheme.spacing3),
+                CustomButton(
+                  text: context.l10n.tripCreateButton,
+                  onPressed: isCreating ? null : _submit,
+                ),
+                // Loading state indicator
+                if (isCreating) ...[
+                  const SizedBox(height: AppTheme.spacing3),
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.spacing3),
+                    child: Column(
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: AppTheme.spacing2),
+                        Text(
+                          context.l10n.commonLoading,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ],
                     ),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedCurrency = value;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: AppTheme.spacing3),
-              CustomButton(
-                text: context.l10n.tripCreateButton,
-                onPressed: _submit,
-              ),
-            ],
-          ),
-        ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -1,4 +1,5 @@
 import '../models/category_customization.dart';
+import '../enums/category_icon.dart';
 
 /// Validator for category customization operations
 ///
@@ -6,39 +7,10 @@ import '../models/category_customization.dart';
 /// consistency with the icon/color pickers in the UI.
 class CategoryCustomizationValidator {
   /// Available Material Icons for category customization
-  /// Must match the list in CategoryIconPicker widget
-  static const Set<String> validIcons = {
-    'category',
-    'restaurant',
-    'directions_car',
-    'hotel',
-    'local_activity',
-    'shopping_bag',
-    'local_cafe',
-    'flight',
-    'train',
-    'directions_bus',
-    'local_taxi',
-    'local_gas_station',
-    'fastfood',
-    'local_grocery_store',
-    'local_pharmacy',
-    'local_hospital',
-    'fitness_center',
-    'spa',
-    'beach_access',
-    'camera_alt',
-    'movie',
-    'music_note',
-    'sports_soccer',
-    'pets',
-    'school',
-    'work',
-    'home',
-    'phone',
-    'laptop',
-    'book',
-  };
+  /// Generated from CategoryIcon enum to ensure consistency
+  static Set<String> get validIcons {
+    return CategoryIcon.values.map((icon) => icon.iconName).toSet();
+  }
 
   /// Available colors for category customization
   /// Must match the list in CategoryColorPicker widget

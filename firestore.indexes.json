@@ -26,18 +26,11 @@
       ]
     },
     {
-      "collectionGroup": "categories",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "usageCount", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "categoryCreationLogs",
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "userId", "order": "ASCENDING" },
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
     }
   ],

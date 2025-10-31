@@ -6,6 +6,7 @@ import '../cubit/category_state.dart';
 import 'category_creation_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../../shared/utils/icon_helper.dart';
 
 /// Bottom sheet for browsing and searching all available categories
 ///
@@ -55,29 +56,13 @@ class _CategoryBrowserBottomSheetState
   }
 
   void _onCategoryTap(Category category) {
+    debugPrint(
+      '🎯 [CategoryBrowser] Category tapped: ${category.name} (${category.id})',
+    );
     widget.onCategorySelected(category);
+    debugPrint('👋 [CategoryBrowser] Calling Navigator.pop()');
     Navigator.of(context).pop(); // Dismiss bottom sheet
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'directions_car':
-        return Icons.directions_car;
-      case 'hotel':
-        return Icons.hotel;
-      case 'local_activity':
-        return Icons.local_activity;
-      case 'shopping_bag':
-        return Icons.shopping_bag;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'label':
-        return Icons.label;
-      default:
-        return Icons.category;
-    }
+    debugPrint('✅ [CategoryBrowser] Navigator.pop() completed');
   }
 
   Color _getColor(String colorHex) {
@@ -272,7 +257,7 @@ class _CategoryBrowserBottomSheetState
                         itemBuilder: (context, index) {
                           final category = categories[index];
                           final color = _getColor(category.color);
-                          final icon = _getIconData(category.icon);
+                          final icon = IconHelper.getIconData(category.icon);
 
                           return ListTile(
                             leading: CircleAvatar(

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:string_similarity/string_similarity.dart';
 import '../../../../core/constants/categories.dart';
 import '../../../../core/validators/category_validator.dart';
 import '../../../../shared/services/firestore_service.dart';
@@ -230,6 +231,68 @@ class CategoryRepositoryImpl implements CategoryRepository {
       return createdCategories;
     } catch (e) {
       throw Exception('Failed to seed default categories: $e');
+    }
+  }
+
+  @override
+  Future<List<SimilarCategoryMatch>> findSimilarCategories(
+    String query, {
+    double threshold = 0.8,
+    int limit = 3,
+  }) async {
+    try {
+      if (query.trim().isEmpty) {
+        return [];
+      }
+
+      // Normalize query for comparison
+      final normalizedQuery = query.trim().toLowerCase();
+
+      // Get all categories to check for similarities
+      // Note: In a large system, this could be optimized with a search index
+      final snapshot = await _firestoreService.categories
+          .orderBy('usageCount', descending: true)
+          .limit(100) // Check top 100 most popular categories
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        return [];
+      }
+
+      final categories = snapshot.docs
+          .map((doc) => CategoryModel.fromFirestore(doc))
+          .toList();
+
+      // Calculate similarity scores for each category
+      final matches = <SimilarCategoryMatch>[];
+      for (final category in categories) {
+        final normalizedName = category.name.toLowerCase();
+
+        // Calculate Jaro-Winkler similarity (0.0 to 1.0)
+        final similarity = normalizedQuery.similarityTo(
+          normalizedName,
+        );
+
+        // Only include matches above threshold
+        if (similarity >= threshold) {
+          matches.add(SimilarCategoryMatch(
+            category: category,
+            similarityScore: similarity,
+          ));
+        }
+      }
+
+      // Sort by similarity score (highest first), then by usage count
+      matches.sort((a, b) {
+        final scoreComparison = b.similarityScore.compareTo(a.similarityScore);
+        if (scoreComparison != 0) return scoreComparison;
+        return b.category.usageCount.compareTo(a.category.usageCount);
+      });
+
+      // Return top N matches
+      return matches.take(limit).toList();
+    } catch (e) {
+      throw Exception('Failed to find similar categories: $e');
     }
   }
 }

@@ -94,6 +94,14 @@ class CategoryCustomizationCubit extends Cubit<CategoryCustomizationState> {
 
       await _repository.saveCustomization(customization);
 
+      // Record icon preference vote (non-blocking, silent failure)
+      if (customIcon != null) {
+        // Fire and forget - don't await, don't catch errors
+        // The repository method handles its own error logging
+        // ignore: unawaited_futures
+        _repository.recordIconPreference(categoryId, customIcon);
+      }
+
       // Log activity (non-fatal)
       if (_activityLogRepository != null && actorName != null) {
         try {
