@@ -31,9 +31,10 @@ and this project follows feature-driven versioning with Spec-Kit.
   - `TROUBLESHOOTING.md` - Common issues and solutions
 
 - **Hooks System**: Created 3 autonomous hooks in `.claude/hooks/` for automatic pattern enforcement
-  - `user-prompt-submit.md` - Auto-injects skill reminders based on user intent
+  - `user-prompt-submit.md` - Auto-injects skill reminders based on user intent (keyword detection)
   - `stop-event.md` - Self-checks for errors and pattern compliance after responses
   - `pre-commit.md` - Quality gates before commits (analyze, format, test, pattern checks)
+  - **Technical Note**: Hooks are Markdown-based declarative instructions that Claude Code automatically reads at lifecycle events, not TypeScript executables. They work through context injection - Claude reads the instructions and follows them autonomously.
 
 **Impact:**
 - 64% reduction in main documentation file size (1101 → 400 lines)

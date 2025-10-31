@@ -118,8 +118,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   /// not the payer of the expense. Used for activity logging.
   Future<void> createExpense(Expense expense, {String? actorName}) async {
     try {
-      emit(const ExpenseCreating());
-
+      // Don't emit loading state - let Firestore stream handle updates smoothly
       final createdExpense = await _expenseRepository.createExpense(expense);
 
       emit(ExpenseCreated(createdExpense));
@@ -145,8 +144,6 @@ class ExpenseCubit extends Cubit<ExpenseState> {
   /// not the payer of the expense. Used for activity logging.
   Future<void> updateExpense(Expense expense, {String? actorName}) async {
     try {
-      emit(const ExpenseUpdating());
-
       // Fetch old expense for change detection (before updating)
       Expense? oldExpense;
       if (state is ExpenseLoaded) {
@@ -157,6 +154,7 @@ class ExpenseCubit extends Cubit<ExpenseState> {
         );
       }
 
+      // Don't emit loading state - let Firestore stream handle updates smoothly
       await _expenseRepository.updateExpense(expense);
 
       emit(ExpenseUpdated(expense));

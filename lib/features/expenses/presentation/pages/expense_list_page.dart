@@ -106,6 +106,13 @@ class ExpenseListPage extends StatelessWidget {
         ),
       ),
       body: BlocBuilder<ExpenseCubit, ExpenseState>(
+        buildWhen: (previous, current) {
+          // Only rebuild for states that affect the list display
+          // Prevents rebuilds for transient states like ExpenseCreated, ExpenseUpdated
+          return current is ExpenseLoading ||
+              current is ExpenseError ||
+              current is ExpenseLoaded;
+        },
         builder: (context, state) {
           if (state is ExpenseLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -188,6 +195,7 @@ class ExpenseListPage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final expense = state.expenses[index];
                     return ExpenseCard(
+                      key: ValueKey(expense.id),
                       expense: expense,
                       participants: participants,
                       onTap: () {

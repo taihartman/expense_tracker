@@ -72,6 +72,14 @@ class Expense {
   /// Full audit trail with item contributions
   final Map<String, ParticipantBreakdown>? participantBreakdown;
 
+  /// Expected subtotal from receipt (user-entered, for itemized expenses)
+  /// Used for validation warnings when items don't match receipt
+  final Decimal? expectedSubtotal;
+
+  /// Tax amount from receipt (user-entered, absolute value, for itemized expenses)
+  /// Used for receipt-based itemized splitting
+  final Decimal? taxAmount;
+
   const Expense({
     required this.id,
     required this.tripId,
@@ -90,6 +98,8 @@ class Expense {
     this.allocation,
     this.participantAmounts,
     this.participantBreakdown,
+    this.expectedSubtotal,
+    this.taxAmount,
   });
 
   /// Calculate shares for each participant based on split type
@@ -272,6 +282,8 @@ class Expense {
     AllocationRule? allocation,
     Map<String, Decimal>? participantAmounts,
     Map<String, ParticipantBreakdown>? participantBreakdown,
+    Decimal? expectedSubtotal,
+    Decimal? taxAmount,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -291,6 +303,8 @@ class Expense {
       allocation: allocation ?? this.allocation,
       participantAmounts: participantAmounts ?? this.participantAmounts,
       participantBreakdown: participantBreakdown ?? this.participantBreakdown,
+      expectedSubtotal: expectedSubtotal ?? this.expectedSubtotal,
+      taxAmount: taxAmount ?? this.taxAmount,
     );
   }
 

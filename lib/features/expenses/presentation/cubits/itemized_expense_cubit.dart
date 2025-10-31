@@ -141,6 +141,28 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
         expense.extras ??
         const Extras(tax: null, tip: null, fees: [], discounts: []);
 
+    // Use receipt info from expense if available, otherwise calculate from items
+    final expectedSubtotal =
+        expense.expectedSubtotal ??
+        expense.items!.fold<Decimal>(
+          Decimal.zero,
+          (sum, item) => sum + item.itemTotal,
+        );
+    debugPrint(
+      '🟡 [Cubit] expectedSubtotal: $expectedSubtotal (from ${expense.expectedSubtotal != null ? "receipt" : "calculated"})',
+    );
+
+    // Use tax amount from expense if available, otherwise extract from extras
+    Decimal? taxAmount = expense.taxAmount;
+    if (taxAmount == null &&
+        extras.tax != null &&
+        extras.tax!.type == 'amount') {
+      taxAmount = extras.tax!.value;
+      debugPrint('🟡 [Cubit] Extracted taxAmount from extras: $taxAmount');
+    } else if (taxAmount != null) {
+      debugPrint('🟡 [Cubit] Loaded taxAmount from receipt: $taxAmount');
+    }
+
     debugPrint(
       '🟡 [Cubit] Emitting ItemizedExpenseEditing state (edit mode)...',
     );
@@ -154,6 +176,8 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
         items: List.from(expense.items!), // Copy list
         extras: extras,
         allocation: allocation,
+        expectedSubtotal: expectedSubtotal,
+        taxAmount: taxAmount,
         originalDate: expense.date,
         originalDescription: expense.description,
         originalCategoryId: expense.categoryId,
@@ -468,6 +492,9 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
         allocation: readyState.draft.allocation,
         participantAmounts: readyState.participantAmounts,
         participantBreakdown: readyState.participantBreakdown,
+        // Receipt info
+        expectedSubtotal: readyState.draft.expectedSubtotal,
+        taxAmount: readyState.draft.taxAmount,
       );
 
       // Save via repository (update or create)

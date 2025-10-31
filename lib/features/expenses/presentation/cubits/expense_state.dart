@@ -27,7 +27,7 @@ class ExpenseLoaded extends ExpenseState {
   const ExpenseLoaded({required this.expenses, this.selectedExpense});
 
   @override
-  List<Object?> get props => [expenses, selectedExpense];
+  List<Object?> get props => [identityHashCode(expenses), selectedExpense];
 
   ExpenseLoaded copyWith({List<Expense>? expenses, Expense? selectedExpense}) {
     return ExpenseLoaded(
