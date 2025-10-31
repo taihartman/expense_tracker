@@ -38,6 +38,12 @@ function generateRecoveryCode(): string {
  * - Generates and saves a recovery code for trips without one
  * - Returns a summary of the operation
  */
+// Export migration functions
+export {migrateCategoriesFunction as migrateCategories} from "./migrateCategories";
+export {migrateFromTripSpecificFunction as migrateFromTripSpecific} from "./migrateFromTripSpecificCategories";
+// Export diagnostic function
+export {diagnosticCategories} from "./diagnostics";
+
 export const backfillRecoveryCodes = onRequest(async (request, response) => {
   logger.info("🚀 Starting recovery code backfill...");
 

@@ -7,10 +7,58 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Categories: Top-level collection (read/write if authenticated)
-    // TODO: Move to subcollection under trips for better security and data isolation
+    // Helper: Validate category name format
+    function isValidCategoryName(name) {
+      return name is string
+          && name.size() >= 1
+          && name.size() <= 50
+          && name.matches('^[\\p{L}\\p{N}\\s\'\\-&]+$');
+    }
+
+    // Helper: Check if user is rate limited (3 creations in 5 minutes)
+    function isRateLimited(userId) {
+      let fiveMinutesAgo = request.time - duration.value(5, 'm');
+      let recentLogs = firestore.get(/databases/$(database)/documents/categoryCreationLogs)
+        .data
+        .where('userId', '==', userId)
+        .where('createdAt', '>', fiveMinutesAgo);
+      return recentLogs.size() >= 3;
+    }
+
+    // Helper: Check if category name already exists (case-insensitive)
+    function isDuplicateCategoryName(nameLowercase) {
+      let existing = firestore.get(/databases/$(database)/documents/categories)
+        .data
+        .where('nameLowercase', '==', nameLowercase);
+      return existing.size() > 0;
+    }
+
+    // Global Categories: Top-level shared collection
+    // Anyone can read, create with validation, but updates/deletes forbidden
     match /categories/{categoryId} {
-      allow read, write: if isAuthenticated();
+      // Anyone can read categories
+      allow read: if isAuthenticated();
+
+      // Create with validation, rate limiting, and duplicate checking
+      allow create: if isAuthenticated()
+                    && isValidCategoryName(request.resource.data.name)
+                    && !isRateLimited(request.auth.uid)
+                    && !isDuplicateCategoryName(request.resource.data.nameLowercase);
+
+      // No updates or deletes (categories are immutable to preserve expense references)
+      allow update, delete: if false;
+    }
+
+    // Category Creation Logs: Rate limiting tracking
+    match /categoryCreationLogs/{logId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.createdAt == request.time;
+
+      // No updates or deletes
+      allow update, delete: if false;
     }
 
     // Expenses: Top-level collection (read/write if authenticated)

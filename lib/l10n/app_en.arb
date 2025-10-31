@@ -644,6 +644,29 @@
   "transferBreakdownPaidPrefix": "Paid: ",
   "transferBreakdownOwesPrefix": "Owes: ",
 
+  "transferFilterAll": "All",
+  "transferFilterOwes": "Owes",
+  "transferFilterOwed": "Owed",
+  "transferFilterActive": "Filtering {name}'s transfers",
+  "@transferFilterActive": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferFilterClear": "Clear filter",
+  "transferFilterHint": "Tap any person above to filter transfers",
+  "transferFilterNoResults": "No transfers for {name}",
+  "@transferFilterNoResults": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferNameChipHint": "Tip: Tap any name to filter transfers",
+
   "summaryTableTitle": "Everyone's Summary",
   "summaryTableColumnPerson": "Person",
   "summaryTableColumnToReceive": "To Receive",
@@ -966,5 +989,46 @@
         "type": "String"
       }
     }
-  }
+  },
+
+
+  "categoryBrowserTitle": "Select Category",
+  "categoryBrowserSearchHint": "Search categories...",
+  "categoryBrowserNoResults": "No categories found",
+  "categoryBrowserLoading": "Loading categories...",
+  "categoryBrowserCreateNew": "Create \"{name}\"",
+  "@categoryBrowserCreateNew": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryBrowserOtherChip": "Other",
+
+  "categoryCreationDialogTitle": "Create Category",
+  "categoryCreationFieldName": "Category Name",
+  "categoryCreationFieldNameHint": "e.g., Groceries, Gas, Dining",
+  "categoryCreationFieldIcon": "Icon",
+  "categoryCreationFieldColor": "Color",
+  "categoryCreationButtonCreate": "Create",
+  "categoryCreationButtonCreateNew": "Create New Category",
+  "categoryCreationButtonCancel": "Cancel",
+  "categoryCreationSuccess": "Category created successfully",
+
+  "categoryValidationEmpty": "Category name cannot be empty",
+  "categoryValidationTooLong": "Category name must be 50 characters or less",
+  "categoryValidationInvalidChars": "Category names can only contain letters, numbers, spaces, and basic punctuation",
+  "categoryValidationDuplicate": "This category already exists",
+
+  "categoryRateLimitError": "Please wait a moment before creating more categories",
+  "categoryRateLimitDisabled": "Please wait before creating more categories",
+
+  "categoryIconPickerTitle": "Select Icon",
+  "categoryIconPickerSearchHint": "Search icons...",
+  "categoryIconPickerNoResults": "No icons found",
+
+  "categoryColorPickerTitle": "Select Color",
+
+  "categoryDefaultIconLabel": "label"
 }

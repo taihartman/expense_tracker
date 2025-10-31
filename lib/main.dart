@@ -20,6 +20,8 @@ import 'features/expenses/data/repositories/expense_repository_impl.dart';
 import 'features/expenses/domain/repositories/expense_repository.dart';
 import 'features/categories/data/repositories/category_repository_impl.dart';
 import 'features/categories/domain/repositories/category_repository.dart';
+import 'features/categories/data/services/rate_limiter_service.dart';
+import 'features/categories/presentation/cubit/category_cubit.dart';
 import 'features/settlements/data/repositories/settlement_repository_impl.dart';
 import 'features/settlements/domain/repositories/settlement_repository.dart';
 import 'features/settlements/data/repositories/settled_transfer_repository_impl.dart';
@@ -160,8 +162,12 @@ class ExpenseTrackerApp extends StatelessWidget {
   static final _expenseRepository = ExpenseRepositoryImpl(
     firestoreService: _firestoreService,
   );
+  static final _rateLimiterService = RateLimiterService(
+    firestoreService: _firestoreService,
+  );
   static final _categoryRepository = CategoryRepositoryImpl(
     firestoreService: _firestoreService,
+    rateLimiterService: _rateLimiterService,
   );
   static final _settledTransferRepository = SettledTransferRepositoryImpl(
     firestoreService: _firestoreService,
@@ -306,6 +312,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               return ExpenseCubit(
                 expenseRepository: _expenseRepository,
                 activityLoggerService: _activityLoggerService,
+                categoryRepository: _categoryRepository,
               );
             },
           ),
@@ -330,6 +337,15 @@ class ExpenseTrackerApp extends StatelessWidget {
                 localStorageService: localStorageService,
                 tripRepository: _tripRepository,
                 activityLoggerService: _activityLoggerService,
+              );
+            },
+          ),
+          BlocProvider(
+            create: (context) {
+              _log('🔵 Creating CategoryCubit...');
+              return CategoryCubit(
+                categoryRepository: _categoryRepository,
+                rateLimiterService: _rateLimiterService,
               );
             },
           ),

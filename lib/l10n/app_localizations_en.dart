@@ -986,6 +986,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transferBreakdownOwesPrefix => 'Owes: ';
 
   @override
+  String get transferFilterAll => 'All';
+
+  @override
+  String get transferFilterOwes => 'Owes';
+
+  @override
+  String get transferFilterOwed => 'Owed';
+
+  @override
+  String transferFilterActive(String name) {
+    return 'Filtering $name\'s transfers';
+  }
+
+  @override
+  String get transferFilterClear => 'Clear filter';
+
+  @override
+  String get transferFilterHint => 'Tap any person above to filter transfers';
+
+  @override
+  String transferFilterNoResults(String name) {
+    return 'No transfers for $name';
+  }
+
+  @override
+  String get transferNameChipHint => 'Tip: Tap any name to filter transfers';
+
+  @override
   String get summaryTableTitle => 'Everyone\'s Summary';
 
   @override
@@ -1517,4 +1545,88 @@ class AppLocalizationsEn extends AppLocalizations {
   String tripRecoveryCopyFailed(String error) {
     return 'Failed to copy: $error';
   }
+
+  @override
+  String get categoryBrowserTitle => 'Select Category';
+
+  @override
+  String get categoryBrowserSearchHint => 'Search categories...';
+
+  @override
+  String get categoryBrowserNoResults => 'No categories found';
+
+  @override
+  String get categoryBrowserLoading => 'Loading categories...';
+
+  @override
+  String categoryBrowserCreateNew(String name) {
+    return 'Create \"$name\"';
+  }
+
+  @override
+  String get categoryBrowserOtherChip => 'Other';
+
+  @override
+  String get categoryCreationDialogTitle => 'Create Category';
+
+  @override
+  String get categoryCreationFieldName => 'Category Name';
+
+  @override
+  String get categoryCreationFieldNameHint => 'e.g., Groceries, Gas, Dining';
+
+  @override
+  String get categoryCreationFieldIcon => 'Icon';
+
+  @override
+  String get categoryCreationFieldColor => 'Color';
+
+  @override
+  String get categoryCreationButtonCreate => 'Create';
+
+  @override
+  String get categoryCreationButtonCreateNew => 'Create New Category';
+
+  @override
+  String get categoryCreationButtonCancel => 'Cancel';
+
+  @override
+  String get categoryCreationSuccess => 'Category created successfully';
+
+  @override
+  String get categoryValidationEmpty => 'Category name cannot be empty';
+
+  @override
+  String get categoryValidationTooLong =>
+      'Category name must be 50 characters or less';
+
+  @override
+  String get categoryValidationInvalidChars =>
+      'Category names can only contain letters, numbers, spaces, and basic punctuation';
+
+  @override
+  String get categoryValidationDuplicate => 'This category already exists';
+
+  @override
+  String get categoryRateLimitError =>
+      'Please wait a moment before creating more categories';
+
+  @override
+  String get categoryRateLimitDisabled =>
+      'Please wait before creating more categories';
+
+  @override
+  String get categoryIconPickerTitle => 'Select Icon';
+
+  @override
+  String get categoryIconPickerSearchHint => 'Search icons...';
+
+  @override
+  String get categoryIconPickerNoResults => 'No icons found';
+
+  @override
+  String get categoryColorPickerTitle => 'Select Color';
+
+  @override
+  String get categoryDefaultIconLabel => 'label';
 }
