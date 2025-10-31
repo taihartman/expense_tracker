@@ -10,7 +10,10 @@ import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../categories/presentation/cubit/category_cubit.dart';
 import '../../../categories/presentation/cubit/category_state.dart';
 import '../../../categories/presentation/cubit/category_customization_cubit.dart';
+import '../../../categories/domain/models/category.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../../shared/utils/category_display_helper.dart';
+import '../../../../shared/utils/icon_helper.dart';
 
 /// Card widget displaying expense details
 ///
@@ -34,6 +37,7 @@ class ExpenseCard extends StatefulWidget {
 
 class _ExpenseCardState extends State<ExpenseCard> {
   bool _isExpanded = false;
+  final Map<String, Category> _cachedCategories = {};
 
   String _getParticipantName(String userId) {
     try {
@@ -462,79 +466,93 @@ class _ExpenseCardState extends State<ExpenseCard> {
     );
   }
 
+  /// Renders category icon with customization support
+  Widget _renderCategoryIcon({
+    required Category category,
+    required CategoryCustomizationCubit? customizationCubit,
+  }) {
+    final customization = customizationCubit?.getCustomization(category.id);
+    final displayCategory = DisplayCategory.fromGlobalAndCustomization(
+      globalCategory: category,
+      customization: customization,
+    );
+
+    final iconData = IconHelper.getIconData(displayCategory.icon);
+    final color = _parseColor(displayCategory.color);
+
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(
+        iconData,
+        color: color,
+        size: 20,
+      ),
+    );
+  }
+
   /// Builds category icon with customization support
+  /// Fetches missing categories on-demand to ensure icons always display
   Widget _buildCategoryIcon(BuildContext context, String categoryId) {
     final categoryCubit = context.read<CategoryCubit>();
     final categoryState = categoryCubit.state;
-
-    // Try to get customization if available
     final customizationCubit = context.read<CategoryCustomizationCubit?>();
 
-    // If top categories are loaded, check if our category is there
+    // Check if category is in top categories loaded by cubit
     if (categoryState is CategoryTopLoaded) {
       final category = categoryState.categories
           .where((c) => c.id == categoryId)
           .firstOrNull;
 
       if (category != null) {
-        final customization = customizationCubit?.getCustomization(categoryId);
-        final displayCategory = DisplayCategory.fromGlobalAndCustomization(
-          globalCategory: category,
-          customization: customization,
-        );
-
-        final iconData = _getIconData(displayCategory.icon);
-        final color = _parseColor(displayCategory.color);
-
-        return Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            iconData,
-            color: color,
-            size: 20,
-          ),
+        return _renderCategoryIcon(
+          category: category,
+          customizationCubit: customizationCubit,
         );
       }
     }
 
-    // Fallback: Show generic icon
-    final theme = Theme.of(context);
-    return Icon(
-      Icons.category,
-      color: theme.colorScheme.primary,
-    );
-  }
-
-  /// Maps icon name string to IconData
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'directions_car':
-        return Icons.directions_car;
-      case 'hotel':
-        return Icons.hotel;
-      case 'local_activity':
-        return Icons.local_activity;
-      case 'attractions':
-        return Icons.attractions;
-      case 'shopping_bag':
-        return Icons.shopping_bag;
-      case 'shopping_cart':
-        return Icons.shopping_cart;
-      case 'fastfood':
-        return Icons.fastfood;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'label':
-        return Icons.label;
-      default:
-        return Icons.category;
+    // Check cache for previously fetched category
+    if (_cachedCategories.containsKey(categoryId)) {
+      return _renderCategoryIcon(
+        category: _cachedCategories[categoryId]!,
+        customizationCubit: customizationCubit,
+      );
     }
+
+    // Fallback: Fetch the specific category
+    return FutureBuilder<Category?>(
+      future: context.read<CategoryRepository>().getCategoryById(categoryId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show loading indicator while fetching
+          return const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          );
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          // Cache the fetched category
+          _cachedCategories[categoryId] = snapshot.data!;
+          return _renderCategoryIcon(
+            category: snapshot.data!,
+            customizationCubit: customizationCubit,
+          );
+        }
+
+        // Ultimate fallback: Show generic icon
+        final theme = Theme.of(context);
+        return Icon(
+          Icons.category,
+          color: theme.colorScheme.primary,
+        );
+      },
+    );
   }
 
   /// Parses hex color string to Color

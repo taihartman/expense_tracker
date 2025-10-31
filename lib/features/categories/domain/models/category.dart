@@ -1,3 +1,5 @@
+import '../../../../core/enums/category_icon.dart';
+
 /// Category domain entity
 ///
 /// Represents a category in the global shared pool.
@@ -45,6 +47,24 @@ class Category {
     required this.updatedAt,
   }) : nameLowercase =
            nameLowercase ?? name.toLowerCase(); // Auto-generate if not provided
+
+  /// Returns the type-safe CategoryIcon enum for this category's icon
+  ///
+  /// Converts the string icon name to a CategoryIcon enum value.
+  /// Falls back to CategoryIcon.category if the icon name is not recognized.
+  ///
+  /// This provides compile-time type safety for icon handling and enables
+  /// IDE autocomplete when working with category icons.
+  ///
+  /// Example:
+  /// ```dart
+  /// final category = Category(icon: 'restaurant', ...);
+  /// final iconEnum = category.iconEnum; // CategoryIcon.restaurant
+  /// final iconData = iconEnum.iconData; // Icons.restaurant
+  /// ```
+  CategoryIcon get iconEnum {
+    return CategoryIcon.tryFromString(icon) ?? CategoryIcon.category;
+  }
 
   /// Validation rules for category creation/update
   ///

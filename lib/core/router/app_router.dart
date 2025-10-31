@@ -276,7 +276,16 @@ class AppRouter {
         path: '/trips/:tripId/expenses',
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
-          return ExpenseListPage(tripId: tripId);
+
+          // Wrap with trip-scoped CategoryCustomizationCubit for category display
+          return BlocProvider(
+            create: (context) => CategoryCustomizationCubit(
+              repository: context.read<CategoryCustomizationRepository>(),
+              tripId: tripId,
+              activityLogRepository: context.read<ActivityLogRepository>(),
+            )..loadCustomizations(),
+            child: ExpenseListPage(tripId: tripId),
+          );
         },
       ),
       GoRoute(
@@ -321,7 +330,16 @@ class AppRouter {
         path: '/trips/:tripId/settlement',
         builder: (context, state) {
           final tripId = state.pathParameters['tripId']!;
-          return SettlementSummaryPage(tripId: tripId);
+
+          // Wrap with trip-scoped CategoryCustomizationCubit for category display
+          return BlocProvider(
+            create: (context) => CategoryCustomizationCubit(
+              repository: context.read<CategoryCustomizationRepository>(),
+              tripId: tripId,
+              activityLogRepository: context.read<ActivityLogRepository>(),
+            )..loadCustomizations(),
+            child: SettlementSummaryPage(tripId: tripId),
+          );
         },
       ),
     ],
@@ -386,8 +404,19 @@ class _HomePageContent extends StatelessWidget {
                 if (state is TripLoaded && state.selectedTrip != null) {
                   final tripId = state.selectedTrip!.id;
 
-                  // No need to call loadExpenses here - BlocListener handles it
-                  return ExpenseListPage(tripId: tripId);
+                  // Wrap with trip-scoped CategoryCustomizationCubit for category display
+                  // This ensures category customizations are visible on the home page
+                  return BlocProvider(
+                    key: ValueKey('category_customization_$tripId'),
+                    create: (context) => CategoryCustomizationCubit(
+                      repository: context
+                          .read<CategoryCustomizationRepository>(),
+                      tripId: tripId,
+                      activityLogRepository: context
+                          .read<ActivityLogRepository>(),
+                    )..loadCustomizations(),
+                    child: ExpenseListPage(tripId: tripId),
+                  );
                 }
 
                 if (state is TripLoading) {

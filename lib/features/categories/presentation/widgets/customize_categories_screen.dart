@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/utils/category_display_helper.dart';
+import '../../../../shared/utils/icon_helper.dart';
 import '../../domain/models/category.dart';
 import '../cubit/category_customization_cubit.dart';
 import '../cubit/category_customization_state.dart';
@@ -76,75 +77,6 @@ class _CategoryCustomizationTile extends StatelessWidget {
     required this.tripId,
   });
 
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'directions_car':
-        return Icons.directions_car;
-      case 'hotel':
-        return Icons.hotel;
-      case 'local_activity':
-        return Icons.local_activity;
-      case 'shopping_bag':
-        return Icons.shopping_bag;
-      case 'local_cafe':
-        return Icons.local_cafe;
-      case 'flight':
-        return Icons.flight;
-      case 'train':
-        return Icons.train;
-      case 'directions_bus':
-        return Icons.directions_bus;
-      case 'local_taxi':
-        return Icons.local_taxi;
-      case 'local_gas_station':
-        return Icons.local_gas_station;
-      case 'shopping_cart':
-        return Icons.shopping_cart;
-      case 'local_grocery_store':
-        return Icons.local_grocery_store;
-      case 'local_mall':
-        return Icons.local_mall;
-      case 'movie':
-        return Icons.movie;
-      case 'theater_comedy':
-        return Icons.theater_comedy;
-      case 'sports_soccer':
-        return Icons.sports_soccer;
-      case 'fitness_center':
-        return Icons.fitness_center;
-      case 'spa':
-        return Icons.spa;
-      case 'local_hospital':
-        return Icons.local_hospital;
-      case 'local_pharmacy':
-        return Icons.local_pharmacy;
-      case 'school':
-        return Icons.school;
-      case 'work':
-        return Icons.work;
-      case 'computer':
-        return Icons.computer;
-      case 'phone_android':
-        return Icons.phone_android;
-      case 'home':
-        return Icons.home;
-      case 'pets':
-        return Icons.pets;
-      case 'child_care':
-        return Icons.child_care;
-      case 'local_florist':
-        return Icons.local_florist;
-      case 'fastfood':
-        return Icons.fastfood;
-      case 'local_pizza':
-        return Icons.local_pizza;
-      default:
-        return Icons.category;
-    }
-  }
-
   Color _getColor(String colorHex) {
     try {
       return Color(int.parse(colorHex.replaceFirst('#', '0xFF')));
@@ -178,7 +110,7 @@ class _CategoryCustomizationTile extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  _getIconData(displayCategory.icon),
+                  IconHelper.getIconData(displayCategory.icon),
                   size: 32,
                   color: _getColor(displayCategory.color),
                 ),

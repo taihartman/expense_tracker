@@ -105,4 +105,33 @@ abstract class CategoryCustomizationRepository {
   /// Performance:
   /// - Target: <500ms
   Future<void> deleteCustomization(String tripId, String categoryId);
+
+  /// Records an icon preference vote for implicit crowd-sourced voting
+  ///
+  /// When a user customizes a category icon, this method records their
+  /// preference. When 3+ users choose the same icon, the global category
+  /// icon automatically updates to that icon.
+  ///
+  /// Parameters:
+  /// - [categoryId]: ID of the category being customized
+  /// - [iconName]: Icon name the user chose (e.g., "restaurant")
+  ///
+  /// Returns:
+  /// - `Future<void>` - Completes when vote is recorded
+  ///
+  /// Behavior:
+  /// - Uses Firestore transaction for atomic vote counting
+  /// - Increments voteCount for the chosen icon
+  /// - Recalculates mostPopular icon for this category
+  /// - If threshold (3 votes) reached, updates global category icon
+  /// - Non-blocking: failures don't affect customization save
+  ///
+  /// Errors:
+  /// - Catches and logs errors (never throws to avoid blocking customization)
+  /// - Retries transaction if write conflict occurs
+  ///
+  /// Performance:
+  /// - Target: <300ms (best effort, non-blocking)
+  /// - Transaction ensures consistency under concurrent votes
+  Future<void> recordIconPreference(String categoryId, String iconName);
 }

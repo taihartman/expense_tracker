@@ -5,6 +5,8 @@ import '../cubit/category_state.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/validators/category_validator.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../domain/models/category.dart';
+import '../../domain/repositories/category_repository.dart';
 import 'category_icon_picker.dart';
 import 'category_color_picker.dart';
 
@@ -43,10 +45,59 @@ class _CategoryCreationBottomSheetState
   // Validation error
   String? _nameError;
 
+  // Similar category detection
+  List<SimilarCategoryMatch> _similarCategories = [];
+  bool _checkingSimilarity = false;
+  bool _dismissedSimilarityWarning = false;
+
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  /// Check for similar categories as user types
+  Future<void> _checkForSimilarCategories(String name) async {
+    if (name.trim().length < 3) {
+      // Don't check until user has typed at least 3 characters
+      setState(() {
+        _similarCategories = [];
+        _dismissedSimilarityWarning = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _checkingSimilarity = true;
+    });
+
+    try {
+      final repository = context.read<CategoryRepository>();
+      final matches = await repository.findSimilarCategories(name);
+
+      if (mounted) {
+        setState(() {
+          _similarCategories = matches;
+          _checkingSimilarity = false;
+          _dismissedSimilarityWarning = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _checkingSimilarity = false;
+        });
+      }
+    }
+  }
+
+  /// User selected an existing similar category
+  void _useExistingCategory(Category category) {
+    // Select the category (same as if they tapped it in search)
+    widget.onCategoryCreated();
+    Navigator.of(context).pop();
+    // Note: The actual category selection happens in the parent widget
+    // This just dismisses the creation sheet
   }
 
   String? _validateName(String? value) {
@@ -211,10 +262,19 @@ class _CategoryCreationBottomSheetState
                                   setState(() {
                                     _nameError = _validateName(value);
                                   });
+                                  // Check for similar categories
+                                  _checkForSimilarCategories(value);
                                 },
                               ),
 
-                              const SizedBox(height: AppTheme.spacing3),
+                              const SizedBox(height: AppTheme.spacing2),
+
+                              // Similar Category Warning
+                              if (_similarCategories.isNotEmpty &&
+                                  !_dismissedSimilarityWarning)
+                                _buildSimilarityWarning(theme),
+
+                              const SizedBox(height: AppTheme.spacing2),
 
                               // Icon picker
                               Text(
@@ -303,6 +363,97 @@ class _CategoryCreationBottomSheetState
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Build similarity warning banner with existing category suggestions
+  Widget _buildSimilarityWarning(ThemeData theme) {
+    final topMatch = _similarCategories.first;
+
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spacing2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(AppTheme.spacing1),
+        border: Border.all(
+          color: theme.colorScheme.tertiary,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: theme.colorScheme.onTertiaryContainer,
+                size: 20,
+              ),
+              const SizedBox(width: AppTheme.spacing1),
+              Expanded(
+                child: Text(
+                  'Similar category found',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.onTertiaryContainer,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 18),
+                color: theme.colorScheme.onTertiaryContainer,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () {
+                  setState(() {
+                    _dismissedSimilarityWarning = true;
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacing1),
+          Text(
+            '"${topMatch.category.name}" already exists (used ${topMatch.category.usageCount} times)',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onTertiaryContainer,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacing2),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => _useExistingCategory(topMatch.category),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: theme.colorScheme.onTertiaryContainer,
+                    side: BorderSide(
+                      color: theme.colorScheme.onTertiaryContainer,
+                    ),
+                  ),
+                  child: const Text('Use Existing'),
+                ),
+              ),
+              const SizedBox(width: AppTheme.spacing1),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () {
+                    setState(() {
+                      _dismissedSimilarityWarning = true;
+                    });
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: theme.colorScheme.onTertiaryContainer,
+                    foregroundColor: theme.colorScheme.tertiaryContainer,
+                  ),
+                  child: const Text('Create Anyway'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

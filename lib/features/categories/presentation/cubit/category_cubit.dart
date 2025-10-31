@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/validators/category_validator.dart';
 import '../../data/services/rate_limiter_service.dart';
@@ -43,6 +44,10 @@ class CategoryCubit extends Cubit<CategoryState> {
   /// - Expense form chip selector (top 5)
   /// - Category browser initial view (top 10+)
   void loadTopCategories({int limit = 5}) {
+    debugPrint(
+      '🔄 [CategoryCubit] loadTopCategories called with limit: $limit',
+    );
+    debugPrint('📍 [CategoryCubit] Stack trace:\n${StackTrace.current}');
     emit(const CategoryLoadingTop());
 
     _topCategoriesSubscription?.cancel();
@@ -75,7 +80,8 @@ class CategoryCubit extends Cubit<CategoryState> {
   /// (e.g., after closing "Browse & Create" bottom sheet).
   void loadTopCategoriesIfStale({int limit = 5}) {
     final now = DateTime.now();
-    final isStale = _lastTopCategoriesRefresh == null ||
+    final isStale =
+        _lastTopCategoriesRefresh == null ||
         now.difference(_lastTopCategoriesRefresh!) > _cacheDuration;
 
     if (isStale) {

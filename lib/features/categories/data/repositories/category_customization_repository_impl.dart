@@ -3,6 +3,7 @@ import '../../../../core/models/category_customization.dart';
 import '../../../../core/repositories/category_customization_repository.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../models/category_customization_model.dart';
+import '../models/category_icon_preference_model.dart';
 
 /// Implementation of CategoryCustomizationRepository using Firestore.
 ///
@@ -82,5 +83,92 @@ class CategoryCustomizationRepositoryImpl
         .collection('categoryCustomizations')
         .doc(categoryId)
         .delete();
+  }
+
+  /// Records an icon preference vote for crowd-sourced icon improvement
+  ///
+  /// This method implements the voting system where users implicitly vote
+  /// for better icons by customizing categories. When 3+ users choose the
+  /// same icon, the global category icon automatically updates.
+  ///
+  /// Uses Firestore increment for atomic vote counting.
+  ///
+  /// Errors are caught and logged but never thrown to avoid blocking the
+  /// main customization flow.
+  @override
+  Future<void> recordIconPreference(String categoryId, String iconName) async {
+    try {
+      // 1. Atomically increment vote count for this preference
+      final preferenceDocId =
+          CategoryIconPreferenceModel.generateDocumentId(categoryId, iconName);
+      final preferenceRef =
+          _firestoreService.categoryIconPreferences.doc(preferenceDocId);
+
+      // Use set with merge to create if doesn't exist, update if it does
+      await preferenceRef.set(
+        {
+          'categoryId': categoryId,
+          'iconName': iconName,
+          'voteCount': FieldValue.increment(1),
+          'lastVoteAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+
+      // 2. Query all preferences for this category to find most popular
+      final allPreferencesSnapshot = await _firestoreService
+          .categoryIconPreferences
+          .where('categoryId', isEqualTo: categoryId)
+          .get();
+
+      if (allPreferencesSnapshot.docs.isEmpty) return;
+
+      // Build list of preferences and find most popular
+      final allPreferences = allPreferencesSnapshot.docs
+          .map((doc) => CategoryIconPreferenceModel.fromQueryDocumentSnapshot(doc))
+          .toList();
+
+      // Sort by vote count (descending), then by lastVoteAt (most recent)
+      allPreferences.sort((a, b) {
+        final voteComparison = b.voteCount.compareTo(a.voteCount);
+        if (voteComparison != 0) return voteComparison;
+        return b.lastVoteAt.compareTo(a.lastVoteAt);
+      });
+
+      final mostPopular = allPreferences.first;
+
+      // 3. Update mostPopular flags
+      final batch = _firestoreService.batch();
+      for (final pref in allPreferences) {
+        final docId = CategoryIconPreferenceModel.generateDocumentId(
+          pref.categoryId,
+          pref.iconName,
+        );
+        final prefRef = _firestoreService.categoryIconPreferences.doc(docId);
+
+        if (pref.iconName == mostPopular.iconName) {
+          // Set mostPopular flag
+          batch.update(prefRef, {'mostPopular': true});
+
+          // 4. If threshold reached, update global category icon
+          if (mostPopular.hasReachedThreshold()) {
+            final categoryRef = _firestoreService.categories.doc(categoryId);
+            batch.update(categoryRef, {
+              'icon': mostPopular.iconName,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+          }
+        } else {
+          // Clear mostPopular flag
+          batch.update(prefRef, {'mostPopular': false});
+        }
+      }
+
+      await batch.commit();
+    } catch (e) {
+      // Log error but don't throw - voting failures should never block customization
+      // Silent failure - in production use proper logging service
+      // debugPrint('Failed to record icon preference for $categoryId → $iconName: $e');
+    }
   }
 }

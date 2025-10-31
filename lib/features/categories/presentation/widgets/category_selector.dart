@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/category.dart';
+import '../../domain/repositories/category_repository.dart';
 import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
 import '../cubit/category_customization_cubit.dart';
@@ -8,6 +9,7 @@ import 'category_browser_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../shared/utils/category_display_helper.dart';
+import '../../../../shared/utils/icon_helper.dart';
 
 /// Horizontal scrollable category selector with top 5 popular categories
 ///
@@ -31,31 +33,75 @@ class CategorySelector extends StatefulWidget {
 }
 
 class _CategorySelectorState extends State<CategorySelector> {
+  Category? _selectedCategory;
+  List<Category>? _cachedCategories; // Cache last successful load
+
   @override
   void initState() {
     super.initState();
-    // Load top 5 categories when widget initializes
-    context.read<CategoryCubit>().loadTopCategories(limit: 5);
+    debugPrint(
+      '🔵 [CategorySelector] initState - selectedId: ${widget.selectedCategoryId}',
+    );
+    // Load top 5 categories after first frame to avoid state changes during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<CategoryCubit>().loadTopCategories(limit: 5);
+      }
+    });
+    // Load selected category if one is set
+    _loadSelectedCategory();
   }
 
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'directions_car':
-        return Icons.directions_car;
-      case 'hotel':
-        return Icons.hotel;
-      case 'local_activity':
-        return Icons.local_activity;
-      case 'shopping_bag':
-        return Icons.shopping_bag;
-      case 'more_horiz':
-        return Icons.more_horiz;
-      case 'label':
-        return Icons.label;
-      default:
-        return Icons.category;
+  @override
+  void didUpdateWidget(CategorySelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    debugPrint(
+      '🟡 [CategorySelector] didUpdateWidget - old: ${oldWidget.selectedCategoryId}, new: ${widget.selectedCategoryId}',
+    );
+    // Reload selected category if it changed
+    if (widget.selectedCategoryId != oldWidget.selectedCategoryId) {
+      debugPrint(
+        '🟢 [CategorySelector] Selection changed, loading selected category',
+      );
+      _loadSelectedCategory();
+    }
+  }
+
+  Future<void> _loadSelectedCategory() async {
+    debugPrint(
+      '🔍 [CategorySelector] _loadSelectedCategory called for: ${widget.selectedCategoryId}',
+    );
+    if (widget.selectedCategoryId == null) {
+      if (mounted) {
+        setState(() {
+          _selectedCategory = null;
+        });
+      }
+      return;
+    }
+
+    try {
+      final repository = context.read<CategoryRepository>();
+      final category = await repository.getCategoryById(
+        widget.selectedCategoryId!,
+      );
+
+      debugPrint(
+        '✅ [CategorySelector] Loaded selected category: ${category?.name}',
+      );
+      if (mounted) {
+        setState(() {
+          _selectedCategory = category;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ [CategorySelector] Failed to load category: $e');
+      // If we can't fetch the category, just clear it
+      if (mounted) {
+        setState(() {
+          _selectedCategory = null;
+        });
+      }
     }
   }
 
@@ -83,7 +129,7 @@ class _CategorySelectorState extends State<CategorySelector> {
     );
 
     final color = _getColor(displayCategory.color);
-    final icon = _getIconData(displayCategory.icon);
+    final icon = IconHelper.getIconData(displayCategory.icon);
 
     return FilterChip(
       selected: isSelected,
@@ -138,17 +184,10 @@ class _CategorySelectorState extends State<CategorySelector> {
             builder: (context) => CategoryBrowserBottomSheet(
               onCategorySelected: (category) {
                 widget.onCategoryChanged(category.id);
-                Navigator.of(context).pop(category.id);
+                // CategoryBrowserBottomSheet handles its own dismissal
               },
             ),
           );
-
-          // Restore top categories state when sheet closes (with 24h cache)
-          // This ensures chips remain visible even if user cancels
-          // Only queries Firebase if cache is stale (24+ hours old)
-          if (mounted) {
-            context.read<CategoryCubit>().loadTopCategoriesIfStale(limit: 5);
-          }
         }
       },
       selectedColor: color.withValues(alpha: 0.3),
@@ -180,22 +219,56 @@ class _CategorySelectorState extends State<CategorySelector> {
           height: 50,
           child: BlocBuilder<CategoryCubit, CategoryState>(
             builder: (context, state) {
-              // Loading state
-              if (state is CategoryLoadingTop) {
-                return const Center(child: CircularProgressIndicator());
+              // Cache successful loads
+              if (state is CategoryTopLoaded) {
+                _cachedCategories = state.categories;
               }
 
-              // Error or empty state - show only "Other" chip
+              // Loading state - show cached categories if available
+              if (state is CategoryLoadingTop) {
+                if (_cachedCategories == null) {
+                  // Only show loading spinner on first load (no cache yet)
+                  return const Center(child: CircularProgressIndicator());
+                }
+                // Otherwise fall through to render with cached data
+                debugPrint(
+                  '🔄 [CategorySelector] Loading state but showing cached ${_cachedCategories!.length} categories',
+                );
+              }
+
+              // Error or empty state - show only "Other" chip (but try cached first)
               if (state is CategoryError || state is CategoryInitial) {
+                if (_cachedCategories == null || _cachedCategories!.isEmpty) {
+                  return ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _buildOtherChip(isSelected: false, theme: theme),
+                    ],
+                  );
+                }
+                // Otherwise fall through to render with cached data
+                debugPrint(
+                  '🔄 [CategorySelector] Error/Initial state but showing cached ${_cachedCategories!.length} categories',
+                );
+              }
+
+              // Get categories from state or cache
+              final List<Category> allCategories;
+              if (state is CategoryTopLoaded) {
+                allCategories = state.categories;
+              } else if (_cachedCategories != null) {
+                allCategories = _cachedCategories!;
+              } else {
+                // Fallback - show only "Other" chip
                 return ListView(
                   scrollDirection: Axis.horizontal,
                   children: [_buildOtherChip(isSelected: false, theme: theme)],
                 );
               }
 
-              // Loaded state
-              if (state is CategoryTopLoaded) {
-                final allCategories = state.categories;
+              // Render chips with categories
+              {
+                // final allCategories = state.categories; // Removed - using variable from above
 
                 // Empty state - show only "Browse & Create" button
                 if (allCategories.isEmpty) {
@@ -208,19 +281,33 @@ class _CategorySelectorState extends State<CategorySelector> {
                 }
 
                 // Extract "Other" category and build display order
-                // Order: Top 4 popular (non-Other) → "Other" → "Browse & Create"
+                // Order: Top 3 popular (non-Other) → Selected (if not in top) → "Other" → "Browse & Create"
                 final otherCategory = allCategories
                     .where((c) => c.id.toLowerCase() == 'other')
                     .firstOrNull;
 
+                // Check if selected category is already in the top categories
+                final selectedIsInTop =
+                    widget.selectedCategoryId != null &&
+                    allCategories.any((c) => c.id == widget.selectedCategoryId);
+
+                // Get top 3 or 4 categories depending on whether we need to show selected
+                final maxTopCategories = selectedIsInTop ? 4 : 3;
                 final nonOtherCategories = allCategories
                     .where((c) => c.id.toLowerCase() != 'other')
-                    .take(4)
+                    .take(maxTopCategories)
                     .toList();
 
-                // Calculate total items: top 4 + "Other" (if exists) + "Browse & Create"
+                // Calculate total items: top 3/4 + selected (if not in top) + "Other" (if exists) + "Browse & Create"
                 final hasOtherCategory = otherCategory != null;
-                final itemCount = nonOtherCategories.length +
+                final hasSelectedNotInTop =
+                    !selectedIsInTop &&
+                    _selectedCategory != null &&
+                    _selectedCategory!.id.toLowerCase() != 'other';
+
+                final itemCount =
+                    nonOtherCategories.length +
+                    (hasSelectedNotInTop ? 1 : 0) +
                     (hasOtherCategory ? 1 : 0) +
                     1; // +1 for "Browse & Create"
 
@@ -230,20 +317,35 @@ class _CategorySelectorState extends State<CategorySelector> {
                   separatorBuilder: (context, index) =>
                       const SizedBox(width: AppTheme.spacing1),
                   itemBuilder: (context, index) {
-                    // First 4 positions: non-Other categories
+                    var currentIndex = 0;
+
+                    // First N positions: non-Other top categories
                     if (index < nonOtherCategories.length) {
                       final category = nonOtherCategories[index];
-                      final isSelected = widget.selectedCategoryId == category.id;
+                      final isSelected =
+                          widget.selectedCategoryId == category.id;
                       return _buildCategoryChip(
                         category: category,
                         isSelected: isSelected,
                         theme: theme,
                       );
                     }
+                    currentIndex = nonOtherCategories.length;
+
+                    // Next position: Selected category (if not in top categories)
+                    if (hasSelectedNotInTop && index == currentIndex) {
+                      return _buildCategoryChip(
+                        category: _selectedCategory!,
+                        isSelected: true,
+                        theme: theme,
+                      );
+                    }
+                    if (hasSelectedNotInTop) currentIndex++;
 
                     // Next position: "Other" category (if it exists)
-                    if (hasOtherCategory && index == nonOtherCategories.length) {
-                      final isSelected = widget.selectedCategoryId == otherCategory.id;
+                    if (hasOtherCategory && index == currentIndex) {
+                      final isSelected =
+                          widget.selectedCategoryId == otherCategory.id;
                       return _buildCategoryChip(
                         category: otherCategory,
                         isSelected: isSelected,
@@ -256,12 +358,6 @@ class _CategorySelectorState extends State<CategorySelector> {
                   },
                 );
               }
-
-              // Fallback - show only "Other" chip
-              return ListView(
-                scrollDirection: Axis.horizontal,
-                children: [_buildOtherChip(isSelected: false, theme: theme)],
-              );
             },
           ),
         ),
