@@ -222,6 +222,31 @@ class MinimalTransfersView extends StatelessWidget {
                       isSettled: false,
                     );
                   }),
+
+                  // Hint text for tapping names
+                  const SizedBox(height: AppTheme.spacing2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: AppTheme.spacing1),
+                      Expanded(
+                        child: Text(
+                          context.l10n.transferNameChipHint,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                                fontStyle: FontStyle.italic,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
 
                 // Settled Transfers Section
@@ -475,11 +500,31 @@ class _TransferCardState extends State<_TransferCard> {
                     children: [
                       Row(
                         children: [
-                          _buildPersonChip(context, fromName, isFrom: true),
+                          _buildPersonChip(
+                            context,
+                            fromName,
+                            isFrom: true,
+                            onTap: () {
+                              context.read<SettlementCubit>().setUserFilter(
+                                widget.transfer.fromUserId,
+                                TransferFilterMode.all,
+                              );
+                            },
+                          ),
                           const SizedBox(width: AppTheme.spacing1),
                           const Icon(Icons.arrow_forward, size: 20),
                           const SizedBox(width: AppTheme.spacing1),
-                          _buildPersonChip(context, toName, isFrom: false),
+                          _buildPersonChip(
+                            context,
+                            toName,
+                            isFrom: false,
+                            onTap: () {
+                              context.read<SettlementCubit>().setUserFilter(
+                                widget.transfer.toUserId,
+                                TransferFilterMode.all,
+                              );
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -573,18 +618,23 @@ class _TransferCardState extends State<_TransferCard> {
     BuildContext context,
     String name, {
     required bool isFrom,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isFrom ? Colors.red.shade50 : Colors.green.shade50,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        name,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: isFrom ? Colors.red.shade700 : Colors.green.shade700,
-          fontWeight: FontWeight.w600,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isFrom ? Colors.red.shade50 : Colors.green.shade50,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          name,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isFrom ? Colors.red.shade700 : Colors.green.shade700,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
