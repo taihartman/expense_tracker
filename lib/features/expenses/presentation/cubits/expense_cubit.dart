@@ -157,7 +157,8 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       // Don't emit loading state - let Firestore stream handle updates smoothly
       await _expenseRepository.updateExpense(expense);
 
-      emit(ExpenseUpdated(expense));
+      // Don't emit ExpenseUpdated - let Firestore stream handle the update
+      // This prevents the buildWhen filter from blocking UI updates on mobile
 
       // Log activity using centralized service
       if (_activityLoggerService != null &&

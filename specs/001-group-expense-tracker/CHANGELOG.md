@@ -17,6 +17,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-10-31 - Mobile White Screen Fix
+
+### Fixed
+- **Mobile white screen after editing expense**:
+  - Root cause: `ExpenseCubit.updateExpense()` was emitting `ExpenseUpdated` state after repository update
+  - The `buildWhen` filter in `expense_list_page.dart` was blocking this transient state
+  - Created a timing gap where UI wouldn't rebuild until Firestore stream updated
+  - On mobile, this gap was visible as a white/blank screen
+  - Solution: Removed `ExpenseUpdated` emission to let Firestore stream handle all updates smoothly
+  - Aligns with the same pattern used for `createExpense()` and `deleteExpense()`
+
+### Changed
+- **ExpenseCubit** (`lib/features/expenses/presentation/cubits/expense_cubit.dart`):
+  - Line 160: Removed `emit(ExpenseUpdated(expense))` from `updateExpense()` method
+  - Added comment explaining why stream-based updates are preferred
+
+### Impact
+- ✅ **No white screen on mobile**: Editing expenses now shows immediate updates without blank screen
+- ✅ **Consistent state management**: All CRUD operations now rely on Firestore stream updates
+- ✅ **No transient states**: Eliminates race conditions between manual emissions and stream updates
+
 ## 2025-10-31 - ExpenseLoaded State Equality Fix
 
 ### Fixed
