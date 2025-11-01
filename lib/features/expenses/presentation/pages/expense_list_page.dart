@@ -118,15 +118,32 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
           },
         ),
       ),
-      body: BlocBuilder<ExpenseCubit, ExpenseState>(
-        buildWhen: (previous, current) {
-          // Only rebuild for states that affect the list display
-          // Prevents rebuilds for transient states like ExpenseCreated, ExpenseUpdated
-          return current is ExpenseLoading ||
-              current is ExpenseError ||
-              current is ExpenseLoaded;
+      body: BlocListener<ExpenseCubit, ExpenseState>(
+        listener: (context, state) {
+          // Pre-load categories when expenses are loaded
+          if (state is ExpenseLoaded && state.expenses.isNotEmpty) {
+            // Extract unique category IDs from all expenses
+            final categoryIds = state.expenses
+                .where((expense) => expense.categoryId != null)
+                .map((expense) => expense.categoryId!)
+                .toSet()
+                .toList();
+
+            // Batch load all categories for faster icon display
+            if (categoryIds.isNotEmpty) {
+              context.read<CategoryCubit>().loadCategoriesByIds(categoryIds);
+            }
+          }
         },
-        builder: (context, state) {
+        child: BlocBuilder<ExpenseCubit, ExpenseState>(
+          buildWhen: (previous, current) {
+            // Only rebuild for states that affect the list display
+            // Prevents rebuilds for transient states like ExpenseCreated, ExpenseUpdated
+            return current is ExpenseLoading ||
+                current is ExpenseError ||
+                current is ExpenseLoaded;
+          },
+          builder: (context, state) {
           if (state is ExpenseLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -227,7 +244,8 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
           }
 
           return const SizedBox.shrink();
-        },
+          },
+        ),
       ),
     );
   }

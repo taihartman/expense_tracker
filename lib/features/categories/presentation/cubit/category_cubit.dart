@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/validators/category_validator.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../data/services/rate_limiter_service.dart';
+import '../../domain/models/category.dart';
 import '../../domain/repositories/category_repository.dart';
 import 'category_state.dart';
 
@@ -27,6 +28,10 @@ class CategoryCubit extends Cubit<CategoryState> {
   // Cache tracking for top categories (24-hour TTL)
   DateTime? _lastTopCategoriesRefresh;
   static const _cacheDuration = Duration(hours: 24);
+
+  // Category cache indexed by ID for fast synchronous lookup
+  // Populated from both top categories and batch loads
+  final Map<String, Category> _categoriesById = {};
 
   CategoryCubit({
     required CategoryRepository categoryRepository,
@@ -59,6 +64,11 @@ class CategoryCubit extends Cubit<CategoryState> {
         .getTopCategories(limit: limit)
         .listen(
           (categories) {
+            // Populate category cache for synchronous lookup
+            for (final category in categories) {
+              _categoriesById[category.id] = category;
+            }
+
             emit(CategoryTopLoaded(categories: categories));
             // Track refresh time for cache invalidation
             _lastTopCategoriesRefresh = DateTime.now();
@@ -323,6 +333,91 @@ class CategoryCubit extends Cubit<CategoryState> {
         ),
       );
     }
+  }
+
+  /// Batch load multiple categories by IDs and cache them
+  ///
+  /// More efficient than loading categories individually.
+  /// Uses a single Firestore query (or multiple chunked queries for >10 IDs).
+  ///
+  /// Categories are stored in the internal cache for synchronous lookup
+  /// via getCategoryById().
+  ///
+  /// Emits:
+  /// - CategoryError on failure
+  ///
+  /// Does not emit a specific "loaded" state since this is a background
+  /// caching operation. Use getCategoryById() to access loaded categories.
+  ///
+  /// Parameters:
+  /// - ids: List of category IDs to load
+  ///
+  /// Used for:
+  /// - Pre-loading all categories used in a trip's expenses
+  /// - Avoiding repeated Firebase reads for category icons
+  ///
+  /// Example:
+  /// ```dart
+  /// // Load all categories used in expenses
+  /// final categoryIds = expenses.map((e) => e.categoryId).toSet().toList();
+  /// await cubit.loadCategoriesByIds(categoryIds);
+  ///
+  /// // Now access synchronously
+  /// final category = cubit.getCategoryById('cat1');
+  /// ```
+  Future<void> loadCategoriesByIds(List<String> ids) async {
+    try {
+      final categories = await _categoryRepository.getCategoriesByIds(ids);
+
+      // Populate cache with batch-loaded categories
+      for (final category in categories) {
+        _categoriesById[category.id] = category;
+      }
+
+      // No state emission needed - this is a background caching operation
+    } catch (e) {
+      emit(
+        CategoryError(
+          message: 'Failed to load categories: $e',
+          type: CategoryErrorType.loadFailed,
+        ),
+      );
+    }
+  }
+
+  /// Get a category by ID synchronously from cache
+  ///
+  /// Returns the category if it exists in the cache (from top categories
+  /// or batch loads), otherwise returns null.
+  ///
+  /// This method is synchronous and does NOT make Firebase queries.
+  /// Always load categories first using loadTopCategories() or
+  /// loadCategoriesByIds().
+  ///
+  /// Parameters:
+  /// - categoryId: The category ID to look up
+  ///
+  /// Returns:
+  /// - Category if found in cache
+  /// - null if not in cache
+  ///
+  /// Used for:
+  /// - Displaying category icons in expense cards without FutureBuilder
+  /// - Fast category lookups without triggering Firebase reads
+  ///
+  /// Example:
+  /// ```dart
+  /// // Pre-load categories
+  /// await cubit.loadCategoriesByIds(['cat1', 'cat2']);
+  ///
+  /// // Access synchronously (no Firebase read)
+  /// final category = cubit.getCategoryById('cat1');
+  /// if (category != null) {
+  ///   print('Category: ${category.name}');
+  /// }
+  /// ```
+  Category? getCategoryById(String categoryId) {
+    return _categoriesById[categoryId];
   }
 
   @override

@@ -407,6 +407,14 @@ class MockCategoryRepository extends _i1.Mock
           as _i6.Future<_i3.Category?>);
 
   @override
+  _i6.Future<List<_i3.Category>> getCategoriesByIds(List<String>? ids) =>
+      (super.noSuchMethod(
+            Invocation.method(#getCategoriesByIds, [ids]),
+            returnValue: _i6.Future<List<_i3.Category>>.value(<_i3.Category>[]),
+          )
+          as _i6.Future<List<_i3.Category>>);
+
+  @override
   _i6.Future<_i3.Category> createCategory({
     required String? name,
     String? icon = 'label',

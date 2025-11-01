@@ -38,6 +38,29 @@ abstract class CategoryRepository {
   /// - Resolving category references
   Future<Category?> getCategoryById(String categoryId);
 
+  /// Batch fetch multiple categories by their IDs
+  ///
+  /// More efficient than calling getCategoryById multiple times.
+  /// Uses Firestore whereIn query to fetch all categories in a single read.
+  ///
+  /// Parameters:
+  /// - ids: List of category IDs to fetch (max 10 per query due to Firestore limit)
+  ///
+  /// Returns: List of categories that exist (IDs not found are omitted)
+  ///
+  /// Implementation automatically chunks large ID lists to respect Firestore's
+  /// 10-item whereIn limit.
+  ///
+  /// Used for:
+  /// - Pre-loading all categories used in a trip's expenses
+  /// - Caching category data to avoid repeated Firebase reads
+  ///
+  /// Examples:
+  /// - getCategoriesByIds(['cat1', 'cat2']) → [Category(id: 'cat1'), Category(id: 'cat2')]
+  /// - getCategoriesByIds([]) → []
+  /// - getCategoriesByIds(['cat1', 'nonexistent']) → [Category(id: 'cat1')]
+  Future<List<Category>> getCategoriesByIds(List<String> ids);
+
   /// Create a new category in the global pool
   ///
   /// Parameters:

@@ -409,6 +409,233 @@ void main() {
         expect(result, isFalse);
       });
     });
+
+    group('getCategoriesByIds', () {
+      test('should batch fetch categories by IDs using whereIn query', () async {
+        // Arrange
+        final categoryIds = ['cat1', 'cat2', 'cat3'];
+        final mockDocs = [
+          _createMockDoc('cat1', {
+            'name': 'Meals',
+            'nameLowercase': 'meals',
+            'icon': 'restaurant',
+            'color': '#FF5722',
+            'usageCount': 100,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+          _createMockDoc('cat2', {
+            'name': 'Transport',
+            'nameLowercase': 'transport',
+            'icon': 'directions_car',
+            'color': '#2196F3',
+            'usageCount': 50,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+          _createMockDoc('cat3', {
+            'name': 'Entertainment',
+            'nameLowercase': 'entertainment',
+            'icon': 'movie',
+            'color': '#9C27B0',
+            'usageCount': 25,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+        ];
+
+        when(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: categoryIds,
+          ),
+        ).thenReturn(mockQuery);
+        when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+        when(mockQuerySnapshot.docs).thenReturn(mockDocs);
+
+        // Act
+        final result = await repository.getCategoriesByIds(categoryIds);
+
+        // Assert
+        expect(result, hasLength(3));
+        expect(result[0].id, 'cat1');
+        expect(result[0].name, 'Meals');
+        expect(result[1].id, 'cat2');
+        expect(result[1].name, 'Transport');
+        expect(result[2].id, 'cat3');
+        expect(result[2].name, 'Entertainment');
+
+        verify(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: categoryIds,
+          ),
+        ).called(1);
+      });
+
+      test('should handle empty ID list', () async {
+        // Act
+        final result = await repository.getCategoriesByIds([]);
+
+        // Assert
+        expect(result, isEmpty);
+        // No Firestore call should be made for empty list
+      });
+
+      test('should handle single ID', () async {
+        final mockDocs = [
+          _createMockDoc('cat1', {
+            'name': 'Meals',
+            'nameLowercase': 'meals',
+            'icon': 'restaurant',
+            'color': '#FF5722',
+            'usageCount': 100,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+        ];
+
+        when(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: ['cat1'],
+          ),
+        ).thenReturn(mockQuery);
+        when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+        when(mockQuerySnapshot.docs).thenReturn(mockDocs);
+
+        // Act
+        final result = await repository.getCategoriesByIds(['cat1']);
+
+        // Assert
+        expect(result, hasLength(1));
+        expect(result[0].id, 'cat1');
+      });
+
+      test('should chunk requests for more than 10 IDs (Firestore limit)', () async {
+        // Arrange - 15 category IDs (requires 2 chunks: 10 + 5)
+        final categoryIds = List.generate(15, (i) => 'cat$i');
+        final chunk1Ids = categoryIds.sublist(0, 10);
+        final chunk2Ids = categoryIds.sublist(10, 15);
+
+        // Mock first chunk response (10 categories)
+        final chunk1Docs = List.generate(
+          10,
+          (i) => _createMockDoc('cat$i', {
+            'name': 'Category $i',
+            'nameLowercase': 'category $i',
+            'icon': 'label',
+            'color': '#000000',
+            'usageCount': 0,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+        );
+
+        // Mock second chunk response (5 categories)
+        final chunk2Docs = List.generate(
+          5,
+          (i) => _createMockDoc('cat${i + 10}', {
+            'name': 'Category ${i + 10}',
+            'nameLowercase': 'category ${i + 10}',
+            'icon': 'label',
+            'color': '#000000',
+            'usageCount': 0,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+        );
+
+        final mockQuerySnapshot1 = MockQuerySnapshot();
+        final mockQuerySnapshot2 = MockQuerySnapshot();
+
+        when(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: chunk1Ids,
+          ),
+        ).thenReturn(mockQuery);
+        when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot1);
+        when(mockQuerySnapshot1.docs).thenReturn(chunk1Docs);
+
+        // Need to create a new mock query for the second chunk
+        final mockQuery2 = MockQuery();
+        when(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: chunk2Ids,
+          ),
+        ).thenReturn(mockQuery2);
+        when(mockQuery2.get()).thenAnswer((_) async => mockQuerySnapshot2);
+        when(mockQuerySnapshot2.docs).thenReturn(chunk2Docs);
+
+        // Act
+        final result = await repository.getCategoriesByIds(categoryIds);
+
+        // Assert
+        expect(result, hasLength(15));
+        expect(result[0].id, 'cat0');
+        expect(result[10].id, 'cat10');
+        expect(result[14].id, 'cat14');
+
+        // Verify two separate queries were made
+        verify(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: chunk1Ids,
+          ),
+        ).called(1);
+        verify(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: chunk2Ids,
+          ),
+        ).called(1);
+      });
+
+      test('should handle partial results (some IDs not found)', () async {
+        // Arrange - Request 3 IDs but only 2 exist
+        final categoryIds = ['cat1', 'cat2', 'nonexistent'];
+        final mockDocs = [
+          _createMockDoc('cat1', {
+            'name': 'Meals',
+            'nameLowercase': 'meals',
+            'icon': 'restaurant',
+            'color': '#FF5722',
+            'usageCount': 100,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+          _createMockDoc('cat2', {
+            'name': 'Transport',
+            'nameLowercase': 'transport',
+            'icon': 'directions_car',
+            'color': '#2196F3',
+            'usageCount': 50,
+            'createdAt': Timestamp.fromDate(now),
+            'updatedAt': Timestamp.fromDate(now),
+          }),
+          // 'nonexistent' is not in results
+        ];
+
+        when(
+          mockCategoriesCollection.where(
+            FieldPath.documentId,
+            whereIn: categoryIds,
+          ),
+        ).thenReturn(mockQuery);
+        when(mockQuery.get()).thenAnswer((_) async => mockQuerySnapshot);
+        when(mockQuerySnapshot.docs).thenReturn(mockDocs);
+
+        // Act
+        final result = await repository.getCategoriesByIds(categoryIds);
+
+        // Assert - Should only return the 2 categories that exist
+        expect(result, hasLength(2));
+        expect(result[0].id, 'cat1');
+        expect(result[1].id, 'cat2');
+      });
+    });
   });
 }
 

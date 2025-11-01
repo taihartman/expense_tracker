@@ -5,11 +5,13 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
+import 'package:expense_tracker/features/categories/domain/models/category.dart'
+    as _i5;
 import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart'
     as _i3;
 import 'package:expense_tracker/features/categories/presentation/cubit/category_state.dart'
     as _i2;
-import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
+import 'package:flutter_bloc/flutter_bloc.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -120,6 +122,20 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
           as _i4.Future<void>);
 
   @override
+  _i4.Future<void> loadCategoriesByIds(List<String>? ids) =>
+      (super.noSuchMethod(
+            Invocation.method(#loadCategoriesByIds, [ids]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i5.Category? getCategoryById(String? categoryId) =>
+      (super.noSuchMethod(Invocation.method(#getCategoryById, [categoryId]))
+          as _i5.Category?);
+
+  @override
   _i4.Future<void> close() =>
       (super.noSuchMethod(
             Invocation.method(#close, []),
@@ -135,7 +151,7 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
   );
 
   @override
-  void onChange(_i5.Change<_i2.CategoryState>? change) => super.noSuchMethod(
+  void onChange(_i6.Change<_i2.CategoryState>? change) => super.noSuchMethod(
     Invocation.method(#onChange, [change]),
     returnValueForMissingStub: null,
   );

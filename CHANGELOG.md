@@ -1,3 +1,7 @@
+## 2025-11-01
+
+- Implemented category icon caching system to eliminate redundant Firebase reads. Added CategoryRepository.getCategoriesByIds() for batch fetching, CategoryCubit.loadCategoriesByIds() and getCategoryById() for synchronous caching, ExpenseListPage pre-loading of categories when expenses load, and simplified ExpenseCard to use cached categories without FutureBuilder. Reduces Firebase reads from 5-15 per page view to 0-1 batch read. Includes comprehensive test coverage with 10+ new tests following TDD methodology.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

@@ -8,10 +8,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../categories/presentation/cubit/category_cubit.dart';
-import '../../../categories/presentation/cubit/category_state.dart';
 import '../../../categories/presentation/cubit/category_customization_cubit.dart';
 import '../../../categories/domain/models/category.dart';
-import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../../shared/utils/category_display_helper.dart';
 import '../../../../shared/utils/icon_helper.dart';
 
@@ -37,7 +35,6 @@ class ExpenseCard extends StatefulWidget {
 
 class _ExpenseCardState extends State<ExpenseCard> {
   bool _isExpanded = false;
-  final Map<String, Category> _cachedCategories = {};
 
   String _getParticipantName(String userId) {
     try {
@@ -495,63 +492,30 @@ class _ExpenseCardState extends State<ExpenseCard> {
   }
 
   /// Builds category icon with customization support
-  /// Fetches missing categories on-demand to ensure icons always display
+  /// Builds category icon synchronously from CategoryCubit cache
+  ///
+  /// Categories are pre-loaded by ExpenseListPage when expenses load,
+  /// so this method can synchronously look up categories without Firebase reads.
   Widget _buildCategoryIcon(BuildContext context, String categoryId) {
     final categoryCubit = context.read<CategoryCubit>();
-    final categoryState = categoryCubit.state;
     final customizationCubit = context.read<CategoryCustomizationCubit?>();
 
-    // Check if category is in top categories loaded by cubit
-    if (categoryState is CategoryTopLoaded) {
-      final category = categoryState.categories
-          .where((c) => c.id == categoryId)
-          .firstOrNull;
+    // Get category synchronously from cubit cache (no Firebase read)
+    final category = categoryCubit.getCategoryById(categoryId);
 
-      if (category != null) {
-        return _renderCategoryIcon(
-          category: category,
-          customizationCubit: customizationCubit,
-        );
-      }
-    }
-
-    // Check cache for previously fetched category
-    if (_cachedCategories.containsKey(categoryId)) {
+    if (category != null) {
       return _renderCategoryIcon(
-        category: _cachedCategories[categoryId]!,
+        category: category,
         customizationCubit: customizationCubit,
       );
     }
 
-    // Fallback: Fetch the specific category
-    return FutureBuilder<Category?>(
-      future: context.read<CategoryRepository>().getCategoryById(categoryId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show loading indicator while fetching
-          return const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          );
-        }
-
-        if (snapshot.hasData && snapshot.data != null) {
-          // Cache the fetched category
-          _cachedCategories[categoryId] = snapshot.data!;
-          return _renderCategoryIcon(
-            category: snapshot.data!,
-            customizationCubit: customizationCubit,
-          );
-        }
-
-        // Ultimate fallback: Show generic icon
-        final theme = Theme.of(context);
-        return Icon(
-          Icons.category,
-          color: theme.colorScheme.primary,
-        );
-      },
+    // Fallback: Show generic icon if category not cached
+    // This should rarely happen since ExpenseListPage pre-loads all categories
+    final theme = Theme.of(context);
+    return Icon(
+      Icons.category,
+      color: theme.colorScheme.primary,
     );
   }
 

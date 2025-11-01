@@ -94,6 +94,45 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
+  Future<List<Category>> getCategoriesByIds(List<String> ids) async {
+    try {
+      // Early return for empty list
+      if (ids.isEmpty) {
+        return [];
+      }
+
+      // Firestore whereIn has a limit of 10 items
+      // Chunk the IDs into groups of 10
+      const chunkSize = 10;
+      final chunks = <List<String>>[];
+
+      for (var i = 0; i < ids.length; i += chunkSize) {
+        final end = (i + chunkSize < ids.length) ? i + chunkSize : ids.length;
+        chunks.add(ids.sublist(i, end));
+      }
+
+      // Fetch all chunks in parallel
+      final futures = chunks.map((chunk) async {
+        final querySnapshot = await _firestoreService.categories
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+
+        return querySnapshot.docs
+            .map((doc) => CategoryModel.fromFirestore(doc))
+            .toList();
+      });
+
+      // Wait for all queries to complete
+      final results = await Future.wait(futures);
+
+      // Flatten the list of lists into a single list
+      return results.expand((categories) => categories).toList();
+    } catch (e) {
+      throw Exception('Failed to get categories by IDs: $e');
+    }
+  }
+
+  @override
   Future<Category> createCategory({
     required String name,
     String icon = 'label',

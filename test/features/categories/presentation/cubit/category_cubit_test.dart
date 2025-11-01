@@ -659,5 +659,193 @@ void main() {
         await cubit.checkRateLimit();
       });
     });
+
+    group('loadCategoriesByIds', () {
+      final testCategory3 = Category(
+        id: 'cat3',
+        name: 'Entertainment',
+        icon: 'movie',
+        color: '#9C27B0',
+        usageCount: 25,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      test('should batch load categories by IDs from repository', () async {
+        // Arrange
+        final categoryIds = ['cat1', 'cat2', 'cat3'];
+        final expectedCategories = [testCategory1, testCategory2, testCategory3];
+
+        when(
+          mockCategoryRepository.getCategoriesByIds(categoryIds),
+        ).thenAnswer((_) async => expectedCategories);
+
+        // Act
+        await cubit.loadCategoriesByIds(categoryIds);
+
+        // Assert
+        verify(mockCategoryRepository.getCategoriesByIds(categoryIds)).called(1);
+
+        // Verify categories are now accessible via getCategoryById
+        expect(cubit.getCategoryById('cat1'), testCategory1);
+        expect(cubit.getCategoryById('cat2'), testCategory2);
+        expect(cubit.getCategoryById('cat3'), testCategory3);
+      });
+
+      test('should handle empty ID list', () async {
+        // Arrange
+        when(
+          mockCategoryRepository.getCategoriesByIds([]),
+        ).thenAnswer((_) async => []);
+
+        // Act
+        await cubit.loadCategoriesByIds([]);
+
+        // Assert
+        verify(mockCategoryRepository.getCategoriesByIds([])).called(1);
+      });
+
+      test('should handle repository errors during batch load', () async {
+        // Arrange
+        when(
+          mockCategoryRepository.getCategoriesByIds(argThat(isList)),
+        ).thenThrow(Exception('Network error'));
+
+        // Assert
+        expect(
+          cubit.stream,
+          emits(
+            isA<CategoryError>()
+                .having(
+                  (s) => s.type,
+                  'error type',
+                  CategoryErrorType.loadFailed,
+                )
+                .having(
+                  (s) => s.message,
+                  'error message',
+                  contains('Failed to load categories'),
+                ),
+          ),
+        );
+
+        // Act
+        await cubit.loadCategoriesByIds(['cat1', 'cat2']);
+      });
+    });
+
+    group('getCategoryById', () {
+      test('should return cached category synchronously after batch load', () async {
+        // Arrange
+        when(
+          mockCategoryRepository.getCategoriesByIds(['cat1']),
+        ).thenAnswer((_) async => [testCategory1]);
+
+        await cubit.loadCategoriesByIds(['cat1']);
+
+        // Act
+        final result = cubit.getCategoryById('cat1');
+
+        // Assert
+        expect(result, testCategory1);
+        expect(result?.name, 'Meals');
+        expect(result?.icon, 'restaurant');
+      });
+
+      test('should return null for non-existent category', () {
+        // Act
+        final result = cubit.getCategoryById('nonexistent');
+
+        // Assert
+        expect(result, isNull);
+      });
+
+      test('should return category from top categories if not batch-loaded', () async {
+        // Arrange
+        when(
+          mockCategoryRepository.getTopCategories(limit: anyNamed('limit')),
+        ).thenAnswer((_) => Stream.value([testCategory1, testCategory2]));
+
+        cubit.loadTopCategories();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Act
+        final result = cubit.getCategoryById('cat1');
+
+        // Assert
+        expect(result, testCategory1);
+      });
+    });
+
+    group('category cache merging', () {
+      final testCategory3 = Category(
+        id: 'cat3',
+        name: 'Entertainment',
+        icon: 'movie',
+        color: '#9C27B0',
+        usageCount: 25,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final testCategory4 = Category(
+        id: 'cat4',
+        name: 'Shopping',
+        icon: 'shopping_cart',
+        color: '#4CAF50',
+        usageCount: 15,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      test('should merge batch-loaded categories with top categories', () async {
+        // Arrange - Load top categories first
+        when(
+          mockCategoryRepository.getTopCategories(limit: anyNamed('limit')),
+        ).thenAnswer((_) => Stream.value([testCategory1, testCategory2]));
+
+        cubit.loadTopCategories();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Arrange - Batch load additional categories
+        when(
+          mockCategoryRepository.getCategoriesByIds(['cat3', 'cat4']),
+        ).thenAnswer((_) async => [testCategory3, testCategory4]);
+
+        // Act
+        await cubit.loadCategoriesByIds(['cat3', 'cat4']);
+
+        // Assert - All 4 categories should be accessible
+        expect(cubit.getCategoryById('cat1'), testCategory1); // From top
+        expect(cubit.getCategoryById('cat2'), testCategory2); // From top
+        expect(cubit.getCategoryById('cat3'), testCategory3); // From batch
+        expect(cubit.getCategoryById('cat4'), testCategory4); // From batch
+      });
+
+      test('should not duplicate categories when batch loading same IDs', () async {
+        // Arrange - Load top categories
+        when(
+          mockCategoryRepository.getTopCategories(limit: anyNamed('limit')),
+        ).thenAnswer((_) => Stream.value([testCategory1, testCategory2]));
+
+        cubit.loadTopCategories();
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        // Arrange - Batch load overlapping categories
+        when(
+          mockCategoryRepository.getCategoriesByIds(['cat1', 'cat3']),
+        ).thenAnswer((_) async => [testCategory1, testCategory3]);
+
+        // Act
+        await cubit.loadCategoriesByIds(['cat1', 'cat3']);
+
+        // Assert - Should still work correctly (latest wins)
+        expect(cubit.getCategoryById('cat1'), testCategory1);
+        expect(cubit.getCategoryById('cat3'), testCategory3);
+
+        // Verify repository was called for batch load
+        verify(mockCategoryRepository.getCategoriesByIds(['cat1', 'cat3'])).called(1);
+      });
+    });
   });
 }
