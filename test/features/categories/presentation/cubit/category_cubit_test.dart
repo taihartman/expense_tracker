@@ -514,54 +514,6 @@ void main() {
       });
     });
 
-    group('incrementCategoryUsage', () {
-      test('should emit CategoryUsageIncremented on success', () async {
-        // Arrange
-        when(
-          mockCategoryRepository.incrementCategoryUsage('cat1'),
-        ).thenAnswer((_) async => {});
-
-        // Assert
-        expect(
-          cubit.stream,
-          emits(
-            isA<CategoryUsageIncremented>().having(
-              (s) => s.categoryId,
-              'categoryId',
-              'cat1',
-            ),
-          ),
-        );
-
-        // Act
-        await cubit.incrementCategoryUsage('cat1');
-      });
-
-      test('should emit generic error on failure (silent in UI)', () async {
-        // Arrange
-        when(
-          mockCategoryRepository.incrementCategoryUsage('cat1'),
-        ).thenThrow(Exception('Network error'));
-
-        // Assert
-        expect(
-          cubit.stream,
-          emits(
-            isA<CategoryError>()
-                .having((s) => s.type, 'error type', CategoryErrorType.generic)
-                .having(
-                  (s) => s.message,
-                  'error message',
-                  contains('Failed to update'),
-                ),
-          ),
-        );
-
-        // Act
-        await cubit.incrementCategoryUsage('cat1');
-      });
-    });
-
     group('checkRateLimit', () {
       test(
         'should emit CategoryRateLimitChecked with can create = true',

@@ -77,8 +77,6 @@ class CategoryColorPicker extends StatelessWidget {
     final theme = Theme.of(context);
 
     return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 6,
         crossAxisSpacing: AppTheme.spacing1,

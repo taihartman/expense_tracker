@@ -319,8 +319,8 @@ class ExpenseTrackerApp extends StatelessWidget {
               _log('🔵 Creating ExpenseCubit...');
               return ExpenseCubit(
                 expenseRepository: _expenseRepository,
-                activityLoggerService: _activityLoggerService,
                 categoryRepository: _categoryRepository,
+                activityLoggerService: _activityLoggerService,
               );
             },
           ),
@@ -333,6 +333,7 @@ class ExpenseTrackerApp extends StatelessWidget {
                 tripRepository: _tripRepository,
                 settledTransferRepository: _settledTransferRepository,
                 categoryRepository: _categoryRepository,
+                localStorageService: localStorageService,
                 activityLoggerService: _activityLoggerService,
               );
             },

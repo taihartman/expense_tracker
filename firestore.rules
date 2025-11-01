@@ -30,12 +30,21 @@ service cloud.firestore {
       allow create: if isAuthenticated()
                     && isValidCategoryName(request.resource.data.name);
 
-      // Allow updates only to icon field (for voting system) and updatedAt
+      // Allow updates to:
+      // - icon field (for voting system)
+      // - usageCount (for tracking category popularity)
+      // - updatedAt (timestamp for both operations)
       // All other fields are immutable to preserve expense references
       allow update: if isAuthenticated()
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['icon', 'updatedAt'])
-                    && request.resource.data.icon is string
-                    && request.resource.data.icon.size() > 0;
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['icon', 'usageCount', 'updatedAt'])
+                    // If updating icon, validate it's a non-empty string
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['icon'])
+                        || (request.resource.data.icon is string
+                            && request.resource.data.icon.size() > 0))
+                    // If updating usageCount, ensure it only increments by 1
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['usageCount'])
+                        || request.resource.data.usageCount == resource.data.usageCount + 1);
 
       // No deletes (categories are permanent to preserve expense references)
       allow delete: if false;

@@ -17,6 +17,7 @@ import '../../domain/models/remainder_distribution_mode.dart';
 import '../../domain/models/expense.dart';
 import '../../domain/services/itemized_calculator.dart';
 import '../../domain/repositories/expense_repository.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/split_type.dart';
 import '../../../../core/services/activity_logger_service.dart';
@@ -27,14 +28,17 @@ import 'itemized_expense_state.dart';
 /// Handles draft state, validation, calculation, and persistence
 class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
   final ExpenseRepository _expenseRepository;
+  final CategoryRepository? _categoryRepository;
   final ItemizedCalculator _calculator;
   final ActivityLoggerService? _activityLoggerService;
 
   ItemizedExpenseCubit({
     required ExpenseRepository expenseRepository,
+    CategoryRepository? categoryRepository,
     ItemizedCalculator? calculator,
     ActivityLoggerService? activityLoggerService,
   }) : _expenseRepository = expenseRepository,
+       _categoryRepository = categoryRepository,
        _calculator = calculator ?? ItemizedCalculator(),
        _activityLoggerService = activityLoggerService,
        super(const ItemizedExpenseInitial());
@@ -507,6 +511,38 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
         debugPrint('🟡 [Cubit] Creating new expense');
         savedExpense = await _expenseRepository.createExpense(expense);
         debugPrint('🟡 [Cubit] Expense created successfully');
+      }
+
+      // Increment category usage count (non-fatal)
+      if (_categoryRepository != null) {
+        try {
+          if (isEditMode) {
+            // On update: only increment if category changed
+            if (oldExpense != null &&
+                savedExpense.categoryId != null &&
+                savedExpense.categoryId != oldExpense.categoryId) {
+              debugPrint(
+                '📊 [Cubit] Category changed, incrementing usage for: ${savedExpense.categoryId}',
+              );
+              await _categoryRepository.incrementCategoryUsage(
+                savedExpense.categoryId!,
+              );
+            }
+          } else {
+            // On create: always increment if category exists
+            if (savedExpense.categoryId != null) {
+              debugPrint(
+                '📊 [Cubit] Incrementing category usage for: ${savedExpense.categoryId}',
+              );
+              await _categoryRepository.incrementCategoryUsage(
+                savedExpense.categoryId!,
+              );
+            }
+          }
+        } catch (e) {
+          debugPrint('⚠️ [Cubit] Failed to increment category usage: $e');
+          // Non-fatal - don't fail the save operation
+        }
       }
 
       // Log activity using centralized service

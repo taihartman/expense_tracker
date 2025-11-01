@@ -54,6 +54,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonClose => 'Close';
 
   @override
+  String get commonConfirm => 'Confirm';
+
+  @override
   String get splashAppName => 'Expense Tracker';
 
   @override
@@ -1595,6 +1598,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryCreationSuccess => 'Category created successfully';
+
+  @override
+  String categoryCreatedWithName(String name) {
+    return 'Category \"$name\" created!';
+  }
+
+  @override
+  String get categoryIconPreferenceRecorded => 'Icon preference recorded';
 
   @override
   String get categoryValidationEmpty => 'Category name cannot be empty';

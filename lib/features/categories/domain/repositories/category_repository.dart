@@ -88,10 +88,25 @@ abstract class CategoryRepository {
 
   /// Increment the usage count for a category
   ///
-  /// Called when a category is assigned to an expense.
-  /// Updates usageCount and updatedAt timestamp.
+  /// Called when a category is assigned to an expense to track popularity.
+  /// Updates both usageCount and updatedAt fields.
   ///
-  /// This operation is typically batched with expense creation.
+  /// This is a non-fatal operation - failures are logged but don't prevent
+  /// expense creation/update.
+  ///
+  /// Parameters:
+  /// - categoryId: The category ID to increment usage for
+  ///
+  /// Throws:
+  /// - Exception if Firestore update fails (permission denied, network error, etc.)
+  ///
+  /// Side effects:
+  /// - Increments category.usageCount by 1
+  /// - Updates category.updatedAt to current timestamp
+  ///
+  /// Used for:
+  /// - Tracking category popularity for sorting
+  /// - Identifying most commonly used categories
   Future<void> incrementCategoryUsage(String categoryId);
 
   /// Check if a category with the given name already exists (case-insensitive)

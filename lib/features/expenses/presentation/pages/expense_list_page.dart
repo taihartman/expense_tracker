@@ -134,6 +134,15 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
               context.read<CategoryCubit>().loadCategoriesByIds(categoryIds);
             }
           }
+
+          // Invalidate category cache when expense is created/updated with a category
+          // This ensures usage counts are up-to-date in the UI
+          if (state is ExpenseCreated && state.expense.categoryId != null) {
+            context.read<CategoryCubit>().invalidateTopCategoriesCache();
+          } else if (state is ExpenseUpdated &&
+              state.expense.categoryId != null) {
+            context.read<CategoryCubit>().invalidateTopCategoriesCache();
+          }
         },
         child: BlocBuilder<ExpenseCubit, ExpenseState>(
           buildWhen: (previous, current) {
@@ -144,106 +153,108 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                 current is ExpenseLoaded;
           },
           builder: (context, state) {
-          if (state is ExpenseLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+            if (state is ExpenseLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is ExpenseError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(height: AppTheme.spacing2),
-                  Text(
-                    state.message,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: AppTheme.spacing2),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ExpenseCubit>().loadExpenses(widget.tripId);
-                    },
-                    child: Text(context.l10n.commonRetry),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (state is ExpenseLoaded) {
-            if (state.expenses.isEmpty) {
+            if (state is ExpenseError) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.receipt_long_outlined,
-                      size: 64,
-                      color: Theme.of(context).colorScheme.outline,
+                      Icons.error_outline,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(height: AppTheme.spacing2),
                     Text(
-                      context.l10n.expenseEmptyStateTitle,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      state.message,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppTheme.spacing1),
-                    Text(
-                      context.l10n.expenseEmptyStateDescription,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    const SizedBox(height: AppTheme.spacing2),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ExpenseCubit>().loadExpenses(
+                          widget.tripId,
+                        );
+                      },
+                      child: Text(context.l10n.commonRetry),
                     ),
                   ],
                 ),
               );
             }
 
-            return BlocBuilder<TripCubit, TripState>(
-              builder: (context, tripState) {
-                // Get trip participants
-                final List<Participant> participants = tripState is TripLoaded
-                    ? tripState.trips
-                          .firstWhere(
-                            (t) => t.id == widget.tripId,
-                            orElse: () => tripState.selectedTrip!,
-                          )
-                          .participants
-                    : <Participant>[];
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(
-                    top: AppTheme.spacing1,
-                    bottom: 80, // 80dp clearance for FAB Speed Dial
+            if (state is ExpenseLoaded) {
+              if (state.expenses.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.receipt_long_outlined,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                      const SizedBox(height: AppTheme.spacing2),
+                      Text(
+                        context.l10n.expenseEmptyStateTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: AppTheme.spacing1),
+                      Text(
+                        context.l10n.expenseEmptyStateDescription,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
-                  itemCount: state.expenses.length,
-                  itemBuilder: (context, index) {
-                    final expense = state.expenses[index];
-                    return ExpenseCard(
-                      key: ValueKey(expense.id),
-                      expense: expense,
-                      participants: participants,
-                      onTap: () {
-                        // Show bottom sheet for editing
-                        showExpenseFormBottomSheet(
-                          context: context,
-                          tripId: widget.tripId,
-                          expense: expense,
-                        );
-                      },
-                    );
-                  },
                 );
-              },
-            );
-          }
+              }
 
-          return const SizedBox.shrink();
+              return BlocBuilder<TripCubit, TripState>(
+                builder: (context, tripState) {
+                  // Get trip participants
+                  final List<Participant> participants = tripState is TripLoaded
+                      ? tripState.trips
+                            .firstWhere(
+                              (t) => t.id == widget.tripId,
+                              orElse: () => tripState.selectedTrip!,
+                            )
+                            .participants
+                      : <Participant>[];
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(
+                      top: AppTheme.spacing1,
+                      bottom: 80, // 80dp clearance for FAB Speed Dial
+                    ),
+                    itemCount: state.expenses.length,
+                    itemBuilder: (context, index) {
+                      final expense = state.expenses[index];
+                      return ExpenseCard(
+                        key: ValueKey(expense.id),
+                        expense: expense,
+                        participants: participants,
+                        onTap: () {
+                          // Show bottom sheet for editing
+                          showExpenseFormBottomSheet(
+                            context: context,
+                            tripId: widget.tripId,
+                            expense: expense,
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            }
+
+            return const SizedBox.shrink();
           },
         ),
       ),

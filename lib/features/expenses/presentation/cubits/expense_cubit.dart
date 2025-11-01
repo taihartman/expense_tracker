@@ -15,18 +15,18 @@ void _log(String message) {
 /// Cubit for managing expense state
 class ExpenseCubit extends Cubit<ExpenseState> {
   final ExpenseRepository _expenseRepository;
-  final ActivityLoggerService? _activityLoggerService;
   final CategoryRepository? _categoryRepository;
+  final ActivityLoggerService? _activityLoggerService;
   String? _currentTripId;
   StreamSubscription<List<Expense>>? _expensesSubscription;
 
   ExpenseCubit({
     required ExpenseRepository expenseRepository,
-    ActivityLoggerService? activityLoggerService,
     CategoryRepository? categoryRepository,
+    ActivityLoggerService? activityLoggerService,
   }) : _expenseRepository = expenseRepository,
-       _activityLoggerService = activityLoggerService,
        _categoryRepository = categoryRepository,
+       _activityLoggerService = activityLoggerService,
        super(const ExpenseInitial());
 
   /// Load all expenses for a trip
@@ -127,6 +127,18 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
       emit(ExpenseCreated(createdExpense));
 
+      // Increment category usage count (non-fatal)
+      if (_categoryRepository != null && createdExpense.categoryId != null) {
+        try {
+          await _categoryRepository.incrementCategoryUsage(
+            createdExpense.categoryId!,
+          );
+        } catch (e) {
+          // Don't fail expense creation if usage increment fails
+          _log('⚠️ Failed to increment category usage: $e');
+        }
+      }
+
       // Log activity using centralized service
       if (_activityLoggerService != null &&
           actorName != null &&
@@ -134,22 +146,6 @@ class ExpenseCubit extends Cubit<ExpenseState> {
         _log('📝 Logging expense creation via ActivityLoggerService...');
         await _activityLoggerService.logExpenseAdded(createdExpense, actorName);
         _log('✅ Activity logged');
-      }
-
-      // Increment category usage count (non-fatal)
-      if (_categoryRepository != null && createdExpense.categoryId != null) {
-        try {
-          _log(
-            '📊 Incrementing category usage for: ${createdExpense.categoryId}',
-          );
-          await _categoryRepository.incrementCategoryUsage(
-            createdExpense.categoryId!,
-          );
-          _log('✅ Category usage incremented');
-        } catch (e) {
-          _log('⚠️ Failed to increment category usage (non-fatal): $e');
-          // Don't fail expense creation if category tracking fails
-        }
       }
 
       // No need to reload - Firestore stream will automatically update
@@ -180,6 +176,19 @@ class ExpenseCubit extends Cubit<ExpenseState> {
       // Don't emit ExpenseUpdated - let Firestore stream handle the update
       // This prevents the buildWhen filter from blocking UI updates on mobile
 
+      // Increment category usage count if category changed (non-fatal)
+      if (_categoryRepository != null &&
+          oldExpense != null &&
+          expense.categoryId != null &&
+          expense.categoryId != oldExpense.categoryId) {
+        try {
+          await _categoryRepository.incrementCategoryUsage(expense.categoryId!);
+        } catch (e) {
+          // Don't fail expense update if usage increment fails
+          _log('⚠️ Failed to increment category usage: $e');
+        }
+      }
+
       // Log activity using centralized service
       if (_activityLoggerService != null &&
           actorName != null &&
@@ -192,23 +201,6 @@ class ExpenseCubit extends Cubit<ExpenseState> {
           actorName,
         );
         _log('✅ Activity logged');
-      }
-
-      // Increment category usage if category changed (non-fatal)
-      if (_categoryRepository != null &&
-          oldExpense != null &&
-          oldExpense.categoryId != expense.categoryId &&
-          expense.categoryId != null) {
-        try {
-          _log(
-            '📊 Category changed, incrementing usage for: ${expense.categoryId}',
-          );
-          await _categoryRepository.incrementCategoryUsage(expense.categoryId!);
-          _log('✅ Category usage incremented');
-        } catch (e) {
-          _log('⚠️ Failed to increment category usage (non-fatal): $e');
-          // Don't fail expense update if category tracking fails
-        }
       }
 
       // No need to reload - Firestore stream will automatically update

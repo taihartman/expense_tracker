@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/category.dart';
 import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
+import '../cubit/category_customization_cubit.dart';
 import 'category_creation_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../shared/utils/icon_helper.dart';
+import '../../../../shared/utils/category_display_helper.dart';
 
 /// Bottom sheet for browsing and searching all available categories
 ///
@@ -189,6 +191,23 @@ class _CategoryBrowserBottomSheetState
               // Category list
               Expanded(
                 child: BlocBuilder<CategoryCubit, CategoryState>(
+                  // Prevent rebuilds after widget disposal (when navigating away)
+                  // This fixes "Trying to render a disposed EngineFlutterView" error
+                  buildWhen: (previous, current) {
+                    // Allow initial load and search results
+                    if (current is CategoryInitial ||
+                        current is CategoryLoadingTop ||
+                        current is CategorySearchResults ||
+                        current is CategoryError) {
+                      return true;
+                    }
+                    // Prevent rebuild when transitioning from search back to top categories
+                    // This happens after Navigator.pop() when search stream completes
+                    if (current is CategoryTopLoaded && previous is CategorySearchResults) {
+                      return false;
+                    }
+                    return true;
+                  },
                   builder: (context, state) {
                     // Loading state
                     if (state is CategoryInitial) {
@@ -256,8 +275,19 @@ class _CategoryBrowserBottomSheetState
                         itemCount: categories.length,
                         itemBuilder: (context, index) {
                           final category = categories[index];
-                          final color = _getColor(category.color);
-                          final icon = IconHelper.getIconData(category.icon);
+
+                          // Get customization from CategoryCustomizationCubit if available
+                          final customizationCubit = context.read<CategoryCustomizationCubit?>();
+                          final customization = customizationCubit?.getCustomization(category.id);
+
+                          // Merge global category with trip-specific customizations
+                          final displayCategory = DisplayCategory.fromGlobalAndCustomization(
+                            globalCategory: category,
+                            customization: customization,
+                          );
+
+                          final color = _getColor(displayCategory.color);
+                          final icon = IconHelper.getIconData(displayCategory.icon);
 
                           return ListTile(
                             leading: CircleAvatar(
@@ -265,8 +295,8 @@ class _CategoryBrowserBottomSheetState
                               child: Icon(icon, color: color),
                             ),
                             title: Text(
-                              category.name,
-                              semanticsLabel: category.name,
+                              displayCategory.name,
+                              semanticsLabel: displayCategory.name,
                             ),
                             subtitle: Text(
                               'Used ${category.usageCount} times',

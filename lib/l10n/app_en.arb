@@ -17,6 +17,7 @@
   "commonLoading": "Loading...",
   "commonError": "Error",
   "commonClose": "Close",
+  "commonConfirm": "Confirm",
 
 
   "splashAppName": "Expense Tracker",
@@ -1016,6 +1017,15 @@
   "categoryCreationButtonCreateNew": "Create New Category",
   "categoryCreationButtonCancel": "Cancel",
   "categoryCreationSuccess": "Category created successfully",
+  "categoryCreatedWithName": "Category \"{name}\" created!",
+  "@categoryCreatedWithName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryIconPreferenceRecorded": "Icon preference recorded",
 
   "categoryValidationEmpty": "Category name cannot be empty",
   "categoryValidationTooLong": "Category name must be 50 characters or less",

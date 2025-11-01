@@ -18,6 +18,7 @@ import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../../core/services/activity_logger_service.dart';
 import '../../../categories/presentation/cubit/category_customization_cubit.dart';
 import '../../../../core/repositories/category_customization_repository.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../trips/domain/repositories/activity_log_repository.dart';
 
 /// Shows expense form in a Material 3 bottom sheet modal
@@ -145,6 +146,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
 
     try {
       final expenseRepository = context.read<ExpenseRepository>();
+      final categoryRepository = context.read<CategoryRepository>();
       final activityLoggerService = context.read<ActivityLoggerService>();
       debugPrint('🔵 [BottomSheet] ExpenseRepository obtained');
 
@@ -155,6 +157,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
             return BlocProvider(
               create: (context) => ItemizedExpenseCubit(
                 expenseRepository: expenseRepository,
+                categoryRepository: categoryRepository,
                 activityLoggerService: activityLoggerService,
               ),
               child: ItemizedExpenseWizard(
@@ -396,6 +399,8 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                       );
                       final expenseRepository = context
                           .read<ExpenseRepository>();
+                      final categoryRepository = context
+                          .read<CategoryRepository>();
                       final activityLoggerService = context
                           .read<ActivityLoggerService>();
                       debugPrint(
@@ -417,6 +422,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                                 );
                                 return ItemizedExpenseCubit(
                                   expenseRepository: expenseRepository,
+                                  categoryRepository: categoryRepository,
                                   activityLoggerService: activityLoggerService,
                                 );
                               },
