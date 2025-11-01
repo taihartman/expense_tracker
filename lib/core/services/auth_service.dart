@@ -27,9 +27,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 ///
 /// See CLAUDE.md for complete authentication architecture documentation.
 class AuthService {
-  final FirebaseAuth _auth;
+  FirebaseAuth? _authInstance;
 
-  AuthService({FirebaseAuth? auth}) : _auth = auth ?? FirebaseAuth.instance;
+  AuthService({FirebaseAuth? auth}) : _authInstance = auth;
+
+  /// Lazy getter for FirebaseAuth instance
+  /// Only accesses FirebaseAuth.instance when first needed, after Firebase initialization
+  FirebaseAuth get _auth => _authInstance ??= FirebaseAuth.instance;
 
   /// Check if user is currently authenticated
   ///
