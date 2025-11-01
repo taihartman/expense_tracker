@@ -81,6 +81,12 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
   );
 
   @override
+  void resetToTopCategories() => super.noSuchMethod(
+    Invocation.method(#resetToTopCategories, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void searchCategories(String? query) => super.noSuchMethod(
     Invocation.method(#searchCategories, [query]),
     returnValueForMissingStub: null,
@@ -98,15 +104,6 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
               #icon: icon,
               #color: color,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> incrementCategoryUsage(String? categoryId) =>
-      (super.noSuchMethod(
-            Invocation.method(#incrementCategoryUsage, [categoryId]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

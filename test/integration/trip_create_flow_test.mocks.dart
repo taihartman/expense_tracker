@@ -23,6 +23,7 @@ import 'package:expense_tracker/features/trips/domain/models/verified_member.dar
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart'
     as _i4;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i12;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -586,6 +587,46 @@ class MockLocalStorageService extends _i1.Mock
   _i5.Future<void> clearAllUserIdentities() =>
       (super.noSuchMethod(
             Invocation.method(#clearAllUserIdentities, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> saveSettlementFilter(
+    String? tripId, {
+    String? userId,
+    String? filterMode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #saveSettlementFilter,
+              [tripId],
+              {#userId: userId, #filterMode: filterMode},
+            ),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  ({String filterMode, String? userId}) getSettlementFilter(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getSettlementFilter, [tripId]),
+            returnValue: (
+              filterMode: _i12.dummyValue<String>(
+                this,
+                Invocation.method(#getSettlementFilter, [tripId]),
+              ),
+              userId: null,
+            ),
+          )
+          as ({String filterMode, String? userId}));
+
+  @override
+  _i5.Future<void> clearSettlementFilter(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#clearSettlementFilter, [tripId]),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )

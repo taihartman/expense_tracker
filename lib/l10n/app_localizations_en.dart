@@ -1058,6 +1058,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currencyVND => 'Vietnamese Dong';
 
   @override
+  String get currencySearchFieldLabel => 'Currency';
+
+  @override
+  String get currencySearchFieldHint => 'Select currency';
+
+  @override
+  String get currencySearchPlaceholder => 'Search by code or name';
+
+  @override
+  String get currencySearchNoResults => 'No currencies found';
+
+  @override
+  String get currencySearchNoResultsHint => 'Try a different search term';
+
+  @override
+  String get currencySearchModalTitle => 'Select Currency';
+
+  @override
+  String get currencySearchClearButton => 'Clear search';
+
+  @override
   String get categoryMeals => 'Meals';
 
   @override

@@ -1864,6 +1864,48 @@ abstract class AppLocalizations {
   /// **'Vietnamese Dong'**
   String get currencyVND;
 
+  /// No description provided for @currencySearchFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currencySearchFieldLabel;
+
+  /// No description provided for @currencySearchFieldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select currency'**
+  String get currencySearchFieldHint;
+
+  /// No description provided for @currencySearchPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by code or name'**
+  String get currencySearchPlaceholder;
+
+  /// No description provided for @currencySearchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No currencies found'**
+  String get currencySearchNoResults;
+
+  /// No description provided for @currencySearchNoResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different search term'**
+  String get currencySearchNoResultsHint;
+
+  /// No description provided for @currencySearchModalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Currency'**
+  String get currencySearchModalTitle;
+
+  /// No description provided for @currencySearchClearButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get currencySearchClearButton;
+
   /// No description provided for @categoryMeals.
   ///
   /// In en, this message translates to:

@@ -16,7 +16,7 @@ import 'package:expense_tracker/features/categories/domain/repositories/category
 import 'package:expense_tracker/features/device_pairing/domain/models/device_link_code.dart'
     as _i4;
 import 'package:expense_tracker/features/device_pairing/domain/repositories/device_link_code_repository.dart'
-    as _i13;
+    as _i14;
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart'
     as _i9;
 import 'package:expense_tracker/features/settlements/domain/models/minimal_transfer.dart'
@@ -27,6 +27,7 @@ import 'package:expense_tracker/features/trips/domain/models/verified_member.dar
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart'
     as _i5;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -600,13 +601,53 @@ class MockLocalStorageService extends _i1.Mock
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
           as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> saveSettlementFilter(
+    String? tripId, {
+    String? userId,
+    String? filterMode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #saveSettlementFilter,
+              [tripId],
+              {#userId: userId, #filterMode: filterMode},
+            ),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  ({String filterMode, String? userId}) getSettlementFilter(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getSettlementFilter, [tripId]),
+            returnValue: (
+              filterMode: _i13.dummyValue<String>(
+                this,
+                Invocation.method(#getSettlementFilter, [tripId]),
+              ),
+              userId: null,
+            ),
+          )
+          as ({String filterMode, String? userId}));
+
+  @override
+  _i6.Future<void> clearSettlementFilter(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#clearSettlementFilter, [tripId]),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
 }
 
 /// A class which mocks [DeviceLinkCodeRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockDeviceLinkCodeRepository extends _i1.Mock
-    implements _i13.DeviceLinkCodeRepository {
+    implements _i14.DeviceLinkCodeRepository {
   MockDeviceLinkCodeRepository() {
     _i1.throwOnMissingStub(this);
   }

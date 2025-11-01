@@ -5,8 +5,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i6;
 
-import 'package:expense_tracker/core/models/currency_code.dart' as _i10;
-import 'package:expense_tracker/core/models/participant.dart' as _i11;
+import 'package:expense_tracker/core/models/participant.dart' as _i10;
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart'
     as _i5;
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_cubit.dart'
@@ -14,19 +13,19 @@ import 'package:expense_tracker/features/expenses/presentation/cubits/expense_cu
 import 'package:expense_tracker/features/expenses/presentation/cubits/expense_state.dart'
     as _i2;
 import 'package:expense_tracker/features/trips/domain/models/activity_log.dart'
-    as _i12;
+    as _i11;
 import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i9;
 import 'package:expense_tracker/features/trips/domain/models/trip_recovery_code.dart'
-    as _i14;
+    as _i13;
 import 'package:expense_tracker/features/trips/domain/models/verified_member.dart'
-    as _i15;
+    as _i14;
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart'
     as _i8;
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart'
     as _i3;
 import 'package:flutter_bloc/flutter_bloc.dart' as _i7;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i13;
+import 'package:mockito/src/dummies.dart' as _i12;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -223,7 +222,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   @override
   _i6.Future<void> createTrip({
     required String? name,
-    required _i10.CurrencyCode? baseCurrency,
+    required dynamic baseCurrency,
     String? creatorName,
   }) =>
       (super.noSuchMethod(
@@ -259,7 +258,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   _i6.Future<void> updateTripDetails({
     required String? tripId,
     required String? name,
-    required _i10.CurrencyCode? baseCurrency,
+    required dynamic baseCurrency,
     String? actorName,
   }) =>
       (super.noSuchMethod(
@@ -317,7 +316,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   @override
   _i6.Future<void> addParticipant({
     required String? tripId,
-    required _i11.Participant? participant,
+    required _i10.Participant? participant,
     String? actorName,
   }) =>
       (super.noSuchMethod(
@@ -334,7 +333,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   @override
   _i6.Future<void> removeParticipant({
     required String? tripId,
-    required _i11.Participant? participant,
+    required _i10.Participant? participant,
     String? actorName,
   }) =>
       (super.noSuchMethod(
@@ -352,7 +351,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   _i6.Future<void> joinTrip({
     required String? tripId,
     required String? userName,
-    _i12.JoinMethod? joinMethod,
+    _i11.JoinMethod? joinMethod,
     String? invitedByParticipantId,
   }) =>
       (super.noSuchMethod(
@@ -396,7 +395,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
       (super.noSuchMethod(
             Invocation.method(#generateRecoveryCode, [tripId]),
             returnValue: _i6.Future<String>.value(
-              _i13.dummyValue<String>(
+              _i12.dummyValue<String>(
                 this,
                 Invocation.method(#generateRecoveryCode, [tripId]),
               ),
@@ -405,12 +404,12 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
           as _i6.Future<String>);
 
   @override
-  _i6.Future<_i14.TripRecoveryCode?> getRecoveryCode(String? tripId) =>
+  _i6.Future<_i13.TripRecoveryCode?> getRecoveryCode(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getRecoveryCode, [tripId]),
-            returnValue: _i6.Future<_i14.TripRecoveryCode?>.value(),
+            returnValue: _i6.Future<_i13.TripRecoveryCode?>.value(),
           )
-          as _i6.Future<_i14.TripRecoveryCode?>);
+          as _i6.Future<_i13.TripRecoveryCode?>);
 
   @override
   _i6.Future<bool> hasRecoveryCode(String? tripId) =>
@@ -437,19 +436,19 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
           as _i6.Future<bool>);
 
   @override
-  _i11.Participant? getCurrentUserForTrip(String? tripId) =>
+  _i10.Participant? getCurrentUserForTrip(String? tripId) =>
       (super.noSuchMethod(Invocation.method(#getCurrentUserForTrip, [tripId]))
-          as _i11.Participant?);
+          as _i10.Participant?);
 
   @override
-  _i6.Future<List<_i15.VerifiedMember>> getVerifiedMembers(String? tripId) =>
+  _i6.Future<List<_i14.VerifiedMember>> getVerifiedMembers(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getVerifiedMembers, [tripId]),
-            returnValue: _i6.Future<List<_i15.VerifiedMember>>.value(
-              <_i15.VerifiedMember>[],
+            returnValue: _i6.Future<List<_i14.VerifiedMember>>.value(
+              <_i14.VerifiedMember>[],
             ),
           )
-          as _i6.Future<List<_i15.VerifiedMember>>);
+          as _i6.Future<List<_i14.VerifiedMember>>);
 
   @override
   _i6.Future<void> close() =>

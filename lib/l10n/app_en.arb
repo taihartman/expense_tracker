@@ -693,6 +693,14 @@
   "currencyUSD": "US Dollar",
   "currencyVND": "Vietnamese Dong",
 
+  "currencySearchFieldLabel": "Currency",
+  "currencySearchFieldHint": "Select currency",
+  "currencySearchPlaceholder": "Search by code or name",
+  "currencySearchNoResults": "No currencies found",
+  "currencySearchNoResultsHint": "Try a different search term",
+  "currencySearchModalTitle": "Select Currency",
+  "currencySearchClearButton": "Clear search",
+
 
   "categoryMeals": "Meals",
   "categoryTransport": "Transport",

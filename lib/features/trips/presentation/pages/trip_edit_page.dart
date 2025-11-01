@@ -7,6 +7,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/currency_search_field.dart';
 import '../../domain/models/trip.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -88,20 +89,9 @@ class _TripEditPageState extends State<TripEditPage> {
               },
             ),
             const SizedBox(height: AppTheme.spacing2),
-            DropdownButtonFormField<CurrencyCode>(
-              initialValue: _selectedCurrency,
-              decoration: InputDecoration(
-                labelText: context.l10n.tripFieldBaseCurrencyLabel,
-                helperText: context.l10n.tripFieldBaseCurrencyEditHelper,
-              ),
-              items: CurrencyCode.values.map((currency) {
-                return DropdownMenuItem(
-                  value: currency,
-                  child: Text(
-                    '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
-                  ),
-                );
-              }).toList(),
+            CurrencySearchField(
+              value: _selectedCurrency,
+              label: context.l10n.tripFieldBaseCurrencyLabel,
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
@@ -109,6 +99,9 @@ class _TripEditPageState extends State<TripEditPage> {
                   });
                 }
               },
+              decoration: InputDecoration(
+                helperText: context.l10n.tripFieldBaseCurrencyEditHelper,
+              ),
             ),
             const SizedBox(height: AppTheme.spacing1),
             Container(

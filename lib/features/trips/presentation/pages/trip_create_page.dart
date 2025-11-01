@@ -9,6 +9,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/currency_search_field.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
 /// Page for creating a new trip
@@ -149,29 +150,20 @@ class _TripCreatePageState extends State<TripCreatePage> {
                   },
                 ),
                 const SizedBox(height: AppTheme.spacing2),
-                DropdownButtonFormField<CurrencyCode>(
-                  initialValue: _selectedCurrency,
+                CurrencySearchField(
+                  value: _selectedCurrency,
+                  label: context.l10n.tripFieldBaseCurrencyLabel,
+                  enabled: !isCreating,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedCurrency = value;
+                      });
+                    }
+                  },
                   decoration: InputDecoration(
-                    labelText: context.l10n.tripFieldBaseCurrencyLabel,
                     helperText: context.l10n.tripFieldBaseCurrencyHelper,
                   ),
-                  items: CurrencyCode.values.map((currency) {
-                    return DropdownMenuItem(
-                      value: currency,
-                      child: Text(
-                        '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: isCreating
-                      ? null
-                      : (value) {
-                          if (value != null) {
-                            setState(() {
-                              _selectedCurrency = value;
-                            });
-                          }
-                        },
                 ),
                 const SizedBox(height: AppTheme.spacing3),
                 CustomButton(
