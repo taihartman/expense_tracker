@@ -4,6 +4,7 @@ import '../../domain/models/category.dart';
 import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
 import '../cubit/category_customization_cubit.dart';
+import '../cubit/category_customization_state.dart';
 import 'category_browser_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
@@ -201,6 +202,14 @@ class _CategorySelectorState extends State<CategorySelector> {
               },
             ),
           );
+          // Restore CategoryCubit to CategoryTopLoaded state after sheet closes
+          // This ensures new CategorySelector instances can populate their cache
+          if (mounted) {
+            debugPrint(
+              '🔄 [CategorySelector] Browse sheet closed, restoring top categories state',
+            );
+            context.read<CategoryCubit>().resetToTopCategories();
+          }
         }
       },
       selectedColor: color.withValues(alpha: 0.3),
@@ -217,17 +226,28 @@ class _CategorySelectorState extends State<CategorySelector> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.expenseSectionCategory,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.bold,
+    // Listen to customization changes and rebuild when loaded
+    return BlocListener<CategoryCustomizationCubit, CategoryCustomizationState>(
+      listener: (context, state) {
+        if (state is CategoryCustomizationLoaded && mounted) {
+          debugPrint(
+            '🎨 [CategorySelector] Customizations loaded, triggering rebuild to show custom icons/colors',
+          );
+          // Trigger rebuild to show custom icons/colors
+          setState(() {});
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.expenseSectionCategory,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: AppTheme.spacing1),
+          const SizedBox(height: AppTheme.spacing1),
         SizedBox(
           height: 50,
           child: BlocBuilder<CategoryCubit, CategoryState>(
@@ -424,7 +444,8 @@ class _CategorySelectorState extends State<CategorySelector> {
             },
           ),
         ),
-      ],
-    );
+        ],
+      ), // Close Column
+    ); // Close BlocListener
   }
 }

@@ -97,70 +97,115 @@ class _CategoryCreationBottomSheetState
 
       if (!mounted) return;
 
-      // Show icon picker dialog with most popular icon preselected
-      await showDialog(
+      // Show icon picker bottom sheet with most popular icon preselected
+      await showModalBottomSheet(
         context: context,
-        builder: (dialogContext) => StatefulBuilder(
-          builder: (context, setDialogState) {
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        builder: (sheetContext) => StatefulBuilder(
+          builder: (context, setSheetState) {
             String currentSelectedIcon = defaultIcon;
 
-            return AlertDialog(
-              title: Text('Customize "${category.name}" Icon'),
-              content: SizedBox(
-                width: double.maxFinite,
-                child: CategoryIconPicker(
-                  selectedIcon: currentSelectedIcon,
-                  onIconSelected: (selectedIcon) {
-                    setDialogState(() {
-                      currentSelectedIcon = selectedIcon;
-                    });
-                  },
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(dialogContext).pop();
-                  },
-                  child: Text(context.l10n.commonCancel),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    // Record the icon preference vote
-                    try {
-                      await customizationRepository.recordIconPreference(
-                        category.id,
-                        currentSelectedIcon,
-                      );
-
-                      // Show brief success message
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              context.l10n.categoryIconPreferenceRecorded,
+            return DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              expand: false,
+              builder: (context, scrollController) => Column(
+                children: [
+                  // Title bar
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Customize "${category.name}" Icon',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                            duration: const Duration(seconds: 1),
-                            behavior: SnackBarBehavior.floating,
                           ),
-                        );
-                      }
-                    } catch (e) {
-                      // Silent failure - voting is non-critical
-                    }
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  // Icon picker
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: CategoryIconPicker(
+                        selectedIcon: currentSelectedIcon,
+                        onIconSelected: (selectedIcon) {
+                          setSheetState(() {
+                            currentSelectedIcon = selectedIcon;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  // Action buttons
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(sheetContext).pop();
+                          },
+                          child: Text(context.l10n.commonCancel),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          onPressed: () async {
+                            // Record the icon preference vote
+                            try {
+                              await customizationRepository.recordIconPreference(
+                                category.id,
+                                currentSelectedIcon,
+                              );
 
-                    // Close the dialog and the creation sheet
-                    if (dialogContext.mounted) {
-                      Navigator.of(dialogContext).pop();
-                    }
-                    if (mounted) {
-                      widget.onCategoryCreated();
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Text(context.l10n.commonConfirm),
-                ),
-              ],
+                              // Show brief success message
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      context.l10n.categoryIconPreferenceRecorded,
+                                    ),
+                                    duration: const Duration(seconds: 1),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              // Silent failure - voting is non-critical
+                            }
+
+                            // Close the bottom sheet and the creation sheet
+                            if (sheetContext.mounted) {
+                              Navigator.of(sheetContext).pop();
+                            }
+                            if (mounted) {
+                              widget.onCategoryCreated();
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: Text(context.l10n.commonConfirm),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),

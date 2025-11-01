@@ -30,6 +30,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## 2025-11-01
 
 ### Changed
+- Deployed updated Firestore rules to production - category usage count tracking is now live
+
+
+## 2025-11-01
+
+### Changed
+- Re-enabled category usage count tracking: Updated Firestore rules to allow usageCount increments (+1 validation for anti-abuse), re-added incrementCategoryUsage to CategoryRepository interface and implementation with non-fatal error handling, integrated into ExpenseCubit and ItemizedExpenseCubit to track category popularity when expenses are created or updated with a category change.
+
+
+## 2025-11-01
+
+### Changed
 - Fixed 'Trying to render disposed EngineFlutterView' error when closing CategoryBrowserBottomSheet by adding buildWhen condition to prevent rebuilds after Navigator.pop(). Removed incrementCategoryUsage feature entirely (was blocked by Firestore security rules and creating console noise). Removed from CategoryRepository, CategoryRepositoryImpl, CategoryCubit, CategoryState, ExpenseCubit, and all related tests.
 
 

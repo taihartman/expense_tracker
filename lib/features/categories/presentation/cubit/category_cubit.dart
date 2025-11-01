@@ -28,6 +28,9 @@ class CategoryCubit extends Cubit<CategoryState> {
   DateTime? _lastTopCategoriesRefresh;
   static const _cacheDuration = Duration(hours: 24);
 
+  // Cache last CategoryTopLoaded state for restoration after browse sheet closes
+  CategoryTopLoaded? _lastTopLoadedState;
+
   // Category cache indexed by ID for fast synchronous lookup
   // Populated from both top categories and batch loads
   final Map<String, Category> _categoriesById = {};
@@ -68,7 +71,10 @@ class CategoryCubit extends Cubit<CategoryState> {
               _categoriesById[category.id] = category;
             }
 
-            emit(CategoryTopLoaded(categories: categories));
+            final loadedState = CategoryTopLoaded(categories: categories);
+            emit(loadedState);
+            // Cache this state for restoration after browse sheet closes
+            _lastTopLoadedState = loadedState;
             // Track refresh time for cache invalidation
             _lastTopCategoriesRefresh = DateTime.now();
           },
@@ -113,6 +119,31 @@ class CategoryCubit extends Cubit<CategoryState> {
   /// Next call to loadTopCategoriesIfStale() will fetch from Firebase.
   void invalidateTopCategoriesCache() {
     _lastTopCategoriesRefresh = null;
+  }
+
+  /// Reset state to last loaded top categories
+  ///
+  /// Re-emits the last CategoryTopLoaded state without making a Firebase query.
+  /// This is used when the browse sheet closes to restore the CategorySelector
+  /// to showing top categories, ensuring new CategorySelector instances can
+  /// populate their cache from the CategoryTopLoaded state.
+  ///
+  /// Call this after:
+  /// - Closing the CategoryBrowserBottomSheet
+  /// - Dismissing any modal that changed CategoryCubit state away from CategoryTopLoaded
+  ///
+  /// Does nothing if no top categories have been loaded yet.
+  void resetToTopCategories() {
+    if (_lastTopLoadedState != null) {
+      debugPrint(
+        '🔄 [CategoryCubit] Restoring CategoryTopLoaded state with ${_lastTopLoadedState!.categories.length} categories',
+      );
+      emit(_lastTopLoadedState!);
+    } else {
+      debugPrint(
+        '⚠️  [CategoryCubit] Cannot restore state - no CategoryTopLoaded state cached yet',
+      );
+    }
   }
 
   /// Search categories by name (case-insensitive, partial matching)

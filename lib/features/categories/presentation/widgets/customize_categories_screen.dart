@@ -152,21 +152,27 @@ class _CategoryCustomizationTile extends StatelessWidget {
                 ),
                 const SizedBox(width: AppTheme.spacing1),
 
-                // Color Indicator (tappable)
-                InkWell(
-                  onTap: () => _showColorPicker(context),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: _getColor(displayCategory.color),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.outline,
-                        width: 1,
+                // Color Edit Button
+                OutlinedButton(
+                  onPressed: () => _showColorPicker(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: _getColor(displayCategory.color),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                            width: 1.5,
+                          ),
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(AppTheme.spacing1),
-                    ),
-                    child: ColoredBox(color: _getColor(displayCategory.color)),
+                      const SizedBox(width: AppTheme.spacing1),
+                      const Text('Color'),
+                    ],
                   ),
                 ),
               ],
@@ -193,24 +199,59 @@ class _CategoryCustomizationTile extends StatelessWidget {
     final cubit = context.read<CategoryCustomizationCubit>();
     final customization = cubit.getCustomization(category.id);
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Select Icon'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: CategoryIconPicker(
-            selectedIcon: customization?.customIcon ?? category.icon,
-            onIconSelected: (icon) {
-              cubit.saveCustomization(
-                categoryId: category.id,
-                customIcon: icon,
-                customColor: customization?.customColor,
-                actorName: null, // TODO: Get from TripCubit
-              );
-              Navigator.of(dialogContext).pop();
-            },
-          ),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            // Title bar
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Select Icon',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // Icon picker
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CategoryIconPicker(
+                  selectedIcon: customization?.customIcon ?? category.icon,
+                  onIconSelected: (icon) {
+                    cubit.saveCustomization(
+                      categoryId: category.id,
+                      customIcon: icon,
+                      customColor: customization?.customColor,
+                      actorName: null, // TODO: Get from TripCubit
+                    );
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -220,24 +261,59 @@ class _CategoryCustomizationTile extends StatelessWidget {
     final cubit = context.read<CategoryCustomizationCubit>();
     final customization = cubit.getCustomization(category.id);
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Select Color'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: CategoryColorPicker(
-            selectedColor: customization?.customColor ?? category.color,
-            onColorSelected: (color) {
-              cubit.saveCustomization(
-                categoryId: category.id,
-                customIcon: customization?.customIcon,
-                customColor: color,
-                actorName: null, // TODO: Get from TripCubit
-              );
-              Navigator.of(dialogContext).pop();
-            },
-          ),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Column(
+          children: [
+            // Title bar
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Select Color',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(sheetContext).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // Color picker
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CategoryColorPicker(
+                  selectedColor: customization?.customColor ?? category.color,
+                  onColorSelected: (color) {
+                    cubit.saveCustomization(
+                      categoryId: category.id,
+                      customIcon: customization?.customIcon,
+                      customColor: color,
+                      actorName: null, // TODO: Get from TripCubit
+                    );
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

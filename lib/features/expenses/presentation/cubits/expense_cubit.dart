@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/services/activity_logger_service.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import '../../domain/models/expense.dart';
 import '../../domain/repositories/expense_repository.dart';
 import 'expense_state.dart';
@@ -14,14 +15,17 @@ void _log(String message) {
 /// Cubit for managing expense state
 class ExpenseCubit extends Cubit<ExpenseState> {
   final ExpenseRepository _expenseRepository;
+  final CategoryRepository? _categoryRepository;
   final ActivityLoggerService? _activityLoggerService;
   String? _currentTripId;
   StreamSubscription<List<Expense>>? _expensesSubscription;
 
   ExpenseCubit({
     required ExpenseRepository expenseRepository,
+    CategoryRepository? categoryRepository,
     ActivityLoggerService? activityLoggerService,
   }) : _expenseRepository = expenseRepository,
+       _categoryRepository = categoryRepository,
        _activityLoggerService = activityLoggerService,
        super(const ExpenseInitial());
 
@@ -123,6 +127,18 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
       emit(ExpenseCreated(createdExpense));
 
+      // Increment category usage count (non-fatal)
+      if (_categoryRepository != null && createdExpense.categoryId != null) {
+        try {
+          await _categoryRepository.incrementCategoryUsage(
+            createdExpense.categoryId!,
+          );
+        } catch (e) {
+          // Don't fail expense creation if usage increment fails
+          _log('⚠️ Failed to increment category usage: $e');
+        }
+      }
+
       // Log activity using centralized service
       if (_activityLoggerService != null &&
           actorName != null &&
@@ -159,6 +175,19 @@ class ExpenseCubit extends Cubit<ExpenseState> {
 
       // Don't emit ExpenseUpdated - let Firestore stream handle the update
       // This prevents the buildWhen filter from blocking UI updates on mobile
+
+      // Increment category usage count if category changed (non-fatal)
+      if (_categoryRepository != null &&
+          oldExpense != null &&
+          expense.categoryId != null &&
+          expense.categoryId != oldExpense.categoryId) {
+        try {
+          await _categoryRepository.incrementCategoryUsage(expense.categoryId!);
+        } catch (e) {
+          // Don't fail expense update if usage increment fails
+          _log('⚠️ Failed to increment category usage: $e');
+        }
+      }
 
       // Log activity using centralized service
       if (_activityLoggerService != null &&

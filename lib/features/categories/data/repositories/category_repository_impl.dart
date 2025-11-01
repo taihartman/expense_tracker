@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:string_similarity/string_similarity.dart';
 import '../../../../core/constants/categories.dart';
 import '../../../../core/validators/category_validator.dart';
@@ -199,6 +200,20 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
+  Future<void> incrementCategoryUsage(String categoryId) async {
+    try {
+      await _firestoreService.categories.doc(categoryId).update({
+        'usageCount': FieldValue.increment(1),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      // Log error but don't throw - this is a non-fatal operation
+      // Failures shouldn't prevent expense creation/update
+      debugPrint('⚠️ Failed to increment category usage for $categoryId: $e');
+    }
+  }
+
+  @override
   Future<bool> categoryExists(String name) async {
     try {
       final sanitizedName = CategoryValidator.sanitize(name);
@@ -296,16 +311,16 @@ class CategoryRepositoryImpl implements CategoryRepository {
         final normalizedName = category.name.toLowerCase();
 
         // Calculate Jaro-Winkler similarity (0.0 to 1.0)
-        final similarity = normalizedQuery.similarityTo(
-          normalizedName,
-        );
+        final similarity = normalizedQuery.similarityTo(normalizedName);
 
         // Only include matches above threshold
         if (similarity >= threshold) {
-          matches.add(SimilarCategoryMatch(
-            category: category,
-            similarityScore: similarity,
-          ));
+          matches.add(
+            SimilarCategoryMatch(
+              category: category,
+              similarityScore: similarity,
+            ),
+          );
         }
       }
 
