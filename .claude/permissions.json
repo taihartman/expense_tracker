@@ -1,8 +1,0 @@
-{
-  "allowedCommands": [
-    {
-      "command": "SlashCommand",
-      "pattern": "/docs.log*"
-    }
-  ]
-}
