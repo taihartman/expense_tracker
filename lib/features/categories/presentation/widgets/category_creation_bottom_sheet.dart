@@ -415,13 +415,16 @@ class _CategoryCreationBottomSheetState
                                 ),
                               ),
                               const SizedBox(height: AppTheme.spacing1),
-                              CategoryIconPicker(
-                                selectedIcon: _selectedIcon,
-                                onIconSelected: (iconName) {
-                                  setState(() {
-                                    _selectedIcon = iconName;
-                                  });
-                                },
+                              SizedBox(
+                                height: 300,
+                                child: CategoryIconPicker(
+                                  selectedIcon: _selectedIcon,
+                                  onIconSelected: (iconName) {
+                                    setState(() {
+                                      _selectedIcon = iconName;
+                                    });
+                                  },
+                                ),
                               ),
 
                               const SizedBox(height: AppTheme.spacing3),
@@ -434,13 +437,16 @@ class _CategoryCreationBottomSheetState
                                 ),
                               ),
                               const SizedBox(height: AppTheme.spacing1),
-                              CategoryColorPicker(
-                                selectedColor: _selectedColor,
-                                onColorSelected: (colorHex) {
-                                  setState(() {
-                                    _selectedColor = colorHex;
-                                  });
-                                },
+                              SizedBox(
+                                height: 200,
+                                child: CategoryColorPicker(
+                                  selectedColor: _selectedColor,
+                                  onColorSelected: (colorHex) {
+                                    setState(() {
+                                      _selectedColor = colorHex;
+                                    });
+                                  },
+                                ),
                               ),
 
                               const SizedBox(height: AppTheme.spacing3),
