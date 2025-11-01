@@ -320,7 +320,6 @@ class ExpenseTrackerApp extends StatelessWidget {
               return ExpenseCubit(
                 expenseRepository: _expenseRepository,
                 activityLoggerService: _activityLoggerService,
-                categoryRepository: _categoryRepository,
               );
             },
           ),
@@ -333,6 +332,7 @@ class ExpenseTrackerApp extends StatelessWidget {
                 tripRepository: _tripRepository,
                 settledTransferRepository: _settledTransferRepository,
                 categoryRepository: _categoryRepository,
+                localStorageService: localStorageService,
                 activityLoggerService: _activityLoggerService,
               );
             },

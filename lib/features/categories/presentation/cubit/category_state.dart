@@ -73,19 +73,6 @@ class CategoryCreated extends CategoryState {
   List<Object?> get props => [category];
 }
 
-/// Category usage incremented successfully
-///
-/// Emitted after an expense is assigned to a category.
-/// Used to update local category list popularity.
-class CategoryUsageIncremented extends CategoryState {
-  final String categoryId;
-
-  const CategoryUsageIncremented({required this.categoryId});
-
-  @override
-  List<Object?> get props => [categoryId];
-}
-
 /// Rate limit check completed
 class CategoryRateLimitChecked extends CategoryState {
   final bool canCreate;

@@ -3,12 +3,14 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i5;
 
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
-    as _i5;
-import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart'
     as _i3;
+import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart'
+    as _i7;
+import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart'
+    as _i4;
 import 'package:expense_tracker/features/categories/presentation/cubit/category_state.dart'
     as _i2;
 import 'package:flutter_bloc/flutter_bloc.dart' as _i6;
@@ -33,10 +35,15 @@ class _FakeCategoryState_0 extends _i1.SmartFake implements _i2.CategoryState {
     : super(parent, parentInvocation);
 }
 
+class _FakeCategory_1 extends _i1.SmartFake implements _i3.Category {
+  _FakeCategory_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [CategoryCubit].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
+class MockCategoryCubit extends _i1.Mock implements _i4.CategoryCubit {
   MockCategoryCubit() {
     _i1.throwOnMissingStub(this);
   }
@@ -50,12 +57,12 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
           as _i2.CategoryState);
 
   @override
-  _i4.Stream<_i2.CategoryState> get stream =>
+  _i5.Stream<_i2.CategoryState> get stream =>
       (super.noSuchMethod(
             Invocation.getter(#stream),
-            returnValue: _i4.Stream<_i2.CategoryState>.empty(),
+            returnValue: _i5.Stream<_i2.CategoryState>.empty(),
           )
-          as _i4.Stream<_i2.CategoryState>);
+          as _i5.Stream<_i2.CategoryState>);
 
   @override
   bool get isClosed =>
@@ -87,7 +94,7 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
   );
 
   @override
-  _i4.Future<void> createCategory({
+  _i5.Future<void> createCategory({
     required String? name,
     String? icon = 'label',
     required String? color,
@@ -98,51 +105,51 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
               #icon: icon,
               #color: color,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> incrementCategoryUsage(String? categoryId) =>
+  _i5.Future<void> incrementCategoryUsage(String? categoryId) =>
       (super.noSuchMethod(
             Invocation.method(#incrementCategoryUsage, [categoryId]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> checkRateLimit() =>
+  _i5.Future<void> checkRateLimit() =>
       (super.noSuchMethod(
             Invocation.method(#checkRateLimit, []),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i4.Future<void> loadCategoriesByIds(List<String>? ids) =>
+  _i5.Future<void> loadCategoriesByIds(List<String>? ids) =>
       (super.noSuchMethod(
             Invocation.method(#loadCategoriesByIds, [ids]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
-  _i5.Category? getCategoryById(String? categoryId) =>
+  _i3.Category? getCategoryById(String? categoryId) =>
       (super.noSuchMethod(Invocation.method(#getCategoryById, [categoryId]))
-          as _i5.Category?);
+          as _i3.Category?);
 
   @override
-  _i4.Future<void> close() =>
+  _i5.Future<void> close() =>
       (super.noSuchMethod(
             Invocation.method(#close, []),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i5.Future<void>);
 
   @override
   void emit(_i2.CategoryState? state) => super.noSuchMethod(
@@ -167,4 +174,133 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
     Invocation.method(#onError, [error, stackTrace]),
     returnValueForMissingStub: null,
   );
+}
+
+/// A class which mocks [CategoryRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCategoryRepository extends _i1.Mock
+    implements _i7.CategoryRepository {
+  MockCategoryRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i5.Stream<List<_i3.Category>> getTopCategories({int? limit = 5}) =>
+      (super.noSuchMethod(
+            Invocation.method(#getTopCategories, [], {#limit: limit}),
+            returnValue: _i5.Stream<List<_i3.Category>>.empty(),
+          )
+          as _i5.Stream<List<_i3.Category>>);
+
+  @override
+  _i5.Stream<List<_i3.Category>> searchCategories(String? query) =>
+      (super.noSuchMethod(
+            Invocation.method(#searchCategories, [query]),
+            returnValue: _i5.Stream<List<_i3.Category>>.empty(),
+          )
+          as _i5.Stream<List<_i3.Category>>);
+
+  @override
+  _i5.Future<_i3.Category?> getCategoryById(String? categoryId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getCategoryById, [categoryId]),
+            returnValue: _i5.Future<_i3.Category?>.value(),
+          )
+          as _i5.Future<_i3.Category?>);
+
+  @override
+  _i5.Future<List<_i3.Category>> getCategoriesByIds(List<String>? ids) =>
+      (super.noSuchMethod(
+            Invocation.method(#getCategoriesByIds, [ids]),
+            returnValue: _i5.Future<List<_i3.Category>>.value(<_i3.Category>[]),
+          )
+          as _i5.Future<List<_i3.Category>>);
+
+  @override
+  _i5.Future<_i3.Category> createCategory({
+    required String? name,
+    String? icon = 'label',
+    required String? color,
+    required String? userId,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#createCategory, [], {
+              #name: name,
+              #icon: icon,
+              #color: color,
+              #userId: userId,
+            }),
+            returnValue: _i5.Future<_i3.Category>.value(
+              _FakeCategory_1(
+                this,
+                Invocation.method(#createCategory, [], {
+                  #name: name,
+                  #icon: icon,
+                  #color: color,
+                  #userId: userId,
+                }),
+              ),
+            ),
+          )
+          as _i5.Future<_i3.Category>);
+
+  @override
+  _i5.Future<void> incrementCategoryUsage(String? categoryId) =>
+      (super.noSuchMethod(
+            Invocation.method(#incrementCategoryUsage, [categoryId]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<bool> categoryExists(String? name) =>
+      (super.noSuchMethod(
+            Invocation.method(#categoryExists, [name]),
+            returnValue: _i5.Future<bool>.value(false),
+          )
+          as _i5.Future<bool>);
+
+  @override
+  _i5.Future<bool> canUserCreateCategory(String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#canUserCreateCategory, [userId]),
+            returnValue: _i5.Future<bool>.value(false),
+          )
+          as _i5.Future<bool>);
+
+  @override
+  _i5.Future<List<_i3.Category>> seedDefaultCategories() =>
+      (super.noSuchMethod(
+            Invocation.method(#seedDefaultCategories, []),
+            returnValue: _i5.Future<List<_i3.Category>>.value(<_i3.Category>[]),
+          )
+          as _i5.Future<List<_i3.Category>>);
+
+  @override
+  _i5.Future<List<_i7.SimilarCategoryMatch>> findSimilarCategories(
+    String? query, {
+    double? threshold = 0.8,
+    int? limit = 3,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #findSimilarCategories,
+              [query],
+              {#threshold: threshold, #limit: limit},
+            ),
+            returnValue: _i5.Future<List<_i7.SimilarCategoryMatch>>.value(
+              <_i7.SimilarCategoryMatch>[],
+            ),
+          )
+          as _i5.Future<List<_i7.SimilarCategoryMatch>>);
+
+  @override
+  _i5.Future<String?> getMostPopularIcon(String? categoryId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getMostPopularIcon, [categoryId]),
+            returnValue: _i5.Future<String?>.value(),
+          )
+          as _i5.Future<String?>);
 }

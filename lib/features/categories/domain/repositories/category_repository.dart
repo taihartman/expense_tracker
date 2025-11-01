@@ -86,14 +86,6 @@ abstract class CategoryRepository {
     required String userId,
   });
 
-  /// Increment the usage count for a category
-  ///
-  /// Called when a category is assigned to an expense.
-  /// Updates usageCount and updatedAt timestamp.
-  ///
-  /// This operation is typically batched with expense creation.
-  Future<void> incrementCategoryUsage(String categoryId);
-
   /// Check if a category with the given name already exists (case-insensitive)
   ///
   /// Used to prevent duplicate category creation.

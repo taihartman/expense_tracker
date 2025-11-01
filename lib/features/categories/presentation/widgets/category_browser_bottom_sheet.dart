@@ -189,6 +189,23 @@ class _CategoryBrowserBottomSheetState
               // Category list
               Expanded(
                 child: BlocBuilder<CategoryCubit, CategoryState>(
+                  // Prevent rebuilds after widget disposal (when navigating away)
+                  // This fixes "Trying to render a disposed EngineFlutterView" error
+                  buildWhen: (previous, current) {
+                    // Allow initial load and search results
+                    if (current is CategoryInitial ||
+                        current is CategoryLoadingTop ||
+                        current is CategorySearchResults ||
+                        current is CategoryError) {
+                      return true;
+                    }
+                    // Prevent rebuild when transitioning from search back to top categories
+                    // This happens after Navigator.pop() when search stream completes
+                    if (current is CategoryTopLoaded && previous is CategorySearchResults) {
+                      return false;
+                    }
+                    return true;
+                  },
                   builder: (context, state) {
                     // Loading state
                     if (state is CategoryInitial) {

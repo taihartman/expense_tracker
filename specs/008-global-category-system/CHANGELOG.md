@@ -27,6 +27,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <!-- Add entries below in reverse chronological order (newest first) -->
 
+## 2025-11-01
+
+### Changed
+- Fixed 'Trying to render disposed EngineFlutterView' error when closing CategoryBrowserBottomSheet by adding buildWhen condition to prevent rebuilds after Navigator.pop(). Removed incrementCategoryUsage feature entirely (was blocked by Firestore security rules and creating console noise). Removed from CategoryRepository, CategoryRepositoryImpl, CategoryCubit, CategoryState, ExpenseCubit, and all related tests.
+
+
+## 2025-11-01
+
+### Changed
+- Fixed race condition where category chips wouldn't appear when selected from browse & search (if not in top 5). Root cause: BlocBuilder rendered before async _loadSelectedCategory() completed. Solution: Added synchronous cache check in BlocBuilder to load selected category from cubit cache before rendering chips. When user selects from browse sheet, category is already in cubit cache from searchCategories() call, so we can access it synchronously. This ensures the selected category chip appears immediately, providing instant visual feedback. Updated 3 tests to mock getCategoryById for the new sync cache check. All 19 CategorySelector tests pass.
+
+
+## 2025-11-01
+
+### Changed
+- Fixed bug: Category chips now persist across all CategoryCubit state changes. Previously, chips would disappear after expense creation because CategoryUsageIncremented state wasn't handled. Simplified BlocBuilder logic in CategorySelector to use cached categories for all states except initial loading. Added comprehensive state persistence tests to verify chips remain visible when CategoryUsageIncremented and CategoryCreated states are emitted. This ensures a stable UX where category chips are always available during expense creation/editing workflows.
+
+
+## 2025-11-01
+
+### Changed
+- fix: Fixed category system UX issues - (1) Icon customization dialog now updates UI in real-time using StatefulBuilder with Cancel/Confirm buttons, (2) Added success SnackBars after category creation and icon preference recording for better user feedback, (3) Fixed usage count cache staleness by invalidating CategoryCubit cache after expense creation/update. Added localized strings commonConfirm, categoryCreatedWithName, categoryIconPreferenceRecorded to app_en.arb.
+
+
+## 2025-11-01
+
+### Changed
+- perf: Fixed CategorySelector performance issue causing duplicate Firebase reads. Changed from direct CategoryRepository access to using CategoryCubit cache (getCategoryById + loadCategoriesByIds). Changed from loadTopCategories() to loadTopCategoriesIfStale() for 24-hour TTL. Reduced Firebase reads from 2→0-1 per expense edit when category is cached. Added TDD tests proving the bug and verifying the fix.
+
+
 ## 2025-10-31 - Migration: Production Migration COMPLETE ✅
 
 ### Migration Executed Successfully

@@ -199,18 +199,6 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
-  Future<void> incrementCategoryUsage(String categoryId) async {
-    try {
-      await _firestoreService.categories.doc(categoryId).update({
-        'usageCount': FieldValue.increment(1),
-        'updatedAt': Timestamp.fromDate(DateTime.now()),
-      });
-    } catch (e) {
-      throw Exception('Failed to increment category usage: $e');
-    }
-  }
-
-  @override
   Future<bool> categoryExists(String name) async {
     try {
       final sanitizedName = CategoryValidator.sanitize(name);

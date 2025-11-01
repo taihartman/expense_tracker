@@ -17,6 +17,8 @@ class LocalStorageService {
   static const String _selectedTripIdKey = 'selected_trip_id';
   static const String _joinedTripIdsKey = 'joined_trip_ids';
   static const String _tripIdentityKeyPrefix = 'trip_identity_';
+  static const String _settlementFilterUserKeyPrefix = 'settlement_filter_user_';
+  static const String _settlementFilterModeKeyPrefix = 'settlement_filter_mode_';
 
   final SharedPreferences _prefs;
 
@@ -288,5 +290,67 @@ class LocalStorageService {
     }
 
     _log('✅ Cleared ${identityKeys.length} user identity entries');
+  }
+
+  /// Save the settlement filter for a specific trip
+  ///
+  /// Stores the selected user ID and filter mode for the settlement screen.
+  /// Pass null to userId or filterMode to skip updating that value.
+  Future<void> saveSettlementFilter(
+    String tripId, {
+    String? userId,
+    String? filterMode,
+  }) async {
+    _log('💾 Saving settlement filter for trip $tripId');
+
+    if (userId != null) {
+      final userKey = '$_settlementFilterUserKeyPrefix$tripId';
+      _log('💾 Saving user filter: $userId (key: $userKey)');
+      await _prefs.setString(userKey, userId);
+    }
+
+    if (filterMode != null) {
+      final modeKey = '$_settlementFilterModeKeyPrefix$tripId';
+      _log('💾 Saving filter mode: $filterMode (key: $modeKey)');
+      await _prefs.setString(modeKey, filterMode);
+    }
+
+    _log('✅ Settlement filter saved');
+  }
+
+  /// Get the settlement filter for a specific trip
+  ///
+  /// Returns a record with the saved userId and filterMode.
+  /// Returns null userId if no user filter is saved.
+  /// Returns 'all' as default filterMode if none is saved.
+  ({String? userId, String filterMode}) getSettlementFilter(String tripId) {
+    final userKey = '$_settlementFilterUserKeyPrefix$tripId';
+    final modeKey = '$_settlementFilterModeKeyPrefix$tripId';
+
+    _log('📖 Reading settlement filter for trip $tripId');
+
+    final userId = _prefs.getString(userKey);
+    final filterMode = _prefs.getString(modeKey) ?? 'all';
+
+    _log(
+      '📖 Settlement filter: userId=${userId ?? "null"}, mode=$filterMode',
+    );
+
+    return (userId: userId, filterMode: filterMode);
+  }
+
+  /// Clear the settlement filter for a specific trip
+  ///
+  /// Removes both the user filter and filter mode from storage.
+  Future<void> clearSettlementFilter(String tripId) async {
+    final userKey = '$_settlementFilterUserKeyPrefix$tripId';
+    final modeKey = '$_settlementFilterModeKeyPrefix$tripId';
+
+    _log('🗑️ Clearing settlement filter for trip $tripId');
+
+    await _prefs.remove(userKey);
+    await _prefs.remove(modeKey);
+
+    _log('✅ Settlement filter cleared');
   }
 }

@@ -14,7 +14,6 @@ import 'category_state.dart';
 /// - Loading top N popular categories for chip selector
 /// - Searching categories with autocomplete
 /// - Creating new categories with validation and rate limiting
-/// - Incrementing category usage when assigned to expenses
 /// - Checking rate limit status for UI feedback
 class CategoryCubit extends Cubit<CategoryState> {
   final CategoryRepository _categoryRepository;
@@ -250,31 +249,6 @@ class CategoryCubit extends Cubit<CategoryState> {
         CategoryError(
           message: 'Failed to create category: $e',
           type: CategoryErrorType.createFailed,
-        ),
-      );
-    }
-  }
-
-  /// Increment category usage count
-  ///
-  /// Called when a category is assigned to an expense.
-  /// Updates the popularity ranking for future searches.
-  ///
-  /// Emits:
-  /// - CategoryUsageIncremented on success
-  /// - CategoryError on failure
-  ///
-  /// This operation fails silently in UI to not disrupt expense creation.
-  Future<void> incrementCategoryUsage(String categoryId) async {
-    try {
-      await _categoryRepository.incrementCategoryUsage(categoryId);
-      emit(CategoryUsageIncremented(categoryId: categoryId));
-    } catch (e) {
-      // Silent failure - don't disrupt expense creation
-      emit(
-        CategoryError(
-          message: 'Failed to update category usage: $e',
-          type: CategoryErrorType.generic,
         ),
       );
     }

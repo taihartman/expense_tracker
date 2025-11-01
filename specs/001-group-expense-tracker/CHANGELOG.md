@@ -17,6 +17,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Development Log
 
+## 2025-11-01
+
+### Changed
+- Fixed console errors: Added buildWhen to CategoryBrowserBottomSheet to prevent disposed view errors. Removed incrementCategoryUsage feature (was blocked by Firestore security rules and non-functional).
+
+
+## 2025-11-01
+
+### Changed
+- Fixed category selector bug where selected categories from browse sheet weren't appearing as chips. Issue: selectedIsInTop was checking against cached top 10 instead of rendered top 3. Updated test data to use 10 categories and added regression test to prevent future occurrence.
+
+
 ## 2025-10-31 - Settlement Load Performance Optimizations
 
 ### Changed

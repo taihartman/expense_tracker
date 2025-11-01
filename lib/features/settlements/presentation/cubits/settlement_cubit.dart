@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../../core/services/activity_logger_service.dart';
+import '../../../../core/services/local_storage_service.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/category_spending.dart';
 import '../../domain/models/settlement_summary.dart';
@@ -43,6 +44,7 @@ class SettlementCubit extends Cubit<SettlementState> {
   final CategoryRepository _categoryRepository;
   final SettlementCalculator _settlementCalculator;
   final ActivityLoggerService? _activityLoggerService;
+  final LocalStorageService _localStorageService;
 
   StreamSubscription? _combinedSubscription;
   String? _currentTripId;
@@ -58,6 +60,7 @@ class SettlementCubit extends Cubit<SettlementState> {
     required TripRepository tripRepository,
     required SettledTransferRepository settledTransferRepository,
     required CategoryRepository categoryRepository,
+    required LocalStorageService localStorageService,
     SettlementCalculator? settlementCalculator,
     ActivityLoggerService? activityLoggerService,
   }) : _settlementRepository = settlementRepository,
@@ -65,6 +68,7 @@ class SettlementCubit extends Cubit<SettlementState> {
        _tripRepository = tripRepository,
        _settledTransferRepository = settledTransferRepository,
        _categoryRepository = categoryRepository,
+       _localStorageService = localStorageService,
        _settlementCalculator = settlementCalculator ?? SettlementCalculator(),
        _activityLoggerService = activityLoggerService,
        super(const SettlementInitial());
@@ -278,12 +282,44 @@ class SettlementCubit extends Cubit<SettlementState> {
                 }
 
                 if (!isClosed) {
+                  // Restore saved filter from local storage
+                  final savedFilter = _localStorageService.getSettlementFilter(tripId);
+
+                  // Validate that saved userId exists in current trip participants
+                  String? validUserId;
+                  if (savedFilter.userId != null) {
+                    final userExists = summary.personSummaries.containsKey(savedFilter.userId);
+                    if (userExists) {
+                      validUserId = savedFilter.userId;
+                      _log(
+                        '🔍 Restored filter: userId=$validUserId, mode=${savedFilter.filterMode}',
+                      );
+                    } else {
+                      _log(
+                        '⚠️ Saved filter user (${savedFilter.userId}) not found in trip, ignoring',
+                      );
+                    }
+                  }
+
+                  // Parse filter mode from string
+                  TransferFilterMode filterMode = TransferFilterMode.all;
+                  try {
+                    filterMode = TransferFilterMode.values.firstWhere(
+                      (e) => e.name == savedFilter.filterMode,
+                      orElse: () => TransferFilterMode.all,
+                    );
+                  } catch (e) {
+                    _log('⚠️ Invalid filter mode: ${savedFilter.filterMode}, using default');
+                  }
+
                   emit(
                     SettlementLoaded(
                       summary: summary,
                       activeTransfers: separated.active,
                       settledTransfers: separated.settled,
                       personCategorySpending: categorySpending,
+                      selectedUserId: validUserId,
+                      filterMode: filterMode,
                     ),
                   );
                 }
@@ -408,6 +444,15 @@ class SettlementCubit extends Cubit<SettlementState> {
       emit(
         currentState.copyWith(selectedUserId: userId, filterMode: filterMode),
       );
+
+      // Persist filter to local storage
+      if (_currentTripId != null) {
+        _localStorageService.saveSettlementFilter(
+          _currentTripId!,
+          userId: userId,
+          filterMode: filterMode.name,
+        );
+      }
     }
   }
 
@@ -417,6 +462,11 @@ class SettlementCubit extends Cubit<SettlementState> {
     if (currentState is SettlementLoaded) {
       _log('🔍 Clearing user filter');
       emit(currentState.copyWith(clearFilter: true));
+
+      // Clear filter from local storage
+      if (_currentTripId != null) {
+        _localStorageService.clearSettlementFilter(_currentTripId!);
+      }
     }
   }
 
@@ -427,6 +477,14 @@ class SettlementCubit extends Cubit<SettlementState> {
         currentState.selectedUserId != null) {
       _log('🔍 Updating filter mode: $filterMode');
       emit(currentState.copyWith(filterMode: filterMode));
+
+      // Persist filter mode change to local storage
+      if (_currentTripId != null) {
+        _localStorageService.saveSettlementFilter(
+          _currentTripId!,
+          filterMode: filterMode.name,
+        );
+      }
     }
   }
 

@@ -184,6 +184,12 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get commonClose;
 
+  /// No description provided for @commonConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get commonConfirm;
+
   /// No description provided for @splashAppName.
   ///
   /// In en, this message translates to:
@@ -2787,6 +2793,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Category created successfully'**
   String get categoryCreationSuccess;
+
+  /// No description provided for @categoryCreatedWithName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category \"{name}\" created!'**
+  String categoryCreatedWithName(String name);
+
+  /// No description provided for @categoryIconPreferenceRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon preference recorded'**
+  String get categoryIconPreferenceRecorded;
 
   /// No description provided for @categoryValidationEmpty.
   ///

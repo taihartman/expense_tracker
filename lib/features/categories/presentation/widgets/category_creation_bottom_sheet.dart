@@ -100,34 +100,69 @@ class _CategoryCreationBottomSheetState
       // Show icon picker dialog with most popular icon preselected
       await showDialog(
         context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text('Customize "${category.name}" Icon'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: CategoryIconPicker(
-              selectedIcon: defaultIcon,
-              onIconSelected: (selectedIcon) async {
-                // Record the icon preference vote
-                try {
-                  await customizationRepository.recordIconPreference(
-                    category.id,
-                    selectedIcon,
-                  );
-                } catch (e) {
-                  // Silent failure - voting is non-critical
-                }
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setDialogState) {
+            String currentSelectedIcon = defaultIcon;
 
-                // Close the dialog and the creation sheet
-                if (dialogContext.mounted) {
-                  Navigator.of(dialogContext).pop();
-                }
-                if (mounted) {
-                  widget.onCategoryCreated();
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ),
+            return AlertDialog(
+              title: Text('Customize "${category.name}" Icon'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: CategoryIconPicker(
+                  selectedIcon: currentSelectedIcon,
+                  onIconSelected: (selectedIcon) {
+                    setDialogState(() {
+                      currentSelectedIcon = selectedIcon;
+                    });
+                  },
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Text(context.l10n.commonCancel),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    // Record the icon preference vote
+                    try {
+                      await customizationRepository.recordIconPreference(
+                        category.id,
+                        currentSelectedIcon,
+                      );
+
+                      // Show brief success message
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              context.l10n.categoryIconPreferenceRecorded,
+                            ),
+                            duration: const Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      // Silent failure - voting is non-critical
+                    }
+
+                    // Close the dialog and the creation sheet
+                    if (dialogContext.mounted) {
+                      Navigator.of(dialogContext).pop();
+                    }
+                    if (mounted) {
+                      widget.onCategoryCreated();
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: Text(context.l10n.commonConfirm),
+                ),
+              ],
+            );
+          },
         ),
       );
     } catch (e) {
@@ -177,6 +212,18 @@ class _CategoryCreationBottomSheetState
     return BlocListener<CategoryCubit, CategoryState>(
       listener: (context, state) {
         if (state is CategoryCreated) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                context.l10n.categoryCreatedWithName(state.category.name),
+              ),
+              backgroundColor: theme.colorScheme.primaryContainer,
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+
           // Success - call callback and dismiss
           widget.onCategoryCreated();
           Navigator.of(context).pop();
