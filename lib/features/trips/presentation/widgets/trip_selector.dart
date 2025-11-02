@@ -64,7 +64,7 @@ class TripSelectorWidget extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            trip.baseCurrency.code,
+                            trip.defaultCurrency.code,
                             style: Theme.of(context).textTheme.labelSmall
                                 ?.copyWith(
                                   color: Theme.of(
@@ -147,7 +147,7 @@ class TripSelectorWidget extends StatelessWidget {
                     return ListTile(
                       leading: const Icon(Icons.flight_takeoff),
                       title: Text(trip.name),
-                      subtitle: Text(trip.baseCurrency.code),
+                      subtitle: Text(trip.defaultCurrency.code),
                       onTap: () async {
                         await context.read<TripCubit>().selectTrip(trip);
                         if (context.mounted) {

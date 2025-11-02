@@ -170,7 +170,7 @@ class SettlementCubit extends Cubit<SettlementState> {
       }
 
       _log(
-        '📍 Trip: ${_cachedTrip!.name}, Base Currency: ${_cachedTrip!.baseCurrency.code}',
+        '📍 Trip: ${_cachedTrip!.name}, Base Currency: ${_cachedTrip!.defaultCurrency.code}',
       );
       _log(
         '⚡ Parallel fetch complete - trip, expenses, settled transfers, and ${_cachedCategories?.length ?? 0} categories loaded',
@@ -268,7 +268,7 @@ class SettlementCubit extends Cubit<SettlementState> {
                     final result = _settlementCalculator
                         .calculateSettlementData(
                           expenses: data.expenses,
-                          baseCurrency: _cachedTrip!.baseCurrency,
+                          baseCurrency: _cachedTrip!.defaultCurrency,
                           categories: _cachedCategories,
                         );
                     categorySpending = result.categorySpending;

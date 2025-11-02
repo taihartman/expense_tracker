@@ -247,7 +247,7 @@ class TripSettingsPage extends StatelessWidget {
               context,
               icon: Icons.attach_money,
               label: context.l10n.tripFieldBaseCurrencyLabel,
-              value: trip.baseCurrency.code,
+              value: trip.defaultCurrency.code,
             ),
             const Divider(height: AppTheme.spacing3),
             _buildDetailRow(

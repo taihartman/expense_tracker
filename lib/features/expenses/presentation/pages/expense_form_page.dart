@@ -155,7 +155,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
               orElse: () => tripState.selectedTrip!,
             );
             tripParticipants = trip.participants;
-            tripBaseCurrency = trip.baseCurrency;
+            tripBaseCurrency = trip.defaultCurrency;
           }
 
           // Show error if no participants configured

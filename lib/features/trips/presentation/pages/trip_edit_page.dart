@@ -30,7 +30,7 @@ class _TripEditPageState extends State<TripEditPage> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.trip.name);
-    _selectedCurrency = widget.trip.baseCurrency;
+    _selectedCurrency = widget.trip.defaultCurrency;
   }
 
   @override

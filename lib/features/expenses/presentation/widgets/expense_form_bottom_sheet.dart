@@ -91,7 +91,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
 
       // Use trip participants and base currency
       availableParticipants = trip.participants;
-      tripBaseCurrency = trip.baseCurrency;
+      tripBaseCurrency = trip.defaultCurrency;
     }
 
     if (widget.expense != null) {

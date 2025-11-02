@@ -701,6 +701,24 @@
   "currencySearchModalTitle": "Select Currency",
   "currencySearchClearButton": "Clear search",
 
+  "multiCurrencySelectorTitle": "Allowed Currencies",
+  "multiCurrencySelectorHelpText": "Select 1-10 currencies for this trip. The first currency will be the default for new expenses.",
+  "multiCurrencySelectorAddButton": "Add Currency",
+  "multiCurrencySelectorMaxError": "Maximum 10 currencies allowed",
+  "multiCurrencySelectorMinError": "At least 1 currency is required",
+  "multiCurrencySelectorDuplicateError": "This currency is already added",
+  "multiCurrencySelectorMoveUp": "Move up",
+  "multiCurrencySelectorMoveDown": "Move down",
+  "multiCurrencySelectorRemove": "Remove currency",
+  "multiCurrencySelectorChipLabel": "{currencyCode}",
+  "@multiCurrencySelectorChipLabel": {
+    "placeholders": {
+      "currencyCode": {
+        "type": "String"
+      }
+    }
+  },
+
 
   "categoryMeals": "Meals",
   "categoryTransport": "Transport",

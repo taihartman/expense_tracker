@@ -64,7 +64,7 @@ String generateShareMessage({
   String? sharedByParticipantId,
 }) {
   final link = generateShareableLink(trip.id, sharedBy: sharedByParticipantId);
-  final currency = trip.baseCurrency.name;
+  final currency = trip.defaultCurrency.name;
 
   // Build participant context line
   final participantContext = _buildParticipantContext(

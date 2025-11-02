@@ -20,9 +20,9 @@ description: "Task list for Trip Multi-Currency Selection feature"
 
 **Purpose**: Project initialization and localization strings
 
-- [ ] T001 Add localization strings to lib/l10n/app_en.arb for multi-currency selector UI (multiCurrencySelectorTitle, multiCurrencySelectorHelpText, multiCurrencySelectorAddButton, multiCurrencySelectorMaxError, multiCurrencySelectorMinError, multiCurrencySelectorDuplicateError, multiCurrencySelectorMoveUp, multiCurrencySelectorMoveDown, multiCurrencySelectorRemove, multiCurrencySelectorChipLabel)
-- [ ] T002 Run flutter pub get to generate localization code
-- [ ] T003 Verify localization strings available via context.l10n
+- [x] T001 Add localization strings to lib/l10n/app_en.arb for multi-currency selector UI (multiCurrencySelectorTitle, multiCurrencySelectorHelpText, multiCurrencySelectorAddButton, multiCurrencySelectorMaxError, multiCurrencySelectorMinError, multiCurrencySelectorDuplicateError, multiCurrencySelectorMoveUp, multiCurrencySelectorMoveDown, multiCurrencySelectorRemove, multiCurrencySelectorChipLabel)
+- [x] T002 Run flutter pub get to generate localization code
+- [x] T003 Verify localization strings available via context.l10n
 
 ---
 
@@ -34,22 +34,22 @@ description: "Task list for Trip Multi-Currency Selection feature"
 
 ### Domain Model Updates
 
-- [ ] T004 [P] Update Trip domain model in lib/features/trips/domain/models/trip.dart (add allowedCurrencies field, deprecate baseCurrency, add defaultCurrency getter, update validate() method, update copyWith(), update toString())
-- [ ] T005 [P] Create TripNotFoundException exception in lib/features/trips/domain/exceptions/trip_exceptions.dart
-- [ ] T006 [P] Create DataIntegrityException exception in lib/features/trips/domain/exceptions/trip_exceptions.dart
+- [x] T004 [P] Update Trip domain model in lib/features/trips/domain/models/trip.dart (add allowedCurrencies field, deprecate baseCurrency, add defaultCurrency getter, update validate() method, update copyWith(), update toString())
+- [x] T005 [P] Create TripNotFoundException exception in lib/features/trips/domain/exceptions/trip_exceptions.dart
+- [x] T006 [P] Create DataIntegrityException exception in lib/features/trips/domain/exceptions/trip_exceptions.dart
 
 ### Repository Interface Updates
 
-- [ ] T007 Update TripRepository interface in lib/features/trips/domain/repositories/trip_repository.dart (add getAllowedCurrencies() method signature, add updateAllowedCurrencies() method signature)
+- [x] T007 Update TripRepository interface in lib/features/trips/domain/repositories/trip_repository.dart (add getAllowedCurrencies() method signature, add updateAllowedCurrencies() method signature)
 
 ### Data Model Updates
 
-- [ ] T008 Update TripModel serialization in lib/features/trips/data/models/trip_model.dart (add allowedCurrencies field, update fromFirestore() to handle legacy trips, update toFirestore(), update toDomain() with migration logic, update fromDomain())
+- [x] T008 Update TripModel serialization in lib/features/trips/data/models/trip_model.dart (add allowedCurrencies field, update fromFirestore() to handle legacy trips, update toFirestore(), update toDomain() with migration logic, update fromDomain())
 
 ### Repository Implementation Updates
 
-- [ ] T009 Implement getAllowedCurrencies() in lib/features/trips/data/repositories/trip_repository_impl.dart (reuse getTripById, handle legacy trips via TripModel.toDomain(), throw TripNotFoundException if trip not found)
-- [ ] T010 Implement updateAllowedCurrencies() in lib/features/trips/data/repositories/trip_repository_impl.dart (validate 1-10 currencies, validate no duplicates, validate trip exists, update Firestore with new allowedCurrencies array)
+- [x] T009 Implement getAllowedCurrencies() in lib/features/trips/data/repositories/trip_repository_impl.dart (reuse getTripById, handle legacy trips via TripModel.toDomain(), throw TripNotFoundException if trip not found)
+- [x] T010 Implement updateAllowedCurrencies() in lib/features/trips/data/repositories/trip_repository_impl.dart (validate 1-10 currencies, validate no duplicates, validate trip exists, update Firestore with new allowedCurrencies array)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

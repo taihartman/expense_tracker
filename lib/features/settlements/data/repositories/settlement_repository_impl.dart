@@ -148,7 +148,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
       if (trip == null) {
         throw Exception('Trip not found: $tripId');
       }
-      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
+      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.defaultCurrency.code}');
 
       return await _computeSettlementInternal(tripId, trip, expenses);
     } catch (e) {
@@ -167,7 +167,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
       if (trip == null) {
         throw Exception('Trip not found: $tripId');
       }
-      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
+      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.defaultCurrency.code}');
 
       // Get all expenses for the trip (await first value from stream)
       final expenses = await _expenseRepository.getExpensesByTrip(tripId).first;
@@ -194,7 +194,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
     _log('\n=== CALCULATING PERSON SUMMARIES ===');
       var personSummaries = _calculator.calculatePersonSummaries(
         expenses: expenses,
-        baseCurrency: trip.baseCurrency,
+        baseCurrency: trip.defaultCurrency,
       );
 
       // Get existing transfers and build list of settled transfers
@@ -320,7 +320,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
       // Create settlement summary with adjusted summaries
       final settlementSummary = SettlementSummary(
         tripId: tripId,
-        baseCurrency: trip.baseCurrency,
+        baseCurrency: trip.defaultCurrency,
         personSummaries: personSummaries,
         lastComputedAt: DateTime.now(),
       );

@@ -403,7 +403,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         timestamp: DateTime.now(),
         metadata: {
           'tripName': trip.name,
-          'baseCurrency': trip.baseCurrency.code,
+          'baseCurrency': trip.defaultCurrency.code,
         },
       );
 
@@ -513,9 +513,9 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
       }
 
       // Detect currency change
-      if (oldTrip.baseCurrency != newTrip.baseCurrency) {
+      if (oldTrip.defaultCurrency != newTrip.defaultCurrency) {
         changes.add(
-          'currency: ${oldTrip.baseCurrency.code} → ${newTrip.baseCurrency.code}',
+          'currency: ${oldTrip.defaultCurrency.code} → ${newTrip.defaultCurrency.code}',
         );
       }
 
@@ -540,9 +540,9 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
             'oldName': oldTrip.name,
             'newName': newTrip.name,
           },
-          if (oldTrip.baseCurrency != newTrip.baseCurrency) ...{
-            'oldCurrency': oldTrip.baseCurrency.code,
-            'newCurrency': newTrip.baseCurrency.code,
+          if (oldTrip.defaultCurrency != newTrip.defaultCurrency) ...{
+            'oldCurrency': oldTrip.defaultCurrency.code,
+            'newCurrency': newTrip.defaultCurrency.code,
           },
         },
       );
@@ -566,7 +566,7 @@ class ActivityLoggerServiceImpl implements ActivityLoggerService {
         metadata: {
           'tripId': trip.id,
           'tripName': trip.name,
-          'baseCurrency': trip.baseCurrency.code,
+          'baseCurrency': trip.defaultCurrency.code,
         },
       );
 

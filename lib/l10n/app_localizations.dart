@@ -1906,6 +1906,66 @@ abstract class AppLocalizations {
   /// **'Clear search'**
   String get currencySearchClearButton;
 
+  /// No description provided for @multiCurrencySelectorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed Currencies'**
+  String get multiCurrencySelectorTitle;
+
+  /// No description provided for @multiCurrencySelectorHelpText.
+  ///
+  /// In en, this message translates to:
+  /// **'Select 1-10 currencies for this trip. The first currency will be the default for new expenses.'**
+  String get multiCurrencySelectorHelpText;
+
+  /// No description provided for @multiCurrencySelectorAddButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Currency'**
+  String get multiCurrencySelectorAddButton;
+
+  /// No description provided for @multiCurrencySelectorMaxError.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum 10 currencies allowed'**
+  String get multiCurrencySelectorMaxError;
+
+  /// No description provided for @multiCurrencySelectorMinError.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 1 currency is required'**
+  String get multiCurrencySelectorMinError;
+
+  /// No description provided for @multiCurrencySelectorDuplicateError.
+  ///
+  /// In en, this message translates to:
+  /// **'This currency is already added'**
+  String get multiCurrencySelectorDuplicateError;
+
+  /// No description provided for @multiCurrencySelectorMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get multiCurrencySelectorMoveUp;
+
+  /// No description provided for @multiCurrencySelectorMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get multiCurrencySelectorMoveDown;
+
+  /// No description provided for @multiCurrencySelectorRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove currency'**
+  String get multiCurrencySelectorRemove;
+
+  /// No description provided for @multiCurrencySelectorChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{currencyCode}'**
+  String multiCurrencySelectorChipLabel(String currencyCode);
+
   /// No description provided for @categoryMeals.
   ///
   /// In en, this message translates to:
