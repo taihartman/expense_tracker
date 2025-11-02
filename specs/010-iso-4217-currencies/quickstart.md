@@ -209,6 +209,29 @@ dart run build_runner build --delete-conflicting-outputs
 }
 ```
 
+#### Error: "'try' can't be used as an identifier because it's a keyword"
+
+**Cause**: Currency code conflicts with Dart reserved keyword (already handled automatically)
+
+**Background**: Turkish Lira (TRY) conflicts with Dart's `try` keyword. The generator automatically escapes all 29 Dart reserved keywords using a `$` prefix.
+
+**Automatic Handling**:
+```dart
+// Generator automatically converts:
+try('TRY', 2)  // ❌ Invalid (keyword)
+
+// To:
+$try('TRY', 2)  // ✅ Valid (escaped)
+```
+
+**Reserved Keywords (auto-escaped)**:
+`assert`, `break`, `case`, `catch`, `class`, `const`, `continue`, `default`, `do`, `else`, `enum`, `extends`, `false`, `final`, `finally`, `for`, `if`, `in`, `is`, `new`, `null`, `rethrow`, `return`, `super`, `switch`, `this`, `throw`, `true`, `try`, `var`, `void`, `while`, `with`
+
+**Action Required**: None - generator handles this automatically. If you see this error, regenerate code:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
 ---
 
 ### Task 5: Update to Latest ISO 4217 Standard
