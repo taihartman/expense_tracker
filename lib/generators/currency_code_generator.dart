@@ -46,6 +46,25 @@ class _CurrencyCodeBuilder implements Builder {
 
 /// Generator for currency code enum from JSON data
 class CurrencyCodeGenerator {
+  /// Dart reserved keywords that need to be escaped
+  static const _reservedKeywords = {
+    'assert', 'break', 'case', 'catch', 'class', 'const', 'continue',
+    'default', 'do', 'else', 'enum', 'extends', 'false', 'final',
+    'finally', 'for', 'if', 'in', 'is', 'new', 'null', 'rethrow',
+    'return', 'super', 'switch', 'this', 'throw', 'true', 'try',
+    'var', 'void', 'while', 'with'
+  };
+
+  /// Convert currency code to safe enum identifier
+  String _toEnumName(String code) {
+    final lowercase = code.toLowerCase();
+    // Escape reserved keywords with $ prefix
+    if (_reservedKeywords.contains(lowercase)) {
+      return '\$$lowercase';
+    }
+    return lowercase;
+  }
+
   /// Generate Dart code from currency data
   String generate(List<Map<String, dynamic>> currencies) {
     // Validate currencies
@@ -79,7 +98,7 @@ class CurrencyCodeGenerator {
       final symbol = currency['symbol'] as String;
       final decimalPlaces = currency['decimalPlaces'] as int;
 
-      final enumName = code.toLowerCase();
+      final enumName = _toEnumName(code);
       buffer.writeln('  /// $name ($symbol, $decimalPlaces decimals)');
       buffer.write("  $enumName('$code', $decimalPlaces)");
       if (i < currencies.length - 1) {
@@ -113,7 +132,7 @@ class CurrencyCodeGenerator {
     buffer.writeln('    switch (normalized) {');
     for (final currency in currencies) {
       final code = currency['code'] as String;
-      final enumName = code.toLowerCase();
+      final enumName = _toEnumName(code);
       buffer.writeln("      case '$code': return CurrencyCode.$enumName;");
     }
     buffer.writeln('      default: return null;');
@@ -141,7 +160,7 @@ class CurrencyCodeGenerator {
     for (final currency in currencies) {
       final code = currency['code'] as String;
       final symbol = currency['symbol'] as String;
-      final enumName = code.toLowerCase();
+      final enumName = _toEnumName(code);
 
       // Escape special characters in symbol
       final escapedSymbol = symbol
@@ -162,7 +181,7 @@ class CurrencyCodeGenerator {
     for (final currency in currencies) {
       final code = currency['code'] as String;
       final name = currency['name'] as String;
-      final enumName = code.toLowerCase();
+      final enumName = _toEnumName(code);
 
       // Escape apostrophes in names
       final escapedName = name.replaceAll("'", r"\'");
@@ -185,7 +204,7 @@ class CurrencyCodeGenerator {
     // Active currencies
     for (final currency in activeCurrencies) {
       final code = currency['code'] as String;
-      final enumName = code.toLowerCase();
+      final enumName = _toEnumName(code);
       buffer.writeln('      case CurrencyCode.$enumName:');
     }
     buffer.writeln('        return true;');
@@ -194,7 +213,7 @@ class CurrencyCodeGenerator {
     if (inactiveCurrencies.isNotEmpty) {
       for (final currency in inactiveCurrencies) {
         final code = currency['code'] as String;
-        final enumName = code.toLowerCase();
+        final enumName = _toEnumName(code);
         buffer.writeln('      case CurrencyCode.$enumName:');
       }
       buffer.writeln('        return false;');
