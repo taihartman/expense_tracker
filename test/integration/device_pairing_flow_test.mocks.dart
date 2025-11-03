@@ -9,7 +9,7 @@ import 'package:expense_tracker/core/models/currency_code.dart' as _i12;
 import 'package:expense_tracker/core/services/activity_logger_service.dart'
     as _i8;
 import 'package:expense_tracker/core/services/local_storage_service.dart'
-    as _i12;
+    as _i15;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
     as _i3;
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart'
@@ -164,12 +164,12 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
           as _i6.Future<void>);
 
   @override
-  _i6.Future<List<dynamic>> getAllowedCurrencies(String? tripId) =>
+  _i6.Future<List<_i12.CurrencyCode>> getAllowedCurrencies(String tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i6.Future<List<dynamic>>.value(<dynamic>[]),
+            returnValue: _i6.Future<List<_i12.CurrencyCode>>.value(<_i12.CurrencyCode>[]),
           )
-          as _i6.Future<List<dynamic>>);
+          as _i6.Future<List<_i12.CurrencyCode>>);
 
   @override
   _i6.Future<void> updateAllowedCurrencies(
@@ -528,7 +528,7 @@ class MockCategoryRepository extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLocalStorageService extends _i1.Mock
-    implements _i12.LocalStorageService {
+    implements _i15.LocalStorageService {
   MockLocalStorageService() {
     _i1.throwOnMissingStub(this);
   }

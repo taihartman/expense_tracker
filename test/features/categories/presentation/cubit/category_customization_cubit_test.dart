@@ -54,9 +54,9 @@ void main() {
         'should emit CategoryCustomizationLoading then CategoryCustomizationLoaded on success',
         () async {
           // Arrange
-          when(mockRepository.getCustomizationsForTrip(testTripId))
-              .thenAnswer(
-                  (_) => Stream.value([testCustomization1, testCustomization2]));
+          when(mockRepository.getCustomizationsForTrip(testTripId)).thenAnswer(
+            (_) => Stream.value([testCustomization1, testCustomization2]),
+          );
 
           // Assert
           expect(
@@ -89,8 +89,9 @@ void main() {
 
       test('should handle empty customizations', () async {
         // Arrange
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => Stream.value([]));
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => Stream.value([]));
 
         // Assert
         expect(
@@ -111,8 +112,9 @@ void main() {
 
       test('should emit CategoryCustomizationError on failure', () async {
         // Arrange
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => Stream.error(Exception('Network error')));
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => Stream.error(Exception('Network error')));
 
         // Assert
         expect(
@@ -144,8 +146,9 @@ void main() {
           [testCustomization1, testCustomization2],
         ]);
 
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => stream);
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => stream);
 
         // Assert
         expect(
@@ -173,8 +176,9 @@ void main() {
     group('getCustomization', () {
       test('should return customization from loaded state', () async {
         // Arrange
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => Stream.value([testCustomization1]));
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => Stream.value([testCustomization1]));
 
         cubit.loadCustomizations();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -190,8 +194,9 @@ void main() {
 
       test('should return null when customization does not exist', () async {
         // Arrange
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => Stream.value([testCustomization1]));
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => Stream.value([testCustomization1]));
 
         cubit.loadCustomizations();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -215,8 +220,9 @@ void main() {
     group('isCustomized', () {
       test('should return true when category has customization', () async {
         // Arrange
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => Stream.value([testCustomization1]));
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => Stream.value([testCustomization1]));
 
         cubit.loadCustomizations();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -230,8 +236,9 @@ void main() {
 
       test('should return false when category has no customization', () async {
         // Arrange
-        when(mockRepository.getCustomizationsForTrip(testTripId))
-            .thenAnswer((_) => Stream.value([testCustomization1]));
+        when(
+          mockRepository.getCustomizationsForTrip(testTripId),
+        ).thenAnswer((_) => Stream.value([testCustomization1]));
 
         cubit.loadCustomizations();
         await Future.delayed(const Duration(milliseconds: 100));
@@ -256,10 +263,12 @@ void main() {
       test('should save customization and log activity', () async {
         // Arrange
         const actorName = 'Alice';
-        when(mockRepository.saveCustomization(any))
-            .thenAnswer((_) async => Future.value());
-        when(mockActivityLogRepository.addLog(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockRepository.saveCustomization(any),
+        ).thenAnswer((_) async => Future.value());
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Assert
         expect(
@@ -279,9 +288,9 @@ void main() {
         );
 
         // Verify
-        final captured = verify(mockRepository.saveCustomization(captureAny))
-            .captured
-            .single as CategoryCustomization;
+        final captured =
+            verify(mockRepository.saveCustomization(captureAny)).captured.single
+                as CategoryCustomization;
         expect(captured.categoryId, 'cat-1');
         expect(captured.tripId, testTripId);
         expect(captured.customIcon, 'fastfood');
@@ -292,10 +301,12 @@ void main() {
 
       test('should save icon-only customization', () async {
         // Arrange
-        when(mockRepository.saveCustomization(any))
-            .thenAnswer((_) async => Future.value());
-        when(mockActivityLogRepository.addLog(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockRepository.saveCustomization(any),
+        ).thenAnswer((_) async => Future.value());
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await cubit.saveCustomization(
@@ -305,19 +316,21 @@ void main() {
         );
 
         // Verify
-        final captured = verify(mockRepository.saveCustomization(captureAny))
-            .captured
-            .single as CategoryCustomization;
+        final captured =
+            verify(mockRepository.saveCustomization(captureAny)).captured.single
+                as CategoryCustomization;
         expect(captured.customIcon, 'restaurant');
         expect(captured.customColor, isNull);
       });
 
       test('should save color-only customization', () async {
         // Arrange
-        when(mockRepository.saveCustomization(any))
-            .thenAnswer((_) async => Future.value());
-        when(mockActivityLogRepository.addLog(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockRepository.saveCustomization(any),
+        ).thenAnswer((_) async => Future.value());
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await cubit.saveCustomization(
@@ -327,17 +340,18 @@ void main() {
         );
 
         // Verify
-        final captured = verify(mockRepository.saveCustomization(captureAny))
-            .captured
-            .single as CategoryCustomization;
+        final captured =
+            verify(mockRepository.saveCustomization(captureAny)).captured.single
+                as CategoryCustomization;
         expect(captured.customIcon, isNull);
         expect(captured.customColor, '#2196F3');
       });
 
       test('should not log activity when actorName is null', () async {
         // Arrange
-        when(mockRepository.saveCustomization(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockRepository.saveCustomization(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await cubit.saveCustomization(
@@ -351,10 +365,12 @@ void main() {
 
       test('should not fail when activity logging fails', () async {
         // Arrange
-        when(mockRepository.saveCustomization(any))
-            .thenAnswer((_) async => Future.value());
-        when(mockActivityLogRepository.addLog(any))
-            .thenThrow(Exception('Logging failed'));
+        when(
+          mockRepository.saveCustomization(any),
+        ).thenAnswer((_) async => Future.value());
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenThrow(Exception('Logging failed'));
 
         // Act & Assert (should not throw)
         await cubit.saveCustomization(
@@ -369,8 +385,9 @@ void main() {
 
       test('should emit error when save fails', () async {
         // Arrange
-        when(mockRepository.saveCustomization(any))
-            .thenThrow(Exception('Save failed'));
+        when(
+          mockRepository.saveCustomization(any),
+        ).thenThrow(Exception('Save failed'));
 
         // Assert
         expect(
@@ -403,10 +420,12 @@ void main() {
       test('should delete customization and log activity', () async {
         // Arrange
         const actorName = 'Bob';
-        when(mockRepository.deleteCustomization(testTripId, 'cat-1'))
-            .thenAnswer((_) async => Future.value());
-        when(mockActivityLogRepository.addLog(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockRepository.deleteCustomization(testTripId, 'cat-1'),
+        ).thenAnswer((_) async => Future.value());
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Assert
         expect(
@@ -424,15 +443,17 @@ void main() {
         );
 
         // Verify
-        verify(mockRepository.deleteCustomization(testTripId, 'cat-1'))
-            .called(1);
+        verify(
+          mockRepository.deleteCustomization(testTripId, 'cat-1'),
+        ).called(1);
         verify(mockActivityLogRepository.addLog(any)).called(1);
       });
 
       test('should not log activity when actorName is null', () async {
         // Arrange
-        when(mockRepository.deleteCustomization(testTripId, 'cat-1'))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockRepository.deleteCustomization(testTripId, 'cat-1'),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await cubit.resetCustomization(categoryId: 'cat-1');
@@ -443,26 +464,27 @@ void main() {
 
       test('should not fail when activity logging fails', () async {
         // Arrange
-        when(mockRepository.deleteCustomization(testTripId, 'cat-1'))
-            .thenAnswer((_) async => Future.value());
-        when(mockActivityLogRepository.addLog(any))
-            .thenThrow(Exception('Logging failed'));
+        when(
+          mockRepository.deleteCustomization(testTripId, 'cat-1'),
+        ).thenAnswer((_) async => Future.value());
+        when(
+          mockActivityLogRepository.addLog(any),
+        ).thenThrow(Exception('Logging failed'));
 
         // Act & Assert (should not throw)
-        await cubit.resetCustomization(
-          categoryId: 'cat-1',
-          actorName: 'Bob',
-        );
+        await cubit.resetCustomization(categoryId: 'cat-1', actorName: 'Bob');
 
         // Verify delete still succeeded
-        verify(mockRepository.deleteCustomization(testTripId, 'cat-1'))
-            .called(1);
+        verify(
+          mockRepository.deleteCustomization(testTripId, 'cat-1'),
+        ).called(1);
       });
 
       test('should emit error when delete fails', () async {
         // Arrange
-        when(mockRepository.deleteCustomization(testTripId, 'cat-1'))
-            .thenThrow(Exception('Delete failed'));
+        when(
+          mockRepository.deleteCustomization(testTripId, 'cat-1'),
+        ).thenThrow(Exception('Delete failed'));
 
         // Assert
         expect(

@@ -86,6 +86,7 @@ class MockCategoryCustomizationCubit extends _i1.Mock
     required String? categoryId,
     String? customIcon,
     String? customColor,
+    String? userId,
     String? actorName,
   }) =>
       (super.noSuchMethod(
@@ -93,6 +94,7 @@ class MockCategoryCustomizationCubit extends _i1.Mock
               #categoryId: categoryId,
               #customIcon: customIcon,
               #customColor: customColor,
+              #userId: userId,
               #actorName: actorName,
             }),
             returnValue: _i4.Future<void>.value(),
@@ -127,6 +129,14 @@ class MockCategoryCustomizationCubit extends _i1.Mock
             returnValue: false,
           )
           as bool);
+
+  @override
+  _i4.Future<bool> hasUserCustomized(String? categoryId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#hasUserCustomized, [categoryId, userId]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
 
   @override
   void emit(_i2.CategoryCustomizationState? state) => super.noSuchMethod(

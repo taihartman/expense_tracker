@@ -1611,7 +1611,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryBrowserTitle => 'Select Category';
 
   @override
-  String get categoryBrowserSearchHint => 'Search categories...';
+  String get categoryBrowserSearchHint => 'Search or create category...';
 
   @override
   String get categoryBrowserNoResults => 'No categories found';

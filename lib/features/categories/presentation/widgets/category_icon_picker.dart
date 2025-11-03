@@ -28,10 +28,15 @@ class CategoryIconPicker extends StatelessWidget {
   /// Callback invoked when user taps an icon. Receives the icon name as parameter.
   final ValueChanged<String> onIconSelected;
 
+  /// Optional scroll controller for the grid view. Required when this widget is
+  /// embedded in a DraggableScrollableSheet to ensure tap gestures work correctly.
+  final ScrollController? scrollController;
+
   const CategoryIconPicker({
     super.key,
     this.selectedIcon,
     required this.onIconSelected,
+    this.scrollController,
   });
 
   /// 30 available Material Icons for category customization.
@@ -76,9 +81,17 @@ class CategoryIconPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      '[CategoryIconPicker] 🎨 Building with scrollController: ${scrollController != null}, selectedIcon: $selectedIcon, shrinkWrap: ${scrollController == null}',
+    );
     final theme = Theme.of(context);
 
     return GridView.builder(
+      controller: scrollController,
+      shrinkWrap: scrollController == null,
+      physics: scrollController == null
+          ? const NeverScrollableScrollPhysics()
+          : null,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 6,
         crossAxisSpacing: AppTheme.spacing1,
@@ -90,7 +103,15 @@ class CategoryIconPicker extends StatelessWidget {
         final isSelected = selectedIcon == iconData['name'];
 
         return InkWell(
-          onTap: () => onIconSelected(iconData['name']),
+          onTap: () {
+            print(
+              '[CategoryIconPicker] 👆 InkWell TAPPED! Icon: ${iconData['name']}, Index: $index',
+            );
+            onIconSelected(iconData['name']);
+            print(
+              '[CategoryIconPicker] ✅ onIconSelected called for: ${iconData['name']}',
+            );
+          },
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(

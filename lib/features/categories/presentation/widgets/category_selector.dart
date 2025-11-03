@@ -21,10 +21,12 @@ import '../../../../shared/utils/icon_helper.dart';
 class CategorySelector extends StatefulWidget {
   final String? selectedCategoryId;
   final ValueChanged<String?> onCategoryChanged;
+  final String tripId;
 
   const CategorySelector({
     required this.selectedCategoryId,
     required this.onCategoryChanged,
+    required this.tripId,
     super.key,
   });
 
@@ -196,6 +198,7 @@ class _CategorySelectorState extends State<CategorySelector> {
             context: context,
             isScrollControlled: true,
             builder: (context) => CategoryBrowserBottomSheet(
+              tripId: widget.tripId,
               onCategorySelected: (category) {
                 widget.onCategoryChanged(category.id);
                 // CategoryBrowserBottomSheet handles its own dismissal

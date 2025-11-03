@@ -2815,7 +2815,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryBrowserSearchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search categories...'**
+  /// **'Search or create category...'**
   String get categoryBrowserSearchHint;
 
   /// No description provided for @categoryBrowserNoResults.

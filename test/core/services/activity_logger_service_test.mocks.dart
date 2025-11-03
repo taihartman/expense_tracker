@@ -172,12 +172,12 @@ class MockTripRepository extends _i1.Mock implements _i7.TripRepository {
           as _i4.Future<void>);
 
   @override
-  _i4.Future<List<dynamic>> getAllowedCurrencies(String? tripId) =>
+  _i4.Future<List<_i12.CurrencyCode>> getAllowedCurrencies(String tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i4.Future<List<dynamic>>.value(<dynamic>[]),
+            returnValue: _i4.Future<List<_i12.CurrencyCode>>.value(<_i12.CurrencyCode>[]),
           )
-          as _i4.Future<List<dynamic>>);
+          as _i4.Future<List<_i12.CurrencyCode>>);
 
   @override
   _i4.Future<void> updateAllowedCurrencies(

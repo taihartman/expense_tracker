@@ -2,22 +2,27 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:expense_tracker/features/categories/domain/models/category.dart';
 import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart';
 import 'package:expense_tracker/features/categories/presentation/cubit/category_state.dart';
+import 'package:expense_tracker/features/categories/presentation/cubit/category_customization_cubit.dart';
+import 'package:expense_tracker/features/categories/presentation/cubit/category_customization_state.dart';
 import 'package:expense_tracker/features/categories/presentation/widgets/category_selector.dart';
+import 'package:expense_tracker/core/services/auth_service.dart';
 import 'package:expense_tracker/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-@GenerateMocks([CategoryCubit])
+@GenerateMocks([CategoryCubit, CategoryCustomizationCubit, AuthService])
 import 'category_selector_test.mocks.dart';
 
 void main() {
   group('CategorySelector Widget', () {
     late MockCategoryCubit mockCategoryCubit;
 
+    const testTripId = 'test-trip-123';
     final now = DateTime(2025, 10, 31, 12, 0, 0);
 
     // Realistic test data with 10 categories to match production scenario
@@ -117,8 +122,13 @@ void main() {
       ),
     ];
 
+    late MockCategoryCustomizationCubit mockCustomizationCubit;
+    late MockAuthService mockAuthService;
+
     setUp(() {
       mockCategoryCubit = MockCategoryCubit();
+      mockCustomizationCubit = MockCategoryCustomizationCubit();
+      mockAuthService = MockAuthService();
 
       // Default mock behavior - return loaded state with test categories
       when(
@@ -127,6 +137,13 @@ void main() {
       when(mockCategoryCubit.stream).thenAnswer(
         (_) => Stream.value(CategoryTopLoaded(categories: testCategories)),
       );
+
+      // Mock auth service to return a test user ID
+      when(mockAuthService.getAuthUidForRateLimiting()).thenReturn('test-user-123');
+
+      // Mock customization cubit stream and state (empty initial state)
+      when(mockCustomizationCubit.stream).thenAnswer((_) => const Stream.empty());
+      when(mockCustomizationCubit.state).thenReturn(const CategoryCustomizationInitial());
     });
 
     Widget createWidgetUnderTest({
@@ -142,11 +159,16 @@ void main() {
         ],
         supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
-          body: BlocProvider<CategoryCubit>.value(
-            value: mockCategoryCubit,
+          body: MultiProvider(
+            providers: [
+              BlocProvider<CategoryCubit>.value(value: mockCategoryCubit),
+              BlocProvider<CategoryCustomizationCubit>.value(value: mockCustomizationCubit),
+              Provider<AuthService>.value(value: mockAuthService),
+            ],
             child: CategorySelector(
               selectedCategoryId: selectedCategoryId,
               onCategoryChanged: onCategoryChanged ?? (_) {},
+              tripId: testTripId,
             ),
           ),
         ),

@@ -5,8 +5,10 @@ import '../cubit/category_cubit.dart';
 import '../cubit/category_state.dart';
 import '../cubit/category_customization_cubit.dart';
 import 'category_creation_bottom_sheet.dart';
+import 'category_icon_picker.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../shared/utils/icon_helper.dart';
 import '../../../../shared/utils/category_display_helper.dart';
 
@@ -19,11 +21,14 @@ import '../../../../shared/utils/category_display_helper.dart';
 /// - Empty state handling
 /// - Error state handling
 /// - Category selection with auto-dismiss
+/// - Conditional icon picker based on user customization history
 class CategoryBrowserBottomSheet extends StatefulWidget {
   final ValueChanged<Category> onCategorySelected;
+  final String tripId;
 
   const CategoryBrowserBottomSheet({
     required this.onCategorySelected,
+    required this.tripId,
     super.key,
   });
 
@@ -57,14 +62,206 @@ class _CategoryBrowserBottomSheetState
     context.read<CategoryCubit>().searchCategories(_searchController.text);
   }
 
-  void _onCategoryTap(Category category) {
+  Future<void> _onCategoryTap(Category category) async {
     debugPrint(
       '🎯 [CategoryBrowser] Category tapped: ${category.name} (${category.id})',
+    );
+
+    // Get userId from auth service
+    final authService = context.read<AuthService>();
+    final userId = authService.getAuthUidForRateLimiting();
+
+    // If no userId, treat as first-time (show icon picker)
+    if (userId == null) {
+      debugPrint('⚠️ [CategoryBrowser] No userId, showing icon picker');
+      await _showIconPickerForCategory(category, null);
+      return;
+    }
+
+    // Check if user has customized this category before
+    final customizationCubit = context.read<CategoryCustomizationCubit?>();
+    bool hasCustomized = false;
+
+    if (customizationCubit != null) {
+      hasCustomized = await customizationCubit.hasUserCustomized(
+        category.id,
+        userId,
+      );
+      debugPrint(
+        '🔍 [CategoryBrowser] User $userId has customized ${category.id}: $hasCustomized',
+      );
+    }
+
+    if (!mounted) return;
+
+    // If user has NOT customized before, show icon picker first
+    if (!hasCustomized) {
+      debugPrint(
+        '🎨 [CategoryBrowser] First time selecting ${category.name}, showing icon picker',
+      );
+      await _showIconPickerForCategory(category, userId);
+      return; // Icon picker handles selection + dismissal
+    }
+
+    // User has customized before → Direct selection
+    debugPrint(
+      '✅ [CategoryBrowser] User has customized before, direct selection',
     );
     widget.onCategorySelected(category);
     debugPrint('👋 [CategoryBrowser] Calling Navigator.pop()');
     Navigator.of(context).pop(); // Dismiss bottom sheet
     debugPrint('✅ [CategoryBrowser] Navigator.pop() completed');
+  }
+
+  /// Shows icon picker for first-time category selection
+  ///
+  /// When a user selects a category for the first time, show them an icon
+  /// picker to customize the icon. The most popular icon is pre-selected.
+  /// After confirmation, save the customization and proceed with selection.
+  Future<void> _showIconPickerForCategory(
+    Category category,
+    String? userId,
+  ) async {
+    final theme = Theme.of(context);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        // Default to category's current icon (most popular via voting system)
+        String currentSelectedIcon = category.icon;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return DraggableScrollableSheet(
+              initialChildSize: 0.9,
+              minChildSize: 0.5,
+              maxChildSize: 0.95,
+              builder: (context, scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(AppTheme.spacing2),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Drag handle
+                      Container(
+                        margin: const EdgeInsets.only(top: AppTheme.spacing1),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.4,
+                          ),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+
+                      // Title bar
+                      Padding(
+                        padding: const EdgeInsets.all(AppTheme.spacing2),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Customize "${category.name}" Icon',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.of(sheetContext).pop(),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const Divider(height: 1),
+
+                      // Icon picker
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppTheme.spacing2),
+                          child: CategoryIconPicker(
+                            selectedIcon: currentSelectedIcon,
+                            scrollController: scrollController,
+                            onIconSelected: (selectedIcon) {
+                              debugPrint(
+                                '🎨 [CategoryBrowser] Icon selected: $selectedIcon',
+                              );
+                              setSheetState(() {
+                                currentSelectedIcon = selectedIcon;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+
+                      // Action buttons
+                      Padding(
+                        padding: const EdgeInsets.all(AppTheme.spacing2),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.of(sheetContext).pop(),
+                              child: Text(context.l10n.commonCancel),
+                            ),
+                            const SizedBox(width: AppTheme.spacing1),
+                            FilledButton(
+                              onPressed: () async {
+                                debugPrint(
+                                  '💾 [CategoryBrowser] Saving customization: ${category.id} → $currentSelectedIcon',
+                                );
+
+                                // Save customization
+                                final customizationCubit =
+                                    this.context.read<CategoryCustomizationCubit?>();
+
+                                if (customizationCubit != null && userId != null) {
+                                  await customizationCubit.saveCustomization(
+                                    categoryId: category.id,
+                                    customIcon: currentSelectedIcon,
+                                    userId: userId,
+                                    // Note: actorName not needed for icon customization
+                                  );
+                                }
+
+                                // Close icon picker sheet
+                                if (sheetContext.mounted) {
+                                  Navigator.of(sheetContext).pop();
+                                }
+
+                                // Proceed with category selection
+                                debugPrint(
+                                  '✅ [CategoryBrowser] Customization saved, proceeding with selection',
+                                );
+                                widget.onCategorySelected(category);
+
+                                // Close browser sheet
+                                if (mounted) {
+                                  Navigator.of(this.context).pop();
+                                }
+                              },
+                              child: Text(context.l10n.commonConfirm),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Color _getColor(String colorHex) {
@@ -134,7 +331,7 @@ class _CategoryBrowserBottomSheetState
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Search categories...',
+                    hintText: context.l10n.categoryBrowserSearchHint,
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -147,41 +344,6 @@ class _CategoryBrowserBottomSheetState
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppTheme.spacing1),
                     ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: AppTheme.spacing2),
-
-              // Create new category button
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.spacing2,
-                ),
-                child: OutlinedButton.icon(
-                  onPressed: () async {
-                    // Open CategoryCreationBottomSheet
-                    await showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (creationContext) =>
-                          BlocProvider<CategoryCubit>.value(
-                            value: context.read<CategoryCubit>(),
-                            child: CategoryCreationBottomSheet(
-                              onCategoryCreated: () {
-                                // Refresh categories list after creation
-                                context.read<CategoryCubit>().searchCategories(
-                                  _searchController.text,
-                                );
-                              },
-                            ),
-                          ),
-                    );
-                  },
-                  icon: const Icon(Icons.add),
-                  label: Text(context.l10n.categoryCreationButtonCreateNew),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
                   ),
                 ),
               ),
@@ -242,6 +404,7 @@ class _CategoryBrowserBottomSheetState
                     // Search results state
                     if (state is CategorySearchResults) {
                       final categories = state.results;
+                      final query = state.query;
 
                       // Empty state
                       if (categories.isEmpty) {
@@ -258,11 +421,42 @@ class _CategoryBrowserBottomSheetState
                                 ),
                                 const SizedBox(height: AppTheme.spacing2),
                                 Text(
-                                  'No categories found',
+                                  query.isNotEmpty
+                                      ? context.l10n.categoryBrowserNoResults
+                                      : 'Start typing to search categories',
                                   style: theme.textTheme.bodyLarge?.copyWith(
                                     color: theme.colorScheme.onSurfaceVariant,
                                   ),
                                 ),
+                                if (query.isNotEmpty) ...[
+                                  const SizedBox(height: AppTheme.spacing2),
+                                  FilledButton.icon(
+                                    onPressed: () async {
+                                      // Open CategoryCreationBottomSheet with pre-filled name
+                                      await showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        builder: (creationContext) =>
+                                            BlocProvider<CategoryCubit>.value(
+                                          value: context.read<CategoryCubit>(),
+                                          child: CategoryCreationBottomSheet(
+                                            initialName: query,
+                                            onCategoryCreated: () {
+                                              // Refresh categories list after creation
+                                              context.read<CategoryCubit>().searchCategories('');
+                                              // Close browser sheet
+                                              Navigator.of(context).pop();
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.add),
+                                    label: Text(
+                                      context.l10n.categoryBrowserCreateNew(query),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),

@@ -1021,7 +1021,7 @@
 
 
   "categoryBrowserTitle": "Select Category",
-  "categoryBrowserSearchHint": "Search categories...",
+  "categoryBrowserSearchHint": "Search or create category...",
   "categoryBrowserNoResults": "No categories found",
   "categoryBrowserLoading": "Loading categories...",
   "categoryBrowserCreateNew": "Create \"{name}\"",

@@ -227,6 +227,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
             participants: _participants,
             availableParticipants: tripParticipants,
             isEditMode: widget.expense != null,
+            tripId: widget.tripId,
             onCurrencyChanged: (value) {
               setState(() {
                 _selectedCurrency = value;
@@ -380,6 +381,7 @@ class ExpenseFormContent extends StatelessWidget {
   final Map<String, num> participants;
   final List<Participant> availableParticipants;
   final bool isEditMode;
+  final String tripId;
   final ValueChanged<CurrencyCode> onCurrencyChanged;
   final ValueChanged<String?> onPayerChanged;
   final ValueChanged<String?> onCategoryChanged;
@@ -401,6 +403,7 @@ class ExpenseFormContent extends StatelessWidget {
     required this.participants,
     required this.availableParticipants,
     required this.isEditMode,
+    required this.tripId,
     required this.onCurrencyChanged,
     required this.onPayerChanged,
     required this.onCategoryChanged,
@@ -497,6 +500,7 @@ class ExpenseFormContent extends StatelessWidget {
           CategorySelector(
             selectedCategoryId: selectedCategory,
             onCategoryChanged: onCategoryChanged,
+            tripId: tripId,
           ),
           const SizedBox(height: AppTheme.spacing3),
 

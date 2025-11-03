@@ -26,6 +26,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 <!-- Add entries below in reverse chronological order (newest first) -->
 
+## 2025-11-03
+
+### Changed
+- test: Added comprehensive TDD tests for multi-currency foundation (T011-T014). Created 63 passing tests across Trip domain model (30 tests), TripModel serialization (20 tests), and TripRepository methods (13 tests). Tests cover validation, migration logic, error handling, and backward compatibility. Foundation layer fully tested before UI implementation begins.
+
+
 ## 2025-11-02
 
 ### Changed

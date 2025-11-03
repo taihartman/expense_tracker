@@ -47,8 +47,9 @@ void main() {
       // Setup default mocking chain for subcollection access
       when(mockFirestoreService.trips).thenReturn(mockTripsCollection);
       when(mockTripsCollection.doc(testTripId)).thenReturn(mockTripDocRef);
-      when(mockTripDocRef.collection('categoryCustomizations'))
-          .thenReturn(mockCustomizationsCollection);
+      when(
+        mockTripDocRef.collection('categoryCustomizations'),
+      ).thenReturn(mockCustomizationsCollection);
 
       repository = CategoryCustomizationRepositoryImpl(
         firestoreService: mockFirestoreService,
@@ -72,8 +73,9 @@ void main() {
           }),
         ];
 
-        when(mockCustomizationsCollection.snapshots())
-            .thenAnswer((_) => Stream.value(mockQuerySnapshot));
+        when(
+          mockCustomizationsCollection.snapshots(),
+        ).thenAnswer((_) => Stream.value(mockQuerySnapshot));
         when(mockQuerySnapshot.docs).thenReturn(mockDocs);
 
         // Act
@@ -98,8 +100,9 @@ void main() {
 
       test('should handle empty customizations', () async {
         // Arrange
-        when(mockCustomizationsCollection.snapshots())
-            .thenAnswer((_) => Stream.value(mockQuerySnapshot));
+        when(
+          mockCustomizationsCollection.snapshots(),
+        ).thenAnswer((_) => Stream.value(mockQuerySnapshot));
         when(mockQuerySnapshot.docs).thenReturn([]);
 
         // Act
@@ -166,17 +169,21 @@ void main() {
           'updatedAt': Timestamp.fromDate(now),
         };
 
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.get())
-            .thenAnswer((_) async => mockDocSnapshot);
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
         when(mockDocSnapshot.exists).thenReturn(true);
         when(mockDocSnapshot.id).thenReturn(testCategoryId);
         when(mockDocSnapshot.data()).thenReturn(customizationData);
 
         // Act
-        final result =
-            await repository.getCustomization(testTripId, testCategoryId);
+        final result = await repository.getCustomization(
+          testTripId,
+          testCategoryId,
+        );
 
         // Assert
         expect(result, isNotNull);
@@ -192,15 +199,19 @@ void main() {
 
       test('should return null when customization does not exist', () async {
         // Arrange
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.get())
-            .thenAnswer((_) async => mockDocSnapshot);
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
         when(mockDocSnapshot.exists).thenReturn(false);
 
         // Act
-        final result =
-            await repository.getCustomization(testTripId, testCategoryId);
+        final result = await repository.getCustomization(
+          testTripId,
+          testCategoryId,
+        );
 
         // Assert
         expect(result, isNull);
@@ -214,17 +225,21 @@ void main() {
           'updatedAt': Timestamp.fromDate(now),
         };
 
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.get())
-            .thenAnswer((_) async => mockDocSnapshot);
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
         when(mockDocSnapshot.exists).thenReturn(true);
         when(mockDocSnapshot.id).thenReturn(testCategoryId);
         when(mockDocSnapshot.data()).thenReturn(customizationData);
 
         // Act
-        final result =
-            await repository.getCustomization(testTripId, testCategoryId);
+        final result = await repository.getCustomization(
+          testTripId,
+          testCategoryId,
+        );
 
         // Assert
         expect(result, isNotNull);
@@ -240,22 +255,26 @@ void main() {
           'updatedAt': Timestamp.fromDate(now),
         };
 
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.get())
-            .thenAnswer((_) async => mockDocSnapshot);
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
         when(mockDocSnapshot.exists).thenReturn(true);
         when(mockDocSnapshot.id).thenReturn(testCategoryId);
         when(mockDocSnapshot.data()).thenReturn(customizationData);
 
         // Act
-        final result =
-            await repository.getCustomization(testTripId, testCategoryId);
+        final result = await repository.getCustomization(
+          testTripId,
+          testCategoryId,
+        );
 
         // Assert
         expect(result, isNotNull);
         expect(result!.customIcon, isNull);
-        expect(result!.customColor, '#2196F3');
+        expect(result.customColor, '#2196F3');
       });
     });
 
@@ -270,10 +289,12 @@ void main() {
           updatedAt: now,
         );
 
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.set(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.set(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await repository.saveCustomization(customization);
@@ -301,10 +322,12 @@ void main() {
           updatedAt: now,
         );
 
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.set(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.set(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await repository.saveCustomization(customization);
@@ -326,10 +349,12 @@ void main() {
           updatedAt: now,
         );
 
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.set(any))
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.set(any),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await repository.saveCustomization(customization);
@@ -346,10 +371,12 @@ void main() {
     group('deleteCustomization', () {
       test('should delete customization document', () async {
         // Arrange
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.delete())
-            .thenAnswer((_) async => Future.value());
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.delete(),
+        ).thenAnswer((_) async => Future.value());
 
         // Act
         await repository.deleteCustomization(testTripId, testCategoryId);
@@ -361,19 +388,23 @@ void main() {
         verify(mockCustomizationDocRef.delete()).called(1);
       });
 
-      test('should not fail when deleting non-existent customization',
-          () async {
-        // Arrange
-        when(mockCustomizationsCollection.doc(testCategoryId))
-            .thenReturn(mockCustomizationDocRef);
-        when(mockCustomizationDocRef.delete())
-            .thenAnswer((_) async => Future.value());
+      test(
+        'should not fail when deleting non-existent customization',
+        () async {
+          // Arrange
+          when(
+            mockCustomizationsCollection.doc(testCategoryId),
+          ).thenReturn(mockCustomizationDocRef);
+          when(
+            mockCustomizationDocRef.delete(),
+          ).thenAnswer((_) async => Future.value());
 
-        // Act & Assert (should not throw)
-        await repository.deleteCustomization(testTripId, testCategoryId);
+          // Act & Assert (should not throw)
+          await repository.deleteCustomization(testTripId, testCategoryId);
 
-        verify(mockCustomizationDocRef.delete()).called(1);
-      });
+          verify(mockCustomizationDocRef.delete()).called(1);
+        },
+      );
     });
   });
 }

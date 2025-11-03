@@ -112,7 +112,7 @@ void main() {
       final existingTrip = Trip(
         id: tripId,
         name: 'Tokyo Trip',
-        baseCurrency: CurrencyCode.usd,
+        allowedCurrencies: [CurrencyCode.usd],
         createdAt: DateTime(2025, 10, 29),
         updatedAt: DateTime(2025, 10, 29),
         participants: [
@@ -134,10 +134,10 @@ void main() {
       // Mock activity logger service
       when(
         mockActivityLoggerService.logMemberJoined(
-          tripId: anyNamed('tripId'),
-          memberName: anyNamed('memberName'),
-          joinMethod: anyNamed('joinMethod'),
-          inviterId: anyNamed('inviterId'),
+          tripId: tripId,
+          memberName: uniqueName,
+          joinMethod: 'link_code',
+          inviterId: null,
         ),
       ).thenAnswer((_) async {});
 
@@ -179,7 +179,7 @@ void main() {
       final existingTrip = Trip(
         id: tripId,
         name: 'Tokyo Trip',
-        baseCurrency: CurrencyCode.usd,
+        allowedCurrencies: [CurrencyCode.usd],
         createdAt: DateTime(2025, 10, 29),
         updatedAt: DateTime(2025, 10, 29),
         participants: [
@@ -232,7 +232,7 @@ void main() {
       final existingTrip = Trip(
         id: tripId,
         name: 'Tokyo Trip',
-        baseCurrency: CurrencyCode.usd,
+        allowedCurrencies: [CurrencyCode.usd],
         createdAt: DateTime(2025, 10, 29),
         updatedAt: DateTime(2025, 10, 29),
         participants: [
@@ -281,7 +281,7 @@ void main() {
       final existingTrip = Trip(
         id: tripId,
         name: 'Tokyo Trip',
-        baseCurrency: CurrencyCode.usd,
+        allowedCurrencies: [CurrencyCode.usd],
         createdAt: DateTime(2025, 10, 29),
         updatedAt: DateTime(2025, 10, 29),
         participants: [
