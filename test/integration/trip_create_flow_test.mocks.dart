@@ -4,6 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
+import 'package:expense_tracker/core/models/currency_code.dart' as _i12;
 
 import 'package:expense_tracker/core/services/activity_logger_service.dart'
     as _i7;
@@ -112,7 +113,7 @@ class MockTripRepository extends _i1.Mock implements _i4.TripRepository {
 
   @override
   _i5.Future<void> addVerifiedMember({
-    required String? tripId,
+    required String tripId,
     required String? participantId,
     required String? participantName,
   }) =>
@@ -139,7 +140,7 @@ class MockTripRepository extends _i1.Mock implements _i4.TripRepository {
 
   @override
   _i5.Future<void> removeVerifiedMember({
-    required String? tripId,
+    required String tripId,
     required String? participantId,
   }) =>
       (super.noSuchMethod(
@@ -147,6 +148,26 @@ class MockTripRepository extends _i1.Mock implements _i4.TripRepository {
               #tripId: tripId,
               #participantId: participantId,
             }),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<_i12.CurrencyCode>> getAllowedCurrencies(String tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getAllowedCurrencies, [tripId]),
+            returnValue: _i5.Future<List<_i12.CurrencyCode>>.value(<_i12.CurrencyCode>[]),
+          )
+          as _i5.Future<List<_i12.CurrencyCode>>);
+
+  @override
+  _i5.Future<void> updateAllowedCurrencies(
+    String tripId,
+    List<_i12.CurrencyCode> currencies,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#updateAllowedCurrencies, [tripId, currencies]),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
@@ -223,7 +244,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i5.Future<void> logMemberJoined({
-    required String? tripId,
+    required String tripId,
     required String? memberName,
     required String? joinMethod,
     String? inviterId,
@@ -291,7 +312,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i5.Future<void> logParticipantAdded({
-    required String? tripId,
+    required String tripId,
     required String? participantName,
     required String? actorName,
   }) =>
@@ -308,7 +329,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i5.Future<void> logParticipantRemoved({
-    required String? tripId,
+    required String tripId,
     required String? participantName,
     required String? actorName,
   }) =>
@@ -325,7 +346,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i5.Future<void> logDeviceVerified({
-    required String? tripId,
+    required String tripId,
     required String? memberName,
     required String? deviceCode,
   }) =>
@@ -342,7 +363,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i5.Future<void> logRecoveryCodeUsed({
-    required String? tripId,
+    required String tripId,
     required String? memberName,
     required int? usageCount,
   }) =>
@@ -556,7 +577,7 @@ class MockLocalStorageService extends _i1.Mock
 
   @override
   _i5.Future<void> saveUserIdentityForTrip(
-    String? tripId,
+    String tripId,
     String? participantId,
   ) =>
       (super.noSuchMethod(
