@@ -3,7 +3,6 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracker/features/trips/data/repositories/trip_repository_impl.dart';
-import 'package:expense_tracker/features/trips/domain/models/trip.dart';
 import 'package:expense_tracker/features/trips/domain/exceptions/trip_exceptions.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
 import 'package:expense_tracker/shared/services/firestore_service.dart';
