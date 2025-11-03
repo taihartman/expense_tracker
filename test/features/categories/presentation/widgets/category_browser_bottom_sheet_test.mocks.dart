@@ -3,15 +3,23 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
+import 'dart:async' as _i6;
 
+import 'package:expense_tracker/core/models/category_customization.dart'
+    as _i10;
+import 'package:expense_tracker/core/services/auth_service.dart' as _i11;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
-    as _i5;
+    as _i7;
 import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart'
+    as _i5;
+import 'package:expense_tracker/features/categories/presentation/cubit/category_customization_cubit.dart'
+    as _i9;
+import 'package:expense_tracker/features/categories/presentation/cubit/category_customization_state.dart'
     as _i3;
 import 'package:expense_tracker/features/categories/presentation/cubit/category_state.dart'
     as _i2;
-import 'package:flutter_bloc/flutter_bloc.dart' as _i6;
+import 'package:firebase_auth/firebase_auth.dart' as _i4;
+import 'package:flutter_bloc/flutter_bloc.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -33,10 +41,22 @@ class _FakeCategoryState_0 extends _i1.SmartFake implements _i2.CategoryState {
     : super(parent, parentInvocation);
 }
 
+class _FakeCategoryCustomizationState_1 extends _i1.SmartFake
+    implements _i3.CategoryCustomizationState {
+  _FakeCategoryCustomizationState_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeUserCredential_2 extends _i1.SmartFake
+    implements _i4.UserCredential {
+  _FakeUserCredential_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
 /// A class which mocks [CategoryCubit].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
+class MockCategoryCubit extends _i1.Mock implements _i5.CategoryCubit {
   MockCategoryCubit() {
     _i1.throwOnMissingStub(this);
   }
@@ -50,12 +70,12 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
           as _i2.CategoryState);
 
   @override
-  _i4.Stream<_i2.CategoryState> get stream =>
+  _i6.Stream<_i2.CategoryState> get stream =>
       (super.noSuchMethod(
             Invocation.getter(#stream),
-            returnValue: _i4.Stream<_i2.CategoryState>.empty(),
+            returnValue: _i6.Stream<_i2.CategoryState>.empty(),
           )
-          as _i4.Stream<_i2.CategoryState>);
+          as _i6.Stream<_i2.CategoryState>);
 
   @override
   bool get isClosed =>
@@ -81,13 +101,19 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
   );
 
   @override
+  void resetToTopCategories() => super.noSuchMethod(
+    Invocation.method(#resetToTopCategories, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void searchCategories(String? query) => super.noSuchMethod(
     Invocation.method(#searchCategories, [query]),
     returnValueForMissingStub: null,
   );
 
   @override
-  _i4.Future<void> createCategory({
+  _i6.Future<void> createCategory({
     required String? name,
     String? icon = 'label',
     required String? color,
@@ -98,51 +124,42 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
               #icon: icon,
               #color: color,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i4.Future<void> incrementCategoryUsage(String? categoryId) =>
-      (super.noSuchMethod(
-            Invocation.method(#incrementCategoryUsage, [categoryId]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> checkRateLimit() =>
+  _i6.Future<void> checkRateLimit() =>
       (super.noSuchMethod(
             Invocation.method(#checkRateLimit, []),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i4.Future<void> loadCategoriesByIds(List<String>? ids) =>
+  _i6.Future<void> loadCategoriesByIds(List<String>? ids) =>
       (super.noSuchMethod(
             Invocation.method(#loadCategoriesByIds, [ids]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i6.Future<void>);
 
   @override
-  _i5.Category? getCategoryById(String? categoryId) =>
+  _i7.Category? getCategoryById(String? categoryId) =>
       (super.noSuchMethod(Invocation.method(#getCategoryById, [categoryId]))
-          as _i5.Category?);
+          as _i7.Category?);
 
   @override
-  _i4.Future<void> close() =>
+  _i6.Future<void> close() =>
       (super.noSuchMethod(
             Invocation.method(#close, []),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
           )
-          as _i4.Future<void>);
+          as _i6.Future<void>);
 
   @override
   void emit(_i2.CategoryState? state) => super.noSuchMethod(
@@ -151,7 +168,7 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
   );
 
   @override
-  void onChange(_i6.Change<_i2.CategoryState>? change) => super.noSuchMethod(
+  void onChange(_i8.Change<_i2.CategoryState>? change) => super.noSuchMethod(
     Invocation.method(#onChange, [change]),
     returnValueForMissingStub: null,
   );
@@ -167,4 +184,174 @@ class MockCategoryCubit extends _i1.Mock implements _i3.CategoryCubit {
     Invocation.method(#onError, [error, stackTrace]),
     returnValueForMissingStub: null,
   );
+}
+
+/// A class which mocks [CategoryCustomizationCubit].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockCategoryCustomizationCubit extends _i1.Mock
+    implements _i9.CategoryCustomizationCubit {
+  MockCategoryCustomizationCubit() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.CategoryCustomizationState get state =>
+      (super.noSuchMethod(
+            Invocation.getter(#state),
+            returnValue: _FakeCategoryCustomizationState_1(
+              this,
+              Invocation.getter(#state),
+            ),
+          )
+          as _i3.CategoryCustomizationState);
+
+  @override
+  _i6.Stream<_i3.CategoryCustomizationState> get stream =>
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i6.Stream<_i3.CategoryCustomizationState>.empty(),
+          )
+          as _i6.Stream<_i3.CategoryCustomizationState>);
+
+  @override
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
+
+  @override
+  _i6.Future<void> close() =>
+      (super.noSuchMethod(
+            Invocation.method(#close, []),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  void loadCustomizations() => super.noSuchMethod(
+    Invocation.method(#loadCustomizations, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  _i6.Future<void> saveCustomization({
+    required String? categoryId,
+    String? customIcon,
+    String? customColor,
+    String? userId,
+    String? actorName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#saveCustomization, [], {
+              #categoryId: categoryId,
+              #customIcon: customIcon,
+              #customColor: customColor,
+              #userId: userId,
+              #actorName: actorName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> resetCustomization({
+    required String? categoryId,
+    String? actorName,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(#resetCustomization, [], {
+              #categoryId: categoryId,
+              #actorName: actorName,
+            }),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i10.CategoryCustomization? getCustomization(String? categoryId) =>
+      (super.noSuchMethod(Invocation.method(#getCustomization, [categoryId]))
+          as _i10.CategoryCustomization?);
+
+  @override
+  bool isCustomized(String? categoryId) =>
+      (super.noSuchMethod(
+            Invocation.method(#isCustomized, [categoryId]),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  _i6.Future<bool> hasUserCustomized(String? categoryId, String? userId) =>
+      (super.noSuchMethod(
+            Invocation.method(#hasUserCustomized, [categoryId, userId]),
+            returnValue: _i6.Future<bool>.value(false),
+          )
+          as _i6.Future<bool>);
+
+  @override
+  void emit(_i3.CategoryCustomizationState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void onChange(_i8.Change<_i3.CategoryCustomizationState>? change) =>
+      super.noSuchMethod(
+        Invocation.method(#onChange, [change]),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
+}
+
+/// A class which mocks [AuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthService extends _i1.Mock implements _i11.AuthService {
+  MockAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  bool get isAuthenticated =>
+      (super.noSuchMethod(
+            Invocation.getter(#isAuthenticated),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  _i6.Future<_i4.UserCredential> signInAnonymously() =>
+      (super.noSuchMethod(
+            Invocation.method(#signInAnonymously, []),
+            returnValue: _i6.Future<_i4.UserCredential>.value(
+              _FakeUserCredential_2(
+                this,
+                Invocation.method(#signInAnonymously, []),
+              ),
+            ),
+          )
+          as _i6.Future<_i4.UserCredential>);
+
+  @override
+  _i6.Future<void> signOut() =>
+      (super.noSuchMethod(
+            Invocation.method(#signOut, []),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
 }

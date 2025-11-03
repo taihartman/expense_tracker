@@ -12,11 +12,11 @@ import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.da
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart';
 
 // Generate mocks
-@GenerateMocks([
-  TripRepository,
-  ActivityLoggerService,
-  CategoryRepository,
-  LocalStorageService,
+@GenerateNiceMocks([
+  MockSpec<TripRepository>(),
+  MockSpec<ActivityLoggerService>(),
+  MockSpec<CategoryRepository>(),
+  MockSpec<LocalStorageService>(),
 ])
 import 'trip_cubit_test.mocks.dart';
 
@@ -62,7 +62,7 @@ void main() {
         final createdTrip = Trip(
           id: 'trip-123',
           name: tripName,
-          baseCurrency: baseCurrency,
+          allowedCurrencies: [baseCurrency],
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participants: [creatorParticipant], // Creator should be added
@@ -87,7 +87,7 @@ void main() {
         // Act
         await cubit.createTrip(
           name: tripName,
-          baseCurrency: baseCurrency,
+          allowedCurrencies: [baseCurrency],
           creatorName: creatorName,
         );
 
@@ -115,7 +115,7 @@ void main() {
       final createdTrip = Trip(
         id: 'trip-123',
         name: tripName,
-        baseCurrency: baseCurrency,
+        allowedCurrencies: [baseCurrency],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         participants: [creatorParticipant],
@@ -140,7 +140,7 @@ void main() {
       // Act
       await cubit.createTrip(
         name: tripName,
-        baseCurrency: baseCurrency,
+        allowedCurrencies: [baseCurrency],
         creatorName: creatorName,
       );
 
@@ -168,7 +168,7 @@ void main() {
       final createdTrip = Trip(
         id: 'trip-123',
         name: tripName,
-        baseCurrency: baseCurrency,
+        allowedCurrencies: [baseCurrency],
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         participants: [creatorParticipant],
@@ -193,7 +193,7 @@ void main() {
       // Act
       await cubit.createTrip(
         name: tripName,
-        baseCurrency: baseCurrency,
+        allowedCurrencies: [baseCurrency],
         creatorName: creatorName,
       );
 
@@ -212,14 +212,14 @@ void main() {
         Trip(
           id: 'trip-1',
           name: 'Joined Trip 1',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
         Trip(
           id: 'trip-2',
           name: 'Joined Trip 2',
-          baseCurrency: CurrencyCode.vnd,
+          allowedCurrencies: [CurrencyCode.vnd],
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
@@ -230,7 +230,7 @@ void main() {
         Trip(
           id: 'trip-3',
           name: 'Not Joined Trip',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
@@ -268,14 +268,14 @@ void main() {
           Trip(
             id: 'trip-1',
             name: 'Trip 1',
-            baseCurrency: CurrencyCode.usd,
+            allowedCurrencies: [CurrencyCode.usd],
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           ),
           Trip(
             id: 'trip-2',
             name: 'Trip 2',
-            baseCurrency: CurrencyCode.vnd,
+            allowedCurrencies: [CurrencyCode.vnd],
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           ),
@@ -317,7 +317,7 @@ void main() {
         final existingTrip = Trip(
           id: tripId,
           name: 'Existing Trip',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participants: [Participant.fromName('Alice')], // Alice created it
@@ -389,7 +389,7 @@ void main() {
         final existingTrip = Trip(
           id: tripId,
           name: 'Existing Trip',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           participants: [
@@ -486,7 +486,7 @@ void main() {
         final trip = Trip(
           id: 'trip-1',
           name: 'Test Trip',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           participants: [
             const Participant(id: 'p1', name: 'Alice'),
             const Participant(id: 'p2', name: 'Bob'),
@@ -515,7 +515,7 @@ void main() {
         final trip = Trip(
           id: 'trip-1',
           name: 'Test Trip',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           participants: [
             const Participant(id: 'p1', name: 'Alice'),
             const Participant(id: 'p2', name: 'Bob'),
@@ -548,7 +548,7 @@ void main() {
         final trip = Trip(
           id: 'trip-1',
           name: 'Test Trip',
-          baseCurrency: CurrencyCode.usd,
+          allowedCurrencies: [CurrencyCode.usd],
           participants: [
             const Participant(id: 'p1', name: 'Alice'),
             const Participant(id: 'p2', name: 'Bob'),
@@ -575,7 +575,7 @@ void main() {
       final trip = Trip(
         id: 'trip-1',
         name: 'Test Trip',
-        baseCurrency: CurrencyCode.usd,
+        allowedCurrencies: [CurrencyCode.usd],
         participants: [],
         createdAt: now,
         updatedAt: now,
@@ -603,6 +603,384 @@ void main() {
 
       // Assert
       expect(result, false);
+    });
+  });
+
+  group('TripCubit.updateTripCurrencies', () {
+    test('successfully updates trip currencies', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [CurrencyCode.eur, CurrencyCode.usd];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+      );
+
+      // Wait for stream to process
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Assert
+      final capturedTrip =
+          verify(mockTripRepository.updateTrip(captureAny)).captured.single
+              as Trip;
+      expect(capturedTrip.allowedCurrencies, newCurrencies);
+      expect(cubit.state, isA<TripLoaded>());
+    });
+
+    test('emits error when trip not found', () async {
+      // Arrange
+      const tripId = 'non-existent-trip';
+      const newCurrencies = [CurrencyCode.eur, CurrencyCode.usd];
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => null);
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+      );
+
+      // Assert
+      expect(cubit.state, isA<TripError>());
+      final errorState = cubit.state as TripError;
+      expect(errorState.message, contains('Trip not found'));
+    });
+
+    test('logs activity when actorName is provided', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const actorName = 'Alice';
+      const newCurrencies = [
+        CurrencyCode.eur,
+        CurrencyCode.usd,
+        CurrencyCode.gbp,
+      ];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+      when(
+        mockActivityLoggerService.logTripUpdated(any, any, any),
+      ).thenAnswer((_) async {});
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+        actorName: actorName,
+      );
+
+      // Wait for activity logging
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Assert
+      verify(
+        mockActivityLoggerService.logTripUpdated(existingTrip, any, actorName),
+      ).called(1);
+    });
+
+    test('does not log activity when actorName is null', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [CurrencyCode.eur, CurrencyCode.usd];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+        // actorName not provided
+      );
+
+      // Wait for potential activity logging
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Assert
+      verifyNever(mockActivityLoggerService.logTripUpdated(any, any, any));
+    });
+
+    test('does not log activity when actorName is empty', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [CurrencyCode.eur, CurrencyCode.usd];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+        actorName: '', // Empty string
+      );
+
+      // Wait for potential activity logging
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Assert
+      verifyNever(mockActivityLoggerService.logTripUpdated(any, any, any));
+    });
+
+    test('handles repository errors gracefully', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [CurrencyCode.eur, CurrencyCode.usd];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenThrow(Exception('Database error'));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+      );
+
+      // Assert
+      expect(cubit.state, isA<TripError>());
+      final errorState = cubit.state as TripError;
+      expect(errorState.message, contains('Failed to update trip currencies'));
+    });
+
+    test('preserves other trip fields when updating currencies', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [CurrencyCode.eur, CurrencyCode.usd];
+
+      final participant1 = Participant.fromName('Alice');
+      final participant2 = Participant.fromName('Bob');
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Original Trip Name',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+        participants: [participant1, participant2],
+        isArchived: false,
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+      );
+
+      // Assert
+      final capturedTrip =
+          verify(mockTripRepository.updateTrip(captureAny)).captured.single
+              as Trip;
+
+      // Verify other fields are preserved
+      expect(capturedTrip.name, existingTrip.name);
+      expect(capturedTrip.participants, existingTrip.participants);
+      expect(capturedTrip.isArchived, existingTrip.isArchived);
+      expect(capturedTrip.createdAt, existingTrip.createdAt);
+
+      // Verify only currencies changed
+      expect(capturedTrip.allowedCurrencies, newCurrencies);
+    });
+
+    test('updates trip with single currency', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [CurrencyCode.jpy];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+      );
+
+      // Assert
+      final capturedTrip =
+          verify(mockTripRepository.updateTrip(captureAny)).captured.single
+              as Trip;
+      expect(capturedTrip.allowedCurrencies, [CurrencyCode.jpy]);
+      expect(capturedTrip.allowedCurrencies.length, 1);
+    });
+
+    test('updates trip with maximum (10) currencies', () async {
+      // Arrange
+      const tripId = 'trip-123';
+      const newCurrencies = [
+        CurrencyCode.usd,
+        CurrencyCode.eur,
+        CurrencyCode.gbp,
+        CurrencyCode.jpy,
+        CurrencyCode.cad,
+        CurrencyCode.aud,
+        CurrencyCode.chf,
+        CurrencyCode.cny,
+        CurrencyCode.sek,
+        CurrencyCode.nzd,
+      ];
+
+      final existingTrip = Trip(
+        id: tripId,
+        name: 'Test Trip',
+        allowedCurrencies: [CurrencyCode.usd],
+        createdAt: DateTime(2024, 1, 1),
+        updatedAt: DateTime(2024, 1, 1),
+      );
+
+      final updatedTrip = existingTrip.copyWith(
+        allowedCurrencies: newCurrencies,
+      );
+
+      when(
+        mockTripRepository.getTripById(tripId),
+      ).thenAnswer((_) async => existingTrip);
+      when(
+        mockTripRepository.updateTrip(any),
+      ).thenAnswer((_) async => updatedTrip);
+      when(
+        mockTripRepository.getAllTrips(),
+      ).thenAnswer((_) => Stream.value([updatedTrip]));
+
+      // Act
+      await cubit.updateTripCurrencies(
+        tripId: tripId,
+        currencies: newCurrencies,
+      );
+
+      // Assert
+      final capturedTrip =
+          verify(mockTripRepository.updateTrip(captureAny)).captured.single
+              as Trip;
+      expect(capturedTrip.allowedCurrencies, newCurrencies);
+      expect(capturedTrip.allowedCurrencies.length, 10);
     });
   });
 }

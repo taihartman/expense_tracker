@@ -24,6 +24,8 @@ class SettlementCalculator {
   ///
   /// This is an optimized version that processes expenses only once
   /// instead of iterating twice (once for summaries, once for category spending).
+  ///
+  /// T027: Added optional currencyFilter for per-currency settlements
   ({
     Map<String, PersonSummary> personSummaries,
     Map<String, PersonCategorySpending>? categorySpending,
@@ -32,9 +34,15 @@ class SettlementCalculator {
     required List<Expense> expenses,
     required CurrencyCode baseCurrency,
     List<cat.Category>? categories,
+    CurrencyCode? currencyFilter,
   }) {
+    // T027: Filter expenses by currency if filter is provided
+    final filteredExpenses = currencyFilter != null
+        ? expenses.where((e) => e.currency == currencyFilter).toList()
+        : expenses;
+
     _log(
-      '🧮 calculateSettlementData() called with ${expenses.length} expenses (single-pass optimization)',
+      '🧮 calculateSettlementData() called with ${expenses.length} expenses (${currencyFilter != null ? "filtered to ${filteredExpenses.length} ${currencyFilter.code} expenses" : "no filter"}) (single-pass optimization)',
     );
 
     final summaries = <String, _MutablePersonSummary>{};
@@ -48,10 +56,10 @@ class SettlementCalculator {
       }
     }
 
-    // SINGLE PASS through all expenses
-    for (int i = 0; i < expenses.length; i++) {
-      final expense = expenses[i];
-      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+    // SINGLE PASS through all expenses (filtered if currencyFilter provided)
+    for (int i = 0; i < filteredExpenses.length; i++) {
+      final expense = filteredExpenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${filteredExpenses.length}:');
       _log('  ID: ${expense.id}');
       _log('  Description: ${expense.description ?? "No description"}');
       _log('  Payer: ${expense.payerUserId}');
@@ -205,18 +213,26 @@ class SettlementCalculator {
   /// Calculate person summaries from expenses
   ///
   /// Returns map of userId -> PersonSummary with totals in base currency
+  ///
+  /// T027: Added optional currencyFilter for per-currency settlements
   Map<String, PersonSummary> calculatePersonSummaries({
     required List<Expense> expenses,
     required CurrencyCode baseCurrency,
+    CurrencyCode? currencyFilter,
   }) {
+    // T027: Filter expenses by currency if filter is provided
+    final filteredExpenses = currencyFilter != null
+        ? expenses.where((e) => e.currency == currencyFilter).toList()
+        : expenses;
+
     _log(
-      '🧮 calculatePersonSummaries() called with ${expenses.length} expenses',
+      '🧮 calculatePersonSummaries() called with ${expenses.length} expenses (${currencyFilter != null ? "filtered to ${filteredExpenses.length} ${currencyFilter.code} expenses" : "no filter"})',
     );
     final summaries = <String, _MutablePersonSummary>{};
 
-    for (int i = 0; i < expenses.length; i++) {
-      final expense = expenses[i];
-      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+    for (int i = 0; i < filteredExpenses.length; i++) {
+      final expense = filteredExpenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${filteredExpenses.length}:');
       _log('  ID: ${expense.id}');
       _log('  Description: ${expense.description ?? "No description"}');
       _log('  Payer: ${expense.payerUserId}');
@@ -304,13 +320,21 @@ class SettlementCalculator {
   ///
   /// Returns map of userId -> PersonCategorySpending with category breakdown
   /// Requires category list to attach names/colors to spending
+  ///
+  /// T027: Added optional currencyFilter for per-currency settlements
   Map<String, PersonCategorySpending> calculatePersonCategorySpending({
     required List<Expense> expenses,
     required List<cat.Category> categories,
     required CurrencyCode baseCurrency,
+    CurrencyCode? currencyFilter,
   }) {
+    // T027: Filter expenses by currency if filter is provided
+    final filteredExpenses = currencyFilter != null
+        ? expenses.where((e) => e.currency == currencyFilter).toList()
+        : expenses;
+
     _log(
-      '\n📊 calculatePersonCategorySpending() called with ${expenses.length} expenses, ${categories.length} categories',
+      '\n📊 calculatePersonCategorySpending() called with ${expenses.length} expenses (${currencyFilter != null ? "filtered to ${filteredExpenses.length} ${currencyFilter.code} expenses" : "no filter"}), ${categories.length} categories',
     );
 
     // Build category lookup map for quick access
@@ -325,9 +349,9 @@ class SettlementCalculator {
     // Track totals: userId -> (totalPaid, totalOwed)
     final userTotals = <String, _MutablePersonSummary>{};
 
-    for (int i = 0; i < expenses.length; i++) {
-      final expense = expenses[i];
-      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+    for (int i = 0; i < filteredExpenses.length; i++) {
+      final expense = filteredExpenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${filteredExpenses.length}:');
       _log('  Description: ${expense.description ?? "No description"}');
       _log('  Category: ${expense.categoryId ?? "Uncategorized"}');
       _log('  Amount: ${expense.amount} ${expense.currency.code}');
@@ -443,20 +467,30 @@ class SettlementCalculator {
   ///
   /// This is simpler and more transparent than minimal transfers because
   /// each transfer directly corresponds to expenses between those two people.
+  ///
+  /// T027: Added optional currencyFilter for per-currency settlements
   List<MinimalTransfer> calculatePairwiseNetTransfers({
     required String tripId,
     required List<Expense> expenses,
+    CurrencyCode? currencyFilter,
   }) {
-    _log('\n🔄 calculatePairwiseNetTransfers() called');
+    // T027: Filter expenses by currency if filter is provided
+    final filteredExpenses = currencyFilter != null
+        ? expenses.where((e) => e.currency == currencyFilter).toList()
+        : expenses;
+
+    _log(
+      '\n🔄 calculatePairwiseNetTransfers() called (${currencyFilter != null ? "filtered to ${filteredExpenses.length} ${currencyFilter.code} expenses" : "no filter"})',
+    );
     final transfers = <MinimalTransfer>[];
     final now = DateTime.now();
 
     // Build a map of pairwise debts: (fromUserId, toUserId) -> amount
     final pairwiseDebts = <String, Decimal>{};
 
-    for (int i = 0; i < expenses.length; i++) {
-      final expense = expenses[i];
-      _log('\n📊 Processing expense ${i + 1}/${expenses.length}:');
+    for (int i = 0; i < filteredExpenses.length; i++) {
+      final expense = filteredExpenses[i];
+      _log('\n📊 Processing expense ${i + 1}/${filteredExpenses.length}:');
       _log('  Description: ${expense.description ?? "No description"}');
       _log('  Payer: ${expense.payerUserId}');
       _log('  Amount: ${expense.amount} ${expense.currency.code}');
@@ -677,8 +711,8 @@ class SettlementCalculator {
         .map((p) => p.netBase)
         .fold(Decimal.zero, (a, b) => a + b);
 
-    // Allow small epsilon for rounding errors
-    return sum.abs() < Decimal.parse('0.01');
+    // Allow small epsilon for rounding errors (0.02 to account for division by 3)
+    return sum.abs() < Decimal.parse('0.02');
   }
 }
 

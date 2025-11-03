@@ -116,9 +116,9 @@ void main() {
       testWidgets('should show loading indicator when state is loading',
           (tester) async {
         // Arrange
-        when(mockCubit.state).thenReturn(CategoryCustomizationLoading());
+        when(mockCubit.state).thenReturn(const CategoryCustomizationLoading());
         when(mockCubit.stream).thenAnswer(
-          (_) => Stream.value(CategoryCustomizationLoading()),
+          (_) => Stream.value(const CategoryCustomizationLoading()),
         );
 
         // Act
@@ -133,14 +133,14 @@ void main() {
           (tester) async {
         // Arrange
         when(mockCubit.state).thenReturn(
-          CategoryCustomizationError(
+          const CategoryCustomizationError(
             type: CategoryCustomizationErrorType.loadFailed,
             message: 'Failed to load customizations',
           ),
         );
         when(mockCubit.stream).thenAnswer(
           (_) => Stream.value(
-            CategoryCustomizationError(
+            const CategoryCustomizationError(
               type: CategoryCustomizationErrorType.loadFailed,
               message: 'Failed to load customizations',
             ),

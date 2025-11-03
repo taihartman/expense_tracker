@@ -125,7 +125,7 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                       ),
                     ),
                     subtitle: Text(
-                      '${context.l10n.tripBaseCurrencyPrefix}${trip.baseCurrency.name.toUpperCase()}',
+                      '${context.l10n.tripBaseCurrencyPrefix}${trip.defaultCurrency.name.toUpperCase()}',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

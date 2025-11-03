@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:expense_tracker/features/categories/domain/models/category.dart';
 import 'package:expense_tracker/features/categories/presentation/cubit/category_cubit.dart';
 import 'package:expense_tracker/features/categories/presentation/cubit/category_state.dart';
+import 'package:expense_tracker/features/categories/presentation/cubit/category_customization_cubit.dart';
+import 'package:expense_tracker/features/categories/presentation/cubit/category_customization_state.dart';
 import 'package:expense_tracker/features/categories/presentation/widgets/category_browser_bottom_sheet.dart';
+import 'package:expense_tracker/core/services/auth_service.dart';
 import 'package:expense_tracker/l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-@GenerateMocks([CategoryCubit])
+@GenerateMocks([CategoryCubit, CategoryCustomizationCubit, AuthService])
 import 'category_browser_bottom_sheet_test.mocks.dart';
 
 void main() {
   group('CategoryBrowserBottomSheet Widget', () {
     late MockCategoryCubit mockCategoryCubit;
+    late MockCategoryCustomizationCubit mockCustomizationCubit;
+    late MockAuthService mockAuthService;
 
+    const testTripId = 'test-trip-123';
     final now = DateTime(2025, 10, 31, 12, 0, 0);
 
     final testCategories = [
@@ -69,6 +76,8 @@ void main() {
 
     setUp(() {
       mockCategoryCubit = MockCategoryCubit();
+      mockCustomizationCubit = MockCategoryCustomizationCubit();
+      mockAuthService = MockAuthService();
 
       // Default mock behavior - return search results
       when(
@@ -79,6 +88,17 @@ void main() {
           CategorySearchResults(query: '', results: testCategories),
         ),
       );
+
+      // Mock auth service to return a test user ID
+      when(mockAuthService.getAuthUidForRateLimiting()).thenReturn('test-user-123');
+
+      // Mock hasUserCustomized to return true (user has customized before, so direct selection)
+      when(mockCustomizationCubit.hasUserCustomized(any, any))
+          .thenAnswer((_) async => true);
+
+      // Mock customization cubit stream and state (empty initial state)
+      when(mockCustomizationCubit.stream).thenAnswer((_) => const Stream.empty());
+      when(mockCustomizationCubit.state).thenReturn(const CategoryCustomizationInitial());
     });
 
     Future<void> showBottomSheetUnderTest(
@@ -95,8 +115,12 @@ void main() {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: BlocProvider<CategoryCubit>.value(
-              value: mockCategoryCubit,
+            body: MultiProvider(
+              providers: [
+                BlocProvider<CategoryCubit>.value(value: mockCategoryCubit),
+                BlocProvider<CategoryCustomizationCubit>.value(value: mockCustomizationCubit),
+                Provider<AuthService>.value(value: mockAuthService),
+              ],
               child: Builder(
                 builder: (context) {
                   return ElevatedButton(
@@ -104,14 +128,17 @@ void main() {
                       showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
-                        builder: (bottomSheetContext) =>
-                            BlocProvider<CategoryCubit>.value(
-                              value: mockCategoryCubit,
-                              child: CategoryBrowserBottomSheet(
-                                onCategorySelected:
-                                    onCategorySelected ?? (_) {},
-                              ),
-                            ),
+                        builder: (bottomSheetContext) => MultiProvider(
+                          providers: [
+                            BlocProvider<CategoryCubit>.value(value: mockCategoryCubit),
+                            BlocProvider<CategoryCustomizationCubit>.value(value: mockCustomizationCubit),
+                            Provider<AuthService>.value(value: mockAuthService),
+                          ],
+                          child: CategoryBrowserBottomSheet(
+                            tripId: testTripId,
+                            onCategorySelected: onCategorySelected ?? (_) {},
+                          ),
+                        ),
                       );
                     },
                     child: const Text('Show Browser'),
@@ -282,8 +309,12 @@ void main() {
               GlobalCupertinoLocalizations.delegate,
             ],
             supportedLocales: AppLocalizations.supportedLocales,
-            home: BlocProvider<CategoryCubit>.value(
-              value: mockCategoryCubit,
+            home: MultiProvider(
+              providers: [
+                BlocProvider<CategoryCubit>.value(value: mockCategoryCubit),
+                BlocProvider<CategoryCustomizationCubit>.value(value: mockCustomizationCubit),
+                Provider<AuthService>.value(value: mockAuthService),
+              ],
               child: Scaffold(
                 body: Builder(
                   builder: (context) {
@@ -292,13 +323,17 @@ void main() {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
-                          builder: (bottomSheetContext) =>
-                              BlocProvider<CategoryCubit>.value(
-                                value: mockCategoryCubit,
-                                child: CategoryBrowserBottomSheet(
-                                  onCategorySelected: (_) {},
-                                ),
-                              ),
+                          builder: (bottomSheetContext) => MultiProvider(
+                            providers: [
+                              BlocProvider<CategoryCubit>.value(value: mockCategoryCubit),
+                              BlocProvider<CategoryCustomizationCubit>.value(value: mockCustomizationCubit),
+                              Provider<AuthService>.value(value: mockAuthService),
+                            ],
+                            child: CategoryBrowserBottomSheet(
+                              tripId: testTripId,
+                              onCategorySelected: (_) {},
+                            ),
+                          ),
                         );
                       },
                       child: const Text('Show Browser'),

@@ -5,18 +5,13 @@ import 'package:expense_tracker/features/categories/presentation/widgets/categor
 void main() {
   group('CategoryIconPicker Widget', () {
     testWidgets('should display all 30 available icons', (tester) async {
-      // Arrange
-      String? selectedIcon;
-
-      // Act
+      // Arrange & Act
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: CategoryIconPicker(
               selectedIcon: null,
-              onIconSelected: (icon) {
-                selectedIcon = icon;
-              },
+              onIconSelected: (_) {},
             ),
           ),
         ),

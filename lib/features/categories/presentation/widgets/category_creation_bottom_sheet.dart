@@ -23,9 +23,11 @@ import 'category_color_picker.dart';
 /// - Auto-dismiss on success
 class CategoryCreationBottomSheet extends StatefulWidget {
   final VoidCallback onCategoryCreated;
+  final String? initialName;
 
   const CategoryCreationBottomSheet({
     required this.onCategoryCreated,
+    this.initialName,
     super.key,
   });
 
@@ -36,7 +38,7 @@ class CategoryCreationBottomSheet extends StatefulWidget {
 
 class _CategoryCreationBottomSheetState
     extends State<CategoryCreationBottomSheet> {
-  final TextEditingController _nameController = TextEditingController();
+  late final TextEditingController _nameController;
   final _formKey = GlobalKey<FormState>();
 
   // Default selections
@@ -45,6 +47,12 @@ class _CategoryCreationBottomSheetState
 
   // Validation error
   String? _nameError;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName ?? '');
+  }
 
   // Similar category detection
   List<SimilarCategoryMatch> _similarCategories = [];
@@ -104,111 +112,124 @@ class _CategoryCreationBottomSheetState
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
         ),
-        builder: (sheetContext) => StatefulBuilder(
-          builder: (context, setSheetState) {
-            String currentSelectedIcon = defaultIcon;
+        builder: (sheetContext) {
+          // Declare state variable outside StatefulBuilder so it persists across rebuilds
+          String currentSelectedIcon = defaultIcon;
 
-            return DraggableScrollableSheet(
-              initialChildSize: 0.7,
-              minChildSize: 0.5,
-              maxChildSize: 0.9,
-              expand: false,
-              builder: (context, scrollController) => Column(
-                children: [
-                  // Title bar
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Customize "${category.name}" Icon',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+          return StatefulBuilder(
+            builder: (context, setSheetState) {
+              return DraggableScrollableSheet(
+                initialChildSize: 0.7,
+                minChildSize: 0.5,
+                maxChildSize: 0.9,
+                expand: false,
+                builder: (context, scrollController) {
+                  return Column(
+                    children: [
+                      // Title bar
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Customize "${category.name}" Icon',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.of(sheetContext).pop(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Divider(height: 1),
+                      // Icon picker
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {},
+                          behavior: HitTestBehavior.translucent,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: CategoryIconPicker(
+                              selectedIcon: currentSelectedIcon,
+                              scrollController: scrollController,
+                              onIconSelected: (selectedIcon) {
+                                setSheetState(() {
+                                  currentSelectedIcon = selectedIcon;
+                                });
+                              },
                             ),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.of(sheetContext).pop(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  // Icon picker
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: CategoryIconPicker(
-                        selectedIcon: currentSelectedIcon,
-                        onIconSelected: (selectedIcon) {
-                          setSheetState(() {
-                            currentSelectedIcon = selectedIcon;
-                          });
-                        },
                       ),
-                    ),
-                  ),
-                  // Action buttons
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(sheetContext).pop();
-                          },
-                          child: Text(context.l10n.commonCancel),
-                        ),
-                        const SizedBox(width: 8),
-                        FilledButton(
-                          onPressed: () async {
-                            // Record the icon preference vote
-                            try {
-                              await customizationRepository.recordIconPreference(
-                                category.id,
-                                currentSelectedIcon,
-                              );
+                      // Action buttons
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(sheetContext).pop();
+                              },
+                              child: Text(context.l10n.commonCancel),
+                            ),
+                            const SizedBox(width: 8),
+                            FilledButton(
+                              onPressed: () async {
+                                // Record the icon preference vote
+                                try {
+                                  await customizationRepository
+                                      .recordIconPreference(
+                                        category.id,
+                                        currentSelectedIcon,
+                                      );
 
-                              // Show brief success message
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      context.l10n.categoryIconPreferenceRecorded,
-                                    ),
-                                    duration: const Duration(seconds: 1),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              // Silent failure - voting is non-critical
-                            }
+                                  // Show brief success message
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          context
+                                              .l10n
+                                              .categoryIconPreferenceRecorded,
+                                        ),
+                                        duration: const Duration(seconds: 1),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  // Silent failure - voting is non-critical
+                                }
 
-                            // Close the bottom sheet and the creation sheet
-                            if (sheetContext.mounted) {
-                              Navigator.of(sheetContext).pop();
-                            }
-                            if (mounted) {
-                              widget.onCategoryCreated();
-                              Navigator.of(context).pop();
-                            }
-                          },
-                          child: Text(context.l10n.commonConfirm),
+                                // Close the bottom sheet and the creation sheet
+                                if (sheetContext.mounted) {
+                                  Navigator.of(sheetContext).pop();
+                                }
+                                if (context.mounted) {
+                                  widget.onCategoryCreated();
+                                  Navigator.of(context).pop();
+                                }
+                              },
+                              child: Text(context.l10n.commonConfirm),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          );
+        },
       );
     } catch (e) {
       // If anything fails, just close the sheet

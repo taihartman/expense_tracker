@@ -12,6 +12,7 @@ import '../../domain/repositories/settlement_repository.dart';
 import '../../domain/services/settlement_calculator.dart';
 import '../models/settlement_summary_model.dart';
 import '../models/minimal_transfer_model.dart';
+import '../../../../core/models/currency_code.dart';
 
 /// Helper function to log with timestamps (only in debug mode)
 void _log(String message) {
@@ -135,12 +136,14 @@ class SettlementRepositoryImpl implements SettlementRepository {
   }
 
   @override
+  /// T029: Added currencyFilter parameter for per-currency settlements
   Future<SettlementSummary> computeSettlementWithExpenses(
     String tripId,
-    List<Expense> expenses,
-  ) async {
+    List<Expense> expenses, {
+    CurrencyCode? currencyFilter,
+  }) async {
     try {
-      _log('🔄 computeSettlementWithExpenses() called for trip: $tripId');
+      _log('🔄 computeSettlementWithExpenses() called for trip: $tripId${currencyFilter != null ? " (filter: ${currencyFilter.code})" : ""}');
       _log('⚡ Using provided ${expenses.length} expenses - skipping Firestore fetch!');
 
       // Get trip to determine base currency
@@ -148,9 +151,12 @@ class SettlementRepositoryImpl implements SettlementRepository {
       if (trip == null) {
         throw Exception('Trip not found: $tripId');
       }
-      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
 
-      return await _computeSettlementInternal(tripId, trip, expenses);
+      // T029: Use currencyFilter as base currency if provided, else use trip default
+      final baseCurrency = currencyFilter ?? trip.defaultCurrency;
+      _log('📍 Trip: ${trip.name}, Base Currency: ${baseCurrency.code}${currencyFilter != null ? " (filtered)" : ""}');
+
+      return await _computeSettlementInternal(tripId, trip, expenses, baseCurrency, currencyFilter);
     } catch (e) {
       _log('❌ Error in computeSettlementWithExpenses: $e');
       throw Exception('Failed to compute settlement: $e');
@@ -158,23 +164,30 @@ class SettlementRepositoryImpl implements SettlementRepository {
   }
 
   @override
-  Future<SettlementSummary> computeSettlement(String tripId) async {
+  /// T029: Added currencyFilter parameter for per-currency settlements
+  Future<SettlementSummary> computeSettlement(
+    String tripId, {
+    CurrencyCode? currencyFilter,
+  }) async {
     try {
-      _log('🔄 computeSettlement() called for trip: $tripId');
+      _log('🔄 computeSettlement() called for trip: $tripId${currencyFilter != null ? " (filter: ${currencyFilter.code})" : ""}');
 
       // Get trip to determine base currency
       final trip = await _tripRepository.getTripById(tripId);
       if (trip == null) {
         throw Exception('Trip not found: $tripId');
       }
-      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
+
+      // T029: Use currencyFilter as base currency if provided, else use trip default
+      final baseCurrency = currencyFilter ?? trip.defaultCurrency;
+      _log('📍 Trip: ${trip.name}, Base Currency: ${baseCurrency.code}${currencyFilter != null ? " (filtered)" : ""}');
 
       // Get all expenses for the trip (await first value from stream)
       final expenses = await _expenseRepository.getExpensesByTrip(tripId).first;
 
       _log('📦 Retrieved ${expenses.length} expenses from Firestore');
 
-      return await _computeSettlementInternal(tripId, trip, expenses);
+      return await _computeSettlementInternal(tripId, trip, expenses, baseCurrency, currencyFilter);
     } catch (e) {
       _log('❌ Error in computeSettlement: $e');
       throw Exception('Failed to compute settlement: $e');
@@ -183,18 +196,24 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
   /// Internal method containing the core settlement computation logic
   /// Shared by both computeSettlement() and computeSettlementWithExpenses()
+  ///
+  /// T029: Added baseCurrency and currencyFilter parameters for per-currency settlements
   Future<SettlementSummary> _computeSettlementInternal(
     String tripId,
     Trip trip,
     List<Expense> expenses,
+    CurrencyCode baseCurrency,
+    CurrencyCode? currencyFilter,
   ) async {
-    _log('📦 Computing settlement with ${expenses.length} expenses');
+    _log('📦 Computing settlement with ${expenses.length} expenses${currencyFilter != null ? " (filtered to ${currencyFilter.code})" : ""}');
 
     // Calculate person summaries from expenses (raw calculation)
+    // T029: Pass currencyFilter to calculator
     _log('\n=== CALCULATING PERSON SUMMARIES ===');
       var personSummaries = _calculator.calculatePersonSummaries(
         expenses: expenses,
-        baseCurrency: trip.baseCurrency,
+        baseCurrency: baseCurrency,
+        currencyFilter: currencyFilter,
       );
 
       // Get existing transfers and build list of settled transfers
@@ -249,10 +268,12 @@ class SettlementRepositoryImpl implements SettlementRepository {
       });
 
       // Calculate pairwise netted transfers directly from expenses
+      // T029: Pass currencyFilter to calculator
       _log('\n=== CALCULATING PAIRWISE NETTED TRANSFERS ===');
       final rawTransfers = _calculator.calculatePairwiseNetTransfers(
         tripId: tripId,
         expenses: expenses,
+        currencyFilter: currencyFilter,
       );
 
       // Apply settled transfer reductions
@@ -320,7 +341,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
       // Create settlement summary with adjusted summaries
       final settlementSummary = SettlementSummary(
         tripId: tripId,
-        baseCurrency: trip.baseCurrency,
+        baseCurrency: baseCurrency, // T029: Use passed baseCurrency (may be currencyFilter)
         personSummaries: personSummaries,
         lastComputedAt: DateTime.now(),
       );

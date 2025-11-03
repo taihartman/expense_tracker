@@ -11,6 +11,7 @@ class CategoryCustomizationModel extends CategoryCustomization {
     required super.tripId,
     super.customIcon,
     super.customColor,
+    super.userId,
     required super.updatedAt,
   });
 
@@ -22,6 +23,7 @@ class CategoryCustomizationModel extends CategoryCustomization {
   ///   tripId: string,
   ///   customIcon?: string,
   ///   customColor?: string,
+  ///   userId?: string,
   ///   updatedAt: timestamp
   /// }
   /// ```
@@ -34,6 +36,7 @@ class CategoryCustomizationModel extends CategoryCustomization {
       tripId: data['tripId'] as String,
       customIcon: data['customIcon'] as String?,
       customColor: data['customColor'] as String?,
+      userId: data['userId'] as String?,
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
     );
   }
@@ -47,6 +50,7 @@ class CategoryCustomizationModel extends CategoryCustomization {
       'tripId': tripId,
       if (customIcon != null) 'customIcon': customIcon,
       if (customColor != null) 'customColor': customColor,
+      if (userId != null) 'userId': userId,
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
@@ -60,6 +64,7 @@ class CategoryCustomizationModel extends CategoryCustomization {
       tripId: customization.tripId,
       customIcon: customization.customIcon,
       customColor: customization.customColor,
+      userId: customization.userId,
       updatedAt: customization.updatedAt,
     );
   }

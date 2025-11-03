@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../../../core/models/currency_code.dart';
 import '../../../../shared/services/firestore_service.dart';
+import '../../domain/exceptions/trip_exceptions.dart';
 import '../../domain/models/trip.dart';
 import '../../domain/models/verified_member.dart';
 import '../../domain/repositories/trip_repository.dart';
@@ -216,6 +218,92 @@ class TripRepositoryImpl implements TripRepository {
     } catch (e) {
       _log('❌ Failed to remove verified member: $e');
       throw Exception('Failed to remove verified member: $e');
+    }
+  }
+
+  @override
+  Future<List<CurrencyCode>> getAllowedCurrencies(String tripId) async {
+    try {
+      _log('💱 Getting allowed currencies for trip: $tripId');
+
+      // Reuse getTripById to get the trip
+      final trip = await getTripById(tripId);
+
+      if (trip == null) {
+        throw TripNotFoundException(tripId);
+      }
+
+      // Handle migration logic via TripModel.fromFirestore
+      // If allowedCurrencies exists, use it
+      if (trip.allowedCurrencies.isNotEmpty) {
+        _log('✅ Found ${trip.allowedCurrencies.length} allowed currencies');
+        return trip.allowedCurrencies;
+      }
+
+      // Fallback to baseCurrency for legacy trips
+      if (trip.baseCurrency != null) {
+        _log('✅ Using legacy baseCurrency: ${trip.baseCurrency}');
+        return [trip.baseCurrency!];
+      }
+
+      // Data integrity error: neither field exists
+      throw DataIntegrityException(
+        'Trip has neither allowedCurrencies nor baseCurrency',
+        tripId: tripId,
+      );
+    } catch (e) {
+      if (e is TripNotFoundException || e is DataIntegrityException) {
+        rethrow;
+      }
+      _log('❌ Failed to get allowed currencies: $e');
+      throw Exception('Failed to get allowed currencies: $e');
+    }
+  }
+
+  @override
+  Future<void> updateAllowedCurrencies(
+    String tripId,
+    List<CurrencyCode> currencies,
+  ) async {
+    try {
+      _log('💱 Updating allowed currencies for trip: $tripId');
+      _log('   New currencies: ${currencies.map((c) => c.code).join(", ")}');
+
+      // Validate: minimum 1 currency
+      if (currencies.isEmpty) {
+        throw ArgumentError('At least 1 currency is required');
+      }
+
+      // Validate: maximum 10 currencies
+      if (currencies.length > 10) {
+        throw ArgumentError('Maximum 10 currencies allowed');
+      }
+
+      // Validate: no duplicates
+      final uniqueCurrencies = currencies.toSet();
+      if (uniqueCurrencies.length != currencies.length) {
+        throw ArgumentError('Duplicate currencies are not allowed');
+      }
+
+      // Check if trip exists
+      final tripExists = await this.tripExists(tripId);
+      if (!tripExists) {
+        throw TripNotFoundException(tripId);
+      }
+
+      // Update Firestore with new allowedCurrencies array
+      await _firestoreService.trips.doc(tripId).update({
+        'allowedCurrencies': currencies.map((c) => c.code).toList(),
+        'updatedAt': DateTime.now(),
+      });
+
+      _log('✅ Successfully updated allowed currencies');
+    } catch (e) {
+      if (e is ArgumentError || e is TripNotFoundException) {
+        rethrow;
+      }
+      _log('❌ Failed to update allowed currencies: $e');
+      throw Exception('Failed to update allowed currencies: $e');
     }
   }
 }

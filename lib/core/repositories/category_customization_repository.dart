@@ -106,6 +106,32 @@ abstract class CategoryCustomizationRepository {
   /// - Target: <500ms
   Future<void> deleteCustomization(String tripId, String categoryId);
 
+  /// Checks if a specific user has customized a category
+  ///
+  /// Used to determine whether to show icon picker (first time) or skip it
+  /// (user has already customized this category before).
+  ///
+  /// Parameters:
+  /// - [tripId]: ID of the trip
+  /// - [categoryId]: ID of the category to check
+  /// - [userId]: ID of the user (Participant ID)
+  ///
+  /// Returns:
+  /// - `Future<bool>` - True if user has customized this category, false otherwise
+  ///
+  /// Behavior:
+  /// - Queries Firestore for customization document
+  /// - Checks if userId matches current user
+  /// - Returns false if document doesn't exist or userId doesn't match
+  ///
+  /// Performance:
+  /// - Target: <200ms (reads from cache if available)
+  Future<bool> hasUserCustomizedCategory(
+    String tripId,
+    String categoryId,
+    String userId,
+  );
+
   /// Records an icon preference vote for implicit crowd-sourced voting
   ///
   /// When a user customizes a category icon, this method records their

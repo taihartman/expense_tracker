@@ -1058,6 +1058,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currencyVND => 'Vietnamese Dong';
 
   @override
+  String get currencySearchFieldLabel => 'Currency';
+
+  @override
+  String get currencySearchFieldHint => 'Select currency';
+
+  @override
+  String get currencySearchPlaceholder => 'Search by code or name';
+
+  @override
+  String get currencySearchNoResults => 'No currencies found';
+
+  @override
+  String get currencySearchNoResultsHint => 'Try a different search term';
+
+  @override
+  String get currencySearchModalTitle => 'Select Currency';
+
+  @override
+  String get currencySearchClearButton => 'Clear search';
+
+  @override
+  String get multiCurrencySelectorTitle => 'Allowed Currencies';
+
+  @override
+  String get multiCurrencySelectorHelpText =>
+      'Select 1-10 currencies for this trip. The first currency will be the default for new expenses.';
+
+  @override
+  String get multiCurrencySelectorAddButton => 'Add Currency';
+
+  @override
+  String get multiCurrencySelectorMaxError => 'Maximum 10 currencies allowed';
+
+  @override
+  String get multiCurrencySelectorMinError => 'At least 1 currency is required';
+
+  @override
+  String get multiCurrencySelectorDuplicateError =>
+      'This currency is already added';
+
+  @override
+  String get multiCurrencySelectorMoveUp => 'Move up';
+
+  @override
+  String get multiCurrencySelectorMoveDown => 'Move down';
+
+  @override
+  String get multiCurrencySelectorRemove => 'Remove currency';
+
+  @override
+  String multiCurrencySelectorChipLabel(String currencyCode) {
+    return '$currencyCode';
+  }
+
+  @override
   String get categoryMeals => 'Meals';
 
   @override
@@ -1556,7 +1611,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryBrowserTitle => 'Select Category';
 
   @override
-  String get categoryBrowserSearchHint => 'Search categories...';
+  String get categoryBrowserSearchHint => 'Search or create category...';
 
   @override
   String get categoryBrowserNoResults => 'No categories found';

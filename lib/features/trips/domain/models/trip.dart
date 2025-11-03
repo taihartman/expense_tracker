@@ -13,7 +13,13 @@ class Trip {
   final String name;
 
   /// Base currency for trip (USD or VND)
-  final CurrencyCode baseCurrency;
+  /// @deprecated Use [allowedCurrencies] instead. Retained for backward compatibility during migration.
+  @Deprecated('Use allowedCurrencies instead')
+  final CurrencyCode? baseCurrency;
+
+  /// Allowed currencies for this trip (1-10 currencies)
+  /// The first currency in the list is the default for new expenses
+  final List<CurrencyCode> allowedCurrencies;
 
   /// When the trip was created (immutable)
   final DateTime createdAt;
@@ -35,13 +41,28 @@ class Trip {
   const Trip({
     required this.id,
     required this.name,
-    required this.baseCurrency,
+    @Deprecated('Use allowedCurrencies instead') this.baseCurrency,
+    this.allowedCurrencies = const [],
     required this.createdAt,
     required this.updatedAt,
     this.lastExpenseModifiedAt,
     this.isArchived = false,
     this.participants = const [],
   });
+
+  /// Get the default currency for new expenses (first in allowedCurrencies list)
+  /// Falls back to baseCurrency for legacy trips during migration
+  CurrencyCode get defaultCurrency {
+    if (allowedCurrencies.isNotEmpty) {
+      return allowedCurrencies.first;
+    }
+    // Fallback to baseCurrency for legacy trips
+    if (baseCurrency != null) {
+      return baseCurrency!;
+    }
+    // Ultimate fallback (should never happen in production)
+    return CurrencyCode.usd;
+  }
 
   /// Validation rules for trip creation/update
   String? validate() {
@@ -52,6 +73,21 @@ class Trip {
     if (trimmedName.length > 100) {
       return 'Trip name cannot exceed 100 characters';
     }
+
+    // Validate allowedCurrencies (1-10 currencies)
+    if (allowedCurrencies.isEmpty && baseCurrency == null) {
+      return 'At least one currency is required';
+    }
+    if (allowedCurrencies.length > 10) {
+      return 'Maximum 10 currencies allowed';
+    }
+
+    // Check for duplicates in allowedCurrencies
+    final uniqueCurrencies = allowedCurrencies.toSet();
+    if (uniqueCurrencies.length != allowedCurrencies.length) {
+      return 'Duplicate currencies are not allowed';
+    }
+
     return null;
   }
 
@@ -59,7 +95,8 @@ class Trip {
   Trip copyWith({
     String? id,
     String? name,
-    CurrencyCode? baseCurrency,
+    @Deprecated('Use allowedCurrencies instead') CurrencyCode? baseCurrency,
+    List<CurrencyCode>? allowedCurrencies,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? lastExpenseModifiedAt,
@@ -70,6 +107,7 @@ class Trip {
       id: id ?? this.id,
       name: name ?? this.name,
       baseCurrency: baseCurrency ?? this.baseCurrency,
+      allowedCurrencies: allowedCurrencies ?? this.allowedCurrencies,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       lastExpenseModifiedAt:
@@ -89,7 +127,10 @@ class Trip {
 
   @override
   String toString() {
-    return 'Trip(id: $id, name: $name, baseCurrency: $baseCurrency, '
+    final currencyInfo = allowedCurrencies.isNotEmpty
+        ? 'allowedCurrencies: $allowedCurrencies'
+        : 'baseCurrency: $baseCurrency (legacy)';
+    return 'Trip(id: $id, name: $name, $currencyInfo, '
         'createdAt: $createdAt, updatedAt: $updatedAt, '
         'lastExpenseModifiedAt: $lastExpenseModifiedAt, '
         'isArchived: $isArchived, '

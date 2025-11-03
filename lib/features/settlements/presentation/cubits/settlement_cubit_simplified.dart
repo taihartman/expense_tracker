@@ -75,7 +75,7 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
         throw Exception('Trip not found: $tripId');
       }
 
-      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.baseCurrency.code}');
+      _log('📍 Trip: ${trip.name}, Base Currency: ${trip.defaultCurrency.code}');
 
       // Subscribe to expense stream - calculate on every emission
       // This is the ONLY subscription we need!

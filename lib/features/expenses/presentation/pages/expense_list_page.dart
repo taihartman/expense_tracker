@@ -110,7 +110,8 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
                     },
                     initialPayerUserId:
                         currentUser?.id ?? trip.participants.first.id,
-                    currency: trip.baseCurrency,
+                    currency: trip.defaultCurrency,
+                    allowedCurrencies: trip.allowedCurrencies,
                   ),
                 ),
               ),

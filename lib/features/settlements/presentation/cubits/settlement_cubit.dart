@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../../../core/services/activity_logger_service.dart';
 import '../../../../core/services/local_storage_service.dart';
+import '../../../../core/models/currency_code.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/category_spending.dart';
 import '../../domain/models/settlement_summary.dart';
@@ -170,7 +171,7 @@ class SettlementCubit extends Cubit<SettlementState> {
       }
 
       _log(
-        '📍 Trip: ${_cachedTrip!.name}, Base Currency: ${_cachedTrip!.baseCurrency.code}',
+        '📍 Trip: ${_cachedTrip!.name}, Base Currency: ${_cachedTrip!.defaultCurrency.code}',
       );
       _log(
         '⚡ Parallel fetch complete - trip, expenses, settled transfers, and ${_cachedCategories?.length ?? 0} categories loaded',
@@ -268,7 +269,7 @@ class SettlementCubit extends Cubit<SettlementState> {
                     final result = _settlementCalculator
                         .calculateSettlementData(
                           expenses: data.expenses,
-                          baseCurrency: _cachedTrip!.baseCurrency,
+                          baseCurrency: _cachedTrip!.defaultCurrency,
                           categories: _cachedCategories,
                         );
                     categorySpending = result.categorySpending;
@@ -484,6 +485,170 @@ class SettlementCubit extends Cubit<SettlementState> {
           _currentTripId!,
           filterMode: filterMode.name,
         );
+      }
+    }
+  }
+
+  /// T032: Load settlement for a specific currency
+  ///
+  /// Filters expenses by the specified currency before calculating settlements.
+  /// Pass null to load all expenses (no filter).
+  Future<void> loadSettlementForCurrency(
+    String tripId,
+    CurrencyCode? currencyFilter,
+  ) async {
+    try {
+      _log(
+        '💱 Loading settlement for trip: $tripId, currency: ${currencyFilter?.code ?? "all"}',
+      );
+      _currentTripId = tripId;
+
+      await _combinedSubscription?.cancel();
+      emit(const SettlementLoading());
+
+      // Fetch trip and expenses in parallel
+      await Future.wait([
+        _tripRepository.getTripById(tripId).then((t) => _cachedTrip = t),
+        _expenseRepository.getExpensesByTrip(tripId).first,
+        _settledTransferRepository.getSettledTransfers(tripId).first,
+        _categoryRepository
+            .searchCategories('')
+            .first
+            .then((c) {
+              _cachedCategories = c;
+              _log('📂 Cached ${c.length} categories');
+            })
+            .catchError((e) {
+              _log('⚠️ Failed to load categories: $e');
+              _cachedCategories = [];
+            }),
+      ]);
+
+      if (_cachedTrip == null) {
+        throw Exception('Trip not found: $tripId');
+      }
+
+      _log(
+        '📍 Trip: ${_cachedTrip!.name}, Filter Currency: ${currencyFilter?.code ?? "none (all expenses)"}',
+      );
+
+      // Subscribe to streams with currency filter
+      _combinedSubscription =
+          CombineLatestStream.combine2(
+            _expenseRepository.getExpensesByTrip(tripId),
+            _settledTransferRepository.getSettledTransfers(tripId),
+            (expenses, settledTransfers) =>
+                (expenses: expenses, settled: settledTransfers),
+          ).listen(
+            (data) async {
+              _log(
+                '📦 Received ${data.expenses.length} expenses (filtering by ${currencyFilter?.code ?? "all"})',
+              );
+
+              try {
+                // Compute settlement with currency filter
+                _log('🔄 Computing settlement with currency filter');
+                final summary = await _settlementRepository
+                    .computeSettlementWithExpenses(
+                  tripId,
+                  data.expenses,
+                  currencyFilter: currencyFilter,
+                );
+
+                _cachedLastComputedAt = summary.lastComputedAt;
+
+                // Get calculated transfers
+                final calculatedTransfers = await _settlementRepository
+                    .getMinimalTransfers(tripId)
+                    .first;
+
+                _log('✅ Settlement computed: ${summary.personSummaries.length} people');
+
+                // Separate active from settled
+                final separated = _separateTransfers(
+                  calculatedTransfers,
+                  data.settled,
+                );
+                _log(
+                  '📊 ${separated.active.length} active, ${separated.settled.length} settled',
+                );
+
+                // Calculate category spending
+                Map<String, PersonCategorySpending>? categorySpending;
+                try {
+                  if (_cachedCategories != null && _cachedTrip != null) {
+                    final result = _settlementCalculator
+                        .calculateSettlementData(
+                          expenses: data.expenses,
+                          baseCurrency: currencyFilter ?? _cachedTrip!.defaultCurrency,
+                          categories: _cachedCategories,
+                          currencyFilter: currencyFilter,
+                        );
+                    categorySpending = result.categorySpending;
+                    _log(
+                      '✅ Category spending calculated: ${categorySpending?.length ?? 0} people',
+                    );
+                  }
+                } catch (e) {
+                  _log('⚠️ Failed to calculate category spending: $e');
+                }
+
+                if (!isClosed) {
+                  // Restore saved filter
+                  final savedFilter = _localStorageService.getSettlementFilter(tripId);
+                  String? validUserId;
+                  if (savedFilter.userId != null) {
+                    final userExists = summary.personSummaries.containsKey(savedFilter.userId);
+                    if (userExists) {
+                      validUserId = savedFilter.userId;
+                    }
+                  }
+
+                  TransferFilterMode filterMode = TransferFilterMode.all;
+                  try {
+                    filterMode = TransferFilterMode.values.firstWhere(
+                      (e) => e.name == savedFilter.filterMode,
+                      orElse: () => TransferFilterMode.all,
+                    );
+                  } catch (e) {
+                    _log('⚠️ Invalid filter mode: ${savedFilter.filterMode}');
+                  }
+
+                  emit(
+                    SettlementLoaded(
+                      summary: summary,
+                      activeTransfers: separated.active,
+                      settledTransfers: separated.settled,
+                      personCategorySpending: categorySpending,
+                      selectedUserId: validUserId,
+                      filterMode: filterMode,
+                    ),
+                  );
+                }
+              } catch (e) {
+                _log('❌ Error calculating settlement: $e');
+                if (!isClosed) {
+                  emit(
+                    SettlementError(
+                      'Failed to calculate settlement: ${e.toString()}',
+                    ),
+                  );
+                }
+              }
+            },
+            onError: (error) {
+              _log('❌ Error in combined stream: $error');
+              if (!isClosed) {
+                emit(
+                  SettlementError('Failed to load data: ${error.toString()}'),
+                );
+              }
+            },
+          );
+    } catch (e) {
+      _log('❌ Error in loadSettlementForCurrency: $e');
+      if (!isClosed) {
+        emit(SettlementError('Failed to load settlement: ${e.toString()}'));
       }
     }
   }

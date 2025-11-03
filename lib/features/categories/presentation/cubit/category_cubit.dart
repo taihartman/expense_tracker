@@ -206,7 +206,7 @@ class CategoryCubit extends Cubit<CategoryState> {
       final userId = _authService.getAuthUidForRateLimiting();
       if (userId == null) {
         emit(
-          CategoryError(
+          const CategoryError(
             message: 'You must be logged in to create categories',
             type: CategoryErrorType.generic,
           ),
@@ -307,7 +307,7 @@ class CategoryCubit extends Cubit<CategoryState> {
       final userId = _authService.getAuthUidForRateLimiting();
       if (userId == null) {
         emit(
-          CategoryError(
+          const CategoryError(
             message: 'You must be logged in to check rate limits',
             type: CategoryErrorType.generic,
           ),

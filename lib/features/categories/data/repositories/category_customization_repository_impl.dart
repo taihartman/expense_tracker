@@ -85,6 +85,28 @@ class CategoryCustomizationRepositoryImpl
         .delete();
   }
 
+  /// Checks if a specific user has customized a category
+  @override
+  Future<bool> hasUserCustomizedCategory(
+    String tripId,
+    String categoryId,
+    String userId,
+  ) async {
+    final doc = await _firestoreService.trips
+        .doc(tripId)
+        .collection('categoryCustomizations')
+        .doc(categoryId)
+        .get();
+
+    if (!doc.exists) return false;
+
+    final data = doc.data();
+    if (data == null) return false;
+
+    // Check if userId matches (handles legacy docs without userId field)
+    return data['userId'] == userId;
+  }
+
   /// Records an icon preference vote for crowd-sourced icon improvement
   ///
   /// This method implements the voting system where users implicitly vote

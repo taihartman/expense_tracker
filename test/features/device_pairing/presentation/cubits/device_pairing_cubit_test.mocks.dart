@@ -12,6 +12,7 @@ import 'package:expense_tracker/features/device_pairing/domain/models/device_lin
 import 'package:expense_tracker/features/device_pairing/domain/repositories/device_link_code_repository.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -197,6 +198,46 @@ class MockLocalStorageService extends _i1.Mock
   _i4.Future<void> clearAllUserIdentities() =>
       (super.noSuchMethod(
             Invocation.method(#clearAllUserIdentities, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> saveSettlementFilter(
+    String? tripId, {
+    String? userId,
+    String? filterMode,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #saveSettlementFilter,
+              [tripId],
+              {#userId: userId, #filterMode: filterMode},
+            ),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  ({String filterMode, String? userId}) getSettlementFilter(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getSettlementFilter, [tripId]),
+            returnValue: (
+              filterMode: _i6.dummyValue<String>(
+                this,
+                Invocation.method(#getSettlementFilter, [tripId]),
+              ),
+              userId: null,
+            ),
+          )
+          as ({String filterMode, String? userId}));
+
+  @override
+  _i4.Future<void> clearSettlementFilter(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#clearSettlementFilter, [tripId]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

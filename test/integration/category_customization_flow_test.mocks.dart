@@ -92,6 +92,22 @@ class MockCategoryCustomizationRepository extends _i1.Mock
           as _i4.Future<void>);
 
   @override
+  _i4.Future<bool> hasUserCustomizedCategory(
+    String? tripId,
+    String? categoryId,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
+            Invocation.method(#hasUserCustomizedCategory, [
+              tripId,
+              categoryId,
+              userId,
+            ]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
+
+  @override
   _i4.Future<void> recordIconPreference(String? categoryId, String? iconName) =>
       (super.noSuchMethod(
             Invocation.method(#recordIconPreference, [categoryId, iconName]),
@@ -180,6 +196,12 @@ class MockCategoryCubit extends _i1.Mock implements _i9.CategoryCubit {
   );
 
   @override
+  void resetToTopCategories() => super.noSuchMethod(
+    Invocation.method(#resetToTopCategories, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void searchCategories(String? query) => super.noSuchMethod(
     Invocation.method(#searchCategories, [query]),
     returnValueForMissingStub: null,
@@ -197,15 +219,6 @@ class MockCategoryCubit extends _i1.Mock implements _i9.CategoryCubit {
               #icon: icon,
               #color: color,
             }),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> incrementCategoryUsage(String? categoryId) =>
-      (super.noSuchMethod(
-            Invocation.method(#incrementCategoryUsage, [categoryId]),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

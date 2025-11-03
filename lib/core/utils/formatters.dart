@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:decimal/decimal.dart';
+import '../models/currency_code.dart';
 import 'decimal_helpers.dart';
 
 /// Currency formatters for USD (2 decimal places) and VND (0 decimal places)
@@ -21,26 +22,27 @@ class CurrencyFormatters {
   /// Format currency based on currency code
   /// Example: formatCurrency("USD", Decimal.parse("123.45")) -> "$123.45"
   static String formatCurrency(String currencyCode, Decimal amount) {
-    switch (currencyCode) {
-      case 'USD':
-        return formatUSD(amount);
-      case 'VND':
-        return formatVND(amount);
-      default:
-        return amount.toString();
+    // Parse currency code to enum
+    final currency = CurrencyCode.fromString(currencyCode);
+    if (currency == null) {
+      return amount.toString();
     }
+
+    // Use currency's metadata for formatting
+    final formatter = NumberFormat.currency(
+      symbol: currency.symbol,
+      decimalDigits: currency.decimalPlaces,
+    );
+
+    return formatter.format(
+      double.parse(DecimalHelpers.toFixed(amount, currency.decimalPlaces)),
+    );
   }
 
   /// Get decimal places for currency
   static int getDecimalPlaces(String currencyCode) {
-    switch (currencyCode) {
-      case 'USD':
-        return 2;
-      case 'VND':
-        return 0;
-      default:
-        return 2;
-    }
+    final currency = CurrencyCode.fromString(currencyCode);
+    return currency?.decimalPlaces ?? 2;
   }
 }
 
@@ -70,8 +72,7 @@ class DateFormatters {
 /// Simplified formatters for common use
 class Formatters {
   /// Format currency with appropriate symbol and decimals based on CurrencyCode enum
-  static String formatCurrency(Decimal amount, dynamic currencyCode) {
-    final code = currencyCode.toString().split('.').last.toUpperCase();
-    return CurrencyFormatters.formatCurrency(code, amount);
+  static String formatCurrency(Decimal amount, CurrencyCode currencyCode) {
+    return CurrencyFormatters.formatCurrency(currencyCode.code, amount);
   }
 }

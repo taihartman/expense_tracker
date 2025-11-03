@@ -650,7 +650,7 @@ class _TripJoinPageState extends State<TripJoinPage> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _loadedTrip!.baseCurrency.name.toUpperCase(),
+                              _loadedTrip!.defaultCurrency.name.toUpperCase(),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey.shade600,

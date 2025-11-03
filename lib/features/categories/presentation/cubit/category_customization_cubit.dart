@@ -68,11 +68,13 @@ class CategoryCustomizationCubit extends Cubit<CategoryCustomizationState> {
   /// [categoryId] - The global category ID being customized
   /// [customIcon] - Optional icon override
   /// [customColor] - Optional color override
+  /// [userId] - Optional user ID for tracking customizations (Participant ID)
   /// [actorName] - Optional actor name for activity logging (non-fatal if fails)
   Future<void> saveCustomization({
     required String categoryId,
     String? customIcon,
     String? customColor,
+    String? userId,
     String? actorName,
   }) async {
     // Preserve current customizations while saving
@@ -89,6 +91,7 @@ class CategoryCustomizationCubit extends Cubit<CategoryCustomizationState> {
         tripId: _tripId,
         customIcon: customIcon,
         customColor: customColor,
+        userId: userId,
         updatedAt: DateTime.now(),
       );
 
@@ -216,5 +219,24 @@ class CategoryCustomizationCubit extends Cubit<CategoryCustomizationState> {
   bool isCustomized(String categoryId) {
     final customization = getCustomization(categoryId);
     return customization != null;
+  }
+
+  /// Checks if a specific user has customized this category before
+  ///
+  /// Used to determine whether to show icon picker (first time) or skip it
+  /// (user has already customized this category).
+  ///
+  /// Parameters:
+  /// - [categoryId]: ID of the category to check
+  /// - [userId]: ID of the user (Participant ID)
+  ///
+  /// Returns:
+  /// - `Future<bool>` - True if user has customized before, false otherwise
+  Future<bool> hasUserCustomized(String categoryId, String userId) async {
+    return await _repository.hasUserCustomizedCategory(
+      _tripId,
+      categoryId,
+      userId,
+    );
   }
 }

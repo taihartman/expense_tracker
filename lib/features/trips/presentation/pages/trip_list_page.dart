@@ -115,7 +115,7 @@ class _TripListPageState extends State<TripListPage> {
                           ),
                           title: Text(trip.name),
                           subtitle: Text(
-                            '${context.l10n.tripBaseCurrencyPrefix}${trip.baseCurrency.name.toUpperCase()}',
+                            '${context.l10n.tripBaseCurrencyPrefix}${trip.defaultCurrency.name.toUpperCase()}',
                           ),
                           trailing: isSelected
                               ? Icon(

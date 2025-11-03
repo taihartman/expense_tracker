@@ -9,9 +9,8 @@ import '../../domain/models/trip.dart';
 class TripModel {
   /// Convert Trip domain entity to Firestore JSON
   static Map<String, dynamic> toJson(Trip trip) {
-    return {
+    final json = <String, dynamic>{
       'name': trip.name,
-      'baseCurrency': trip.baseCurrency.code,
       'createdAt': Timestamp.fromDate(trip.createdAt),
       'updatedAt': Timestamp.fromDate(trip.updatedAt),
       'lastExpenseModifiedAt': trip.lastExpenseModifiedAt != null
@@ -20,6 +19,19 @@ class TripModel {
       'isArchived': trip.isArchived,
       'participants': trip.participants.map((p) => p.toJson()).toList(),
     };
+
+    // Add allowedCurrencies if present (new format)
+    if (trip.allowedCurrencies.isNotEmpty) {
+      json['allowedCurrencies'] =
+          trip.allowedCurrencies.map((c) => c.code).toList();
+    }
+
+    // Keep baseCurrency for backward compatibility during migration
+    if (trip.baseCurrency != null) {
+      json['baseCurrency'] = trip.baseCurrency!.code;
+    }
+
+    return json;
   }
 
   /// Convert Firestore document to Trip domain entity
@@ -36,12 +48,38 @@ class TripModel {
           )
         : <Participant>[];
 
+    // Parse allowedCurrencies (new format) or migrate from baseCurrency (legacy)
+    List<CurrencyCode> allowedCurrencies = [];
+    CurrencyCode? baseCurrency;
+
+    if (data.containsKey('allowedCurrencies')) {
+      // New format: allowedCurrencies array exists
+      final currenciesList = data['allowedCurrencies'] as List<dynamic>?;
+      if (currenciesList != null && currenciesList.isNotEmpty) {
+        allowedCurrencies = currenciesList
+            .map((code) => CurrencyCode.fromString(code as String))
+            .whereType<CurrencyCode>() // Filter out nulls
+            .toList();
+      }
+    }
+
+    if (data.containsKey('baseCurrency')) {
+      // Parse baseCurrency for backward compatibility
+      baseCurrency =
+          CurrencyCode.fromString(data['baseCurrency'] as String) ??
+              CurrencyCode.usd;
+
+      // If allowedCurrencies is empty but baseCurrency exists, migrate it
+      if (allowedCurrencies.isEmpty) {
+        allowedCurrencies = [baseCurrency];
+      }
+    }
+
     return Trip(
       id: doc.id,
       name: data['name'] as String,
-      baseCurrency:
-          CurrencyCode.fromString(data['baseCurrency'] as String) ??
-          CurrencyCode.usd,
+      baseCurrency: baseCurrency,
+      allowedCurrencies: allowedCurrencies,
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       updatedAt: (data['updatedAt'] as Timestamp).toDate(),
       lastExpenseModifiedAt: data['lastExpenseModifiedAt'] != null

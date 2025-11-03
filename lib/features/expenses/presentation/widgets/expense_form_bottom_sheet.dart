@@ -70,6 +70,9 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
   DateTime _selectedDate = DateTime.now();
   Map<String, num> _participants = {};
   String? _selectedCategory;
+  List<CurrencyCode> _allowedCurrencies = [
+    CurrencyCode.usd,
+  ]; // T023: Track allowed currencies
 
   @override
   void initState() {
@@ -89,9 +92,11 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
         orElse: () => tripState.trips.first,
       );
 
-      // Use trip participants and base currency
+      // Use trip participants, base currency, and allowed currencies
       availableParticipants = trip.participants;
-      tripBaseCurrency = trip.baseCurrency;
+      tripBaseCurrency = trip.defaultCurrency;
+      _allowedCurrencies =
+          trip.allowedCurrencies; // T023: Extract allowed currencies
     }
 
     if (widget.expense != null) {
@@ -168,6 +173,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                 },
                 initialPayerUserId: expense.payerUserId,
                 currency: expense.currency,
+                allowedCurrencies: _allowedCurrencies,
                 existingExpense: expense, // Pass existing expense for edit mode
               ),
             );
@@ -347,6 +353,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
             // Form content
             Expanded(
               child: ExpenseFormContent(
+                tripId: widget.tripId,
                 formKey: _formKey,
                 amountController: _amountController,
                 descriptionController: _descriptionController,
@@ -357,6 +364,8 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                 selectedDate: _selectedDate,
                 participants: _participants,
                 availableParticipants: availableParticipants,
+                allowedCurrencies:
+                    _allowedCurrencies, // T023: Pass allowed currencies
                 isEditMode: widget.expense != null,
                 onCurrencyChanged: (value) {
                   setState(() {
@@ -437,6 +446,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
                                 },
                                 initialPayerUserId: _selectedPayer,
                                 currency: _selectedCurrency,
+                                allowedCurrencies: _allowedCurrencies,
                               ),
                             );
                           },

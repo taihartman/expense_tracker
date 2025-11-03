@@ -1864,6 +1864,108 @@ abstract class AppLocalizations {
   /// **'Vietnamese Dong'**
   String get currencyVND;
 
+  /// No description provided for @currencySearchFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Currency'**
+  String get currencySearchFieldLabel;
+
+  /// No description provided for @currencySearchFieldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select currency'**
+  String get currencySearchFieldHint;
+
+  /// No description provided for @currencySearchPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by code or name'**
+  String get currencySearchPlaceholder;
+
+  /// No description provided for @currencySearchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No currencies found'**
+  String get currencySearchNoResults;
+
+  /// No description provided for @currencySearchNoResultsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different search term'**
+  String get currencySearchNoResultsHint;
+
+  /// No description provided for @currencySearchModalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Currency'**
+  String get currencySearchModalTitle;
+
+  /// No description provided for @currencySearchClearButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get currencySearchClearButton;
+
+  /// No description provided for @multiCurrencySelectorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed Currencies'**
+  String get multiCurrencySelectorTitle;
+
+  /// No description provided for @multiCurrencySelectorHelpText.
+  ///
+  /// In en, this message translates to:
+  /// **'Select 1-10 currencies for this trip. The first currency will be the default for new expenses.'**
+  String get multiCurrencySelectorHelpText;
+
+  /// No description provided for @multiCurrencySelectorAddButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Currency'**
+  String get multiCurrencySelectorAddButton;
+
+  /// No description provided for @multiCurrencySelectorMaxError.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum 10 currencies allowed'**
+  String get multiCurrencySelectorMaxError;
+
+  /// No description provided for @multiCurrencySelectorMinError.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 1 currency is required'**
+  String get multiCurrencySelectorMinError;
+
+  /// No description provided for @multiCurrencySelectorDuplicateError.
+  ///
+  /// In en, this message translates to:
+  /// **'This currency is already added'**
+  String get multiCurrencySelectorDuplicateError;
+
+  /// No description provided for @multiCurrencySelectorMoveUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Move up'**
+  String get multiCurrencySelectorMoveUp;
+
+  /// No description provided for @multiCurrencySelectorMoveDown.
+  ///
+  /// In en, this message translates to:
+  /// **'Move down'**
+  String get multiCurrencySelectorMoveDown;
+
+  /// No description provided for @multiCurrencySelectorRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove currency'**
+  String get multiCurrencySelectorRemove;
+
+  /// No description provided for @multiCurrencySelectorChipLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{currencyCode}'**
+  String multiCurrencySelectorChipLabel(String currencyCode);
+
   /// No description provided for @categoryMeals.
   ///
   /// In en, this message translates to:
@@ -2713,7 +2815,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryBrowserSearchHint.
   ///
   /// In en, this message translates to:
-  /// **'Search categories...'**
+  /// **'Search or create category...'**
   String get categoryBrowserSearchHint;
 
   /// No description provided for @categoryBrowserNoResults.

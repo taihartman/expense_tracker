@@ -1,57 +1,14 @@
-import 'package:flutter/widgets.dart';
-import '../l10n/l10n_extensions.dart';
+// ISO 4217 Currency Codes
+//
+// This file is a wrapper for generated currency code.
+// The actual enum and extension methods are generated from assets/currencies.json
+//
+// To add or update currencies:
+// 1. Edit assets/currencies.json
+// 2. Run: dart run build_runner build --delete-conflicting-outputs
+//
+// See specs/010-iso-4217-currencies/quickstart.md for detailed instructions.
 
-/// Supported currency codes for the expense tracker
-///
-/// MVP supports USD (United States Dollar) and VND (Vietnamese Dong)
-enum CurrencyCode {
-  /// United States Dollar (2 decimal places)
-  usd('USD', 2),
+part 'currency_code.g.dart';
 
-  /// Vietnamese Dong (0 decimal places)
-  vnd('VND', 0);
-
-  /// Currency code as string (e.g., "USD", "VND")
-  final String code;
-
-  /// Number of decimal places for this currency
-  final int decimalPlaces;
-
-  const CurrencyCode(this.code, this.decimalPlaces);
-
-  /// Parse currency code from string
-  /// Returns null if not found
-  static CurrencyCode? fromString(String code) {
-    switch (code.toUpperCase()) {
-      case 'USD':
-        return CurrencyCode.usd;
-      case 'VND':
-        return CurrencyCode.vnd;
-      default:
-        return null;
-    }
-  }
-
-  /// Get localized display name for this currency
-  String displayName(BuildContext context) {
-    switch (this) {
-      case CurrencyCode.usd:
-        return context.l10n.currencyUSD;
-      case CurrencyCode.vnd:
-        return context.l10n.currencyVND;
-    }
-  }
-
-  /// Get currency symbol for display
-  String get symbol {
-    switch (this) {
-      case CurrencyCode.usd:
-        return '\$';
-      case CurrencyCode.vnd:
-        return '₫';
-    }
-  }
-
-  @override
-  String toString() => code;
-}
+// Enum CurrencyCode and CurrencyCodeExtension are defined in currency_code.g.dart

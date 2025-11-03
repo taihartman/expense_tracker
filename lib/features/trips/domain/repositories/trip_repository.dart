@@ -1,3 +1,4 @@
+import '../../../../core/models/currency_code.dart';
 import '../models/trip.dart';
 import '../models/verified_member.dart';
 
@@ -49,4 +50,19 @@ abstract class TripRepository {
     required String tripId,
     required String participantId,
   });
+
+  /// Get allowed currencies for a trip
+  /// Throws [TripNotFoundException] if trip doesn't exist
+  /// Throws [DataIntegrityException] if trip has neither baseCurrency nor allowedCurrencies
+  /// Returns allowedCurrencies if present, otherwise [baseCurrency] for legacy trips
+  Future<List<CurrencyCode>> getAllowedCurrencies(String tripId);
+
+  /// Update allowed currencies for a trip
+  /// Validates: 1-10 currencies, no duplicates, trip exists
+  /// Throws [ArgumentError] if validation fails
+  /// Throws [TripNotFoundException] if trip doesn't exist
+  Future<void> updateAllowedCurrencies(
+    String tripId,
+    List<CurrencyCode> currencies,
+  );
 }

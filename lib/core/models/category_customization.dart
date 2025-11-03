@@ -24,6 +24,11 @@ class CategoryCustomization extends Equatable {
   /// Example: "#FF5722", "#2196F3", "#4CAF50"
   final String? customColor;
 
+  /// ID of the user who created this customization
+  /// Used to track per-user preferences and determine if user has customized before
+  /// Optional for backward compatibility with existing customizations
+  final String? userId;
+
   /// Timestamp of when this customization was last updated
   /// Used for audit trail and conflict resolution
   final DateTime updatedAt;
@@ -33,6 +38,7 @@ class CategoryCustomization extends Equatable {
     required this.tripId,
     this.customIcon,
     this.customColor,
+    this.userId,
     required this.updatedAt,
   });
 
@@ -42,6 +48,7 @@ class CategoryCustomization extends Equatable {
     String? tripId,
     String? customIcon,
     String? customColor,
+    String? userId,
     DateTime? updatedAt,
   }) {
     return CategoryCustomization(
@@ -49,6 +56,7 @@ class CategoryCustomization extends Equatable {
       tripId: tripId ?? this.tripId,
       customIcon: customIcon ?? this.customIcon,
       customColor: customColor ?? this.customColor,
+      userId: userId ?? this.userId,
       updatedAt: updatedAt ?? this.updatedAt,
     );
   }
@@ -69,6 +77,7 @@ class CategoryCustomization extends Equatable {
         tripId,
         customIcon,
         customColor,
+        userId,
         updatedAt,
       ];
 
@@ -79,6 +88,7 @@ class CategoryCustomization extends Equatable {
         'tripId: $tripId, '
         'customIcon: $customIcon, '
         'customColor: $customColor, '
+        'userId: $userId, '
         'updatedAt: $updatedAt'
         ')';
   }

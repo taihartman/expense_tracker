@@ -73,10 +73,10 @@ void main() {
           .thenAnswer((_) async => Future.value());
 
       when(mockRepository.deleteCustomization(any, any))
-          .thenAnswer((_) async => Future.value());
+          .thenAnswer((_) async {});
 
       when(mockActivityLogRepository.addLog(any))
-          .thenAnswer((_) async => Future.value());
+          .thenAnswer((_) async => 'test-log-id');
     });
 
     testWidgets(

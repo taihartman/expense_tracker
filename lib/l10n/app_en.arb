@@ -693,6 +693,32 @@
   "currencyUSD": "US Dollar",
   "currencyVND": "Vietnamese Dong",
 
+  "currencySearchFieldLabel": "Currency",
+  "currencySearchFieldHint": "Select currency",
+  "currencySearchPlaceholder": "Search by code or name",
+  "currencySearchNoResults": "No currencies found",
+  "currencySearchNoResultsHint": "Try a different search term",
+  "currencySearchModalTitle": "Select Currency",
+  "currencySearchClearButton": "Clear search",
+
+  "multiCurrencySelectorTitle": "Allowed Currencies",
+  "multiCurrencySelectorHelpText": "Select 1-10 currencies for this trip. The first currency will be the default for new expenses.",
+  "multiCurrencySelectorAddButton": "Add Currency",
+  "multiCurrencySelectorMaxError": "Maximum 10 currencies allowed",
+  "multiCurrencySelectorMinError": "At least 1 currency is required",
+  "multiCurrencySelectorDuplicateError": "This currency is already added",
+  "multiCurrencySelectorMoveUp": "Move up",
+  "multiCurrencySelectorMoveDown": "Move down",
+  "multiCurrencySelectorRemove": "Remove currency",
+  "multiCurrencySelectorChipLabel": "{currencyCode}",
+  "@multiCurrencySelectorChipLabel": {
+    "placeholders": {
+      "currencyCode": {
+        "type": "String"
+      }
+    }
+  },
+
 
   "categoryMeals": "Meals",
   "categoryTransport": "Transport",
@@ -995,7 +1021,7 @@
 
 
   "categoryBrowserTitle": "Select Category",
-  "categoryBrowserSearchHint": "Search categories...",
+  "categoryBrowserSearchHint": "Search or create category...",
   "categoryBrowserNoResults": "No categories found",
   "categoryBrowserLoading": "Loading categories...",
   "categoryBrowserCreateNew": "Create \"{name}\"",

@@ -305,6 +305,105 @@ if (_activityLogRepository != null && actorName != null) {
 
 **For detailed workflow**: See [DEVELOPMENT.md#activity-tracking-system](DEVELOPMENT.md#activity-tracking-system) or `.claude/skills/activity-logging.md`
 
+## 🔄 User Feedback for Async Operations
+
+**CRITICAL**: Always provide visual feedback for async operations (network, database, file operations).
+
+### Core Principle
+
+**Never leave users wondering if their action is processing.** Every button that triggers an async operation MUST show loading state.
+
+### Loading State Pattern
+
+```dart
+// 1. Add loading state variable
+bool isLoading = false;
+
+// 2. Wrap async operation
+ElevatedButton(
+  onPressed: isLoading ? null : () async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await performAsyncOperation();
+      // Show success feedback (SnackBar, navigation, etc.)
+    } catch (e) {
+      // Show error feedback
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  },
+  child: isLoading
+      ? const SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        )
+      : const Text('Save'),
+)
+```
+
+### Key Requirements
+
+1. **Disable button** when loading (`onPressed: isLoading ? null : () async { ... }`)
+2. **Show indicator** in button child (CircularProgressIndicator)
+3. **Use try/finally** to ensure state is reset even on errors
+4. **Check mounted** before calling setState in finally block
+5. **Show result** via SnackBar (success/error messages)
+
+### Common Async Operations
+
+- Saving to Firestore
+- Loading data from API
+- Processing images
+- Generating reports
+- Uploading files
+- Complex calculations
+
+### Examples
+
+```dart
+// ✅ CORRECT - Shows loading state
+ElevatedButton(
+  onPressed: isSaving ? null : () async {
+    setState(() { isSaving = true; });
+    try {
+      await saveData();
+      showSnackBar('✓ Saved successfully');
+    } catch (e) {
+      showSnackBar('Failed: $e');
+    } finally {
+      if (mounted) setState(() { isSaving = false; });
+    }
+  },
+  child: isSaving ? CircularProgressIndicator() : Text('Save'),
+)
+
+// ❌ WRONG - No visual feedback
+ElevatedButton(
+  onPressed: () async {
+    await saveData(); // User sees nothing happening!
+  },
+  child: Text('Save'),
+)
+```
+
+### Benefits
+
+- ✅ Prevents double-clicks/double-submissions
+- ✅ Clear feedback that operation is processing
+- ✅ Better UX during network latency
+- ✅ Reduces user confusion and support requests
+
 ## 🧪 Testing Strategy
 
 ### Cubit Tests (Unit Tests)
@@ -336,12 +435,38 @@ dart run build_runner build --delete-conflicting-outputs
 
 This project uses **GitHub Spec-Kit** for structured feature development.
 
-### Spec-Kit Commands
+### Required Spec-Kit Workflow
 
-- `/speckit.specify` - Create/update feature specification
-- `/speckit.plan` - Generate implementation plan
-- `/speckit.tasks` - Generate task breakdown
-- `/speckit.implement` - Execute implementation
+**⚠️ CRITICAL**: When using Spec-Kit, ALWAYS follow this complete sequence:
+
+1. **`/speckit.specify`** - Create/update feature specification
+2. **`/speckit.clarify`** - Clarify underspecified areas (REQUIRED before planning)
+3. **`/speckit.plan`** - Generate implementation plan
+4. **`/speckit.tasks`** - Generate task breakdown
+5. **`/speckit.analyze`** - Cross-artifact consistency analysis (REQUIRED after tasks, before implement)
+6. **`/speckit.checklist`** - Generate quality checklists ("unit tests for English")
+7. **`/speckit.implement`** - Execute implementation
+
+### Why This Workflow Matters
+
+- **`/speckit.clarify`** - Identifies ambiguities and underspecified areas BEFORE planning begins. Prevents wasted planning effort on incomplete specs.
+- **`/speckit.analyze`** - Validates consistency across spec.md, plan.md, and tasks.md. Catches misalignments before implementation starts.
+- **`/speckit.checklist`** - Generates custom validation criteria to ensure requirements are complete, clear, and consistent.
+
+**Never skip `/speckit.clarify` or `/speckit.analyze`** - they prevent costly rework during implementation.
+
+### All Spec-Kit Commands
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `/speckit.specify` | Create/update specification | Starting new feature |
+| `/speckit.clarify` | Identify underspecified areas | After spec, before plan |
+| `/speckit.plan` | Generate implementation plan | After clarification |
+| `/speckit.tasks` | Generate task breakdown | After plan |
+| `/speckit.analyze` | Consistency analysis | After tasks, before implement |
+| `/speckit.checklist` | Quality validation checklist | After tasks |
+| `/speckit.implement` | Execute implementation | After analysis passes |
+| `/speckit.constitution` | Create/update project principles | Setting up project standards |
 
 ### Feature Structure
 
@@ -486,7 +611,8 @@ specs/                            # Feature specifications (Spec-Kit)
 When adding new features:
 
 1. Create feature branch: `{id}-{feature-name}`
-2. Use `/speckit.specify` to create spec
+2. Run full Spec-Kit workflow (see "Required Spec-Kit Workflow" above):
+   - `/speckit.specify` → `/speckit.clarify` → `/speckit.plan` → `/speckit.tasks` → `/speckit.analyze` → `/speckit.checklist` → `/speckit.implement`
 3. Use `/docs.create` to initialize feature docs
 4. Use `/docs.log` frequently during development
 5. Use `/docs.complete` when feature is done
@@ -495,5 +621,5 @@ When adding new features:
 
 ---
 
-**Last Updated**: 2025-01-30
+**Last Updated**: 2025-11-01
 **Documentation Structure**: Multi-document system (Reddit post recommendations)

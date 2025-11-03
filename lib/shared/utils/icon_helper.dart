@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:expense_tracker/core/enums/category_icon.dart';
+import '../../core/enums/category_icon.dart';
 
 /// Shared utility for category icon conversion and rendering.
 ///

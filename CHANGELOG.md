@@ -1,3 +1,17 @@
+## 2025-11-02
+
+- **[010-iso-4217-currencies] ISO 4217 Multi-Currency Support** - Implemented comprehensive multi-currency system supporting all 170+ ISO 4217 active currencies with code generation, searchable UI, and proper decimal place handling:
+  - **Code Generation System**: Created build_runner generator that reads `assets/currencies.json` and produces type-safe 1,149-line `CurrencyCode` enum with all metadata
+  - **Keyword Escaping**: Automatically handles Dart reserved keywords (e.g., TRY → `$try`) using `$` prefix for all 29 reserved words
+  - **Currency Picker UI**: Built `CurrencySearchField` widget with mobile-optimized modal, virtualized list rendering, 300ms debounced search, and full accessibility support
+  - **Dynamic Formatting**: Updated `CurrencyFormatters` to support 0/2/3 decimal places based on ISO 4217 standard (JPY=0, USD=2, KWD=3)
+  - **Backward Compatibility**: 100% compatible with existing USD/VND data, no migration required
+  - **Localization**: Added 7 new localized strings for currency search UI
+  - **Documentation**: Created comprehensive `quickstart.md` with maintenance guide, common tasks, troubleshooting, and update workflows
+  - Files created: `assets/currencies.json`, `lib/generators/currency_code_generator.dart`, `lib/shared/widgets/currency_search_field.dart`, `build.yaml`
+  - Files modified: `lib/core/models/currency_code.dart` (now wrapper), `lib/core/utils/formatters.dart`, trip create/edit pages, `pubspec.yaml`, `lib/l10n/app_en.arb`
+  - See [`specs/010-iso-4217-currencies/`](specs/010-iso-4217-currencies/) for complete documentation
+
 ## 2025-11-01
 
 - Implemented category icon caching system to eliminate redundant Firebase reads. Added CategoryRepository.getCategoriesByIds() for batch fetching, CategoryCubit.loadCategoriesByIds() and getCategoryById() for synchronous caching, ExpenseListPage pre-loading of categories when expenses load, and simplified ExpenseCard to use cached categories without FutureBuilder. Reduces Firebase reads from 5-15 per page view to 0-1 batch read. Includes comprehensive test coverage with 10+ new tests following TDD methodology.

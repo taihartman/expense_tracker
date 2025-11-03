@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
-import '../../../../core/models/currency_code.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -23,13 +22,11 @@ class TripEditPage extends StatefulWidget {
 class _TripEditPageState extends State<TripEditPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
-  late CurrencyCode _selectedCurrency;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.trip.name);
-    _selectedCurrency = widget.trip.baseCurrency;
   }
 
   @override
@@ -49,7 +46,6 @@ class _TripEditPageState extends State<TripEditPage> {
       context.read<TripCubit>().updateTripDetails(
         tripId: widget.trip.id,
         name: _nameController.text.trim(),
-        baseCurrency: _selectedCurrency,
         actorName: actorName,
       );
       context.go(AppRoutes.tripSettings(widget.trip.id));
@@ -88,29 +84,6 @@ class _TripEditPageState extends State<TripEditPage> {
               },
             ),
             const SizedBox(height: AppTheme.spacing2),
-            DropdownButtonFormField<CurrencyCode>(
-              initialValue: _selectedCurrency,
-              decoration: InputDecoration(
-                labelText: context.l10n.tripFieldBaseCurrencyLabel,
-                helperText: context.l10n.tripFieldBaseCurrencyEditHelper,
-              ),
-              items: CurrencyCode.values.map((currency) {
-                return DropdownMenuItem(
-                  value: currency,
-                  child: Text(
-                    '${currency.name.toUpperCase()} - ${currency.displayName(context)}',
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedCurrency = value;
-                  });
-                }
-              },
-            ),
-            const SizedBox(height: AppTheme.spacing1),
             Container(
               padding: const EdgeInsets.all(AppTheme.spacing2),
               decoration: BoxDecoration(
@@ -129,7 +102,7 @@ class _TripEditPageState extends State<TripEditPage> {
                   const SizedBox(width: AppTheme.spacing1),
                   Expanded(
                     child: Text(
-                      context.l10n.tripCurrencyChangedInfo,
+                      'To manage currencies for this trip, go to Trip Settings.',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.blue.shade900,
