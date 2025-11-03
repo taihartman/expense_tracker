@@ -92,9 +92,11 @@ void main() {
       // Mock auth service to return a test user ID
       when(mockAuthService.getAuthUidForRateLimiting()).thenReturn('test-user-123');
 
-      // Mock hasUserCustomized to return true (user has customized before, so direct selection)
-      when(mockCustomizationCubit.hasUserCustomized(any, any))
-          .thenAnswer((_) async => true);
+      // Mock isCustomized to return true by default (category already customized in trip, so direct selection)
+      when(mockCustomizationCubit.isCustomized(any)).thenReturn(true);
+
+      // Mock getCustomization to return null (no custom icon/color) by default
+      when(mockCustomizationCubit.getCustomization(any)).thenReturn(null);
 
       // Mock customization cubit stream and state (empty initial state)
       when(mockCustomizationCubit.stream).thenAnswer((_) => const Stream.empty());

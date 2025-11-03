@@ -293,7 +293,7 @@ void main() {
           mockCustomizationsCollection.doc(testCategoryId),
         ).thenReturn(mockCustomizationDocRef);
         when(
-          mockCustomizationDocRef.set(any),
+          mockCustomizationDocRef.set(any, any),
         ).thenAnswer((_) async => Future.value());
 
         // Act
@@ -305,7 +305,7 @@ void main() {
         verify(mockCustomizationsCollection.doc(testCategoryId)).called(1);
 
         final captured =
-            verify(mockCustomizationDocRef.set(captureAny)).captured.single
+            verify(mockCustomizationDocRef.set(captureAny, any)).captured.single
                 as Map<String, dynamic>;
         expect(captured['tripId'], testTripId);
         expect(captured['customIcon'], 'fastfood');
@@ -326,7 +326,7 @@ void main() {
           mockCustomizationsCollection.doc(testCategoryId),
         ).thenReturn(mockCustomizationDocRef);
         when(
-          mockCustomizationDocRef.set(any),
+          mockCustomizationDocRef.set(any, any),
         ).thenAnswer((_) async => Future.value());
 
         // Act
@@ -334,7 +334,7 @@ void main() {
 
         // Assert
         final captured =
-            verify(mockCustomizationDocRef.set(captureAny)).captured.single
+            verify(mockCustomizationDocRef.set(captureAny, any)).captured.single
                 as Map<String, dynamic>;
         expect(captured['customIcon'], 'restaurant');
         expect(captured.containsKey('customColor'), isFalse);
@@ -353,7 +353,7 @@ void main() {
           mockCustomizationsCollection.doc(testCategoryId),
         ).thenReturn(mockCustomizationDocRef);
         when(
-          mockCustomizationDocRef.set(any),
+          mockCustomizationDocRef.set(any, any),
         ).thenAnswer((_) async => Future.value());
 
         // Act
@@ -361,10 +361,209 @@ void main() {
 
         // Assert
         final captured =
-            verify(mockCustomizationDocRef.set(captureAny)).captured.single
+            verify(mockCustomizationDocRef.set(captureAny, any)).captured.single
                 as Map<String, dynamic>;
         expect(captured.containsKey('customIcon'), isFalse);
         expect(captured['customColor'], '#2196F3');
+      });
+
+      test('should persist userId field when provided', () async {
+        // Arrange
+        const testUserId = 'user-789';
+        final customization = CategoryCustomization(
+          categoryId: testCategoryId,
+          tripId: testTripId,
+          customIcon: 'fastfood',
+          userId: testUserId,
+          updatedAt: now,
+        );
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.set(any, any),
+        ).thenAnswer((_) async => Future.value());
+
+        // Act
+        await repository.saveCustomization(customization);
+
+        // Assert
+        final captured =
+            verify(mockCustomizationDocRef.set(captureAny, any)).captured.single
+                as Map<String, dynamic>;
+        expect(captured['userId'], testUserId);
+        expect(captured['customIcon'], 'fastfood');
+      });
+
+      test('should not include userId field when null', () async {
+        // Arrange
+        final customization = CategoryCustomization(
+          categoryId: testCategoryId,
+          tripId: testTripId,
+          customIcon: 'restaurant',
+          userId: null,
+          updatedAt: now,
+        );
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.set(any, any),
+        ).thenAnswer((_) async => Future.value());
+
+        // Act
+        await repository.saveCustomization(customization);
+
+        // Assert
+        final captured =
+            verify(mockCustomizationDocRef.set(captureAny, any)).captured.single
+                as Map<String, dynamic>;
+        expect(captured.containsKey('userId'), isFalse);
+      });
+    });
+
+    group('hasUserCustomizedCategory', () {
+      test('should return true when userId matches', () async {
+        // Arrange
+        const testUserId = 'user-789';
+        final customizationData = {
+          'tripId': testTripId,
+          'customIcon': 'fastfood',
+          'userId': testUserId,
+          'updatedAt': Timestamp.fromDate(now),
+        };
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
+        when(mockDocSnapshot.exists).thenReturn(true);
+        when(mockDocSnapshot.data()).thenReturn(customizationData);
+
+        // Act
+        final result = await repository.hasUserCustomizedCategory(
+          testTripId,
+          testCategoryId,
+          testUserId,
+        );
+
+        // Assert
+        expect(result, isTrue);
+        verify(mockTripsCollection.doc(testTripId)).called(1);
+        verify(mockTripDocRef.collection('categoryCustomizations')).called(1);
+        verify(mockCustomizationsCollection.doc(testCategoryId)).called(1);
+      });
+
+      test('should return false when userId does not match', () async {
+        // Arrange
+        const testUserId = 'user-789';
+        const differentUserId = 'user-999';
+        final customizationData = {
+          'tripId': testTripId,
+          'customIcon': 'fastfood',
+          'userId': differentUserId,
+          'updatedAt': Timestamp.fromDate(now),
+        };
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
+        when(mockDocSnapshot.exists).thenReturn(true);
+        when(mockDocSnapshot.data()).thenReturn(customizationData);
+
+        // Act
+        final result = await repository.hasUserCustomizedCategory(
+          testTripId,
+          testCategoryId,
+          testUserId,
+        );
+
+        // Assert
+        expect(result, isFalse);
+      });
+
+      test('should return false when customization does not exist', () async {
+        // Arrange
+        const testUserId = 'user-789';
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
+        when(mockDocSnapshot.exists).thenReturn(false);
+
+        // Act
+        final result = await repository.hasUserCustomizedCategory(
+          testTripId,
+          testCategoryId,
+          testUserId,
+        );
+
+        // Assert
+        expect(result, isFalse);
+      });
+
+      test('should return false when document exists but data is null', () async {
+        // Arrange
+        const testUserId = 'user-789';
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
+        when(mockDocSnapshot.exists).thenReturn(true);
+        when(mockDocSnapshot.data()).thenReturn(null);
+
+        // Act
+        final result = await repository.hasUserCustomizedCategory(
+          testTripId,
+          testCategoryId,
+          testUserId,
+        );
+
+        // Assert
+        expect(result, isFalse);
+      });
+
+      test('should return false when userId field is missing (legacy doc)', () async {
+        // Arrange
+        const testUserId = 'user-789';
+        final customizationData = {
+          'tripId': testTripId,
+          'customIcon': 'fastfood',
+          // No userId field (legacy document)
+          'updatedAt': Timestamp.fromDate(now),
+        };
+
+        when(
+          mockCustomizationsCollection.doc(testCategoryId),
+        ).thenReturn(mockCustomizationDocRef);
+        when(
+          mockCustomizationDocRef.get(),
+        ).thenAnswer((_) async => mockDocSnapshot);
+        when(mockDocSnapshot.exists).thenReturn(true);
+        when(mockDocSnapshot.data()).thenReturn(customizationData);
+
+        // Act
+        final result = await repository.hasUserCustomizedCategory(
+          testTripId,
+          testCategoryId,
+          testUserId,
+        );
+
+        // Assert
+        expect(result, isFalse);
       });
     });
 

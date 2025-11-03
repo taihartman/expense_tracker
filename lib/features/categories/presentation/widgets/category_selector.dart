@@ -8,6 +8,7 @@ import '../cubit/category_customization_state.dart';
 import 'category_browser_bottom_sheet.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../shared/utils/category_display_helper.dart';
 import '../../../../shared/utils/icon_helper.dart';
 
@@ -194,15 +195,39 @@ class _CategorySelectorState extends State<CategorySelector> {
       onSelected: (selected) async {
         // Open CategoryBrowserBottomSheet when tapped
         if (selected) {
+          // Capture providers from current context
+          final categoryCubit = context.read<CategoryCubit>();
+          final categoryCustomizationCubit = context.read<CategoryCustomizationCubit?>();
+          final authService = context.read<AuthService>();
+
           await showModalBottomSheet<String?>(
             context: context,
             isScrollControlled: true,
-            builder: (context) => CategoryBrowserBottomSheet(
-              tripId: widget.tripId,
-              onCategorySelected: (category) {
-                widget.onCategoryChanged(category.id);
-                // CategoryBrowserBottomSheet handles its own dismissal
-              },
+            builder: (sheetContext) => MultiRepositoryProvider(
+              providers: [
+                // Provide AuthService via RepositoryProvider
+                RepositoryProvider<AuthService>.value(
+                  value: authService,
+                ),
+              ],
+              child: MultiBlocProvider(
+                providers: [
+                  BlocProvider<CategoryCubit>.value(
+                    value: categoryCubit,
+                  ),
+                  if (categoryCustomizationCubit != null)
+                    BlocProvider<CategoryCustomizationCubit>.value(
+                      value: categoryCustomizationCubit,
+                    ),
+                ],
+                child: CategoryBrowserBottomSheet(
+                  tripId: widget.tripId,
+                  onCategorySelected: (category) {
+                    widget.onCategoryChanged(category.id);
+                    // CategoryBrowserBottomSheet handles its own dismissal
+                  },
+                ),
+              ),
             ),
           );
           // Restore CategoryCubit to CategoryTopLoaded state after sheet closes

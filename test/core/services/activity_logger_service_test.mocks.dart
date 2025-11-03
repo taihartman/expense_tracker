@@ -4,7 +4,6 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
-import 'package:expense_tracker/core/models/currency_code.dart' as _i12;
 
 import 'package:expense_tracker/features/trips/domain/models/activity_log.dart'
     as _i5;
@@ -131,7 +130,7 @@ class MockTripRepository extends _i1.Mock implements _i7.TripRepository {
 
   @override
   _i4.Future<void> addVerifiedMember({
-    required String tripId,
+    required String? tripId,
     required String? participantId,
     required String? participantName,
   }) =>
@@ -158,7 +157,7 @@ class MockTripRepository extends _i1.Mock implements _i7.TripRepository {
 
   @override
   _i4.Future<void> removeVerifiedMember({
-    required String tripId,
+    required String? tripId,
     required String? participantId,
   }) =>
       (super.noSuchMethod(
@@ -172,17 +171,17 @@ class MockTripRepository extends _i1.Mock implements _i7.TripRepository {
           as _i4.Future<void>);
 
   @override
-  _i4.Future<List<_i12.CurrencyCode>> getAllowedCurrencies(String tripId) =>
+  _i4.Future<List<dynamic>> getAllowedCurrencies(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i4.Future<List<_i12.CurrencyCode>>.value(<_i12.CurrencyCode>[]),
+            returnValue: _i4.Future<List<dynamic>>.value(<dynamic>[]),
           )
-          as _i4.Future<List<_i12.CurrencyCode>>);
+          as _i4.Future<List<dynamic>>);
 
   @override
   _i4.Future<void> updateAllowedCurrencies(
-    String tripId,
-    List<_i12.CurrencyCode> currencies,
+    String? tripId,
+    List<dynamic>? currencies,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateAllowedCurrencies, [tripId, currencies]),

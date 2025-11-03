@@ -1,3 +1,23 @@
+## 2025-11-03
+
+**Bug Fix: Icon Picker Skip Behavior (Per-Trip)** - Fixed icon picker showing every time when selecting categories, even for previously customized categories. Icon picker skip is now **per-trip** (if anyone customizes, no one sees picker again) instead of per-user:
+
+- **Root Cause #1**: `CategoryCustomizationRepositoryImpl.saveCustomization()` was manually creating `CategoryCustomizationModel` without including the `userId` field, so customizations weren't being tracked
+- **Root Cause #2**: Logic was checking per-user customization (`hasUserCustomized()`), but should check per-trip (`isCustomized()`)
+- **Solution**:
+  1. Fixed `saveCustomization()` to use `CategoryCustomizationModel.fromDomain()` factory method (ensures `userId` persisted for audit trail)
+  2. Changed `CategoryBrowserBottomSheet._onCategoryTap()` to use `isCustomized()` instead of `hasUserCustomized()` (checks if ANY customization exists in trip, not just by current user)
+- **Behavior**: When ANYONE in a trip customizes a category icon, NO ONE else sees the icon picker for that category in that trip
+- **Impact**: Better UX - category customization is trip-wide, not per-user. Saves their userId for audit purposes but doesn't use it for picker decision
+- **Test Coverage**:
+  - Added 7 new repository tests for `userId` persistence and `hasUserCustomizedCategory()` edge cases (19 total, all passing)
+  - Updated CategoryBrowserBottomSheet tests to use `isCustomized()` (17 total, all passing)
+- **Files Modified**:
+  - `lib/features/categories/data/repositories/category_customization_repository_impl.dart` (use `.fromDomain()` instead of manual model creation)
+  - `lib/features/categories/presentation/widgets/category_browser_bottom_sheet.dart` (use `isCustomized()` instead of `hasUserCustomized()`)
+  - `test/features/categories/data/category_customization_repository_test.dart` (added userId persistence tests)
+  - `test/features/categories/presentation/widgets/category_browser_bottom_sheet_test.dart` (updated mocks to use `isCustomized()`)
+
 ## 2025-11-02
 
 - **[010-iso-4217-currencies] ISO 4217 Multi-Currency Support** - Implemented comprehensive multi-currency system supporting all 170+ ISO 4217 active currencies with code generation, searchable UI, and proper decimal place handling:

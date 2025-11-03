@@ -550,6 +550,180 @@ abstract class AppLocalizations {
   /// **'Base: '**
   String get tripBaseCurrencyPrefix;
 
+  /// No description provided for @tripSettingsTabGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get tripSettingsTabGeneral;
+
+  /// No description provided for @tripSettingsTabMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get tripSettingsTabMembers;
+
+  /// No description provided for @tripSettingsTabAdvanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get tripSettingsTabAdvanced;
+
+  /// No description provided for @tripSettingsSectionTripDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Trip Details'**
+  String get tripSettingsSectionTripDetails;
+
+  /// No description provided for @tripSettingsSectionAllowedCurrencies.
+  ///
+  /// In en, this message translates to:
+  /// **'Allowed Currencies'**
+  String get tripSettingsSectionAllowedCurrencies;
+
+  /// No description provided for @tripSettingsSectionQuickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get tripSettingsSectionQuickActions;
+
+  /// No description provided for @tripSettingsSectionRecoveryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery Code'**
+  String get tripSettingsSectionRecoveryCode;
+
+  /// No description provided for @tripSettingsSectionDangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get tripSettingsSectionDangerZone;
+
+  /// No description provided for @tripSettingsAllowedCurrenciesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to edit allowed currencies. The first currency is the default for new expenses.'**
+  String get tripSettingsAllowedCurrenciesDescription;
+
+  /// No description provided for @tripSettingsAllowedCurrenciesDefaultSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' (Default)'**
+  String get tripSettingsAllowedCurrenciesDefaultSuffix;
+
+  /// No description provided for @tripSettingsAllowedCurrenciesDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Currencies'**
+  String get tripSettingsAllowedCurrenciesDialogTitle;
+
+  /// No description provided for @tripSettingsAllowedCurrenciesSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get tripSettingsAllowedCurrenciesSaveButton;
+
+  /// No description provided for @tripSettingsAllowedCurrenciesUpdateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Currencies updated successfully'**
+  String get tripSettingsAllowedCurrenciesUpdateSuccess;
+
+  /// No description provided for @tripSettingsAllowedCurrenciesUpdateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update currencies: {error}'**
+  String tripSettingsAllowedCurrenciesUpdateError(String error);
+
+  /// No description provided for @tripSettingsRecoveryCodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a recovery code to regain access if you lose your device'**
+  String get tripSettingsRecoveryCodeDescription;
+
+  /// No description provided for @tripSettingsRecoveryCodeExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'This recovery code allows you to bypass device verification. Keep it safe - anyone with this code can access your trip.'**
+  String get tripSettingsRecoveryCodeExplanation;
+
+  /// No description provided for @tripSettingsInviteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite'**
+  String get tripSettingsInviteButton;
+
+  /// No description provided for @tripSettingsActivityButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get tripSettingsActivityButton;
+
+  /// No description provided for @tripSettingsCustomizeCategoriesButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Categories'**
+  String get tripSettingsCustomizeCategoriesButton;
+
+  /// No description provided for @tripSettingsGenerateQrCodeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'QR Code'**
+  String get tripSettingsGenerateQrCodeButton;
+
+  /// No description provided for @tripSettingsGenerateQrCodeTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate pairing code'**
+  String get tripSettingsGenerateQrCodeTooltip;
+
+  /// No description provided for @tripSettingsDeleteParticipantButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get tripSettingsDeleteParticipantButton;
+
+  /// No description provided for @tripSettingsDeleteParticipantTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove participant'**
+  String get tripSettingsDeleteParticipantTooltip;
+
+  /// No description provided for @tripSettingsArchiveTripTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Trip'**
+  String get tripSettingsArchiveTripTitle;
+
+  /// No description provided for @tripSettingsArchiveTripDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this trip from your active trips list. You can restore it later.'**
+  String get tripSettingsArchiveTripDescription;
+
+  /// No description provided for @tripSettingsUnarchiveTripTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive Trip'**
+  String get tripSettingsUnarchiveTripTitle;
+
+  /// No description provided for @tripSettingsUnarchiveTripDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Move this trip back to your active trips list.'**
+  String get tripSettingsUnarchiveTripDescription;
+
+  /// No description provided for @tripSettingsLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this trip'**
+  String get tripSettingsLeaveTitle;
+
+  /// No description provided for @tripSettingsLeaveWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose access to this trip and all its expenses. You\'ll need an invite link to rejoin.'**
+  String get tripSettingsLeaveWarning;
+
   /// No description provided for @participantSectionTitle.
   ///
   /// In en, this message translates to:

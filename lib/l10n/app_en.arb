@@ -169,6 +169,50 @@
 
   "tripBaseCurrencyPrefix": "Base: ",
 
+  "tripSettingsTabGeneral": "General",
+  "tripSettingsTabMembers": "Members",
+  "tripSettingsTabAdvanced": "Advanced",
+
+  "tripSettingsSectionTripDetails": "Trip Details",
+  "tripSettingsSectionAllowedCurrencies": "Allowed Currencies",
+  "tripSettingsSectionQuickActions": "Quick Actions",
+  "tripSettingsSectionRecoveryCode": "Recovery Code",
+  "tripSettingsSectionDangerZone": "Danger Zone",
+
+  "tripSettingsAllowedCurrenciesDescription": "Tap to edit allowed currencies. The first currency is the default for new expenses.",
+  "tripSettingsAllowedCurrenciesDefaultSuffix": " (Default)",
+  "tripSettingsAllowedCurrenciesDialogTitle": "Manage Currencies",
+  "tripSettingsAllowedCurrenciesSaveButton": "Save Changes",
+  "tripSettingsAllowedCurrenciesUpdateSuccess": "Currencies updated successfully",
+  "tripSettingsAllowedCurrenciesUpdateError": "Failed to update currencies: {error}",
+  "@tripSettingsAllowedCurrenciesUpdateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "tripSettingsRecoveryCodeDescription": "Generate a recovery code to regain access if you lose your device",
+  "tripSettingsRecoveryCodeExplanation": "This recovery code allows you to bypass device verification. Keep it safe - anyone with this code can access your trip.",
+
+  "tripSettingsInviteButton": "Invite",
+  "tripSettingsActivityButton": "Activity",
+  "tripSettingsCustomizeCategoriesButton": "Customize Categories",
+
+  "tripSettingsGenerateQrCodeButton": "QR Code",
+  "tripSettingsGenerateQrCodeTooltip": "Generate pairing code",
+  "tripSettingsDeleteParticipantButton": "Delete",
+  "tripSettingsDeleteParticipantTooltip": "Remove participant",
+
+  "tripSettingsArchiveTripTitle": "Archive Trip",
+  "tripSettingsArchiveTripDescription": "Hide this trip from your active trips list. You can restore it later.",
+  "tripSettingsUnarchiveTripTitle": "Unarchive Trip",
+  "tripSettingsUnarchiveTripDescription": "Move this trip back to your active trips list.",
+
+  "tripSettingsLeaveTitle": "Leave this trip",
+  "tripSettingsLeaveWarning": "You will lose access to this trip and all its expenses. You'll need an invite link to rejoin.",
+
 
   "participantSectionTitle": "Participants",
   "participantAddButton": "Add Participant",

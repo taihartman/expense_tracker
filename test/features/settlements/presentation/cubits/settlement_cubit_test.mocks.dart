@@ -5,7 +5,6 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
 
-import 'package:expense_tracker/core/models/currency_code.dart' as _i16;
 import 'package:expense_tracker/core/services/local_storage_service.dart'
     as _i14;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
@@ -424,20 +423,20 @@ class MockTripRepository extends _i1.Mock implements _i10.TripRepository {
           as _i7.Future<void>);
 
   @override
-  _i7.Future<List<_i16.CurrencyCode>> getAllowedCurrencies(String tripId) =>
+  _i7.Future<List<dynamic>> getAllowedCurrencies(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i7.Future<List<_i16.CurrencyCode>>.value(<_i16.CurrencyCode>[]),
-            returnValueForMissingStub: _i7.Future<List<_i16.CurrencyCode>>.value(
-              <_i16.CurrencyCode>[],
+            returnValue: _i7.Future<List<dynamic>>.value(<dynamic>[]),
+            returnValueForMissingStub: _i7.Future<List<dynamic>>.value(
+              <dynamic>[],
             ),
           )
-          as _i7.Future<List<_i16.CurrencyCode>>);
+          as _i7.Future<List<dynamic>>);
 
   @override
   _i7.Future<void> updateAllowedCurrencies(
-    String tripId,
-    List<_i16.CurrencyCode> currencies,
+    String? tripId,
+    List<dynamic>? currencies,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateAllowedCurrencies, [tripId, currencies]),

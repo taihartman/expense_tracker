@@ -276,6 +276,102 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tripBaseCurrencyPrefix => 'Base: ';
 
   @override
+  String get tripSettingsTabGeneral => 'General';
+
+  @override
+  String get tripSettingsTabMembers => 'Members';
+
+  @override
+  String get tripSettingsTabAdvanced => 'Advanced';
+
+  @override
+  String get tripSettingsSectionTripDetails => 'Trip Details';
+
+  @override
+  String get tripSettingsSectionAllowedCurrencies => 'Allowed Currencies';
+
+  @override
+  String get tripSettingsSectionQuickActions => 'Quick Actions';
+
+  @override
+  String get tripSettingsSectionRecoveryCode => 'Recovery Code';
+
+  @override
+  String get tripSettingsSectionDangerZone => 'Danger Zone';
+
+  @override
+  String get tripSettingsAllowedCurrenciesDescription =>
+      'Tap to edit allowed currencies. The first currency is the default for new expenses.';
+
+  @override
+  String get tripSettingsAllowedCurrenciesDefaultSuffix => ' (Default)';
+
+  @override
+  String get tripSettingsAllowedCurrenciesDialogTitle => 'Manage Currencies';
+
+  @override
+  String get tripSettingsAllowedCurrenciesSaveButton => 'Save Changes';
+
+  @override
+  String get tripSettingsAllowedCurrenciesUpdateSuccess =>
+      'Currencies updated successfully';
+
+  @override
+  String tripSettingsAllowedCurrenciesUpdateError(String error) {
+    return 'Failed to update currencies: $error';
+  }
+
+  @override
+  String get tripSettingsRecoveryCodeDescription =>
+      'Generate a recovery code to regain access if you lose your device';
+
+  @override
+  String get tripSettingsRecoveryCodeExplanation =>
+      'This recovery code allows you to bypass device verification. Keep it safe - anyone with this code can access your trip.';
+
+  @override
+  String get tripSettingsInviteButton => 'Invite';
+
+  @override
+  String get tripSettingsActivityButton => 'Activity';
+
+  @override
+  String get tripSettingsCustomizeCategoriesButton => 'Customize Categories';
+
+  @override
+  String get tripSettingsGenerateQrCodeButton => 'QR Code';
+
+  @override
+  String get tripSettingsGenerateQrCodeTooltip => 'Generate pairing code';
+
+  @override
+  String get tripSettingsDeleteParticipantButton => 'Delete';
+
+  @override
+  String get tripSettingsDeleteParticipantTooltip => 'Remove participant';
+
+  @override
+  String get tripSettingsArchiveTripTitle => 'Archive Trip';
+
+  @override
+  String get tripSettingsArchiveTripDescription =>
+      'Hide this trip from your active trips list. You can restore it later.';
+
+  @override
+  String get tripSettingsUnarchiveTripTitle => 'Unarchive Trip';
+
+  @override
+  String get tripSettingsUnarchiveTripDescription =>
+      'Move this trip back to your active trips list.';
+
+  @override
+  String get tripSettingsLeaveTitle => 'Leave this trip';
+
+  @override
+  String get tripSettingsLeaveWarning =>
+      'You will lose access to this trip and all its expenses. You\'ll need an invite link to rejoin.';
+
+  @override
   String get participantSectionTitle => 'Participants';
 
   @override

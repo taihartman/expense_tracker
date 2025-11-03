@@ -293,7 +293,7 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
   _i6.Future<void> updateTripDetails({
     required String? tripId,
     required String? name,
-    required dynamic baseCurrency,
+    dynamic baseCurrency,
     String? actorName,
   }) =>
       (super.noSuchMethod(

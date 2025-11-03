@@ -153,6 +153,7 @@ class ExpenseTrackerApp extends StatelessWidget {
   const ExpenseTrackerApp({super.key});
 
   // Singleton instances shared across the entire app
+  static final _authService = AuthService();
   static final _firestoreService = FirestoreService();
   static final _tripRepository = TripRepositoryImpl(
     firestoreService: _firestoreService,
@@ -259,6 +260,7 @@ class ExpenseTrackerApp extends StatelessWidget {
     _log('📦 Creating repository providers...');
     final widget = MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<AuthService>.value(value: _authService),
         RepositoryProvider<TripRepository>.value(value: _tripRepository),
         RepositoryProvider<ActivityLogRepository>.value(
           value: _activityLogRepository,
@@ -355,7 +357,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               return CategoryCubit(
                 categoryRepository: _categoryRepository,
                 rateLimiterService: _rateLimiterService,
-                authService: AuthService(),
+                authService: _authService,
               );
             },
           ),

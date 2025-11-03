@@ -67,45 +67,32 @@ class _CategoryBrowserBottomSheetState
       '🎯 [CategoryBrowser] Category tapped: ${category.name} (${category.id})',
     );
 
-    // Get userId from auth service
+    // Get userId from auth service (for saving customization as audit trail)
     final authService = context.read<AuthService>();
     final userId = authService.getAuthUidForRateLimiting();
 
-    // If no userId, treat as first-time (show icon picker)
-    if (userId == null) {
-      debugPrint('⚠️ [CategoryBrowser] No userId, showing icon picker');
-      await _showIconPickerForCategory(category, null);
-      return;
-    }
-
-    // Check if user has customized this category before
+    // Check if ANYONE has customized this category in this trip (per-trip, not per-user)
     final customizationCubit = context.read<CategoryCustomizationCubit?>();
-    bool hasCustomized = false;
+    final hasBeenCustomized = customizationCubit?.isCustomized(category.id) ?? false;
 
-    if (customizationCubit != null) {
-      hasCustomized = await customizationCubit.hasUserCustomized(
-        category.id,
-        userId,
-      );
-      debugPrint(
-        '🔍 [CategoryBrowser] User $userId has customized ${category.id}: $hasCustomized',
-      );
-    }
+    debugPrint(
+      '🔍 [CategoryBrowser] Category ${category.id} has been customized in trip: $hasBeenCustomized',
+    );
 
     if (!mounted) return;
 
-    // If user has NOT customized before, show icon picker first
-    if (!hasCustomized) {
+    // If category hasn't been customized yet (by anyone), show icon picker
+    if (!hasBeenCustomized) {
       debugPrint(
-        '🎨 [CategoryBrowser] First time selecting ${category.name}, showing icon picker',
+        '🎨 [CategoryBrowser] First time selecting ${category.name} in this trip, showing icon picker',
       );
       await _showIconPickerForCategory(category, userId);
       return; // Icon picker handles selection + dismissal
     }
 
-    // User has customized before → Direct selection
+    // Category already customized (by someone) → Direct selection
     debugPrint(
-      '✅ [CategoryBrowser] User has customized before, direct selection',
+      '✅ [CategoryBrowser] Category already customized in trip, direct selection',
     );
     widget.onCategorySelected(category);
     debugPrint('👋 [CategoryBrowser] Calling Navigator.pop()');

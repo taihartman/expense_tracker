@@ -60,13 +60,7 @@ class CategoryCustomizationRepositoryImpl
   /// Creates a new customization if it doesn't exist, or updates an existing one.
   @override
   Future<void> saveCustomization(CategoryCustomization customization) async {
-    final model = CategoryCustomizationModel(
-      categoryId: customization.categoryId,
-      tripId: customization.tripId,
-      customIcon: customization.customIcon,
-      customColor: customization.customColor,
-      updatedAt: customization.updatedAt,
-    );
+    final model = CategoryCustomizationModel.fromDomain(customization);
 
     await _firestoreService.trips
         .doc(customization.tripId)
