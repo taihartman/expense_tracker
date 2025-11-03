@@ -347,6 +347,7 @@ class _ExpenseFormBottomSheetState extends State<ExpenseFormBottomSheet> {
             // Form content
             Expanded(
               child: ExpenseFormContent(
+                tripId: widget.tripId,
                 formKey: _formKey,
                 amountController: _amountController,
                 descriptionController: _descriptionController,
