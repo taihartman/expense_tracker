@@ -10,6 +10,7 @@ import '../../../trips/presentation/cubits/trip_state.dart';
 import '../../../trips/presentation/widgets/trip_verification_prompt.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../../core/models/participant.dart';
+import '../../../../core/models/currency_code.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -26,6 +27,9 @@ class SettlementSummaryPage extends StatefulWidget {
 }
 
 class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
+  // T030: Track selected currency for filtering settlements
+  CurrencyCode? _selectedCurrency;
+
   @override
   void initState() {
     super.initState();
@@ -135,15 +139,24 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
           if (state is SettlementLoaded) {
             return BlocBuilder<TripCubit, TripState>(
               builder: (context, tripState) {
-                // Get trip participants
-                final participants = tripState is TripLoaded
-                    ? tripState.trips
-                          .firstWhere(
-                            (t) => t.id == widget.tripId,
-                            orElse: () => tripState.selectedTrip!,
-                          )
-                          .participants
-                    : <Participant>[];
+                // T030: Get trip and its allowed currencies
+                final trip = tripState is TripLoaded
+                    ? tripState.trips.firstWhere(
+                        (t) => t.id == widget.tripId,
+                        orElse: () => tripState.selectedTrip!,
+                      )
+                    : null;
+
+                final participants = trip?.participants ?? <Participant>[];
+                final allowedCurrencies =
+                    trip?.allowedCurrencies ?? [state.summary.baseCurrency];
+
+                // T030: Initialize selected currency from state if not set
+                _selectedCurrency ??= state.summary.baseCurrency;
+
+                // T031: Check for empty settlements (no expenses in selected currency)
+                final hasNoExpenses = state.activeTransfers.isEmpty &&
+                    state.settledTransfers.isEmpty;
 
                 return RefreshIndicator(
                   onRefresh: () async {
@@ -154,8 +167,14 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                   child: ListView(
                     padding: const EdgeInsets.all(AppTheme.spacing2),
                     children: [
-                      // Last computed timestamp
-                      Card(
+                      // T031: Show empty state if no expenses in selected currency
+                      if (hasNoExpenses) ...[
+                        _buildEmptyState(
+                          _selectedCurrency ?? state.summary.baseCurrency,
+                        ),
+                      ] else ...[
+                        // Last computed timestamp
+                        Card(
                         color: Theme.of(
                           context,
                         ).colorScheme.surfaceContainerHighest,
@@ -182,6 +201,15 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                         ),
                       ),
                       const SizedBox(height: AppTheme.spacing2),
+
+                      // T030: Currency switcher (only show if multiple currencies)
+                      if (allowedCurrencies.length > 1) ...[
+                        _buildCurrencySwitcher(
+                          allowedCurrencies,
+                          state.summary.baseCurrency,
+                        ),
+                        const SizedBox(height: AppTheme.spacing2),
+                      ],
 
                       // Summary table
                       AllPeopleSummaryTable(
@@ -211,34 +239,48 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                               ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: AppTheme.spacing2),
-                        // Build dashboard cards
-                        ...state.personCategorySpending!.entries.map((entry) {
-                          final userId = entry.key;
-                          final personSpending = entry.value;
+                        // Build dashboard cards (filtered by selected user if any)
+                        ...() {
+                          // Filter dashboards by selected user
+                          final selectedUserId = state.selectedUserId;
+                          final filteredSpending = selectedUserId != null &&
+                                  state.personCategorySpending!
+                                      .containsKey(selectedUserId)
+                              ? {
+                                  selectedUserId:
+                                      state.personCategorySpending![selectedUserId]!,
+                                }
+                              : state.personCategorySpending!;
 
-                          // Find participant
-                          try {
-                            final participant = participants.firstWhere(
-                              (p) => p.id == userId,
-                            );
+                          return filteredSpending.entries.map((entry) {
+                            final userId = entry.key;
+                            final personSpending = entry.value;
 
-                            return Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: AppTheme.spacing2,
-                              ),
-                              child: PersonDashboardCard(
-                                activeTransfers: state.activeTransfers,
-                                person: personSpending,
-                                participant: participant,
-                                baseCurrency: state.summary.baseCurrency,
-                              ),
-                            );
-                          } catch (e) {
-                            // Skip if participant not found
-                            return const SizedBox.shrink();
-                          }
-                        }),
+                            // Find participant
+                            try {
+                              final participant = participants.firstWhere(
+                                (p) => p.id == userId,
+                              );
+
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppTheme.spacing2,
+                                ),
+                                child: PersonDashboardCard(
+                                  activeTransfers: state.activeTransfers,
+                                  person: personSpending,
+                                  participant: participant,
+                                  baseCurrency: state.summary.baseCurrency,
+                                ),
+                              );
+                            } catch (e) {
+                              // Skip if participant not found
+                              return const SizedBox.shrink();
+                            }
+                          });
+                        }(),
                       ],
+                      ], // End of else block (T031)
                     ],
                   ),
                 );
@@ -269,6 +311,92 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// T030: Build currency switcher UI
+  /// Shows SegmentedButton for allowed currencies
+  Widget _buildCurrencySwitcher(
+    List<CurrencyCode> allowedCurrencies,
+    CurrencyCode currentCurrency,
+  ) {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spacing2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Currency',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppTheme.spacing1),
+            SegmentedButton<CurrencyCode>(
+              segments: allowedCurrencies.map((currency) {
+                return ButtonSegment<CurrencyCode>(
+                  value: currency,
+                  label: Text(currency.code.toUpperCase()),
+                  icon: Text(currency.symbol),
+                );
+              }).toList(),
+              selected: {_selectedCurrency ?? currentCurrency},
+              onSelectionChanged: (Set<CurrencyCode> selected) {
+                if (selected.isNotEmpty) {
+                  final newCurrency = selected.first;
+                  setState(() {
+                    _selectedCurrency = newCurrency;
+                  });
+                  // T032: Load settlements filtered by selected currency
+                  context.read<SettlementCubit>().loadSettlementForCurrency(
+                        widget.tripId,
+                        newCurrency,
+                      );
+                }
+              },
+              showSelectedIcon: false,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// T031: Build empty state UI when no expenses in selected currency
+  Widget _buildEmptyState(CurrencyCode currency) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppTheme.spacing4,
+          horizontal: AppTheme.spacing3,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: AppTheme.spacing2),
+            Text(
+              'No expenses in ${currency.code.toUpperCase()}',
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppTheme.spacing1),
+            Text(
+              'Try switching to another currency to view settlements',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -144,8 +144,9 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
       ),
       body: BlocBuilder<TripCubit, TripState>(
         builder: (context, tripState) {
-          // Get trip participants
+          // Get trip participants and allowed currencies
           List<Participant> tripParticipants = [];
+          List<CurrencyCode> tripAllowedCurrencies = [CurrencyCode.usd];
 
           CurrencyCode? tripBaseCurrency;
 
@@ -156,6 +157,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
             );
             tripParticipants = trip.participants;
             tripBaseCurrency = trip.defaultCurrency;
+            tripAllowedCurrencies = trip.allowedCurrencies;
           }
 
           // Show error if no participants configured
@@ -226,6 +228,8 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
             selectedDate: _selectedDate,
             participants: _participants,
             availableParticipants: tripParticipants,
+            allowedCurrencies:
+                tripAllowedCurrencies, // T023: Pass allowed currencies
             isEditMode: widget.expense != null,
             tripId: widget.tripId,
             onCurrencyChanged: (value) {
@@ -300,6 +304,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
                             },
                             initialPayerUserId: _selectedPayer,
                             currency: _selectedCurrency,
+                            allowedCurrencies: tripAllowedCurrencies,
                           ),
                         );
                       },
@@ -380,6 +385,7 @@ class ExpenseFormContent extends StatelessWidget {
   final DateTime selectedDate;
   final Map<String, num> participants;
   final List<Participant> availableParticipants;
+  final List<CurrencyCode> allowedCurrencies; // T023: Filter currencies
   final bool isEditMode;
   final String tripId;
   final ValueChanged<CurrencyCode> onCurrencyChanged;
@@ -402,6 +408,7 @@ class ExpenseFormContent extends StatelessWidget {
     required this.selectedDate,
     required this.participants,
     required this.availableParticipants,
+    required this.allowedCurrencies, // T023: Filter currencies
     required this.isEditMode,
     required this.tripId,
     required this.onCurrencyChanged,
@@ -462,23 +469,57 @@ class ExpenseFormContent extends StatelessWidget {
               Expanded(
                 flex: 1,
                 child: Builder(
-                  builder: (context) => DropdownButtonFormField<CurrencyCode>(
-                    initialValue: selectedCurrency,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.expenseFieldCurrencyLabel,
-                    ),
-                    items: CurrencyCode.values.map((currency) {
-                      return DropdownMenuItem(
-                        value: currency,
-                        child: Text(currency.code),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        onCurrencyChanged(value);
-                      }
-                    },
-                  ),
+                  builder: (context) {
+                    // T023: Filter currencies to trip's allowed currencies
+                    // T026: Validation - new expenses can only use allowedCurrencies,
+                    // existing expenses can keep their currency (backward compatibility)
+                    final availableCurrencies = [
+                      ...allowedCurrencies,
+                      if (isEditMode &&
+                          !allowedCurrencies.contains(selectedCurrency))
+                        selectedCurrency,
+                    ];
+
+                    // T026: Check if editing expense with non-allowed currency
+                    final isUsingNonAllowedCurrency =
+                        isEditMode &&
+                        !allowedCurrencies.contains(selectedCurrency);
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        DropdownButtonFormField<CurrencyCode>(
+                          initialValue: selectedCurrency,
+                          decoration: InputDecoration(
+                            labelText: context.l10n.expenseFieldCurrencyLabel,
+                          ),
+                          items: availableCurrencies.map((currency) {
+                            return DropdownMenuItem(
+                              value: currency,
+                              child: Text(currency.code),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              onCurrencyChanged(value);
+                            }
+                          },
+                        ),
+                        // T026: Show info message for non-allowed currency
+                        if (isUsingNonAllowedCurrency)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              'Note: ${selectedCurrency.code.toUpperCase()} is no longer in the allowed currencies',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ],

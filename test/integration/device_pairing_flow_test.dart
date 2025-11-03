@@ -21,12 +21,12 @@ import 'package:expense_tracker/shared/widgets/custom_button.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:expense_tracker/l10n/app_localizations.dart';
 
-@GenerateMocks([
-  TripRepository,
-  ActivityLoggerService,
-  CategoryRepository,
-  LocalStorageService,
-  DeviceLinkCodeRepository,
+@GenerateNiceMocks([
+  MockSpec<TripRepository>(),
+  MockSpec<ActivityLoggerService>(),
+  MockSpec<CategoryRepository>(),
+  MockSpec<LocalStorageService>(),
+  MockSpec<DeviceLinkCodeRepository>(),
 ])
 import 'device_pairing_flow_test.mocks.dart';
 

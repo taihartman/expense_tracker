@@ -38,7 +38,7 @@ class _TripCreatePageState extends State<TripCreatePage> {
       // Don't navigate immediately - let BlocListener handle it after showing recovery code
       context.read<TripCubit>().createTrip(
         name: _tripNameController.text.trim(),
-        baseCurrency: _selectedCurrency,
+        allowedCurrencies: [_selectedCurrency],
         creatorName: _creatorNameController.text.trim(),
       );
     }

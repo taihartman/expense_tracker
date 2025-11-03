@@ -94,9 +94,6 @@ class _CategoryCreationBottomSheetState
 
   /// User selected an existing similar category - show icon picker
   Future<void> _useExistingCategory(Category category) async {
-    print(
-      '[CategoryCreationBottomSheet] 🎯 _useExistingCategory called for: ${category.name}',
-    );
     try {
       // Get the most popular icon for this category (or use global icon as fallback)
       final repository = context.read<CategoryRepository>();
@@ -105,11 +102,9 @@ class _CategoryCreationBottomSheetState
 
       final mostPopularIcon = await repository.getMostPopularIcon(category.id);
       final defaultIcon = mostPopularIcon ?? category.icon;
-      print('[CategoryCreationBottomSheet] 📦 defaultIcon: $defaultIcon');
 
       if (!mounted) return;
 
-      print('[CategoryCreationBottomSheet] 🚀 Opening icon picker dialog...');
       // Show icon picker bottom sheet with most popular icon preselected
       await showModalBottomSheet(
         context: context,
@@ -120,25 +115,15 @@ class _CategoryCreationBottomSheetState
         builder: (sheetContext) {
           // Declare state variable outside StatefulBuilder so it persists across rebuilds
           String currentSelectedIcon = defaultIcon;
-          print(
-            '[CategoryCreationBottomSheet] 🎬 Outer builder: currentSelectedIcon initialized to $defaultIcon',
-          );
 
           return StatefulBuilder(
             builder: (context, setSheetState) {
-              print(
-                '[CategoryCreationBottomSheet] 🏗️ StatefulBuilder building with currentSelectedIcon: $currentSelectedIcon',
-              );
-
               return DraggableScrollableSheet(
                 initialChildSize: 0.7,
                 minChildSize: 0.5,
                 maxChildSize: 0.9,
                 expand: false,
                 builder: (context, scrollController) {
-                  print(
-                    '[CategoryCreationBottomSheet] 📜 DraggableScrollableSheet builder called, scrollController: $scrollController',
-                  );
                   return Column(
                     children: [
                       // Title bar
@@ -167,11 +152,7 @@ class _CategoryCreationBottomSheetState
                       // Icon picker
                       Expanded(
                         child: GestureDetector(
-                          onTap: () {
-                            print(
-                              '[CategoryCreationBottomSheet] 🖱️ GestureDetector onTap - gestures ARE reaching this level!',
-                            );
-                          },
+                          onTap: () {},
                           behavior: HitTestBehavior.translucent,
                           child: Padding(
                             padding: const EdgeInsets.all(16),
@@ -179,13 +160,7 @@ class _CategoryCreationBottomSheetState
                               selectedIcon: currentSelectedIcon,
                               scrollController: scrollController,
                               onIconSelected: (selectedIcon) {
-                                print(
-                                  '[CategoryCreationBottomSheet] 🎉 onIconSelected callback triggered! Selected: $selectedIcon',
-                                );
                                 setSheetState(() {
-                                  print(
-                                    '[CategoryCreationBottomSheet] 🔄 Updating currentSelectedIcon from "$currentSelectedIcon" to "$selectedIcon"',
-                                  );
                                   currentSelectedIcon = selectedIcon;
                                 });
                               },
@@ -208,40 +183,16 @@ class _CategoryCreationBottomSheetState
                             const SizedBox(width: 8),
                             FilledButton(
                               onPressed: () async {
-                                print(
-                                  '[CategoryCreationBottomSheet] 🔵 CONFIRM BUTTON PRESSED - Handler started',
-                                );
-                                print(
-                                  '[CategoryCreationBottomSheet] 📌 Current icon selection: $currentSelectedIcon',
-                                );
-                                print(
-                                  '[CategoryCreationBottomSheet] 📌 Category ID: ${category.id}',
-                                );
-
                                 // Record the icon preference vote
                                 try {
-                                  print(
-                                    '[CategoryCreationBottomSheet] 🚀 Calling recordIconPreference...',
-                                  );
-                                  print(
-                                    '[CategoryCreationBottomSheet] 📝 Parameters: categoryId=${category.id}, icon=$currentSelectedIcon',
-                                  );
-
                                   await customizationRepository
                                       .recordIconPreference(
                                         category.id,
                                         currentSelectedIcon,
                                       );
 
-                                  print(
-                                    '[CategoryCreationBottomSheet] ✅ recordIconPreference completed successfully',
-                                  );
-
                                   // Show brief success message
-                                  if (mounted) {
-                                    print(
-                                      '[CategoryCreationBottomSheet] 📢 Showing success SnackBar',
-                                    );
+                                  if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -255,47 +206,16 @@ class _CategoryCreationBottomSheetState
                                     );
                                   }
                                 } catch (e) {
-                                  print(
-                                    '[CategoryCreationBottomSheet] ❌ ERROR in recordIconPreference: $e',
-                                  );
-                                  print(
-                                    '[CategoryCreationBottomSheet] 📚 Stack trace: ${StackTrace.current}',
-                                  );
                                   // Silent failure - voting is non-critical
                                 }
 
                                 // Close the bottom sheet and the creation sheet
-                                print(
-                                  '[CategoryCreationBottomSheet] 🚪 Attempting to close sheets...',
-                                );
-                                print(
-                                  '[CategoryCreationBottomSheet] 📌 sheetContext.mounted: ${sheetContext.mounted}',
-                                );
-                                print(
-                                  '[CategoryCreationBottomSheet] 📌 mounted: $mounted',
-                                );
-
                                 if (sheetContext.mounted) {
-                                  print(
-                                    '[CategoryCreationBottomSheet] 🚪 Closing icon picker sheet (sheetContext)',
-                                  );
                                   Navigator.of(sheetContext).pop();
-                                  print(
-                                    '[CategoryCreationBottomSheet] ✅ Icon picker sheet closed',
-                                  );
                                 }
-                                if (mounted) {
-                                  print(
-                                    '[CategoryCreationBottomSheet] 🎉 Calling onCategoryCreated callback',
-                                  );
+                                if (context.mounted) {
                                   widget.onCategoryCreated();
-                                  print(
-                                    '[CategoryCreationBottomSheet] 🚪 Closing category creation sheet',
-                                  );
                                   Navigator.of(context).pop();
-                                  print(
-                                    '[CategoryCreationBottomSheet] ✅ Category creation sheet closed - ALL DONE!',
-                                  );
                                 }
                               },
                               child: Text(context.l10n.commonConfirm),

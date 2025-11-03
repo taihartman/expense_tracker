@@ -17,6 +17,8 @@ analyzer:
     duplicate_ignore: ignore
     # Ignore sealed class warnings in test mocks (Firestore SDK limitation)
     subtype_of_sealed_class: ignore
+    # Ignore deprecation warnings for baseCurrency (backward compatibility during migration)
+    deprecated_member_use_from_same_package: ignore
 
   exclude:
     - '**/*.g.dart'

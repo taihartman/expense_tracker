@@ -218,10 +218,16 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
   }
 
   /// Set receipt info (expected subtotal and tax amount)
-  void setReceiptInfo({required Decimal expectedSubtotal, Decimal? taxAmount}) {
+  /// T024: Added optional currencyCode parameter for multi-currency support
+  void setReceiptInfo({
+    required Decimal expectedSubtotal,
+    Decimal? taxAmount,
+    String? currencyCode,
+  }) {
     debugPrint('🟡 [Cubit] setReceiptInfo() called');
     debugPrint('🟡 [Cubit] expectedSubtotal: $expectedSubtotal');
     debugPrint('🟡 [Cubit] taxAmount: $taxAmount');
+    debugPrint('🟡 [Cubit] currencyCode: $currencyCode');
 
     final current = _getCurrentEditingState();
     if (current == null) {
@@ -234,6 +240,7 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     final updatedState = current.copyWith(
       expectedSubtotal: expectedSubtotal,
       taxAmount: taxAmount,
+      currencyCode: currencyCode,
     );
     emit(updatedState);
     debugPrint('🟡 [Cubit] Receipt info updated');

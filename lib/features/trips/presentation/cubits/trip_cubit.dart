@@ -186,11 +186,11 @@ class TripCubit extends Cubit<TripState> {
   /// Create a new trip
   Future<void> createTrip({
     required String name,
-    required CurrencyCode baseCurrency,
+    required List<CurrencyCode> allowedCurrencies,
     String? creatorName,
   }) async {
     try {
-      _log('🆕 Creating trip: $name with base currency: ${baseCurrency.name}');
+      _log('🆕 Creating trip: $name with allowed currencies: ${allowedCurrencies.map((c) => c.code).join(', ')}');
       _log('👤 Creator name: ${creatorName ?? "none"}');
       emit(const TripCreating());
 
@@ -202,7 +202,7 @@ class TripCubit extends Cubit<TripState> {
       final trip = Trip(
         id: '', // Firestore will generate this
         name: name,
-        baseCurrency: baseCurrency,
+        allowedCurrencies: allowedCurrencies,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         participants: participants,
@@ -332,16 +332,18 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Update trip details (name and base currency)
+  /// Update trip details (name only)
+  ///
+  /// Note: baseCurrency parameter is deprecated. Use updateTripCurrencies instead.
   Future<void> updateTripDetails({
     required String tripId,
     required String name,
-    required CurrencyCode baseCurrency,
+    @Deprecated('Use updateTripCurrencies instead') CurrencyCode? baseCurrency,
     String? actorName,
   }) async {
     try {
       _log(
-        '✏️ Updating trip $tripId: name="$name", baseCurrency=${baseCurrency.name}',
+        '✏️ Updating trip $tripId: name="$name"${baseCurrency != null ? ', baseCurrency=${baseCurrency.name}' : ''}',
       );
 
       // Get the current trip to preserve other fields
@@ -351,10 +353,13 @@ class TripCubit extends Cubit<TripState> {
       }
 
       // Create updated trip with new details
-      final updatedTrip = currentTrip.copyWith(
-        name: name,
-        baseCurrency: baseCurrency,
-      );
+      // Only update baseCurrency if explicitly provided (legacy support)
+      final updatedTrip = baseCurrency != null
+          ? currentTrip.copyWith(
+              name: name,
+              baseCurrency: baseCurrency,
+            )
+          : currentTrip.copyWith(name: name);
 
       // Use existing updateTrip method
       await updateTrip(updatedTrip);
@@ -375,6 +380,66 @@ class TripCubit extends Cubit<TripState> {
     } catch (e) {
       _log('❌ Failed to update trip details: $e');
       emit(TripError('Failed to update trip: ${e.toString()}'));
+    }
+  }
+
+  /// Update the allowed currencies for a trip
+  ///
+  /// This method updates the list of currencies that can be used for expenses in a trip.
+  /// The first currency in the list becomes the default currency for new expenses.
+  ///
+  /// [tripId] - The ID of the trip to update
+  /// [currencies] - The new list of allowed currencies (1-10 currencies)
+  /// [actorName] - Optional name of the user making the change (for activity logging)
+  Future<void> updateTripCurrencies({
+    required String tripId,
+    required List<CurrencyCode> currencies,
+    String? actorName,
+  }) async {
+    try {
+      _log(
+        '✏️ Updating currencies for trip $tripId: ${currencies.map((c) => c.code).join(", ")}',
+      );
+
+      // Get the current trip to preserve other fields
+      final currentTrip = await _tripRepository.getTripById(tripId);
+      if (currentTrip == null) {
+        throw Exception('Trip not found');
+      }
+
+      // Create updated trip with new currencies
+      final updatedTrip = currentTrip.copyWith(allowedCurrencies: currencies);
+
+      // Update trip in repository
+      await _tripRepository.updateTrip(updatedTrip);
+
+      // Update the selected trip if it matches
+      if (state is TripLoaded) {
+        final currentState = state as TripLoaded;
+        if (currentState.selectedTrip?.id == tripId) {
+          emit(currentState.copyWith(selectedTrip: updatedTrip));
+        }
+      }
+
+      // Reload trips to refresh the list
+      await loadTrips();
+      _log('✅ Trip currencies updated successfully');
+
+      // Log activity using centralized service
+      if (_activityLoggerService != null &&
+          actorName != null &&
+          actorName.isNotEmpty) {
+        _log('📝 Logging trip currency update via ActivityLoggerService...');
+        await _activityLoggerService.logTripUpdated(
+          currentTrip,
+          updatedTrip,
+          actorName,
+        );
+        _log('✅ Activity logged');
+      }
+    } catch (e) {
+      _log('❌ Failed to update trip currencies: $e');
+      emit(TripError('Failed to update trip currencies: ${e.toString()}'));
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/models/currency_code.dart';
 import '../../../../core/models/participant.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -10,6 +11,7 @@ import '../widgets/participant_form_bottom_sheet.dart';
 import '../widgets/delete_participant_dialog.dart';
 import '../widgets/recovery_code_dialog.dart';
 import '../widgets/trip_verification_prompt.dart';
+import '../widgets/multi_currency_selector.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../device_pairing/presentation/cubits/device_pairing_cubit.dart';
 import '../../../device_pairing/presentation/widgets/code_generation_dialog.dart';
@@ -115,6 +117,12 @@ class TripSettingsPage extends StatelessWidget {
                   _buildSectionHeader(context, 'Trip Details'),
                   const SizedBox(height: AppTheme.spacing2),
                   _buildTripDetailsCard(context, trip),
+                  const SizedBox(height: AppTheme.spacing4),
+
+                  // Allowed Currencies Section
+                  _buildSectionHeader(context, 'Allowed Currencies'),
+                  const SizedBox(height: AppTheme.spacing2),
+                  _buildAllowedCurrenciesCard(context, trip),
                   const SizedBox(height: AppTheme.spacing4),
 
                   // Recovery Code Section
@@ -288,6 +296,207 @@ class TripSettingsPage extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildAllowedCurrenciesCard(BuildContext context, trip) {
+    final currencies = trip.allowedCurrencies;
+
+    return Card(
+      child: InkWell(
+        onTap: () => _showCurrencySelector(context, trip),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(AppTheme.spacing2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.currency_exchange,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: AppTheme.spacing2),
+                  Expanded(
+                    child: Text(
+                      'Currencies available for expenses',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppTheme.spacing2),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: currencies.map<Widget>((currency) {
+                  final isDefault = currency == currencies.first;
+                  return Chip(
+                    label: Text(
+                      currency.code.toUpperCase() +
+                          (isDefault ? ' (Default)' : ''),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    backgroundColor: isDefault
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primaryContainer
+                            .withValues(alpha: 0.3)
+                        : null,
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCurrencySelector(BuildContext context, trip) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        // Store the currency list in local state so we can track changes
+        List<CurrencyCode> updatedCurrencies =
+            List.from(trip.allowedCurrencies);
+        bool isSaving = false;
+
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          child: MultiCurrencySelector(
+                            selectedCurrencies: updatedCurrencies,
+                            onChanged: (currencies) {
+                              // Update local state with the new currency list
+                              setState(() {
+                                updatedCurrencies = currencies;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      // Save button
+                      Padding(
+                        padding: const EdgeInsets.all(AppTheme.spacing2),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isSaving
+                                ? null
+                                : () async {
+                                    // Set loading state
+                                    setState(() {
+                                      isSaving = true;
+                                    });
+
+                                    try {
+                                      // Get current user for activity logging
+                                      final currentUser = context
+                                          .read<TripCubit>()
+                                          .getCurrentUserForTrip(trip.id);
+                                      final actorName = currentUser?.name;
+
+                                      await context
+                                          .read<TripCubit>()
+                                          .updateTripCurrencies(
+                                            tripId: trip.id,
+                                            currencies: updatedCurrencies,
+                                            actorName: actorName,
+                                          );
+
+                                      if (sheetContext.mounted) {
+                                        Navigator.of(sheetContext).pop();
+                                        ScaffoldMessenger.of(sheetContext)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              '✓ Currencies updated successfully',
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (sheetContext.mounted) {
+                                        ScaffoldMessenger.of(sheetContext)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Failed to update currencies: $e',
+                                            ),
+                                            backgroundColor:
+                                                Theme.of(sheetContext)
+                                                    .colorScheme
+                                                    .error,
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    } finally {
+                                      // Reset loading state
+                                      if (sheetContext.mounted) {
+                                        setState(() {
+                                          isSaving = false;
+                                        });
+                                      }
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.all(AppTheme.spacing2),
+                            ),
+                            child: isSaving
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Text('Save Changes'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 

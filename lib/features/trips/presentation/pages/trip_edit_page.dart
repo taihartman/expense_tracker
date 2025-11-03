@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../cubits/trip_cubit.dart';
-import '../../../../core/models/currency_code.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
-import '../../../../shared/widgets/currency_search_field.dart';
 import '../../domain/models/trip.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 
@@ -24,13 +22,11 @@ class TripEditPage extends StatefulWidget {
 class _TripEditPageState extends State<TripEditPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
-  late CurrencyCode _selectedCurrency;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.trip.name);
-    _selectedCurrency = widget.trip.defaultCurrency;
   }
 
   @override
@@ -50,7 +46,6 @@ class _TripEditPageState extends State<TripEditPage> {
       context.read<TripCubit>().updateTripDetails(
         tripId: widget.trip.id,
         name: _nameController.text.trim(),
-        baseCurrency: _selectedCurrency,
         actorName: actorName,
       );
       context.go(AppRoutes.tripSettings(widget.trip.id));
@@ -89,21 +84,6 @@ class _TripEditPageState extends State<TripEditPage> {
               },
             ),
             const SizedBox(height: AppTheme.spacing2),
-            CurrencySearchField(
-              value: _selectedCurrency,
-              label: context.l10n.tripFieldBaseCurrencyLabel,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedCurrency = value;
-                  });
-                }
-              },
-              decoration: InputDecoration(
-                helperText: context.l10n.tripFieldBaseCurrencyEditHelper,
-              ),
-            ),
-            const SizedBox(height: AppTheme.spacing1),
             Container(
               padding: const EdgeInsets.all(AppTheme.spacing2),
               decoration: BoxDecoration(
@@ -122,7 +102,7 @@ class _TripEditPageState extends State<TripEditPage> {
                   const SizedBox(width: AppTheme.spacing1),
                   Expanded(
                     child: Text(
-                      context.l10n.tripCurrencyChangedInfo,
+                      'To manage currencies for this trip, go to Trip Settings.',
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.blue.shade900,

@@ -81,9 +81,6 @@ class CategoryIconPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(
-      '[CategoryIconPicker] 🎨 Building with scrollController: ${scrollController != null}, selectedIcon: $selectedIcon, shrinkWrap: ${scrollController == null}',
-    );
     final theme = Theme.of(context);
 
     return GridView.builder(
@@ -104,13 +101,7 @@ class CategoryIconPicker extends StatelessWidget {
 
         return InkWell(
           onTap: () {
-            print(
-              '[CategoryIconPicker] 👆 InkWell TAPPED! Icon: ${iconData['name']}, Index: $index',
-            );
             onIconSelected(iconData['name']);
-            print(
-              '[CategoryIconPicker] ✅ onIconSelected called for: ${iconData['name']}',
-            );
           },
           child: Container(
             decoration: BoxDecoration(

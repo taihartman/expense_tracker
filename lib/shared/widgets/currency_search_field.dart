@@ -60,6 +60,35 @@ class CurrencySearchField extends StatefulWidget {
   /// Custom input decoration
   final InputDecoration? decoration;
 
+  /// Shows a currency picker modal and returns the selected currency
+  ///
+  /// This is a static helper method that can be used to show the currency
+  /// picker modal without needing to create a CurrencySearchField widget.
+  ///
+  /// Returns the selected [CurrencyCode] or null if the user cancelled.
+  ///
+  /// Example:
+  /// ```dart
+  /// final currency = await CurrencySearchField.showCurrencyPicker(
+  ///   context,
+  ///   selectedCurrency: currentCurrency,
+  /// );
+  /// ```
+  static Future<CurrencyCode?> showCurrencyPicker(
+    BuildContext context, {
+    CurrencyCode? selectedCurrency,
+    bool showOnlyActive = true,
+  }) async {
+    return await showModalBottomSheet<CurrencyCode>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _CurrencyPickerModal(
+        selectedCurrency: selectedCurrency,
+        showOnlyActive: showOnlyActive,
+      ),
+    );
+  }
+
   @override
   State<CurrencySearchField> createState() => _CurrencySearchFieldState();
 }

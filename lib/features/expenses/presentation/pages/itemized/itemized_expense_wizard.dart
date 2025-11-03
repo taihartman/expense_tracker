@@ -25,6 +25,7 @@ class ItemizedExpenseWizard extends StatefulWidget {
   final Map<String, String> participantNames;
   final String? initialPayerUserId;
   final CurrencyCode currency;
+  final List<CurrencyCode> allowedCurrencies; // T024: Trip's allowed currencies
   final Expense? existingExpense; // For edit mode
 
   const ItemizedExpenseWizard({
@@ -34,6 +35,7 @@ class ItemizedExpenseWizard extends StatefulWidget {
     required this.participantNames,
     this.initialPayerUserId,
     required this.currency,
+    required this.allowedCurrencies,
     this.existingExpense,
   });
 
@@ -185,6 +187,7 @@ class _ItemizedExpenseWizardState extends State<ItemizedExpenseWizard> {
                   children: [
                     ReceiptInfoStepPage(
                       currencyCode: widget.currency,
+                      allowedCurrencies: widget.allowedCurrencies,
                       onContinue: _onStepContinue,
                       onCancel: _onStepCancel,
                     ),

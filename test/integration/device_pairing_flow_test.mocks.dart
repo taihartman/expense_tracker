@@ -4,12 +4,12 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i6;
-import 'package:expense_tracker/core/models/currency_code.dart' as _i12;
 
+import 'package:expense_tracker/core/models/currency_code.dart' as _i15;
 import 'package:expense_tracker/core/services/activity_logger_service.dart'
     as _i8;
 import 'package:expense_tracker/core/services/local_storage_service.dart'
-    as _i15;
+    as _i12;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
     as _i3;
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart'
@@ -64,15 +64,14 @@ class _FakeDeviceLinkCode_2 extends _i1.SmartFake
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
-  MockTripRepository() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i6.Future<_i2.Trip> createTrip(_i2.Trip? trip) =>
       (super.noSuchMethod(
             Invocation.method(#createTrip, [trip]),
             returnValue: _i6.Future<_i2.Trip>.value(
+              _FakeTrip_0(this, Invocation.method(#createTrip, [trip])),
+            ),
+            returnValueForMissingStub: _i6.Future<_i2.Trip>.value(
               _FakeTrip_0(this, Invocation.method(#createTrip, [trip])),
             ),
           )
@@ -83,6 +82,7 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
       (super.noSuchMethod(
             Invocation.method(#getTripById, [tripId]),
             returnValue: _i6.Future<_i2.Trip?>.value(),
+            returnValueForMissingStub: _i6.Future<_i2.Trip?>.value(),
           )
           as _i6.Future<_i2.Trip?>);
 
@@ -91,6 +91,7 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
       (super.noSuchMethod(
             Invocation.method(#getAllTrips, []),
             returnValue: _i6.Stream<List<_i2.Trip>>.empty(),
+            returnValueForMissingStub: _i6.Stream<List<_i2.Trip>>.empty(),
           )
           as _i6.Stream<List<_i2.Trip>>);
 
@@ -99,6 +100,9 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
       (super.noSuchMethod(
             Invocation.method(#updateTrip, [trip]),
             returnValue: _i6.Future<_i2.Trip>.value(
+              _FakeTrip_0(this, Invocation.method(#updateTrip, [trip])),
+            ),
+            returnValueForMissingStub: _i6.Future<_i2.Trip>.value(
               _FakeTrip_0(this, Invocation.method(#updateTrip, [trip])),
             ),
           )
@@ -118,12 +122,13 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
       (super.noSuchMethod(
             Invocation.method(#tripExists, [tripId]),
             returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
           as _i6.Future<bool>);
 
   @override
   _i6.Future<void> addVerifiedMember({
-    required String tripId,
+    required String? tripId,
     required String? participantId,
     required String? participantName,
   }) =>
@@ -145,12 +150,16 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
             returnValue: _i6.Future<List<_i7.VerifiedMember>>.value(
               <_i7.VerifiedMember>[],
             ),
+            returnValueForMissingStub:
+                _i6.Future<List<_i7.VerifiedMember>>.value(
+                  <_i7.VerifiedMember>[],
+                ),
           )
           as _i6.Future<List<_i7.VerifiedMember>>);
 
   @override
   _i6.Future<void> removeVerifiedMember({
-    required String tripId,
+    required String? tripId,
     required String? participantId,
   }) =>
       (super.noSuchMethod(
@@ -164,17 +173,20 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
           as _i6.Future<void>);
 
   @override
-  _i6.Future<List<_i12.CurrencyCode>> getAllowedCurrencies(String tripId) =>
+  _i6.Future<List<_i15.CurrencyCode>> getAllowedCurrencies(String tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i6.Future<List<_i12.CurrencyCode>>.value(<_i12.CurrencyCode>[]),
+            returnValue: _i6.Future<List<_i15.CurrencyCode>>.value(<_i15.CurrencyCode>[]),
+            returnValueForMissingStub: _i6.Future<List<_i15.CurrencyCode>>.value(
+              <_i15.CurrencyCode>[],
+            ),
           )
-          as _i6.Future<List<_i12.CurrencyCode>>);
+          as _i6.Future<List<_i15.CurrencyCode>>);
 
   @override
   _i6.Future<void> updateAllowedCurrencies(
     String tripId,
-    List<_i12.CurrencyCode> currencies,
+    List<_i15.CurrencyCode> currencies,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateAllowedCurrencies, [tripId, currencies]),
@@ -189,10 +201,6 @@ class MockTripRepository extends _i1.Mock implements _i5.TripRepository {
 /// See the documentation for Mockito's code generation for more information.
 class MockActivityLoggerService extends _i1.Mock
     implements _i8.ActivityLoggerService {
-  MockActivityLoggerService() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i6.Future<void> logExpenseAdded(_i9.Expense? expense, String? actorName) =>
       (super.noSuchMethod(
@@ -254,7 +262,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i6.Future<void> logMemberJoined({
-    required String tripId,
+    required String? tripId,
     required String? memberName,
     required String? joinMethod,
     String? inviterId,
@@ -322,7 +330,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i6.Future<void> logParticipantAdded({
-    required String tripId,
+    required String? tripId,
     required String? participantName,
     required String? actorName,
   }) =>
@@ -339,7 +347,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i6.Future<void> logParticipantRemoved({
-    required String tripId,
+    required String? tripId,
     required String? participantName,
     required String? actorName,
   }) =>
@@ -356,7 +364,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i6.Future<void> logDeviceVerified({
-    required String tripId,
+    required String? tripId,
     required String? memberName,
     required String? deviceCode,
   }) =>
@@ -373,7 +381,7 @@ class MockActivityLoggerService extends _i1.Mock
 
   @override
   _i6.Future<void> logRecoveryCodeUsed({
-    required String tripId,
+    required String? tripId,
     required String? memberName,
     required int? usageCount,
   }) =>
@@ -400,15 +408,12 @@ class MockActivityLoggerService extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockCategoryRepository extends _i1.Mock
     implements _i11.CategoryRepository {
-  MockCategoryRepository() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i6.Stream<List<_i3.Category>> getTopCategories({int? limit = 5}) =>
       (super.noSuchMethod(
             Invocation.method(#getTopCategories, [], {#limit: limit}),
             returnValue: _i6.Stream<List<_i3.Category>>.empty(),
+            returnValueForMissingStub: _i6.Stream<List<_i3.Category>>.empty(),
           )
           as _i6.Stream<List<_i3.Category>>);
 
@@ -417,6 +422,7 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#searchCategories, [query]),
             returnValue: _i6.Stream<List<_i3.Category>>.empty(),
+            returnValueForMissingStub: _i6.Stream<List<_i3.Category>>.empty(),
           )
           as _i6.Stream<List<_i3.Category>>);
 
@@ -425,6 +431,7 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getCategoryById, [categoryId]),
             returnValue: _i6.Future<_i3.Category?>.value(),
+            returnValueForMissingStub: _i6.Future<_i3.Category?>.value(),
           )
           as _i6.Future<_i3.Category?>);
 
@@ -433,6 +440,9 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getCategoriesByIds, [ids]),
             returnValue: _i6.Future<List<_i3.Category>>.value(<_i3.Category>[]),
+            returnValueForMissingStub: _i6.Future<List<_i3.Category>>.value(
+              <_i3.Category>[],
+            ),
           )
           as _i6.Future<List<_i3.Category>>);
 
@@ -461,6 +471,17 @@ class MockCategoryRepository extends _i1.Mock
                 }),
               ),
             ),
+            returnValueForMissingStub: _i6.Future<_i3.Category>.value(
+              _FakeCategory_1(
+                this,
+                Invocation.method(#createCategory, [], {
+                  #name: name,
+                  #icon: icon,
+                  #color: color,
+                  #userId: userId,
+                }),
+              ),
+            ),
           )
           as _i6.Future<_i3.Category>);
 
@@ -478,6 +499,7 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#categoryExists, [name]),
             returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
           as _i6.Future<bool>);
 
@@ -486,6 +508,7 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#canUserCreateCategory, [userId]),
             returnValue: _i6.Future<bool>.value(false),
+            returnValueForMissingStub: _i6.Future<bool>.value(false),
           )
           as _i6.Future<bool>);
 
@@ -494,6 +517,9 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#seedDefaultCategories, []),
             returnValue: _i6.Future<List<_i3.Category>>.value(<_i3.Category>[]),
+            returnValueForMissingStub: _i6.Future<List<_i3.Category>>.value(
+              <_i3.Category>[],
+            ),
           )
           as _i6.Future<List<_i3.Category>>);
 
@@ -512,6 +538,10 @@ class MockCategoryRepository extends _i1.Mock
             returnValue: _i6.Future<List<_i11.SimilarCategoryMatch>>.value(
               <_i11.SimilarCategoryMatch>[],
             ),
+            returnValueForMissingStub:
+                _i6.Future<List<_i11.SimilarCategoryMatch>>.value(
+                  <_i11.SimilarCategoryMatch>[],
+                ),
           )
           as _i6.Future<List<_i11.SimilarCategoryMatch>>);
 
@@ -520,6 +550,7 @@ class MockCategoryRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getMostPopularIcon, [categoryId]),
             returnValue: _i6.Future<String?>.value(),
+            returnValueForMissingStub: _i6.Future<String?>.value(),
           )
           as _i6.Future<String?>);
 }
@@ -528,11 +559,7 @@ class MockCategoryRepository extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLocalStorageService extends _i1.Mock
-    implements _i15.LocalStorageService {
-  MockLocalStorageService() {
-    _i1.throwOnMissingStub(this);
-  }
-
+    implements _i12.LocalStorageService {
   @override
   _i6.Future<void> saveSelectedTripId(String? tripId) =>
       (super.noSuchMethod(
@@ -565,6 +592,7 @@ class MockLocalStorageService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#verifyJoinedTrip, [tripId]),
             returnValue: false,
+            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -573,6 +601,7 @@ class MockLocalStorageService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getJoinedTripIds, []),
             returnValue: <String>[],
+            returnValueForMissingStub: <String>[],
           )
           as List<String>);
 
@@ -587,7 +616,7 @@ class MockLocalStorageService extends _i1.Mock
 
   @override
   _i6.Future<void> saveUserIdentityForTrip(
-    String tripId,
+    String? tripId,
     String? participantId,
   ) =>
       (super.noSuchMethod(
@@ -602,7 +631,10 @@ class MockLocalStorageService extends _i1.Mock
 
   @override
   String? getUserIdentityForTrip(String? tripId) =>
-      (super.noSuchMethod(Invocation.method(#getUserIdentityForTrip, [tripId]))
+      (super.noSuchMethod(
+            Invocation.method(#getUserIdentityForTrip, [tripId]),
+            returnValueForMissingStub: null,
+          )
           as String?);
 
   @override
@@ -651,6 +683,13 @@ class MockLocalStorageService extends _i1.Mock
               ),
               userId: null,
             ),
+            returnValueForMissingStub: (
+              filterMode: _i13.dummyValue<String>(
+                this,
+                Invocation.method(#getSettlementFilter, [tripId]),
+              ),
+              userId: null,
+            ),
           )
           as ({String filterMode, String? userId}));
 
@@ -669,13 +708,9 @@ class MockLocalStorageService extends _i1.Mock
 /// See the documentation for Mockito's code generation for more information.
 class MockDeviceLinkCodeRepository extends _i1.Mock
     implements _i14.DeviceLinkCodeRepository {
-  MockDeviceLinkCodeRepository() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i6.Future<_i4.DeviceLinkCode> generateCode(
-    String tripId,
+    String? tripId,
     String? memberName,
   ) =>
       (super.noSuchMethod(
@@ -686,18 +721,30 @@ class MockDeviceLinkCodeRepository extends _i1.Mock
                 Invocation.method(#generateCode, [tripId, memberName]),
               ),
             ),
+            returnValueForMissingStub: _i6.Future<_i4.DeviceLinkCode>.value(
+              _FakeDeviceLinkCode_2(
+                this,
+                Invocation.method(#generateCode, [tripId, memberName]),
+              ),
+            ),
           )
           as _i6.Future<_i4.DeviceLinkCode>);
 
   @override
   _i6.Future<_i4.DeviceLinkCode> validateCode(
-    String tripId,
+    String? tripId,
     String? code,
     String? memberName,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#validateCode, [tripId, code, memberName]),
             returnValue: _i6.Future<_i4.DeviceLinkCode>.value(
+              _FakeDeviceLinkCode_2(
+                this,
+                Invocation.method(#validateCode, [tripId, code, memberName]),
+              ),
+            ),
+            returnValueForMissingStub: _i6.Future<_i4.DeviceLinkCode>.value(
               _FakeDeviceLinkCode_2(
                 this,
                 Invocation.method(#validateCode, [tripId, code, memberName]),
@@ -722,6 +769,10 @@ class MockDeviceLinkCodeRepository extends _i1.Mock
             returnValue: _i6.Future<List<_i4.DeviceLinkCode>>.value(
               <_i4.DeviceLinkCode>[],
             ),
+            returnValueForMissingStub:
+                _i6.Future<List<_i4.DeviceLinkCode>>.value(
+                  <_i4.DeviceLinkCode>[],
+                ),
           )
           as _i6.Future<List<_i4.DeviceLinkCode>>);
 
@@ -730,6 +781,8 @@ class MockDeviceLinkCodeRepository extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#watchActiveCodes, [tripId]),
             returnValue: _i6.Stream<List<_i4.DeviceLinkCode>>.empty(),
+            returnValueForMissingStub:
+                _i6.Stream<List<_i4.DeviceLinkCode>>.empty(),
           )
           as _i6.Stream<List<_i4.DeviceLinkCode>>);
 }

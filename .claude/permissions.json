@@ -3,6 +3,10 @@
     {
       "command": "SlashCommand",
       "pattern": "/docs.log*"
+    },
+    {
+      "command": "Bash",
+      "pattern": "*update-feature-docs.sh log*"
     }
   ]
 }

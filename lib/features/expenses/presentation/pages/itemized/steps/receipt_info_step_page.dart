@@ -11,12 +11,14 @@ import '../../../../../../shared/utils/currency_input_formatter.dart';
 /// Step 1: Enter receipt info (subtotal and tax)
 class ReceiptInfoStepPage extends StatefulWidget {
   final CurrencyCode currencyCode;
+  final List<CurrencyCode> allowedCurrencies; // T024: Trip's allowed currencies
   final VoidCallback onContinue;
   final VoidCallback onCancel;
 
   const ReceiptInfoStepPage({
     super.key,
     required this.currencyCode,
+    required this.allowedCurrencies,
     required this.onContinue,
     required this.onCancel,
   });
@@ -31,10 +33,12 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
   final _taxController = TextEditingController();
   final _subtotalFocusNode = FocusNode();
   final _taxFocusNode = FocusNode();
+  late CurrencyCode _selectedCurrency; // T024: Track selected currency
 
   @override
   void initState() {
     super.initState();
+    _selectedCurrency = widget.currencyCode; // T024: Initialize with default
     // Populate from existing state if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final state = context.read<ItemizedExpenseCubit>().state;
@@ -42,13 +46,13 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
         if (state.expectedSubtotal != null) {
           _subtotalController.text = formatAmountForInput(
             state.expectedSubtotal!,
-            widget.currencyCode,
+            _selectedCurrency,
           );
         }
         if (state.taxAmount != null) {
           _taxController.text = formatAmountForInput(
             state.taxAmount!,
-            widget.currencyCode,
+            _selectedCurrency,
           );
         }
       }
@@ -76,10 +80,11 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
           ? null
           : Decimal.parse(stripCurrencyFormatting(taxText));
 
-      // Update cubit with receipt info
+      // T024: Update cubit with receipt info and selected currency
       context.read<ItemizedExpenseCubit>().setReceiptInfo(
         expectedSubtotal: subtotal,
         taxAmount: tax,
+        currencyCode: _selectedCurrency.code,
       );
 
       widget.onContinue();
@@ -109,7 +114,40 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
                   context.l10n.receiptSplitReceiptInfoDescription,
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+
+                // T024: Currency dropdown (filtered to allowed currencies)
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: DropdownButtonFormField<CurrencyCode>(
+                      initialValue: _selectedCurrency,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.expenseFieldCurrencyLabel,
+                        prefixIcon: const Icon(Icons.monetization_on),
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: widget.allowedCurrencies.map((currency) {
+                        return DropdownMenuItem(
+                          value: currency,
+                          child: Text('${currency.code} (${currency.symbol})'),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedCurrency = value;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
                 // Subtotal field (required)
                 Card(
@@ -124,7 +162,7 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
                       children: [
                         CurrencyTextField(
                           controller: _subtotalController,
-                          currencyCode: widget.currencyCode,
+                          currencyCode: _selectedCurrency,
                           label:
                               context.l10n.receiptSplitReceiptInfoSubtotalLabel,
                           hint:
@@ -155,7 +193,7 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
                       children: [
                         CurrencyTextField(
                           controller: _taxController,
-                          currencyCode: widget.currencyCode,
+                          currencyCode: _selectedCurrency,
                           label: context.l10n.receiptSplitReceiptInfoTaxLabel,
                           hint: context.l10n.receiptSplitReceiptInfoTaxHint,
                           isRequired: false,

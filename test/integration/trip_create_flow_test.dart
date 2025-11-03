@@ -11,11 +11,11 @@ import 'package:expense_tracker/core/models/participant.dart';
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_cubit.dart';
 import 'package:expense_tracker/features/trips/presentation/cubits/trip_state.dart';
 
-@GenerateMocks([
-  TripRepository,
-  ActivityLoggerService,
-  CategoryRepository,
-  LocalStorageService,
+@GenerateNiceMocks([
+  MockSpec<TripRepository>(),
+  MockSpec<ActivityLoggerService>(),
+  MockSpec<CategoryRepository>(),
+  MockSpec<LocalStorageService>(),
 ])
 import 'trip_create_flow_test.mocks.dart';
 
@@ -72,7 +72,7 @@ void main() {
         final createdTrip = Trip(
           id: 'trip-tokyo-123',
           name: tripName,
-          baseCurrency: baseCurrency,
+          allowedCurrencies: [baseCurrency],
           createdAt: DateTime(2025, 10, 29, 10, 30),
           updatedAt: DateTime(2025, 10, 29, 10, 30),
           participants: [creatorParticipant],
@@ -99,7 +99,7 @@ void main() {
         // Act: Create the trip
         await cubit.createTrip(
           name: tripName,
-          baseCurrency: baseCurrency,
+          allowedCurrencies: [baseCurrency],
           creatorName: creatorName,
         );
 
@@ -113,7 +113,7 @@ void main() {
             verify(mockTripRepository.createTrip(captureAny)).captured.single
                 as Trip;
         expect(capturedTrip.name, tripName);
-        expect(capturedTrip.baseCurrency, baseCurrency);
+        expect(capturedTrip.allowedCurrencies, [baseCurrency]);
         expect(capturedTrip.participants.length, 1);
         expect(capturedTrip.participants.first.name, creatorName);
 
@@ -164,7 +164,7 @@ void main() {
       ).thenThrow(Exception('Network error'));
 
       // Act
-      await cubit.createTrip(name: tripName, baseCurrency: baseCurrency);
+      await cubit.createTrip(name: tripName, allowedCurrencies: [baseCurrency]);
 
       // Assert
       expect(cubit.state, isA<TripError>());

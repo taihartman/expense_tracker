@@ -305,6 +305,105 @@ if (_activityLogRepository != null && actorName != null) {
 
 **For detailed workflow**: See [DEVELOPMENT.md#activity-tracking-system](DEVELOPMENT.md#activity-tracking-system) or `.claude/skills/activity-logging.md`
 
+## 🔄 User Feedback for Async Operations
+
+**CRITICAL**: Always provide visual feedback for async operations (network, database, file operations).
+
+### Core Principle
+
+**Never leave users wondering if their action is processing.** Every button that triggers an async operation MUST show loading state.
+
+### Loading State Pattern
+
+```dart
+// 1. Add loading state variable
+bool isLoading = false;
+
+// 2. Wrap async operation
+ElevatedButton(
+  onPressed: isLoading ? null : () async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await performAsyncOperation();
+      // Show success feedback (SnackBar, navigation, etc.)
+    } catch (e) {
+      // Show error feedback
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  },
+  child: isLoading
+      ? const SizedBox(
+          height: 20,
+          width: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        )
+      : const Text('Save'),
+)
+```
+
+### Key Requirements
+
+1. **Disable button** when loading (`onPressed: isLoading ? null : () async { ... }`)
+2. **Show indicator** in button child (CircularProgressIndicator)
+3. **Use try/finally** to ensure state is reset even on errors
+4. **Check mounted** before calling setState in finally block
+5. **Show result** via SnackBar (success/error messages)
+
+### Common Async Operations
+
+- Saving to Firestore
+- Loading data from API
+- Processing images
+- Generating reports
+- Uploading files
+- Complex calculations
+
+### Examples
+
+```dart
+// ✅ CORRECT - Shows loading state
+ElevatedButton(
+  onPressed: isSaving ? null : () async {
+    setState(() { isSaving = true; });
+    try {
+      await saveData();
+      showSnackBar('✓ Saved successfully');
+    } catch (e) {
+      showSnackBar('Failed: $e');
+    } finally {
+      if (mounted) setState(() { isSaving = false; });
+    }
+  },
+  child: isSaving ? CircularProgressIndicator() : Text('Save'),
+)
+
+// ❌ WRONG - No visual feedback
+ElevatedButton(
+  onPressed: () async {
+    await saveData(); // User sees nothing happening!
+  },
+  child: Text('Save'),
+)
+```
+
+### Benefits
+
+- ✅ Prevents double-clicks/double-submissions
+- ✅ Clear feedback that operation is processing
+- ✅ Better UX during network latency
+- ✅ Reduces user confusion and support requests
+
 ## 🧪 Testing Strategy
 
 ### Cubit Tests (Unit Tests)

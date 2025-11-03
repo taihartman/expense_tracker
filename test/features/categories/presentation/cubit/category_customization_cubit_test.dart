@@ -268,7 +268,7 @@ void main() {
         ).thenAnswer((_) async => Future.value());
         when(
           mockActivityLogRepository.addLog(any),
-        ).thenAnswer((_) async => Future.value());
+        ).thenAnswer((_) async => 'test-log-id');
 
         // Assert
         expect(
@@ -306,7 +306,7 @@ void main() {
         ).thenAnswer((_) async => Future.value());
         when(
           mockActivityLogRepository.addLog(any),
-        ).thenAnswer((_) async => Future.value());
+        ).thenAnswer((_) async => 'test-log-id');
 
         // Act
         await cubit.saveCustomization(
@@ -330,7 +330,7 @@ void main() {
         ).thenAnswer((_) async => Future.value());
         when(
           mockActivityLogRepository.addLog(any),
-        ).thenAnswer((_) async => Future.value());
+        ).thenAnswer((_) async => 'test-log-id');
 
         // Act
         await cubit.saveCustomization(
@@ -425,7 +425,7 @@ void main() {
         ).thenAnswer((_) async => Future.value());
         when(
           mockActivityLogRepository.addLog(any),
-        ).thenAnswer((_) async => Future.value());
+        ).thenAnswer((_) async => 'test-log-id');
 
         // Assert
         expect(
