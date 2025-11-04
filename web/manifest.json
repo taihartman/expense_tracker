@@ -1,6 +1,7 @@
 {
     "name": "Expense Tracker",
     "short_name": "Expense Tracker",
+    "version": "1.0.28",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",

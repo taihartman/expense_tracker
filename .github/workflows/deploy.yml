@@ -23,18 +23,22 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Generate version.json from pubspec.yaml
+      - name: Sync versions from pubspec.yaml
         run: |
-          # Extract version from pubspec.yaml
-          VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          # Extract version from pubspec.yaml (e.g., "1.0.28+29")
+          FULL_VERSION=$(grep '^version:' pubspec.yaml | cut -d' ' -f2)
+          # Extract just the semantic version (e.g., "1.0.28")
+          VERSION=$(echo $FULL_VERSION | cut -d'+' -f1)
           echo "📦 Extracted version from pubspec.yaml: $VERSION"
 
           # Generate version.json
-          echo "{\"version\": \"$VERSION\"}" > web/version.json
-
-          # Verify generated file
+          echo "{\"version\": \"$FULL_VERSION\"}" > web/version.json
           echo "✅ Generated web/version.json:"
           cat web/version.json
+
+          # Update manifest.json version for PWA updates
+          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" web/manifest.json
+          echo "✅ Updated web/manifest.json version to $VERSION"
 
       - name: Build and Deploy
         uses: bluefireteam/flutter-gh-pages@v9
