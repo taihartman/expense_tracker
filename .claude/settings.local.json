@@ -4,7 +4,10 @@
       "SlashCommand(/docs.log:*)",
       "Bash(flutter pub get:*)",
       "Bash(flutter test:*)",
-      "Bash(dart run build_runner:*)"
+      "Bash(dart run build_runner:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
