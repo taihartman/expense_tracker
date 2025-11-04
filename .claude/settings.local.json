@@ -7,7 +7,9 @@
       "Bash(dart run build_runner:*)",
       "WebFetch(domain:github.com)",
       "WebSearch",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(tree:*)",
+      "Bash(dart run:*)"
     ],
     "deny": [],
     "ask": []

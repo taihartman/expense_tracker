@@ -4,7 +4,7 @@
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
-    "theme_color": "#6200EE",
+    "theme_color": "#1a6b6b",
     "description": "Multi-currency group expense tracker for trips",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
