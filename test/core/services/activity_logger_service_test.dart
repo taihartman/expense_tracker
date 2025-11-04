@@ -15,7 +15,11 @@ import 'package:mockito/mockito.dart';
 
 import 'activity_logger_service_test.mocks.dart';
 
-@GenerateMocks([ActivityLogRepository, TripRepository])
+@GenerateMocks([
+  ActivityLogRepository,
+], customMocks: [
+  MockSpec<TripRepository>(as: #MockTripRepository),
+])
 void main() {
   late MockActivityLogRepository mockActivityLogRepository;
   late MockTripRepository mockTripRepository;
