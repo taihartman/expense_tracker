@@ -5,7 +5,8 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
 
-import 'package:expense_tracker/core/models/currency_code.dart' as _i9;
+import 'package:expense_tracker/core/models/currency_code.dart' as _iCC;
+
 import 'package:expense_tracker/features/trips/domain/models/activity_log.dart'
     as _i5;
 import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i2;
@@ -172,17 +173,17 @@ class MockTripRepository extends _i1.Mock implements _i7.TripRepository {
           as _i4.Future<void>);
 
   @override
-  _i4.Future<List<_i9.CurrencyCode>> getAllowedCurrencies(String tripId) =>
+  _i4.Future<List<_iCC.CurrencyCode>> getAllowedCurrencies(String tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i4.Future<List<_i9.CurrencyCode>>.value(<_i9.CurrencyCode>[]),
+            returnValue: _i4.Future<List<_iCC.CurrencyCode>>.value(<_iCC.CurrencyCode>[]),
           )
-          as _i4.Future<List<_i9.CurrencyCode>>);
+          as _i4.Future<List<_iCC.CurrencyCode>>);
 
   @override
   _i4.Future<void> updateAllowedCurrencies(
     String tripId,
-    List<_i9.CurrencyCode> currencies,
+    List<_iCC.CurrencyCode> currencies,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateAllowedCurrencies, [tripId, currencies]),

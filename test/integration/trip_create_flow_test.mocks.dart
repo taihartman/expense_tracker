@@ -4,6 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
+
 import 'package:expense_tracker/core/models/currency_code.dart' as _iCC;
 
 import 'package:expense_tracker/core/services/activity_logger_service.dart'
@@ -167,7 +168,7 @@ class MockTripRepository extends _i1.Mock implements _i4.TripRepository {
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
             returnValue: _i5.Future<List<_iCC.CurrencyCode>>.value(<_iCC.CurrencyCode>[]),
-            returnValueForMissingStub: _i5.Future<List<_iCC.CurrencyCode>>.value(
+            returnValueForMissingStub: _i5.Future<List<dynamic>>.value(
               <_iCC.CurrencyCode>[],
             ),
           )

@@ -1,6 +1,6 @@
 // ISO 4217 Currency Codes
 //
-// This file is a wrapper for generated currency code.
+// This file exports the generated currency code enum.
 // The actual enum and extension methods are generated from assets/currencies.json
 //
 // To add or update currencies:
@@ -9,6 +9,8 @@
 //
 // See specs/010-iso-4217-currencies/quickstart.md for detailed instructions.
 
-part 'currency_code.g.dart';
+library currency_code;
 
-// Enum CurrencyCode and CurrencyCodeExtension are defined in currency_code.g.dart
+export 'currency_code_generated.dart';
+
+// Enum CurrencyCode and CurrencyCodeExtension are defined in currency_code_generated.dart
