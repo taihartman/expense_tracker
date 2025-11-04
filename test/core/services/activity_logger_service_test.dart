@@ -1,5 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
+import 'package:expense_tracker/core/models/currency_code_generated.dart' show CurrencyCode;
 import 'package:expense_tracker/core/models/participant.dart';
 import 'package:expense_tracker/core/models/split_type.dart';
 import 'package:expense_tracker/core/services/activity_logger_service.dart';

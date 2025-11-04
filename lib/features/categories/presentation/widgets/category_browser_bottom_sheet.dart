@@ -117,6 +117,7 @@ class _CategoryBrowserBottomSheetState
       builder: (sheetContext) {
         // Default to category's current icon (most popular via voting system)
         String currentSelectedIcon = category.icon;
+        bool isSavingCustomization = false;
 
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -201,41 +202,81 @@ class _CategoryBrowserBottomSheetState
                             ),
                             const SizedBox(width: AppTheme.spacing1),
                             FilledButton(
-                              onPressed: () async {
-                                debugPrint(
-                                  '💾 [CategoryBrowser] Saving customization: ${category.id} → $currentSelectedIcon',
-                                );
+                              onPressed: isSavingCustomization
+                                  ? null
+                                  : () async {
+                                      setSheetState(() {
+                                        isSavingCustomization = true;
+                                      });
 
-                                // Save customization
-                                final customizationCubit =
-                                    this.context.read<CategoryCustomizationCubit?>();
+                                      try {
+                                        debugPrint(
+                                          '💾 [CategoryBrowser] Saving customization: ${category.id} → $currentSelectedIcon',
+                                        );
 
-                                if (customizationCubit != null && userId != null) {
-                                  await customizationCubit.saveCustomization(
-                                    categoryId: category.id,
-                                    customIcon: currentSelectedIcon,
-                                    userId: userId,
-                                    // Note: actorName not needed for icon customization
-                                  );
-                                }
+                                        // Save customization
+                                        final customizationCubit =
+                                            this.context.read<CategoryCustomizationCubit?>();
 
-                                // Close icon picker sheet
-                                if (sheetContext.mounted) {
-                                  Navigator.of(sheetContext).pop();
-                                }
+                                        if (customizationCubit != null && userId != null) {
+                                          await customizationCubit.saveCustomization(
+                                            categoryId: category.id,
+                                            customIcon: currentSelectedIcon,
+                                            userId: userId,
+                                            // Note: actorName not needed for icon customization
+                                          );
+                                        }
 
-                                // Proceed with category selection
-                                debugPrint(
-                                  '✅ [CategoryBrowser] Customization saved, proceeding with selection',
-                                );
-                                widget.onCategorySelected(category);
+                                        // Close icon picker sheet
+                                        if (sheetContext.mounted) {
+                                          Navigator.of(sheetContext).pop();
+                                        }
 
-                                // Close browser sheet
-                                if (mounted) {
-                                  Navigator.of(this.context).pop();
-                                }
-                              },
-                              child: Text(context.l10n.commonConfirm),
+                                        // Proceed with category selection
+                                        debugPrint(
+                                          '✅ [CategoryBrowser] Customization saved, proceeding with selection',
+                                        );
+                                        widget.onCategorySelected(category);
+
+                                        // Close browser sheet
+                                        if (mounted) {
+                                          Navigator.of(this.context).pop();
+                                        }
+                                      } catch (e) {
+                                        debugPrint(
+                                          '❌ [CategoryBrowser] Error saving customization: $e',
+                                        );
+                                        // Show error feedback to user
+                                        if (sheetContext.mounted) {
+                                          ScaffoldMessenger.of(sheetContext).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to save customization: $e',
+                                              ),
+                                              backgroundColor: theme.colorScheme.error,
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (sheetContext.mounted) {
+                                          setSheetState(() {
+                                            isSavingCustomization = false;
+                                          });
+                                        }
+                                      }
+                                    },
+                              child: isSavingCustomization
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
+                                        ),
+                                      ),
+                                    )
+                                  : Text(context.l10n.commonConfirm),
                             ),
                           ],
                         ),

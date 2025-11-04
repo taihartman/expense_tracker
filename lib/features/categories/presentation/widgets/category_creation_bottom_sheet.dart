@@ -115,6 +115,7 @@ class _CategoryCreationBottomSheetState
         builder: (sheetContext) {
           // Declare state variable outside StatefulBuilder so it persists across rebuilds
           String currentSelectedIcon = defaultIcon;
+          bool isRecordingPreference = false;
 
           return StatefulBuilder(
             builder: (context, setSheetState) {
@@ -182,43 +183,79 @@ class _CategoryCreationBottomSheetState
                             ),
                             const SizedBox(width: 8),
                             FilledButton(
-                              onPressed: () async {
-                                // Record the icon preference vote
-                                try {
-                                  await customizationRepository
-                                      .recordIconPreference(
-                                        category.id,
-                                        currentSelectedIcon,
-                                      );
+                              onPressed: isRecordingPreference
+                                  ? null
+                                  : () async {
+                                      setSheetState(() {
+                                        isRecordingPreference = true;
+                                      });
 
-                                  // Show brief success message
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          context
-                                              .l10n
-                                              .categoryIconPreferenceRecorded,
+                                      try {
+                                        // Record the icon preference vote
+                                        await customizationRepository
+                                            .recordIconPreference(
+                                              category.id,
+                                              currentSelectedIcon,
+                                            );
+
+                                        // Show brief success message
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                context
+                                                    .l10n
+                                                    .categoryIconPreferenceRecorded,
+                                              ),
+                                              duration: const Duration(seconds: 1),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+
+                                        // Close the bottom sheet and the creation sheet
+                                        if (sheetContext.mounted) {
+                                          Navigator.of(sheetContext).pop();
+                                        }
+                                        if (context.mounted) {
+                                          widget.onCategoryCreated();
+                                          Navigator.of(context).pop();
+                                        }
+                                      } catch (e) {
+                                        debugPrint(
+                                          '❌ [CategoryCreation] Error recording icon preference: $e',
+                                        );
+                                        // Show error feedback to user
+                                        if (sheetContext.mounted) {
+                                          ScaffoldMessenger.of(sheetContext).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Failed to record preference: $e',
+                                              ),
+                                              backgroundColor: Theme.of(sheetContext).colorScheme.error,
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (sheetContext.mounted) {
+                                          setSheetState(() {
+                                            isRecordingPreference = false;
+                                          });
+                                        }
+                                      }
+                                    },
+                              child: isRecordingPreference
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.white,
                                         ),
-                                        duration: const Duration(seconds: 1),
-                                        behavior: SnackBarBehavior.floating,
                                       ),
-                                    );
-                                  }
-                                } catch (e) {
-                                  // Silent failure - voting is non-critical
-                                }
-
-                                // Close the bottom sheet and the creation sheet
-                                if (sheetContext.mounted) {
-                                  Navigator.of(sheetContext).pop();
-                                }
-                                if (context.mounted) {
-                                  widget.onCategoryCreated();
-                                  Navigator.of(context).pop();
-                                }
-                              },
-                              child: Text(context.l10n.commonConfirm),
+                                    )
+                                  : Text(context.l10n.commonConfirm),
                             ),
                           ],
                         ),

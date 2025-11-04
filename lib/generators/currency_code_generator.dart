@@ -9,7 +9,7 @@ Builder currencyCodeBuilder(BuilderOptions options) {
 class _CurrencyCodeBuilder implements Builder {
   @override
   Map<String, List<String>> get buildExtensions => const {
-        '.dart': ['.g.dart']
+        '.dart': ['_generated.dart']
       };
 
   @override
@@ -36,7 +36,7 @@ class _CurrencyCodeBuilder implements Builder {
       final generatedCode = generator.generate(currenciesList);
 
       // Write generated code
-      final outputId = inputId.changeExtension('.g.dart');
+      final outputId = inputId.changeExtension('_generated.dart');
       await buildStep.writeAsString(outputId, generatedCode);
     } catch (e) {
       throw BuildStepException('Failed to generate currency code: $e');
@@ -79,8 +79,11 @@ class CurrencyCodeGenerator {
     buffer.writeln('// Source: assets/currencies.json');
     buffer.writeln('// Generated at: ${DateTime.now().toUtc().toIso8601String()}');
     buffer.writeln('//');
+    buffer.writeln('// This file is imported via currency_code.dart');
+    buffer.writeln('// Do not import this file directly');
+    buffer.writeln('//');
     buffer.writeln();
-    buffer.writeln("part of 'currency_code.dart';");
+    buffer.writeln('library currency_code_generated;');
     buffer.writeln();
 
     // Generate enum
