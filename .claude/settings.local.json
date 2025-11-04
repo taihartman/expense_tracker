@@ -9,7 +9,8 @@
       "WebSearch",
       "Bash(git checkout:*)",
       "Bash(tree:*)",
-      "Bash(dart run:*)"
+      "Bash(dart run:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []

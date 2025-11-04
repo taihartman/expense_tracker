@@ -10,6 +10,9 @@ This project uses a **multi-document system** for better navigation:
 - **[MOBILE.md](MOBILE.md)** - Mobile-first design guidelines and patterns
 - **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development workflows and systems
 - **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - New contributor onboarding
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
+- **[FEATURES.md](FEATURES.md)** - Feature directory with status
 - **`.claude/skills/`** - Reusable workflow skills (see below)
 - **This file (CLAUDE.md)** - Quick reference hub
 
@@ -235,201 +238,47 @@ await _authService.signInAnonymously();
 
 **ALWAYS use localized strings** - never hardcode user-facing text.
 
-```dart
-// Import extension
-import 'package:expense_tracker/core/l10n/l10n_extensions.dart';
-
-// Use in code
-Text(context.l10n.commonCancel)                 // Simple
-Text(context.l10n.expensePaidBy(payerName))     // With parameter
-Text(context.l10n.expenseParticipantCount(count)) // With pluralization
-```
+**Quick usage**: `context.l10n.stringKey` (import `package:expense_tracker/core/l10n/l10n_extensions.dart`)
 
 **Adding new strings**: Edit `lib/l10n/app_en.arb`, then run `flutter pub get`
 
-**For detailed workflow**: See [DEVELOPMENT.md#localization-system](DEVELOPMENT.md#localization-system) or `.claude/skills/localization-workflow.md`
+**For detailed workflow and examples**: See [DEVELOPMENT.md#localization-system](DEVELOPMENT.md#localization-system) or [`.claude/skills/localization-workflow.md`](.claude/skills/localization-workflow.md)
 
 ## 💰 Currency Input System
 
 **ALWAYS use `CurrencyTextField`** for monetary amounts - never plain `TextField`.
 
-```dart
-// Basic usage
-CurrencyTextField(
-  controller: _amountController,
-  currencyCode: CurrencyCode.usd,
-  label: context.l10n.expenseFieldAmountLabel,
-)
+**Quick usage**: Use `CurrencyTextField` widget, parse with `stripCurrencyFormatting()` before saving
 
-// Pre-filling when editing
-_amountController = TextEditingController(
-  text: expense != null
-      ? formatAmountForInput(expense.amount, expense.currency)
-      : '',
-);
-
-// Parsing when saving
-final cleanValue = stripCurrencyFormatting(_amountController.text);
-final amount = Decimal.parse(cleanValue);
-```
-
-**For detailed workflow**: See [DEVELOPMENT.md#currency-input-system](DEVELOPMENT.md#currency-input-system) or `.claude/skills/currency-input.md`
+**For detailed workflow and examples**: See [DEVELOPMENT.md#currency-input-system](DEVELOPMENT.md#currency-input-system) or [`.claude/skills/currency-input.md`](.claude/skills/currency-input.md)
 
 ## 📝 Activity Tracking System
 
 **Every state-changing operation MUST include activity logging.**
 
-```dart
-// 1. Inject repository (optional)
-class MyCubit extends Cubit<MyState> {
-  final ActivityLogRepository? _activityLogRepository;
+**Quick pattern**: Inject `ActivityLogRepository?` in cubit → Get `actorName` from `TripCubit.getCurrentUserForTrip()` → Log after successful operation (non-fatal)
 
-  MyCubit({ActivityLogRepository? activityLogRepository})
-      : _activityLogRepository = activityLogRepository,
-        super(MyInitialState());
-}
-
-// 2. Get current user in UI
-final currentUser = context.read<TripCubit>().getCurrentUserForTrip(tripId);
-context.read<MyCubit>().myAction(..., actorName: currentUser?.name);
-
-// 3. Log after successful operation (non-fatal)
-if (_activityLogRepository != null && actorName != null) {
-  try {
-    await _activityLogRepository.addLog(ActivityLog(...));
-  } catch (e) {
-    // Don't fail main operation
-  }
-}
-```
-
-**For detailed workflow**: See [DEVELOPMENT.md#activity-tracking-system](DEVELOPMENT.md#activity-tracking-system) or `.claude/skills/activity-logging.md`
+**For detailed workflow and examples**: See [DEVELOPMENT.md#activity-tracking-system](DEVELOPMENT.md#activity-tracking-system) or [`.claude/skills/activity-logging.md`](.claude/skills/activity-logging.md)
 
 ## 🔄 User Feedback for Async Operations
 
 **CRITICAL**: Always provide visual feedback for async operations (network, database, file operations).
 
-### Core Principle
+**Key requirements**:
+1. Disable button when loading
+2. Show CircularProgressIndicator in button
+3. Use try/finally with mounted check
+4. Show result via SnackBar
 
-**Never leave users wondering if their action is processing.** Every button that triggers an async operation MUST show loading state.
-
-### Loading State Pattern
-
-```dart
-// 1. Add loading state variable
-bool isLoading = false;
-
-// 2. Wrap async operation
-ElevatedButton(
-  onPressed: isLoading ? null : () async {
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      await performAsyncOperation();
-      // Show success feedback (SnackBar, navigation, etc.)
-    } catch (e) {
-      // Show error feedback
-    } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    }
-  },
-  child: isLoading
-      ? const SizedBox(
-          height: 20,
-          width: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          ),
-        )
-      : const Text('Save'),
-)
-```
-
-### Key Requirements
-
-1. **Disable button** when loading (`onPressed: isLoading ? null : () async { ... }`)
-2. **Show indicator** in button child (CircularProgressIndicator)
-3. **Use try/finally** to ensure state is reset even on errors
-4. **Check mounted** before calling setState in finally block
-5. **Show result** via SnackBar (success/error messages)
-
-### Common Async Operations
-
-- Saving to Firestore
-- Loading data from API
-- Processing images
-- Generating reports
-- Uploading files
-- Complex calculations
-
-### Examples
-
-```dart
-// ✅ CORRECT - Shows loading state
-ElevatedButton(
-  onPressed: isSaving ? null : () async {
-    setState(() { isSaving = true; });
-    try {
-      await saveData();
-      showSnackBar('✓ Saved successfully');
-    } catch (e) {
-      showSnackBar('Failed: $e');
-    } finally {
-      if (mounted) setState(() { isSaving = false; });
-    }
-  },
-  child: isSaving ? CircularProgressIndicator() : Text('Save'),
-)
-
-// ❌ WRONG - No visual feedback
-ElevatedButton(
-  onPressed: () async {
-    await saveData(); // User sees nothing happening!
-  },
-  child: Text('Save'),
-)
-```
-
-### Benefits
-
-- ✅ Prevents double-clicks/double-submissions
-- ✅ Clear feedback that operation is processing
-- ✅ Better UX during network latency
-- ✅ Reduces user confusion and support requests
+**For detailed pattern and examples**: See [MOBILE.md](MOBILE.md) or code examples in existing pages
 
 ## 🧪 Testing Strategy
 
-### Cubit Tests (Unit Tests)
+**Pattern**: Arrange-Act-Assert for Cubit tests
 
-```dart
-test('should emit success state', () async {
-  // Arrange
-  when(mockRepository.createExpense(any)).thenAnswer((_) async => expense);
+**Generate mocks**: `dart run build_runner build --delete-conflicting-outputs`
 
-  // Act
-  await cubit.createExpense(expense);
-
-  // Assert
-  expect(cubit.state, isA<ExpenseCreatedState>());
-});
-```
-
-**For detailed workflow**: See `.claude/skills/cubit-testing.md`
-
-### Generating Mocks
-
-After adding/modifying `@GenerateMocks` annotations:
-
-```bash
-dart run build_runner build --delete-conflicting-outputs
-```
+**For detailed workflow and examples**: See [`.claude/skills/cubit-testing.md`](.claude/skills/cubit-testing.md)
 
 ## 📦 Spec-Driven Development
 
@@ -480,6 +329,27 @@ specs/{feature-id}-{feature-name}/
 ```
 
 **For complete workflow**: See [DEVELOPMENT.md#spec-driven-development](DEVELOPMENT.md#spec-driven-development)
+
+## 📂 Feature Directory
+
+This project has **11 completed features**. See [FEATURES.md](FEATURES.md) for the complete directory with descriptions and links.
+
+**Quick overview**:
+- ✅ **001** - Group Expense Tracker (core functionality)
+- ✅ **002** - Itemized Splitter
+- ✅ **003** - Trip Invite System
+- ✅ **004** - Device Pairing
+- ✅ **005** - Receipt Split UX
+- ✅ **006** - Centralized Activity Logger
+- ✅ **007** - Web Auto-Update
+- ✅ **008** - Global Category System
+- ✅ **009** - Trip Category Customization
+- ✅ **010** - ISO 4217 Currencies
+- ✅ **011** - Trip Multi-Currency
+
+**For detailed information**: See [FEATURES.md](FEATURES.md)
+
+**To add a new feature**: Follow the Spec-Kit workflow above and update FEATURES.md
 
 ## 🚀 Deployment
 
