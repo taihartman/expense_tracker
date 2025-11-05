@@ -1,4 +1,5 @@
 import '../models/minimal_transfer.dart';
+import '../../../../core/models/currency_code.dart';
 
 /// Repository for managing settled transfer history
 ///
@@ -20,6 +21,7 @@ abstract class SettledTransferRepository {
     String fromUserId,
     String toUserId,
     String amountBase,
+    CurrencyCode currency,
   );
 
   /// Un-settle a transfer (if user made a mistake)

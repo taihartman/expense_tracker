@@ -391,8 +391,11 @@ class SettlementCubit extends Cubit<SettlementState> {
         orElse: () => throw Exception('Transfer not found'),
       );
 
+      // Use currency from transfer if available, otherwise use summary's base currency
+      final currency = transfer.currency ?? currentState.summary.baseCurrency;
+
       _log(
-        '✅ Marking transfer as settled: ${transfer.fromUserId} → ${transfer.toUserId} (${transfer.amountBase})',
+        '✅ Marking transfer as settled: ${transfer.fromUserId} → ${transfer.toUserId} (${transfer.amountBase} ${currency.code})',
       );
 
       await _settledTransferRepository.markTransferAsSettled(
@@ -400,6 +403,7 @@ class SettlementCubit extends Cubit<SettlementState> {
         transfer.fromUserId,
         transfer.toUserId,
         transfer.amountBase.toString(),
+        currency,
       );
 
       _log('✅ Transfer marked as settled');
