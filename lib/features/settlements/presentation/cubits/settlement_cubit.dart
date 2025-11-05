@@ -186,7 +186,19 @@ class SettlementCubit extends Cubit<SettlementState> {
             _settledTransferRepository.getSettledTransfers(tripId),
             (expenses, settledTransfers) =>
                 (expenses: expenses, settled: settledTransfers),
-          ).listen(
+          )
+          .debounceTime(const Duration(milliseconds: 500)) // Wait for rapid changes to settle
+          .distinct((prev, next) {
+            // Skip if expenses haven't actually changed (by ID)
+            if (prev.expenses.length != next.expenses.length) return false;
+
+            final prevIds = prev.expenses.map((e) => e.id).toSet();
+            final nextIds = next.expenses.map((e) => e.id).toSet();
+
+            return prevIds.length == nextIds.length &&
+                   prevIds.containsAll(nextIds);
+          })
+          .listen(
             (data) async {
               _log(
                 '📦 Received ${data.expenses.length} expenses, ${data.settled.length} settled transfers',
@@ -539,7 +551,19 @@ class SettlementCubit extends Cubit<SettlementState> {
             _settledTransferRepository.getSettledTransfers(tripId),
             (expenses, settledTransfers) =>
                 (expenses: expenses, settled: settledTransfers),
-          ).listen(
+          )
+          .debounceTime(const Duration(milliseconds: 500)) // Wait for rapid changes to settle
+          .distinct((prev, next) {
+            // Skip if expenses haven't actually changed (by ID)
+            if (prev.expenses.length != next.expenses.length) return false;
+
+            final prevIds = prev.expenses.map((e) => e.id).toSet();
+            final nextIds = next.expenses.map((e) => e.id).toSet();
+
+            return prevIds.length == nextIds.length &&
+                   prevIds.containsAll(nextIds);
+          })
+          .listen(
             (data) async {
               _log(
                 '📦 Received ${data.expenses.length} expenses (filtering by ${currencyFilter?.code ?? "all"})',

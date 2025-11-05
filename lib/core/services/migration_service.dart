@@ -6,6 +6,9 @@ import '../../shared/services/firestore_service.dart';
 import '../models/participant.dart';
 import '../../features/trips/data/models/trip_model.dart';
 import '../../features/expenses/data/models/expense_model.dart';
+import '../../features/settlements/domain/repositories/settlement_repository.dart';
+import '../../features/trips/domain/repositories/trip_repository.dart';
+import 'migrations/settlement_cleanup_migration.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -18,10 +21,13 @@ void _log(String message) {
 class MigrationService {
   final FirestoreService _firestoreService;
   final SharedPreferences _prefs;
+  final TripRepository? _tripRepository;
+  final SettlementRepository? _settlementRepository;
 
   // Migration keys
   static const String _migrationV1Key = 'migration_v1_completed';
   static const String _migrationV2Key = 'migration_v2_completed';
+  static const String _migrationV3Key = 'migration_v3_completed';
 
   // Fixed participants from MVP (to be removed after migration)
   static const List<Participant> _fixedParticipants = [
@@ -36,8 +42,12 @@ class MigrationService {
   MigrationService({
     required FirestoreService firestoreService,
     required SharedPreferences prefs,
+    TripRepository? tripRepository,
+    SettlementRepository? settlementRepository,
   }) : _firestoreService = firestoreService,
-       _prefs = prefs;
+       _prefs = prefs,
+       _tripRepository = tripRepository,
+       _settlementRepository = settlementRepository;
 
   /// Run all necessary migrations
   Future<void> runMigrations() async {
@@ -60,6 +70,15 @@ class MigrationService {
         _log('✅ Migration v2 completed and marked as done');
       } else {
         _log('ℹ️ Migration v2 already completed, skipping');
+      }
+
+      // Run migration v3 if not completed
+      if (_prefs.getBool(_migrationV3Key) != true) {
+        await _migrationV3SettlementCleanup();
+        await _prefs.setBool(_migrationV3Key, true);
+        _log('✅ Migration v3 completed and marked as done');
+      } else {
+        _log('ℹ️ Migration v3 already completed, skipping');
       }
 
       _log('✅ All migrations completed successfully');
@@ -230,6 +249,43 @@ class MigrationService {
     } catch (e) {
       _log('❌ Fatal error in migration v2: $e');
       rethrow;
+    }
+  }
+
+  /// Migration v3: Clean up duplicate settlement transfers and recalculate
+  /// - Fixes conservation of money issue in equal/weighted splits
+  /// - Uses remainder distribution for whole-number currencies
+  /// - Deletes all existing transfers and recreates from scratch
+  /// - Validates results to ensure mathematical correctness
+  Future<void> _migrationV3SettlementCleanup() async {
+    _log('🔄 Running migration v3: Settlement cleanup');
+
+    try {
+      // Check if repositories are available
+      if (_tripRepository == null || _settlementRepository == null) {
+        _log('ℹ️ Repositories not available, skipping settlement cleanup');
+        return;
+      }
+
+      // Create and run settlement cleanup migration
+      final migration = SettlementCleanupMigration(
+        tripRepository: _tripRepository,
+        settlementRepository: _settlementRepository,
+      );
+
+      final result = await migration.run();
+
+      if (result.errorCount > 0) {
+        _log('⚠️ Migration v3 completed with ${result.errorCount} errors');
+        for (final error in result.errors) {
+          _log('  ❌ $error');
+        }
+      } else {
+        _log('✅ Migration v3 completed successfully: ${result.successCount} trips updated');
+      }
+    } catch (e) {
+      _log('❌ Fatal error in migration v3: $e');
+      // Don't rethrow - allow app to continue even if migration fails
     }
   }
 

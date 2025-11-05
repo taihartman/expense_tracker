@@ -10,6 +10,7 @@ import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/person_summary.dart';
 import '../../domain/repositories/settlement_repository.dart';
 import '../../domain/services/settlement_calculator.dart';
+import '../../domain/services/settlement_validator.dart';
 import '../models/settlement_summary_model.dart';
 import '../models/minimal_transfer_model.dart';
 import '../../../../core/models/currency_code.dart';
@@ -32,16 +33,19 @@ class SettlementRepositoryImpl implements SettlementRepository {
   final ExpenseRepository _expenseRepository;
   final TripRepository _tripRepository;
   final SettlementCalculator _calculator;
+  final SettlementValidator _validator;
 
   SettlementRepositoryImpl({
     required FirestoreService firestoreService,
     required ExpenseRepository expenseRepository,
     required TripRepository tripRepository,
     SettlementCalculator? calculator,
+    SettlementValidator? validator,
   }) : _firestoreService = firestoreService,
        _expenseRepository = expenseRepository,
        _tripRepository = tripRepository,
-       _calculator = calculator ?? SettlementCalculator();
+       _calculator = calculator ?? SettlementCalculator(),
+       _validator = validator ?? SettlementValidator();
 
   /// Apply adjustments to person summaries based on settled transfers
   ///
@@ -346,6 +350,20 @@ class SettlementRepositoryImpl implements SettlementRepository {
         lastComputedAt: DateTime.now(),
       );
 
+      _log('\n🧹 NUCLEAR OPTION: Delete all existing transfers before recreating...');
+
+      // Delete ALL existing transfers (prevents duplicates, ensures clean state)
+      final batch = _firestoreService.batch();
+      for (final doc in existingTransfers.docs) {
+        final docRef = _firestoreService.settlements
+            .doc(tripId)
+            .collection('transfers')
+            .doc(doc.id);
+        batch.delete(docRef);
+      }
+      await batch.commit();
+      _log('✅ Deleted ${existingTransfers.docs.length} existing transfers');
+
       _log('\n💾 Saving settlement summary to Firestore...');
 
       // Save settlement summary to Firestore (with adjusted summaries)
@@ -353,88 +371,46 @@ class SettlementRepositoryImpl implements SettlementRepository {
           .doc(tripId)
           .set(SettlementSummaryModel.toJson(settlementSummary));
 
-      // Optimize transfer storage: merge/update instead of delete+recreate
-      final batch = _firestoreService.batch();
+      // Create new transfers from scratch
+      _log('\n💾 Creating ${transfersWithSettledStatus.length} new transfers...');
+      final newBatch = _firestoreService.batch();
 
-      // Build map of existing transfers by key for quick lookup
-      final existingByKey =
-          <String, ({String docId, MinimalTransfer transfer})>{};
-      for (final doc in existingTransfers.docs) {
-        final transfer = MinimalTransferModel.fromFirestore(doc);
-        final key = '${transfer.fromUserId}-${transfer.toUserId}';
-        existingByKey[key] = (docId: doc.id, transfer: transfer);
-      }
-
-      // Track which existing transfers to keep
-      final processedKeys = <String>{};
-
-      // Update or create transfers
       for (final transfer in transfersWithSettledStatus) {
-        final key = '${transfer.fromUserId}-${transfer.toUserId}';
-        processedKeys.add(key);
+        final docRef = _firestoreService.settlements
+            .doc(tripId)
+            .collection('transfers')
+            .doc();
 
-        final existing = existingByKey[key];
-        if (existing != null) {
-          // Transfer exists - update if changed
-          if (existing.transfer.amountBase != transfer.amountBase ||
-              existing.transfer.isSettled != transfer.isSettled) {
-            final docRef = _firestoreService.settlements
-                .doc(tripId)
-                .collection('transfers')
-                .doc(existing.docId);
+        final newTransfer = MinimalTransfer(
+          id: docRef.id,
+          tripId: transfer.tripId,
+          fromUserId: transfer.fromUserId,
+          toUserId: transfer.toUserId,
+          amountBase: transfer.amountBase,
+          computedAt: transfer.computedAt,
+          isSettled: transfer.isSettled,
+          settledAt: transfer.settledAt,
+        );
 
-            final updatedTransfer = MinimalTransfer(
-              id: existing.docId,
-              tripId: transfer.tripId,
-              fromUserId: transfer.fromUserId,
-              toUserId: transfer.toUserId,
-              amountBase: transfer.amountBase,
-              computedAt: transfer.computedAt,
-              isSettled: transfer.isSettled,
-              settledAt: transfer.settledAt,
-            );
-
-            batch.set(docRef, MinimalTransferModel.toJson(updatedTransfer));
-            _log('  Updated transfer: $key');
-          } else {
-            _log('  Unchanged transfer: $key');
-          }
-        } else {
-          // New transfer - create
-          final docRef = _firestoreService.settlements
-              .doc(tripId)
-              .collection('transfers')
-              .doc();
-
-          final newTransfer = MinimalTransfer(
-            id: docRef.id,
-            tripId: transfer.tripId,
-            fromUserId: transfer.fromUserId,
-            toUserId: transfer.toUserId,
-            amountBase: transfer.amountBase,
-            computedAt: transfer.computedAt,
-            isSettled: transfer.isSettled,
-            settledAt: transfer.settledAt,
-          );
-
-          batch.set(docRef, MinimalTransferModel.toJson(newTransfer));
-          _log('  Created new transfer: $key');
-        }
+        newBatch.set(docRef, MinimalTransferModel.toJson(newTransfer));
+        _log('  Created: ${transfer.fromUserId} → ${transfer.toUserId} (${transfer.amountBase})');
       }
 
-      // Delete transfers that no longer exist
-      for (final entry in existingByKey.entries) {
-        if (!processedKeys.contains(entry.key)) {
-          final docRef = _firestoreService.settlements
-              .doc(tripId)
-              .collection('transfers')
-              .doc(entry.value.docId);
-          batch.delete(docRef);
-          _log('  Deleted obsolete transfer: ${entry.key}');
+      await newBatch.commit();
+
+      // Validate the results
+      _log('\n🔍 Validating settlement...');
+      final validation = _validator.validate(settlementSummary, transfersWithSettledStatus);
+
+      if (!validation.isValid) {
+        _log('❌ VALIDATION FAILED:');
+        for (final issue in validation.issues) {
+          _log('  - $issue');
         }
+        throw Exception('Settlement validation failed: ${validation.issues.join(", ")}');
       }
 
-      await batch.commit();
+      _log('✅ Validation passed - settlement is mathematically correct');
 
       _log('✅ Settlement computed and saved successfully');
       _log('   ${transfersWithSettledStatus.length} transfers created');

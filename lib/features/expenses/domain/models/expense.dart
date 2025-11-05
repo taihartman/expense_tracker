@@ -115,30 +115,60 @@ class Expense {
   }
 
   /// Calculate equal shares (divide evenly)
+  ///
+  /// Uses remainder distribution to ensure conservation of money:
+  /// If 50000 / 3 = 16666.666..., gives 16667 to first 2 people and 16666 to the last
+  /// Total: 16667 + 16667 + 16666 = 50000 ✅
   Map<String, Decimal> _calculateEqualShares() {
     final participantCount = participants.length;
     if (participantCount == 0) {
       return {};
     }
 
-    // Divide amount by number of participants
-    final shareAmount = DecimalHelpers.safeDivide(
-      amount,
-      Decimal.fromInt(participantCount),
-    );
+    // For currencies with decimal places, use standard division and rounding
+    if (currency.decimalPlaces > 0) {
+      final shareAmount = DecimalHelpers.safeDivide(
+        amount,
+        Decimal.fromInt(participantCount),
+      );
+      final roundedShare = DecimalHelpers.round(
+        shareAmount,
+        currency.decimalPlaces,
+      );
+      return Map.fromEntries(
+        participants.keys.map((userId) => MapEntry(userId, roundedShare)),
+      );
+    }
 
-    // Round to currency decimal places
-    final roundedShare = DecimalHelpers.round(
-      shareAmount,
-      currency.decimalPlaces,
-    );
+    // For whole-number currencies (like VND), use remainder distribution
+    // to ensure sum of shares = original amount (conservation of money)
 
-    return Map.fromEntries(
-      participants.keys.map((userId) => MapEntry(userId, roundedShare)),
-    );
+    // Calculate base share (floor division)
+    final baseShareBigInt = (amount / Decimal.fromInt(participantCount)).floor();
+    final baseShare = Decimal.fromBigInt(baseShareBigInt);
+
+    // Calculate remainder (how many extra units to distribute)
+    final totalForBase = baseShare * Decimal.fromInt(participantCount);
+    final remainderDecimal = amount - totalForBase;
+    final remainder = remainderDecimal.toBigInt().toInt();
+
+    final shares = <String, Decimal>{};
+    final userIds = participants.keys.toList();
+
+    // Distribute shares: first `remainder` people get baseShare + 1, rest get baseShare
+    for (int i = 0; i < userIds.length; i++) {
+      final share = i < remainder
+          ? baseShare + Decimal.one
+          : baseShare;
+      shares[userIds[i]] = share;
+    }
+
+    return shares;
   }
 
   /// Calculate weighted shares (proportional to weights)
+  ///
+  /// Uses remainder distribution for whole-number currencies to ensure conservation of money
   Map<String, Decimal> _calculateWeightedShares() {
     if (participants.isEmpty) {
       return {};
@@ -156,22 +186,51 @@ class Expense {
 
     final totalWeightDecimal = Decimal.parse(totalWeight.toString());
 
-    // Calculate share for each participant
+    // For currencies with decimal places, use standard calculation
+    if (currency.decimalPlaces > 0) {
+      final shares = <String, Decimal>{};
+      for (final entry in participants.entries) {
+        final userId = entry.key;
+        final weight = Decimal.parse(entry.value.toString());
+
+        // Share = (weight / totalWeight) * amount
+        final weightRatio = DecimalHelpers.safeDivide(weight, totalWeightDecimal);
+        final shareRational = weightRatio * amount;
+        final share = Decimal.parse(shareRational.toDouble().toString());
+        final roundedShare = DecimalHelpers.round(share, currency.decimalPlaces);
+
+        shares[userId] = roundedShare;
+      }
+      return shares;
+    }
+
+    // For whole-number currencies, use remainder distribution
+    // Calculate shares with floor rounding, then distribute remainder
+
     final shares = <String, Decimal>{};
-    for (final entry in participants.entries) {
-      final userId = entry.key;
-      final weight = Decimal.parse(entry.value.toString());
+    final userIds = participants.keys.toList();
+    Decimal runningTotal = Decimal.zero;
 
-      // Share = (weight / totalWeight) * amount
-      final weightRatio = DecimalHelpers.safeDivide(weight, totalWeightDecimal);
-      final shareRational = weightRatio * amount;
-      // Convert Rational to Decimal via double to handle non-terminating decimals
-      final share = Decimal.parse(shareRational.toDouble().toString());
+    // Calculate floored shares for all participants
+    for (int i = 0; i < userIds.length; i++) {
+      final userId = userIds[i];
+      final weight = Decimal.parse(participants[userId].toString());
 
-      // Round to currency decimal places
-      final roundedShare = DecimalHelpers.round(share, currency.decimalPlaces);
+      if (i == userIds.length - 1) {
+        // Last participant gets the remainder to ensure conservation of money
+        shares[userId] = amount - runningTotal;
+      } else {
+        // Calculate weighted share and floor it
+        final weightRatio = DecimalHelpers.safeDivide(weight, totalWeightDecimal);
+        final shareRational = weightRatio * amount;
+        // Convert Rational to Decimal, then floor to BigInt
+        final shareDecimal = Decimal.parse(shareRational.toDouble().toString());
+        final shareBigInt = shareDecimal.toBigInt();
+        final shareFloored = Decimal.fromBigInt(shareBigInt);
 
-      shares[userId] = roundedShare;
+        shares[userId] = shareFloored;
+        runningTotal += shareFloored;
+      }
     }
 
     return shares;

@@ -8,6 +8,9 @@ import '../services/local_storage_service.dart';
 import '../services/migration_service.dart';
 import '../services/auth_service.dart';
 import '../../shared/services/firestore_service.dart';
+import '../../features/trips/data/repositories/trip_repository_impl.dart';
+import '../../features/settlements/data/repositories/settlement_repository_impl.dart';
+import '../../features/expenses/data/repositories/expense_repository_impl.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -135,9 +138,21 @@ class InitializationCubit extends Cubit<InitializationState> {
       final migrationStart = DateTime.now();
       final prefs = await SharedPreferences.getInstance();
       final firestoreService = FirestoreService();
+
+      // Create repositories for migration v3 (settlement cleanup)
+      final tripRepository = TripRepositoryImpl(firestoreService: firestoreService);
+      final expenseRepository = ExpenseRepositoryImpl(firestoreService: firestoreService);
+      final settlementRepository = SettlementRepositoryImpl(
+        firestoreService: firestoreService,
+        expenseRepository: expenseRepository,
+        tripRepository: tripRepository,
+      );
+
       final migrationService = MigrationService(
         firestoreService: firestoreService,
         prefs: prefs,
+        tripRepository: tripRepository,
+        settlementRepository: settlementRepository,
       );
       await migrationService.runMigrations();
       _log(
