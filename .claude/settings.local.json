@@ -10,7 +10,9 @@
       "Bash(git checkout:*)",
       "Bash(tree:*)",
       "Bash(dart run:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(git submodule add:*)",
+      "Bash(git submodule update:*)"
     ],
     "deny": [],
     "ask": []
