@@ -1113,6 +1113,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get transferNameChipHint => 'Tip: Tap any name to filter transfers';
 
   @override
+  String transfersShowMore(int count) {
+    return 'Show $count more';
+  }
+
+  @override
+  String get transfersShowLess => 'Show less';
+
+  @override
   String get summaryTableTitle => 'Everyone\'s Summary';
 
   @override

@@ -12,7 +12,10 @@
       "Bash(dart run:*)",
       "Bash(git mv:*)",
       "Bash(git submodule add:*)",
-      "Bash(git submodule update:*)"
+      "Bash(git submodule update:*)",
+      "Bash(for f in *.md)",
+      "Bash(head:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

@@ -1960,6 +1960,18 @@ abstract class AppLocalizations {
   /// **'Tip: Tap any name to filter transfers'**
   String get transferNameChipHint;
 
+  /// No description provided for @transfersShowMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Show {count} more'**
+  String transfersShowMore(int count);
+
+  /// No description provided for @transfersShowLess.
+  ///
+  /// In en, this message translates to:
+  /// **'Show less'**
+  String get transfersShowLess;
+
   /// No description provided for @summaryTableTitle.
   ///
   /// In en, this message translates to:

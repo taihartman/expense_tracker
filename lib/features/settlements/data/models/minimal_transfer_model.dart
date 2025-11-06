@@ -31,7 +31,7 @@ class MinimalTransferModel {
     CurrencyCode? currency;
     if (data['currency'] != null) {
       try {
-        currency = CurrencyCode.fromCode(data['currency'] as String);
+        currency = CurrencyCode.fromString(data['currency'] as String);
       } catch (e) {
         // If currency parsing fails, leave as null (backward compatibility)
         currency = null;
