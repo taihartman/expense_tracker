@@ -4,6 +4,7 @@ import '../../../../shared/services/firestore_service.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/repositories/settled_transfer_repository.dart';
 import '../models/minimal_transfer_model.dart';
+import '../../../../core/models/currency_code.dart';
 
 /// Helper function to log with timestamps
 void _log(String message) {
@@ -52,10 +53,11 @@ class SettledTransferRepositoryImpl implements SettledTransferRepository {
     String fromUserId,
     String toUserId,
     String amountBase,
+    CurrencyCode currency,
   ) async {
     try {
       _log(
-        '✅ Marking transfer as settled: $fromUserId → $toUserId ($amountBase)',
+        '✅ Marking transfer as settled: $fromUserId → $toUserId ($amountBase ${currency.code})',
       );
 
       // Create document reference with auto-generated ID
@@ -72,6 +74,7 @@ class SettledTransferRepositoryImpl implements SettledTransferRepository {
         fromUserId: fromUserId,
         toUserId: toUserId,
         amountBase: Decimal.parse(amountBase),
+        currency: currency,
         computedAt: DateTime.now(), // When it was originally computed
         isSettled: true,
         settledAt: DateTime.now(), // When user marked it as settled

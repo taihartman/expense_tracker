@@ -225,6 +225,7 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                         activeTransfers: state.activeTransfers,
                         settledTransfers: state.settledTransfers,
                         baseCurrency: state.summary.baseCurrency,
+                        tripDefaultCurrency: trip?.defaultCurrency,
                         participants: participants,
                         expenseRepository: expenseRepository,
                       ),

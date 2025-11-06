@@ -711,6 +711,15 @@
     }
   },
   "transferNameChipHint": "Tip: Tap any name to filter transfers",
+  "transfersShowMore": "Show {count} more",
+  "@transfersShowMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "transfersShowLess": "Show less",
 
   "summaryTableTitle": "Everyone's Summary",
   "summaryTableColumnPerson": "Person",

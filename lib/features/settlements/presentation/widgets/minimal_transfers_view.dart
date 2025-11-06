@@ -17,11 +17,12 @@ import '../../../../core/l10n/l10n_extensions.dart';
 ///
 /// Displays optimized list of transfers with copy-to-clipboard functionality
 /// and settlement marking
-class MinimalTransfersView extends StatelessWidget {
+class MinimalTransfersView extends StatefulWidget {
   final String tripId;
   final List<MinimalTransfer> activeTransfers;
   final List<MinimalTransfer> settledTransfers;
   final CurrencyCode baseCurrency;
+  final CurrencyCode? tripDefaultCurrency; // Trip's default currency for old transfers
   final List<Participant> participants;
   final ExpenseRepository expenseRepository;
 
@@ -31,9 +32,21 @@ class MinimalTransfersView extends StatelessWidget {
     required this.activeTransfers,
     required this.settledTransfers,
     required this.baseCurrency,
+    this.tripDefaultCurrency,
     required this.participants,
     required this.expenseRepository,
   });
+
+  @override
+  State<MinimalTransfersView> createState() => _MinimalTransfersViewState();
+}
+
+class _MinimalTransfersViewState extends State<MinimalTransfersView> {
+  // Number of settled transfers to show initially
+  static const int _initialSettledCount = 3;
+
+  // Track whether to show all settled transfers
+  bool _showAllSettled = false;
 
   /// Filter transfers based on selected user and filter mode
   List<MinimalTransfer> _filterTransfers(
@@ -61,9 +74,31 @@ class MinimalTransfersView extends StatelessWidget {
     }
   }
 
+  /// Filter settled transfers by currency
+  /// Only show settled transfers that match the current currency
+  /// Old transfers without currency info are assumed to be in the trip's default currency
+  List<MinimalTransfer> _filterSettledBycurrency(
+    List<MinimalTransfer> settledTransfers,
+    CurrencyCode currentCurrency,
+  ) {
+    return settledTransfers.where((transfer) {
+      // If transfer has no currency (old data), assume it's in trip's default currency
+      if (transfer.currency == null) {
+        // If we know the trip's default currency, only show old transfers when viewing that currency
+        if (widget.tripDefaultCurrency != null) {
+          return widget.tripDefaultCurrency!.code == currentCurrency.code;
+        }
+        // If we don't know the default currency, show old transfers in all views (backward compat)
+        return true;
+      }
+      // Otherwise, only include if currency matches
+      return transfer.currency!.code == currentCurrency.code;
+    }).toList();
+  }
+
   String _getParticipantName(String userId) {
     try {
-      return participants.firstWhere((p) => p.id == userId).name;
+      return widget.participants.firstWhere((p) => p.id == userId).name;
     } catch (e) {
       return userId;
     }
@@ -81,20 +116,33 @@ class MinimalTransfersView extends StatelessWidget {
             ? state.filterMode
             : TransferFilterMode.all;
 
-        // Apply filtering
+        // First filter settled transfers by currency
+        final currencyFilteredSettled = _filterSettledBycurrency(
+          widget.settledTransfers,
+          widget.baseCurrency,
+        );
+
+        // Apply user filtering
         final filteredActiveTransfers = _filterTransfers(
-          activeTransfers,
+          widget.activeTransfers,
           selectedUserId,
           filterMode,
         );
         final filteredSettledTransfers = _filterTransfers(
-          settledTransfers,
+          currencyFilteredSettled,
           selectedUserId,
           filterMode,
         );
 
+        // Limit settled transfers to show (3 recent by default)
+        final displayedSettledTransfers = _showAllSettled
+            ? filteredSettledTransfers
+            : filteredSettledTransfers.take(_initialSettledCount).toList();
+        final hasMoreSettled =
+            filteredSettledTransfers.length > _initialSettledCount;
+
         // If no transfers at all (both active and settled), show all settled message
-        if (activeTransfers.isEmpty && settledTransfers.isEmpty) {
+        if (widget.activeTransfers.isEmpty && widget.settledTransfers.isEmpty) {
           return Card(
             child: Padding(
               padding: const EdgeInsets.all(AppTheme.spacing3),
@@ -138,7 +186,7 @@ class MinimalTransfersView extends StatelessWidget {
                     ),
                     Text(
                       context.l10n.transfersCountTotal(
-                        activeTransfers.length + settledTransfers.length,
+                        widget.activeTransfers.length + widget.settledTransfers.length,
                       ),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.primary,
@@ -204,7 +252,7 @@ class MinimalTransfersView extends StatelessWidget {
                       selectedUserId: selectedUserId,
                       filterMode: filterMode,
                       userName: _getParticipantName(selectedUserId),
-                      participants: participants,
+                      participants: widget.participants,
                     ),
                     const SizedBox(height: AppTheme.spacing2),
                   ],
@@ -213,11 +261,11 @@ class MinimalTransfersView extends StatelessWidget {
                     final index = entry.key;
                     final transfer = entry.value;
                     return _TransferCard(
-                      tripId: tripId,
+                      tripId: widget.tripId,
                       transfer: transfer,
-                      baseCurrency: baseCurrency,
-                      participants: participants,
-                      expenseRepository: expenseRepository,
+                      baseCurrency: widget.baseCurrency,
+                      participants: widget.participants,
+                      expenseRepository: widget.expenseRepository,
                       index: index + 1,
                       isSettled: false,
                     );
@@ -291,17 +339,50 @@ class MinimalTransfersView extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppTheme.spacing2),
-                  ...filteredSettledTransfers.map((transfer) {
+                  ...displayedSettledTransfers.map((transfer) {
                     return _TransferCard(
-                      tripId: tripId,
+                      tripId: widget.tripId,
                       transfer: transfer,
-                      baseCurrency: baseCurrency,
-                      participants: participants,
-                      expenseRepository: expenseRepository,
+                      baseCurrency: widget.baseCurrency,
+                      participants: widget.participants,
+                      expenseRepository: widget.expenseRepository,
                       index: null, // No step number for settled transfers
                       isSettled: true,
                     );
                   }),
+                  // Show more/less button
+                  if (hasMoreSettled && !_showAllSettled) ...[
+                    const SizedBox(height: AppTheme.spacing2),
+                    Center(
+                      child: TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _showAllSettled = true;
+                          });
+                        },
+                        icon: const Icon(Icons.expand_more),
+                        label: Text(
+                          context.l10n.transfersShowMore(
+                            filteredSettledTransfers.length - _initialSettledCount,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  if (_showAllSettled && hasMoreSettled) ...[
+                    const SizedBox(height: AppTheme.spacing2),
+                    Center(
+                      child: TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _showAllSettled = false;
+                          });
+                        },
+                        icon: const Icon(Icons.expand_less),
+                        label: Text(context.l10n.transfersShowLess),
+                      ),
+                    ),
+                  ],
                 ],
 
                 // Empty state when filter returns no results
