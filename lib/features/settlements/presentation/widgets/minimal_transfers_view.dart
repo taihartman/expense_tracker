@@ -22,6 +22,7 @@ class MinimalTransfersView extends StatefulWidget {
   final List<MinimalTransfer> activeTransfers;
   final List<MinimalTransfer> settledTransfers;
   final CurrencyCode baseCurrency;
+  final CurrencyCode? tripDefaultCurrency; // Trip's default currency for old transfers
   final List<Participant> participants;
   final ExpenseRepository expenseRepository;
 
@@ -31,6 +32,7 @@ class MinimalTransfersView extends StatefulWidget {
     required this.activeTransfers,
     required this.settledTransfers,
     required this.baseCurrency,
+    this.tripDefaultCurrency,
     required this.participants,
     required this.expenseRepository,
   });
@@ -74,14 +76,19 @@ class _MinimalTransfersViewState extends State<MinimalTransfersView> {
 
   /// Filter settled transfers by currency
   /// Only show settled transfers that match the current currency
-  /// Settled transfers without currency info are included for backward compatibility
+  /// Old transfers without currency info are assumed to be in the trip's default currency
   List<MinimalTransfer> _filterSettledBycurrency(
     List<MinimalTransfer> settledTransfers,
     CurrencyCode currentCurrency,
   ) {
     return settledTransfers.where((transfer) {
-      // If transfer has no currency (old data), include it for backward compatibility
+      // If transfer has no currency (old data), assume it's in trip's default currency
       if (transfer.currency == null) {
+        // If we know the trip's default currency, only show old transfers when viewing that currency
+        if (widget.tripDefaultCurrency != null) {
+          return widget.tripDefaultCurrency!.code == currentCurrency.code;
+        }
+        // If we don't know the default currency, show old transfers in all views (backward compat)
         return true;
       }
       // Otherwise, only include if currency matches
