@@ -164,14 +164,20 @@ class TransferBreakdownBottomSheet extends StatelessWidget {
   Future<TransferBreakdown> _loadBreakdown(
     ExpenseRepository expenseRepository,
   ) async {
-    final expenses = await expenseRepository.getExpensesByTrip(tripId).first;
+    final allExpenses = await expenseRepository.getExpensesByTrip(tripId).first;
+
+    // Filter expenses to only include those in the current currency
+    // This ensures the breakdown matches what the user sees in their current currency view
+    final expensesInCurrency = allExpenses
+        .where((expense) => expense.currency.code == baseCurrency.code)
+        .toList();
 
     final calculator = TransferBreakdownCalculator();
     return calculator.calculateBreakdown(
       fromUserId: transfer.fromUserId,
       toUserId: transfer.toUserId,
       transferAmount: transfer.amountBase,
-      expenses: expenses,
+      expenses: expensesInCurrency,
     );
   }
 
