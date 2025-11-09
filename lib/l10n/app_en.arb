@@ -568,6 +568,7 @@
       }
     }
   },
+  "transferMarkSettledSuccess": "Transfer marked as settled",
   "settlementMarkSettledError": "Failed to mark transfer as settled: {error}",
   "@settlementMarkSettledError": {
     "placeholders": {
