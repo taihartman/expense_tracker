@@ -449,6 +449,8 @@ class _TransferCard extends StatefulWidget {
 }
 
 class _TransferCardState extends State<_TransferCard> {
+  bool _isSettling = false;
+
   String _getParticipantName(String userId) {
     try {
       return widget.participants.firstWhere((p) => p.id == userId).name;
@@ -510,17 +512,57 @@ class _TransferCardState extends State<_TransferCard> {
       ),
     );
 
-    if (confirmed == true && context.mounted) {
+    if (confirmed != true || !context.mounted) return;
+
+    // Capture values before async gap
+    final settlementCubit = context.read<SettlementCubit>();
+    final tripCubit = context.read<TripCubit>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+
+    setState(() {
+      _isSettling = true;
+    });
+
+    try {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
-        widget.tripId,
-      );
+      final currentUser = tripCubit.getCurrentUserForTrip(widget.tripId);
       final actorName = currentUser?.name;
 
-      await context.read<SettlementCubit>().markTransferAsSettled(
+      await settlementCubit.markTransferAsSettled(
         widget.transfer.id,
         actorName: actorName,
       );
+
+      if (!mounted) return;
+
+      // Show success message
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.transferMarkSettledSuccess),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      // Show error message
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.settlementMarkSettledError(e.toString())),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSettling = false;
+        });
+      }
     }
   }
 
@@ -540,7 +582,7 @@ class _TransferCardState extends State<_TransferCard> {
           : Theme.of(context).colorScheme.surfaceContainerHighest,
       margin: const EdgeInsets.only(bottom: AppTheme.spacing2),
       child: InkWell(
-        onTap: widget.isSettled ? null : () => _showSettleDialog(context),
+        onTap: widget.isSettled || _isSettling ? null : () => _showSettleDialog(context),
         onLongPress: () => _copyToClipboard(context),
         borderRadius: BorderRadius.circular(12),
         child: Opacity(
@@ -641,7 +683,7 @@ class _TransferCardState extends State<_TransferCard> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Breakdown button (only for active transfers)
-                    if (!widget.isSettled)
+                    if (!widget.isSettled && !_isSettling)
                       IconButton(
                         icon: Icon(
                           Icons.info_outline,
@@ -655,9 +697,18 @@ class _TransferCardState extends State<_TransferCard> {
                       ),
                     if (!widget.isSettled)
                       const SizedBox(width: AppTheme.spacing1),
-                    // Touch indicator
+                    // Touch indicator or loading indicator
                     if (!widget.isSettled)
-                      const Icon(Icons.touch_app, size: 20, color: Colors.grey),
+                      if (_isSettling)
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      else
+                        const Icon(Icons.touch_app, size: 20, color: Colors.grey),
                   ],
                 ),
               ],
