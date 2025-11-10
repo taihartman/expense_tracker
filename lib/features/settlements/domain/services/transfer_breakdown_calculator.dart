@@ -20,7 +20,15 @@ class TransferBreakdownCalculator {
     // Calculate raw net contributions for each expense
     for (final expense in expenses) {
       // Calculate what each person paid and owes for this expense
-      final shares = expense.calculateShares();
+      // For itemized expenses, use pre-calculated participantAmounts
+      // For equal/weighted expenses, calculate shares
+      final Map<String, Decimal> shares;
+      if (expense.participantAmounts != null &&
+          expense.participantAmounts!.isNotEmpty) {
+        shares = expense.participantAmounts!;
+      } else {
+        shares = expense.calculateShares();
+      }
 
       final fromPaid = expense.payerUserId == fromUserId
           ? expense.amount
