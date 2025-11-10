@@ -79,8 +79,8 @@ class TripCubit extends Cubit<TripState> {
             '📦 Received ${trips.length} trips from stream (${DateTime.now().difference(streamStart).inMilliseconds}ms)',
           );
 
-          // Filter trips to only those the user has joined
-          final joinedTripIds = _localStorageService.getJoinedTripIds();
+          // Filter trips to only those the user has joined (encrypted storage)
+          final joinedTripIds = await _localStorageService.getJoinedTripIds();
           _log(
             '🔍 User has joined ${joinedTripIds.length} trips: $joinedTripIds',
           );
@@ -914,9 +914,9 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Check if the user is a member of a trip (checks local cache)
-  bool isUserMemberOf(String tripId) {
-    final joinedTripIds = _localStorageService.getJoinedTripIds();
+  /// Check if the user is a member of a trip (checks encrypted local storage)
+  Future<bool> isUserMemberOf(String tripId) async {
+    final joinedTripIds = await _localStorageService.getJoinedTripIds();
     return joinedTripIds.contains(tripId);
   }
 
@@ -1050,11 +1050,11 @@ class TripCubit extends Cubit<TripState> {
   /// - The trip doesn't exist in the loaded trips
   ///
   /// This is used for proper attribution of actions in activity logs.
-  Participant? getCurrentUserForTrip(String tripId) {
+  Future<Participant?> getCurrentUserForTrip(String tripId) async {
     _log('👤 Getting current user for trip $tripId');
 
-    // Get the stored participant ID for this trip
-    final participantId = _localStorageService.getUserIdentityForTrip(tripId);
+    // Get the stored participant ID for this trip (from encrypted storage)
+    final participantId = await _localStorageService.getUserIdentityForTrip(tripId);
 
     if (participantId == null) {
       _log('⚠️ No user identity found for trip $tripId');

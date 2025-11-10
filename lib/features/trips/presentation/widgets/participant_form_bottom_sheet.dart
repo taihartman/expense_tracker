@@ -224,8 +224,8 @@ class _ParticipantFormBottomSheetState
   }
 
   Future<void> _addParticipantToTrip(trip, Participant participant) async {
-    // Get current user for activity logging
-    final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+    // Get current user for activity logging (from encrypted storage)
+    final currentUser = await context.read<TripCubit>().getCurrentUserForTrip(
       trip.id,
     );
     final actorName = currentUser?.name;
