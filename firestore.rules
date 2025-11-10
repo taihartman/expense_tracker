@@ -20,6 +20,11 @@ service cloud.firestore {
     // These validations are enforced client-side via RateLimiterService.
     // For production, implement server-side validation via Cloud Functions.
 
+    // Helper: Check if user is a verified member of a trip
+    function isVerifiedMember(tripId) {
+      return exists(/databases/$(database)/documents/trips/$(tripId)/verifiedMembers/$(request.auth.uid));
+    }
+
     // Global Categories: Top-level shared collection
     // Anyone can read, create with validation, but updates/deletes forbidden
     match /categories/{categoryId} {
@@ -84,35 +89,50 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
-    // Expenses: Top-level collection (read/write if authenticated)
+    // Expenses: Top-level collection (read/write if authenticated AND verified member)
     // TODO: Move to subcollection under trips for better security and data isolation
     match /expenses/{expenseId} {
-      allow read, write: if isAuthenticated();
+      // For reads: Check if user is verified member of the trip this expense belongs to
+      allow read: if isAuthenticated()
+                  && isVerifiedMember(resource.data.tripId);
+
+      // For writes: Check if user is verified member of the trip
+      allow create: if isAuthenticated()
+                    && isVerifiedMember(request.resource.data.tripId);
+
+      allow update, delete: if isAuthenticated()
+                            && isVerifiedMember(resource.data.tripId);
     }
 
     // Settlements: Top-level collection for computed settlement data
     // Contains settlement summaries and minimal transfers for each trip
     match /settlements/{tripId} {
-      // Allow reading settlement documents
-      allow read: if isAuthenticated();
+      // Allow reading settlement documents only if verified member
+      allow read: if isAuthenticated()
+                  && isVerifiedMember(tripId);
 
-      // Allow writing settlement summaries and transfers
-      allow write: if isAuthenticated();
+      // Allow writing settlement summaries and transfers only if verified member
+      allow write: if isAuthenticated()
+                   && isVerifiedMember(tripId);
 
       // Transfers subcollection
       match /transfers/{transferId} {
-        allow read: if isAuthenticated();
-        allow write: if isAuthenticated();
+        allow read: if isAuthenticated()
+                    && isVerifiedMember(tripId);
+        allow write: if isAuthenticated()
+                     && isVerifiedMember(tripId);
       }
     }
 
-    // Settled Transfers: Top-level collection (read/write if authenticated)
+    // Settled Transfers: Top-level collection (read/write if verified member)
     // TODO: Move to subcollection under trips for better security and data isolation
     match /settledTransfers/{tripId}/transfers/{transferId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated()
+                  && isVerifiedMember(tripId);
 
       // Allow creating/updating settled transfers with validation
       allow create, update: if isAuthenticated()
+                            && isVerifiedMember(tripId)
                             && request.resource.data.tripId == tripId
                             && request.resource.data.fromUserId is string
                             && request.resource.data.fromUserId.size() > 0
@@ -123,20 +143,32 @@ service cloud.firestore {
                             && request.resource.data.settledAt is timestamp;
 
       // Allow deleting (unmarking) settled transfers
-      allow delete: if isAuthenticated();
+      allow delete: if isAuthenticated()
+                    && isVerifiedMember(tripId);
     }
 
-    // Trips: Read/write if authenticated
+    // Trips: Create if authenticated, read/write if verified member
     match /trips/{tripId} {
-      allow read, write: if isAuthenticated();
+      // Allow anyone to create a new trip
+      allow create: if isAuthenticated();
 
-      // Activity Log: Append-only audit trail
+      // Allow reading trip only if verified member
+      allow read: if isAuthenticated()
+                  && isVerifiedMember(tripId);
+
+      // Allow updating/deleting trip only if verified member
+      allow update, delete: if isAuthenticated()
+                            && isVerifiedMember(tripId);
+
+      // Activity Log: Append-only audit trail (verified members only)
       match /activityLog/{logId} {
-        // Anyone can read activity logs (membership will be enforced client-side initially)
-        allow read: if isAuthenticated();
+        // Only verified members can read activity logs
+        allow read: if isAuthenticated()
+                    && isVerifiedMember(tripId);
 
         // Only allow creating new logs (no updates or deletes to preserve audit trail)
         allow create: if isAuthenticated()
+                      && isVerifiedMember(tripId)
                       && request.resource.data.timestamp == request.time
                       && request.resource.data.tripId == tripId;
 
@@ -146,25 +178,28 @@ service cloud.firestore {
 
       // Device Link Codes: Temporary codes for device pairing
       match /deviceLinkCodes/{codeId} {
-        // Anyone can read codes to validate them (brute force protected by rate limiting)
+        // Anyone authenticated can read codes to validate them during pairing
+        // (brute force should be protected by rate limiting - TODO: add server-side)
         allow read: if isAuthenticated();
 
-        // Only trip members can create codes
+        // Only verified members can create codes
         allow create: if isAuthenticated()
+                      && isVerifiedMember(tripId)
                       && request.resource.data.code.size() == 9  // "XXXX-XXXX"
                       && request.resource.data.memberName.size() > 0
                       && request.resource.data.used == false
                       && request.resource.data.expiresAt > request.time
                       && request.resource.data.expiresAt <= request.time + duration.value(20, 'm'); // Max 20 min expiry
 
-        // Only allow marking as used (one-way state change)
+        // Anyone can mark code as used during pairing (one-way state change)
         allow update: if isAuthenticated()
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedAt'])
                       && request.resource.data.used == true
                       && resource.data.used == false;
 
-        // Only trip members can delete (revoke codes)
-        allow delete: if isAuthenticated();
+        // Only verified members can delete (revoke codes)
+        allow delete: if isAuthenticated()
+                      && isVerifiedMember(tripId);
       }
 
       // Validation Attempts: Rate limiting tracking
@@ -182,11 +217,12 @@ service cloud.firestore {
 
       // Recovery Code: Single document for emergency trip access
       match /recovery/code {
-        // Anyone can read recovery code (needed for validation)
+        // Anyone authenticated can read recovery code (needed for validation during join)
         allow read: if isAuthenticated();
 
-        // Anyone can create a recovery code for a trip (first member to generate it)
+        // Only verified members can create a recovery code for a trip
         allow create: if isAuthenticated()
+                      && isVerifiedMember(tripId)
                       && request.resource.data.code is string
                       && request.resource.data.code.size() == 14  // "XXXX-XXXX-XXXX"
                       && request.resource.data.tripId == tripId
@@ -196,46 +232,59 @@ service cloud.firestore {
                       // lastUsedAt can be null on creation
                       && (!request.resource.data.keys().hasAny(['lastUsedAt']) || request.resource.data.lastUsedAt == null || request.resource.data.lastUsedAt is timestamp);
 
-        // Allow updates to increment usage count and update lastUsedAt
+        // Anyone can update usage count during join (before becoming verified member)
         allow update: if isAuthenticated()
                       && request.resource.data.code == resource.data.code  // Code cannot change
                       && request.resource.data.tripId == resource.data.tripId  // Trip ID cannot change
                       && request.resource.data.usedCount == resource.data.usedCount + 1  // Can only increment by 1
                       && request.resource.data.lastUsedAt is timestamp;
 
-        // No deletion (recovery codes are permanent)
-        allow delete: if false;
+        // Only verified members can delete (regenerate)
+        allow delete: if isAuthenticated()
+                      && isVerifiedMember(tripId);
       }
 
       // Verified Members: Track who has actually joined the trip
-      match /verifiedMembers/{participantId} {
-        // Anyone can read verified members (needed for invite messages)
+      // Document ID is Firebase Auth UID, data contains participantId/participantName
+      match /verifiedMembers/{authUid} {
+        // Anyone authenticated can read verified members (needed for join flow and invite messages)
         allow read: if isAuthenticated();
 
-        // Anyone can add themselves as a verified member (via join/device pairing)
+        // Anyone can add themselves as a verified member during join/device pairing
+        // This is the bootstrap mechanism - users must be able to add themselves to verifiedMembers
+        // even before they are verified members (chicken-and-egg problem)
+        // CRITICAL: Document ID must match current user's auth UID
         allow create: if isAuthenticated()
+                      && authUid == request.auth.uid  // Can only add yourself
+                      && request.resource.data.participantId is string
+                      && request.resource.data.participantId.size() > 0
                       && request.resource.data.participantName is string
                       && request.resource.data.participantName.size() > 0
                       && request.resource.data.verifiedAt is timestamp;
 
         // Allow updating verification timestamp (re-verification)
+        // User can only update their own verified member record
         allow update: if isAuthenticated()
+                      && authUid == request.auth.uid
+                      && request.resource.data.participantId == resource.data.participantId
                       && request.resource.data.participantName == resource.data.participantName;
 
-        // Allow members to leave (remove their verification)
-        allow delete: if isAuthenticated();
+        // Allow users to leave (remove their own verification)
+        allow delete: if isAuthenticated()
+                      && authUid == request.auth.uid;
       }
 
       // Category Customizations: Per-trip visual overrides for global categories
       // Allows trips to customize icon and color for any category
       match /categoryCustomizations/{categoryId} {
-        // Allow reading customizations if authenticated
-        // TODO: Restrict to trip members once trip membership enforcement is added
-        allow read: if isAuthenticated();
+        // Allow reading customizations only for verified members
+        allow read: if isAuthenticated()
+                    && isVerifiedMember(tripId);
 
-        // Allow creating/updating customizations if authenticated
+        // Allow creating/updating customizations only for verified members
         // Validation: Must have valid icon or color, and updatedAt timestamp
         allow create, update: if isAuthenticated()
+                              && isVerifiedMember(tripId)
                               && request.resource.data.tripId == tripId
                               && request.resource.data.updatedAt is timestamp
                               && (
@@ -243,18 +292,21 @@ service cloud.firestore {
                                 request.resource.data.keys().hasAny(['customIcon', 'customColor'])
                               );
 
-        // Allow deleting customizations (reset to global defaults)
-        allow delete: if isAuthenticated();
+        // Allow deleting customizations (reset to global defaults) for verified members
+        allow delete: if isAuthenticated()
+                      && isVerifiedMember(tripId);
       }
 
-      // Categories, fxRates, expenses: Inherit trip permissions
+      // Other trip subcollections: Inherit trip membership requirements
       match /{document=**} {
-        allow read, write: if isAuthenticated();
+        allow read, write: if isAuthenticated()
+                           && isVerifiedMember(tripId);
       }
 
-      // Computed data: Read-only (Cloud Functions write)
+      // Computed data: Read-only for verified members (Cloud Functions write)
       match /computed/{document=**} {
-        allow read: if isAuthenticated();
+        allow read: if isAuthenticated()
+                    && isVerifiedMember(tripId);
         allow write: if false;  // Only server can write
       }
     }

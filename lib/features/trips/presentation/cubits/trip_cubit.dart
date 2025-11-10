@@ -211,6 +211,32 @@ class TripCubit extends Cubit<TripState> {
       final createdTrip = await _tripRepository.createTrip(trip);
       _log('✅ Trip created with ID: ${createdTrip.id}');
 
+      // Add creator to verified members immediately so they can access the trip
+      if (creatorName != null && creatorName.isNotEmpty) {
+        final creatorParticipant = Participant.fromName(creatorName);
+        _log('👤 Adding creator to verified members: ${creatorParticipant.id}');
+        try {
+          await _tripRepository.addVerifiedMember(
+            tripId: createdTrip.id,
+            participantId: creatorParticipant.id,
+            participantName: creatorName,
+          );
+          _log('✅ Creator added to verified members');
+
+          // Save user identity for this trip
+          await _localStorageService.saveUserIdentityForTrip(
+            createdTrip.id,
+            creatorParticipant.id,
+          );
+          _log('👤 User identity saved: ${creatorParticipant.id}');
+        } catch (e) {
+          _log('❌ Failed to add creator to verified members: $e');
+          // This is critical - if we can't add them to verified members,
+          // they won't be able to access the trip due to security rules
+          throw Exception('Failed to set up trip access: $e');
+        }
+      }
+
       // Cache trip ID in local storage (user has joined this trip)
       _log('💾 Caching trip ID in local storage...');
       await _localStorageService.addJoinedTrip(createdTrip.id);

@@ -138,9 +138,13 @@ class InitializationCubit extends Cubit<InitializationState> {
       final migrationStart = DateTime.now();
       final prefs = await SharedPreferences.getInstance();
       final firestoreService = FirestoreService();
+      final authService = AuthService();
 
       // Create repositories for migration v3 (settlement cleanup)
-      final tripRepository = TripRepositoryImpl(firestoreService: firestoreService);
+      final tripRepository = TripRepositoryImpl(
+        firestoreService: firestoreService,
+        authService: authService,
+      );
       final expenseRepository = ExpenseRepositoryImpl(firestoreService: firestoreService);
       final settlementRepository = SettlementRepositoryImpl(
         firestoreService: firestoreService,
