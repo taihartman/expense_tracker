@@ -1740,6 +1740,12 @@ abstract class AppLocalizations {
   /// **'Failed to load settlement: {error}'**
   String settlementLoadError(String error);
 
+  /// No description provided for @transferMarkSettledSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer marked as settled'**
+  String get transferMarkSettledSuccess;
+
   /// No description provided for @settlementMarkSettledError.
   ///
   /// In en, this message translates to:

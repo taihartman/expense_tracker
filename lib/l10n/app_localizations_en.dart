@@ -969,6 +969,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get transferMarkSettledSuccess => 'Transfer marked as settled';
+
+  @override
   String settlementMarkSettledError(String error) {
     return 'Failed to mark transfer as settled: $error';
   }

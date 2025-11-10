@@ -417,12 +417,14 @@ class SettlementCubit extends Cubit<SettlementState> {
       // Create settled version of the transfer with timestamp
       final settledTransfer = MinimalTransfer(
         id: transfer.id,
+        tripId: transfer.tripId,
         fromUserId: transfer.fromUserId,
         toUserId: transfer.toUserId,
         amountBase: transfer.amountBase,
         currency: currency,
+        computedAt: transfer.computedAt,
+        isSettled: true,
         settledAt: DateTime.now(),
-        expenseBreakdown: transfer.expenseBreakdown,
       );
 
       final updatedSettledTransfers = [

@@ -469,6 +469,7 @@ class MockSettledTransferRepository extends _i1.Mock
     String? fromUserId,
     String? toUserId,
     String? amountBase,
+    dynamic currency,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#markTransferAsSettled, [
@@ -476,6 +477,7 @@ class MockSettledTransferRepository extends _i1.Mock
               fromUserId,
               toUserId,
               amountBase,
+              currency,
             ]),
             returnValue: _i7.Future<void>.value(),
             returnValueForMissingStub: _i7.Future<void>.value(),
