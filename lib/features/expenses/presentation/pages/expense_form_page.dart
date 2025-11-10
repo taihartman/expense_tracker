@@ -73,7 +73,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
     super.dispose();
   }
 
-  void _submitForm(List<Participant> tripParticipants) {
+  Future<void> _submitForm(List<Participant> tripParticipants) async {
     if (_formKey.currentState!.validate()) {
       if (_selectedPayer == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -109,7 +109,7 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
       );
 
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+      final currentUser = await context.read<TripCubit>().getCurrentUserForTrip(
         widget.tripId,
       );
       final actorName = currentUser?.name;

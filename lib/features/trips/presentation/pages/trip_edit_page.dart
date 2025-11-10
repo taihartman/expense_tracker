@@ -34,10 +34,10 @@ class _TripEditPageState extends State<TripEditPage> {
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+      final currentUser = await context.read<TripCubit>().getCurrentUserForTrip(
         widget.trip.id,
       );
       final actorName = currentUser?.name;

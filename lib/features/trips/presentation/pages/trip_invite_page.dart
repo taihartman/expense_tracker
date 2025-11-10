@@ -40,7 +40,7 @@ class _TripInvitePageState extends State<TripInvitePage> {
       );
 
       // Get current user to track who shared this link
-      final currentUser = tripCubit.getCurrentUserForTrip(widget.trip.id);
+      final currentUser = await tripCubit.getCurrentUserForTrip(widget.trip.id);
 
       // Generate complete share message
       final message = generateShareMessage(
@@ -83,9 +83,9 @@ class _TripInvitePageState extends State<TripInvitePage> {
     );
   }
 
-  void _showQrCodeDialog(BuildContext context) {
+  Future<void> _showQrCodeDialog(BuildContext context) async {
     // Get current user to track who shared this QR code
-    final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+    final currentUser = await context.read<TripCubit>().getCurrentUserForTrip(
       widget.trip.id,
     );
     final inviteLink = generateQrCodeLink(

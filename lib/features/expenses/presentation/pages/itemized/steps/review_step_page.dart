@@ -389,9 +389,9 @@ class ReviewStepPage extends StatelessWidget {
           flex: 2,
           child: ElevatedButton.icon(
             onPressed: canSave
-                ? () {
+                ? () async {
                     // Get current user for activity logging
-                    final currentUser = context
+                    final currentUser = await context
                         .read<TripCubit>()
                         .getCurrentUserForTrip(state.draft.tripId);
                     final actorName = currentUser?.name;

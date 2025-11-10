@@ -526,7 +526,7 @@ class _TransferCardState extends State<_TransferCard> {
 
     try {
       // Get current user for activity logging
-      final currentUser = tripCubit.getCurrentUserForTrip(widget.tripId);
+      final currentUser = await tripCubit.getCurrentUserForTrip(widget.tripId);
       final actorName = currentUser?.name;
 
       await settlementCubit.markTransferAsSettled(

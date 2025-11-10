@@ -90,7 +90,7 @@ class _ExpenseListPageState extends State<ExpenseListPage> {
             );
 
             // Get current user for this trip
-            final currentUser = tripCubit.getCurrentUserForTrip(widget.tripId);
+            final currentUser = await tripCubit.getCurrentUserForTrip(widget.tripId);
 
             // Navigate to Receipt Split wizard
             final expenseRepository = context.read<ExpenseRepository>();
