@@ -408,6 +408,39 @@ class SettlementCubit extends Cubit<SettlementState> {
 
       _log('✅ Transfer marked as settled');
 
+      // Optimistically update UI immediately (before stream propagates)
+      // This provides instant feedback to the user
+      final updatedActiveTransfers = List<MinimalTransfer>.from(
+        currentState.activeTransfers,
+      )..removeWhere((t) => t.id == transferId);
+
+      // Create settled version of the transfer with timestamp
+      final settledTransfer = MinimalTransfer(
+        id: transfer.id,
+        fromUserId: transfer.fromUserId,
+        toUserId: transfer.toUserId,
+        amountBase: transfer.amountBase,
+        currency: currency,
+        settledAt: DateTime.now(),
+        expenseBreakdown: transfer.expenseBreakdown,
+      );
+
+      final updatedSettledTransfers = [
+        settledTransfer,
+        ...currentState.settledTransfers,
+      ];
+
+      _log(
+        '⚡ Optimistic UI update: moved transfer to settled (${updatedActiveTransfers.length} active, ${updatedSettledTransfers.length} settled)',
+      );
+
+      emit(
+        currentState.copyWith(
+          activeTransfers: updatedActiveTransfers,
+          settledTransfers: updatedSettledTransfers,
+        ),
+      );
+
       // Log activity using centralized service
       if (_activityLoggerService != null &&
           actorName != null &&
@@ -417,7 +450,7 @@ class SettlementCubit extends Cubit<SettlementState> {
         _log('✅ Activity logged');
       }
 
-      // The combined stream will automatically recalculate and update UI
+      // The combined stream will still update for consistency (eventual consistency check)
     } catch (e) {
       _log('❌ Error marking transfer as settled: $e');
       if (!isClosed) {
