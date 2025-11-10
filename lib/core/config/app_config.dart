@@ -30,7 +30,7 @@ class AppConfig {
   /// Application version
   ///
   /// Should be kept in sync with pubspec.yaml version.
-  static const String appVersion = '1.0.39';
+  static const String appVersion = '1.0.40';
 
   // ============================================================================
   // Debug & Development
