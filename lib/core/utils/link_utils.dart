@@ -114,6 +114,60 @@ String _buildParticipantContext({
   return '$firstTwo and $remaining ${remaining == 1 ? 'other' : 'others'} are already tracking expenses in $currency.';
 }
 
+/// Extracts trip ID from a scanned QR code URL
+///
+/// Validates that the URL is a trip join URL and extracts the 'code' parameter.
+/// Returns null if the URL is invalid or doesn't contain a trip code.
+///
+/// Accepts URLs in these formats:
+/// - https://expenses.taihartman.com/#/trips/join?code=abc123
+/// - https://expenses.taihartman.com/#/trips/join?code=abc123&source=qr
+/// - https://expenses.taihartman.com/#/trips/join?code=abc123&source=qr&sharedBy=participant-id
+///
+/// Example:
+/// ```dart
+/// final tripId = extractTripIdFromQrUrl('https://expenses.taihartman.com/#/trips/join?code=abc123');
+/// // Returns: 'abc123'
+///
+/// final invalid = extractTripIdFromQrUrl('https://example.com/other');
+/// // Returns: null
+/// ```
+String? extractTripIdFromQrUrl(String scannedUrl) {
+  try {
+    // Parse the URL
+    final uri = Uri.parse(scannedUrl);
+
+    // Validate it's the correct host
+    if (uri.host != Uri.parse(AppConfig.appBaseUrl).host) {
+      return null;
+    }
+
+    // Extract the fragment (everything after #)
+    final fragment = uri.fragment;
+
+    // Check if the fragment contains the join path
+    if (!fragment.contains('/trips/join')) {
+      return null;
+    }
+
+    // Parse the query parameters from the fragment
+    // Fragment format: /trips/join?code=abc123&source=qr
+    final queryStart = fragment.indexOf('?');
+    if (queryStart == -1) {
+      return null;
+    }
+
+    final queryString = fragment.substring(queryStart + 1);
+    final queryParams = Uri.splitQueryString(queryString);
+
+    // Extract and return the code parameter
+    return queryParams['code'];
+  } catch (e) {
+    // Invalid URL format
+    return null;
+  }
+}
+
 /// Legacy function for backward compatibility
 ///
 /// Deprecated: Use generateShareMessage() with Trip and VerifiedMember instead.

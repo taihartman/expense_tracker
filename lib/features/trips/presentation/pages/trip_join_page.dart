@@ -10,6 +10,7 @@ import '../../../../core/models/participant.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/qr_scanner_dialog.dart';
 import '../../../../core/l10n/l10n_extensions.dart';
 import '../../../../core/utils/code_input_formatter.dart';
 import '../../../device_pairing/presentation/widgets/code_verification_prompt.dart';
@@ -145,6 +146,22 @@ class _TripJoinPageState extends State<TripJoinPage> {
         _isLoading = false;
         _loadError = context.l10n.tripJoinLoadError;
       });
+    }
+  }
+
+  /// Open QR scanner dialog and auto-fill trip code
+  Future<void> _scanQrCode() async {
+    final tripId = await showDialog<String>(
+      context: context,
+      builder: (context) => const QrScannerDialog(),
+    );
+
+    if (tripId != null && tripId.isNotEmpty) {
+      // Auto-fill the text field with the scanned trip ID
+      _codeController.text = tripId;
+
+      // Automatically load the trip
+      await _loadTrip();
     }
   }
 
@@ -495,6 +512,22 @@ class _TripJoinPageState extends State<TripJoinPage> {
             enabled: !_isLoading,
             inputFormatters: [CodeInputFormatter(groupSize: 4)],
             keyboardType: TextInputType.text,
+          ),
+
+          const SizedBox(height: AppTheme.spacing2),
+
+          // Scan QR Code button
+          OutlinedButton.icon(
+            onPressed: _isLoading ? null : _scanQrCode,
+            icon: const Icon(Icons.qr_code_scanner),
+            label: Text(context.l10n.tripJoinScanQrButton),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.spacing2,
+                vertical: AppTheme.spacing2,
+              ),
+              minimumSize: const Size(double.infinity, 44),
+            ),
           ),
 
           // Error message with retry button
