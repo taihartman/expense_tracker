@@ -650,18 +650,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptSplitReceiptInfoDescription =>
-      'Enter the subtotal and tax from your receipt';
+      'Optionally enter the subtotal and tax from your receipt';
 
   @override
   String get receiptSplitReceiptInfoSubtotalLabel =>
-      'Subtotal (before tax & tip) *';
+      'Subtotal (before tax & tip)';
 
   @override
   String get receiptSplitReceiptInfoSubtotalHint => '0.00';
 
   @override
   String get receiptSplitReceiptInfoSubtotalHelper =>
-      'Items you add should sum to this amount';
+      'Optional: Items you add should sum to this amount';
 
   @override
   String get receiptSplitReceiptInfoTaxLabel => 'Tax Amount';

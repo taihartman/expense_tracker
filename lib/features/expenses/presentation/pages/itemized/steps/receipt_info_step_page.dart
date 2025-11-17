@@ -72,7 +72,7 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
     if (_formKey.currentState?.validate() ?? false) {
       final subtotalText = _subtotalController.text.trim();
       final subtotal = subtotalText.isEmpty
-          ? null
+          ? Decimal.zero
           : Decimal.parse(stripCurrencyFormatting(subtotalText));
 
       final taxText = _taxController.text.trim();

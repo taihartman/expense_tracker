@@ -1195,13 +1195,13 @@ abstract class AppLocalizations {
   /// No description provided for @receiptSplitReceiptInfoDescription.
   ///
   /// In en, this message translates to:
-  /// **'Enter the subtotal and tax from your receipt'**
+  /// **'Optionally enter the subtotal and tax from your receipt'**
   String get receiptSplitReceiptInfoDescription;
 
   /// No description provided for @receiptSplitReceiptInfoSubtotalLabel.
   ///
   /// In en, this message translates to:
-  /// **'Subtotal (before tax & tip) *'**
+  /// **'Subtotal (before tax & tip)'**
   String get receiptSplitReceiptInfoSubtotalLabel;
 
   /// No description provided for @receiptSplitReceiptInfoSubtotalHint.
@@ -1213,7 +1213,7 @@ abstract class AppLocalizations {
   /// No description provided for @receiptSplitReceiptInfoSubtotalHelper.
   ///
   /// In en, this message translates to:
-  /// **'Items you add should sum to this amount'**
+  /// **'Optional: Items you add should sum to this amount'**
   String get receiptSplitReceiptInfoSubtotalHelper;
 
   /// No description provided for @receiptSplitReceiptInfoTaxLabel.

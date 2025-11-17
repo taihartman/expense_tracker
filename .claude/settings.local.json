@@ -1,21 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "SlashCommand(/docs.log:*)",
-      "Bash(flutter pub get:*)",
-      "Bash(flutter test:*)",
-      "Bash(dart run build_runner:*)",
-      "WebFetch(domain:github.com)",
-      "WebSearch",
-      "Bash(git checkout:*)",
-      "Bash(tree:*)",
-      "Bash(dart run:*)",
-      "Bash(git mv:*)",
-      "Bash(git submodule add:*)",
-      "Bash(git submodule update:*)",
-      "Bash(for f in *.md)",
-      "Bash(head:*)",
-      "Bash(done)"
+      "Bash(git -C claude-skills-library status)",
+      "Bash(git pull:*)",
+      "Bash(cp:*)"
     ],
     "deny": [],
     "ask": []
