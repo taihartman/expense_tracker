@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../core/l10n/l10n_extensions.dart';
 import '../../core/models/currency_code.dart';
 import '../utils/currency_input_formatter.dart';
+import '../utils/equation_evaluator.dart';
+import 'equation_keyboard_toolbar.dart';
 
 /// Specialized text field for currency amount input with automatic formatting
 /// and validation.
@@ -59,6 +61,9 @@ class CurrencyTextField extends StatefulWidget {
   /// Prefix icon (optional)
   final IconData? prefixIcon;
 
+  /// Whether to enable equation support (shows operator toolbar)
+  final bool enableEquations;
+
   const CurrencyTextField({
     super.key,
     required this.controller,
@@ -70,6 +75,7 @@ class CurrencyTextField extends StatefulWidget {
     this.onAmountChanged,
     this.enabled = true,
     this.prefixIcon,
+    this.enableEquations = false,
   });
 
   @override
@@ -77,30 +83,107 @@ class CurrencyTextField extends StatefulWidget {
 }
 
 class _CurrencyTextFieldState extends State<CurrencyTextField> {
+  final FocusNode _focusNode = FocusNode();
+  bool _showToolbar = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.enableEquations) {
+      _focusNode.addListener(_onFocusChange);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      _showToolbar = _focusNode.hasFocus;
+    });
+  }
+
+  void _handleOperatorTap(String operator) {
+    // Insert operator at cursor position
+    final currentText = widget.controller.text;
+    final selection = widget.controller.selection;
+
+    if (selection.isValid) {
+      final newText = currentText.replaceRange(
+        selection.start,
+        selection.end,
+        operator,
+      );
+
+      widget.controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(
+          offset: selection.start + operator.length,
+        ),
+      );
+    } else {
+      // Just append to the end
+      widget.controller.text = currentText + operator;
+    }
+  }
+
+  void _handleEvaluate() {
+    final equation = widget.controller.text;
+    final result = EquationEvaluator.evaluate(equation);
+
+    if (result != null) {
+      // Format the result using the currency formatter
+      final formattedResult = formatAmountForInput(result, widget.currencyCode);
+      widget.controller.text = formattedResult;
+
+      // Notify listeners of the change
+      if (widget.onAmountChanged != null) {
+        widget.onAmountChanged!(result);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.controller,
-      decoration: InputDecoration(
-        labelText: widget.isRequired ? '${widget.label} *' : widget.label,
-        hintText: widget.hint,
-        prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
-        suffixText: widget.currencyCode.code,
-        border: const OutlineInputBorder(),
-        enabled: widget.enabled,
-      ),
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: [
-        CurrencyInputFormatter(currencyCode: widget.currencyCode),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextFormField(
+          controller: widget.controller,
+          focusNode: widget.enableEquations ? _focusNode : null,
+          decoration: InputDecoration(
+            labelText: widget.isRequired ? '${widget.label} *' : widget.label,
+            hintText: widget.hint,
+            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
+            suffixText: widget.currencyCode.code,
+            border: const OutlineInputBorder(),
+            enabled: widget.enabled,
+          ),
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            if (widget.enableEquations)
+              EquationInputFormatter(currencyCode: widget.currencyCode)
+            else
+              CurrencyInputFormatter(currencyCode: widget.currencyCode),
+          ],
+          validator: (value) => _validateAmount(context, value),
+          onChanged: (value) {
+            if (widget.onAmountChanged != null) {
+              final amount = _parseAmount(value);
+              widget.onAmountChanged!(amount);
+            }
+          },
+          enabled: widget.enabled,
+        ),
+        if (widget.enableEquations && _showToolbar)
+          EquationKeyboardToolbar(
+            onOperatorTap: _handleOperatorTap,
+            onEvaluate: _handleEvaluate,
+          ),
       ],
-      validator: (value) => _validateAmount(context, value),
-      onChanged: (value) {
-        if (widget.onAmountChanged != null) {
-          final amount = _parseAmount(value);
-          widget.onAmountChanged!(amount);
-        }
-      },
-      enabled: widget.enabled,
     );
   }
 
@@ -113,6 +196,29 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
 
     // If not required and empty, it's valid
     if (!widget.isRequired && (value == null || value.isEmpty)) {
+      return null;
+    }
+
+    // If equations are enabled, try to evaluate first
+    if (widget.enableEquations && value != null && value.isNotEmpty) {
+      final equation = stripCurrencyFormatting(value);
+      final result = EquationEvaluator.evaluate(equation);
+
+      if (result == null) {
+        return context.l10n.validationInvalidNumber;
+      }
+
+      // Validate the result
+      if (widget.allowZero) {
+        if (result < Decimal.zero) {
+          return context.l10n.validationMustBeGreaterThanZero;
+        }
+      } else {
+        if (result <= Decimal.zero) {
+          return context.l10n.validationMustBeGreaterThanZero;
+        }
+      }
+
       return null;
     }
 
@@ -147,6 +253,16 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
 
     try {
       final cleanValue = stripCurrencyFormatting(value);
+
+      // If equations are enabled, try to evaluate first
+      if (widget.enableEquations) {
+        final result = EquationEvaluator.evaluate(cleanValue);
+        if (result != null) {
+          return result;
+        }
+      }
+
+      // Otherwise, parse as a simple number
       return Decimal.parse(cleanValue);
     } catch (e) {
       return null;

@@ -19,6 +19,7 @@ import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/currency_text_field.dart';
 import '../../../../shared/utils/currency_input_formatter.dart';
+import '../../../../shared/utils/equation_evaluator.dart';
 import 'itemized/itemized_expense_wizard.dart';
 import '../../../../core/services/activity_logger_service.dart';
 
@@ -91,13 +92,18 @@ class _ExpenseFormPageState extends State<ExpenseFormPage> {
         return;
       }
 
+      // Parse amount - try equation evaluation first, then simple parse
+      final amountText = stripCurrencyFormatting(_amountController.text);
+      final amount = EquationEvaluator.evaluate(amountText) ??
+          Decimal.parse(amountText);
+
       final expense = Expense(
         id: widget.expense?.id ?? '',
         tripId: widget.tripId,
         date: _selectedDate,
         payerUserId: _selectedPayer!,
         currency: _selectedCurrency,
-        amount: Decimal.parse(stripCurrencyFormatting(_amountController.text)),
+        amount: amount,
         description: _descriptionController.text.isEmpty
             ? null
             : _descriptionController.text,
@@ -461,6 +467,7 @@ class ExpenseFormContent extends StatelessWidget {
                     controller: amountController,
                     currencyCode: selectedCurrency,
                     label: context.l10n.expenseFieldAmountLabel,
+                    enableEquations: true,
                   ),
                 ),
               ),

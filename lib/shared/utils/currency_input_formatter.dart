@@ -126,3 +126,76 @@ class CurrencyInputFormatter extends TextInputFormatter {
 String stripCurrencyFormatting(String text) {
   return text.replaceAll(',', '');
 }
+
+/// TextInputFormatter for equation input (allows operators: +, -, *, %)
+///
+/// This formatter allows equation characters but applies the same thousand-separator
+/// formatting when possible. It's more permissive than CurrencyInputFormatter.
+///
+/// Examples:
+/// - "100+50" → "100+50"
+/// - "1000*2" → "1,000*2"
+/// - "100+10%" → "100+10%"
+///
+/// Usage:
+/// ```dart
+/// inputFormatters: [EquationInputFormatter(currencyCode: CurrencyCode.usd)]
+/// ```
+class EquationInputFormatter extends TextInputFormatter {
+  final int decimalDigits;
+
+  /// Creates an equation input formatter.
+  ///
+  /// If [currencyCode] is provided, decimal places are automatically configured.
+  /// Otherwise, [decimalDigits] is used (defaults to 2).
+  EquationInputFormatter({CurrencyCode? currencyCode, int? decimalDigits})
+    : decimalDigits = currencyCode?.decimalPlaces ?? decimalDigits ?? 2;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // If the new value is empty, return it as-is
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remove all commas for validation
+    final newText = newValue.text.replaceAll(',', '');
+
+    // Validate that it contains only valid characters
+    if (!_isValidEquationInput(newText)) {
+      return oldValue;
+    }
+
+    // Don't format if it contains operators - just return as-is
+    if (_containsOperators(newText)) {
+      return newValue;
+    }
+
+    // If it's just a number, apply currency formatting
+    final formatter = CurrencyInputFormatter(decimalDigits: decimalDigits);
+    return formatter.formatEditUpdate(oldValue, newValue);
+  }
+
+  /// Validates that the input contains only valid equation characters
+  bool _isValidEquationInput(String input) {
+    // Allow empty string
+    if (input.isEmpty) {
+      return true;
+    }
+
+    // Check if it matches valid equation pattern (numbers, operators, decimal points)
+    final regex = RegExp(r'^[0-9+\-*%.]+$');
+    return regex.hasMatch(input);
+  }
+
+  /// Checks if the input contains operators
+  bool _containsOperators(String input) {
+    return input.contains('+') ||
+        input.contains('-') ||
+        input.contains('*') ||
+        input.contains('%');
+  }
+}

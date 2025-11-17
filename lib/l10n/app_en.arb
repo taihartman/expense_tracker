@@ -393,10 +393,10 @@
   "receiptSplitWizardStepReview": "Review",
 
   "receiptSplitReceiptInfoTitle": "Receipt Details",
-  "receiptSplitReceiptInfoDescription": "Enter the subtotal and tax from your receipt",
-  "receiptSplitReceiptInfoSubtotalLabel": "Subtotal (before tax & tip) *",
+  "receiptSplitReceiptInfoDescription": "Optionally enter the subtotal and tax from your receipt",
+  "receiptSplitReceiptInfoSubtotalLabel": "Subtotal (before tax & tip)",
   "receiptSplitReceiptInfoSubtotalHint": "0.00",
-  "receiptSplitReceiptInfoSubtotalHelper": "Items you add should sum to this amount",
+  "receiptSplitReceiptInfoSubtotalHelper": "Optional: Items you add should sum to this amount",
   "receiptSplitReceiptInfoTaxLabel": "Tax Amount",
   "receiptSplitReceiptInfoTaxHint": "0.00",
   "receiptSplitReceiptInfoTaxHelper": "Leave blank if no tax",
