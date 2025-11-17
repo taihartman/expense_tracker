@@ -70,10 +70,10 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
 
   void _handleContinue() {
     if (_formKey.currentState?.validate() ?? false) {
-      final subtotalText = stripCurrencyFormatting(
-        _subtotalController.text.trim(),
-      );
-      final subtotal = Decimal.parse(subtotalText);
+      final subtotalText = _subtotalController.text.trim();
+      final subtotal = subtotalText.isEmpty
+          ? null
+          : Decimal.parse(stripCurrencyFormatting(subtotalText));
 
       final taxText = _taxController.text.trim();
       final tax = taxText.isEmpty
@@ -167,6 +167,8 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
                               context.l10n.receiptSplitReceiptInfoSubtotalLabel,
                           hint:
                               context.l10n.receiptSplitReceiptInfoSubtotalHint,
+                          isRequired: false,
+                          allowZero: true,
                         ),
                         const SizedBox(height: 8),
                         Text(
