@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git -C claude-skills-library status)",
       "Bash(git pull:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

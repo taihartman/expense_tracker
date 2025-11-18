@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -85,6 +87,7 @@ class CurrencyTextField extends StatefulWidget {
 class _CurrencyTextFieldState extends State<CurrencyTextField> {
   final FocusNode _focusNode = FocusNode();
   bool _showToolbar = false;
+  Timer? _hideToolbarTimer;
 
   @override
   void initState() {
@@ -96,20 +99,38 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
 
   @override
   void dispose() {
+    _hideToolbarTimer?.cancel();
     _focusNode.dispose();
     super.dispose();
   }
 
   void _onFocusChange() {
-    setState(() {
-      _showToolbar = _focusNode.hasFocus;
-    });
+    print('[CurrencyTextField] Focus changed: hasFocus=${_focusNode.hasFocus}');
+
+    if (_focusNode.hasFocus) {
+      // Focus gained - show toolbar
+      _hideToolbarTimer?.cancel();
+      print('[CurrencyTextField] Focus gained - showing toolbar');
+      setState(() {
+        _showToolbar = true;
+        print('[CurrencyTextField] Toolbar visibility set to: $_showToolbar');
+      });
+    } else {
+      // Focus lost - keep toolbar visible (don't hide it)
+      // User can continue using toolbar even when field isn't focused
+      // Toolbar will only hide when user taps elsewhere on the form
+      print('[CurrencyTextField] Focus lost - keeping toolbar visible for continued use');
+    }
   }
 
   void _handleOperatorTap(String operator) {
+    print('[CurrencyTextField] _handleOperatorTap called with operator: $operator');
+    print('[CurrencyTextField] Current focus state: ${_focusNode.hasFocus}');
+
     // Insert operator at cursor position
     final currentText = widget.controller.text;
     final selection = widget.controller.selection;
+    final int newCursorPosition;
 
     if (selection.isValid) {
       final newText = currentText.replaceRange(
@@ -117,17 +138,35 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
         selection.end,
         operator,
       );
+      newCursorPosition = selection.start + operator.length;
 
       widget.controller.value = TextEditingValue(
         text: newText,
-        selection: TextSelection.collapsed(
-          offset: selection.start + operator.length,
-        ),
+        selection: TextSelection.collapsed(offset: newCursorPosition),
       );
     } else {
       // Just append to the end
-      widget.controller.text = currentText + operator;
+      final newText = currentText + operator;
+      newCursorPosition = newText.length;
+      widget.controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newCursorPosition),
+      );
     }
+
+    print('[CurrencyTextField] Operator inserted. New text: ${widget.controller.text}');
+
+    // Restore focus after the current event loop to counteract any focus loss
+    // Use scheduleMicrotask to run before the next frame but after current event processing
+    Future.microtask(() {
+      if (mounted) {
+        print('[CurrencyTextField] Microtask: Restoring focus (current: ${_focusNode.hasFocus})');
+        _focusNode.requestFocus();
+        // Restore cursor position immediately after requesting focus
+        widget.controller.selection = TextSelection.collapsed(offset: newCursorPosition);
+        print('[CurrencyTextField] Microtask: Focus requested, cursor at $newCursorPosition');
+      }
+    });
   }
 
   void _handleEvaluate() {
@@ -148,42 +187,51 @@ class _CurrencyTextFieldState extends State<CurrencyTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextFormField(
-          controller: widget.controller,
-          focusNode: widget.enableEquations ? _focusNode : null,
-          decoration: InputDecoration(
-            labelText: widget.isRequired ? '${widget.label} *' : widget.label,
-            hintText: widget.hint,
-            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
-            suffixText: widget.currencyCode.code,
-            border: const OutlineInputBorder(),
+    // Wrap entire column in Focus to treat TextField and toolbar as single unit
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      descendantsAreFocusable: true,
+      descendantsAreTraversable: true,
+      onKeyEvent: (node, event) => KeyEventResult.ignored,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            controller: widget.controller,
+            focusNode: widget.enableEquations ? _focusNode : null,
+            decoration: InputDecoration(
+              labelText: widget.isRequired ? '${widget.label} *' : widget.label,
+              hintText: widget.hint,
+              prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
+              suffixText: widget.currencyCode.code,
+              border: const OutlineInputBorder(),
+              enabled: widget.enabled,
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              if (widget.enableEquations)
+                EquationInputFormatter(currencyCode: widget.currencyCode)
+              else
+                CurrencyInputFormatter(currencyCode: widget.currencyCode),
+            ],
+            validator: (value) => _validateAmount(context, value),
+            onChanged: (value) {
+              if (widget.onAmountChanged != null) {
+                final amount = _parseAmount(value);
+                widget.onAmountChanged!(amount);
+              }
+            },
             enabled: widget.enabled,
           ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            if (widget.enableEquations)
-              EquationInputFormatter(currencyCode: widget.currencyCode)
-            else
-              CurrencyInputFormatter(currencyCode: widget.currencyCode),
-          ],
-          validator: (value) => _validateAmount(context, value),
-          onChanged: (value) {
-            if (widget.onAmountChanged != null) {
-              final amount = _parseAmount(value);
-              widget.onAmountChanged!(amount);
-            }
-          },
-          enabled: widget.enabled,
-        ),
-        if (widget.enableEquations && _showToolbar)
-          EquationKeyboardToolbar(
-            onOperatorTap: _handleOperatorTap,
-            onEvaluate: _handleEvaluate,
-          ),
-      ],
+          if (widget.enableEquations && _showToolbar)
+            EquationKeyboardToolbar(
+              onOperatorTap: _handleOperatorTap,
+              onEvaluate: _handleEvaluate,
+              textFieldFocusNode: _focusNode,
+            ),
+        ],
+      ),
     );
   }
 

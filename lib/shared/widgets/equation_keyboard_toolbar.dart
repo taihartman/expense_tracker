@@ -35,10 +35,14 @@ class EquationKeyboardToolbar extends StatelessWidget {
   /// Callback when the equals button is tapped
   final VoidCallback onEvaluate;
 
+  /// Focus node for the text field (to maintain focus when tapping toolbar)
+  final FocusNode textFieldFocusNode;
+
   const EquationKeyboardToolbar({
     super.key,
     required this.onOperatorTap,
     required this.onEvaluate,
+    required this.textFieldFocusNode,
   });
 
   @override
@@ -81,28 +85,38 @@ class EquationKeyboardToolbar extends StatelessWidget {
   Widget _buildOperatorButton(BuildContext context, String operator) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Material(
-      color: colorScheme.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: () => onOperatorTap(operator),
+    return Listener(
+      onPointerDown: (_) {
+        print('[EquationKeyboardToolbar] onPointerDown for operator: $operator');
+        print('[EquationKeyboardToolbar] Focus state: ${textFieldFocusNode.hasFocus}');
+        onOperatorTap(operator);
+      },
+      child: Material(
+        color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(8),
-        child: Container(
-          constraints: const BoxConstraints(
-            minWidth: AppTheme.minTouchTarget,
-            minHeight: AppTheme.minTouchTarget,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing2,
-            vertical: AppTheme.spacing1,
-          ),
-          child: Center(
-            child: Text(
-              operator,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
+        child: InkWell(
+          onTap: () {
+            // InkWell for visual feedback only
+            // Actual logic handled by Listener above
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            constraints: const BoxConstraints(
+              minWidth: AppTheme.minTouchTarget,
+              minHeight: AppTheme.minTouchTarget,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing2,
+              vertical: AppTheme.spacing1,
+            ),
+            child: Center(
+              child: Text(
+                operator,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           ),
@@ -115,28 +129,38 @@ class EquationKeyboardToolbar extends StatelessWidget {
   Widget _buildEvaluateButton(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Material(
-      color: colorScheme.primary,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: onEvaluate,
+    return Listener(
+      onPointerDown: (_) {
+        print('[EquationKeyboardToolbar] onPointerDown for equals button');
+        print('[EquationKeyboardToolbar] Focus state: ${textFieldFocusNode.hasFocus}');
+        onEvaluate();
+      },
+      child: Material(
+        color: colorScheme.primary,
         borderRadius: BorderRadius.circular(8),
-        child: Container(
-          constraints: const BoxConstraints(
-            minWidth: AppTheme.minTouchTarget,
-            minHeight: AppTheme.minTouchTarget,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.spacing2,
-            vertical: AppTheme.spacing1,
-          ),
-          child: Center(
-            child: Text(
-              '=',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onPrimary,
+        child: InkWell(
+          onTap: () {
+            // InkWell for visual feedback only
+            // Actual logic handled by Listener above
+          },
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            constraints: const BoxConstraints(
+              minWidth: AppTheme.minTouchTarget,
+              minHeight: AppTheme.minTouchTarget,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spacing2,
+              vertical: AppTheme.spacing1,
+            ),
+            child: Center(
+              child: Text(
+                '=',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onPrimary,
+                ),
               ),
             ),
           ),
