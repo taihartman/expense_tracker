@@ -46,16 +46,35 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
   Widget build(BuildContext context) {
     // Check if user has verified their identity for this trip
     final tripCubit = context.read<TripCubit>();
-    if (!tripCubit.isUserMemberOf(widget.tripId)) {
-      return Scaffold(
-        appBar: AppBar(title: Text(context.l10n.settlementTitle)),
-        body: TripVerificationPrompt(tripId: widget.tripId),
-      );
-    }
-
     // Capture repository here where providers are accessible
     final expenseRepository = context.read<ExpenseRepository>();
 
+    return FutureBuilder<bool>(
+      future: tripCubit.isUserMemberOf(widget.tripId),
+      builder: (context, snapshot) {
+        // Show loading while checking membership
+        if (!snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(title: Text(context.l10n.settlementTitle)),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Show verification prompt if not a member
+        if (snapshot.data == false) {
+          return Scaffold(
+            appBar: AppBar(title: Text(context.l10n.settlementTitle)),
+            body: TripVerificationPrompt(tripId: widget.tripId),
+          );
+        }
+
+        // User is verified, show settlement summary
+        return _buildSettlementSummary(context, expenseRepository);
+      },
+    );
+  }
+
+  Widget _buildSettlementSummary(BuildContext context, ExpenseRepository expenseRepository) {
     return Scaffold(
       appBar: AppBar(
         title: Text(context.l10n.settlementTitle),

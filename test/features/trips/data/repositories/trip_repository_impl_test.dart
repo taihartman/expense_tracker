@@ -6,9 +6,10 @@ import 'package:expense_tracker/features/trips/data/repositories/trip_repository
 import 'package:expense_tracker/features/trips/domain/exceptions/trip_exceptions.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
 import 'package:expense_tracker/shared/services/firestore_service.dart';
+import 'package:expense_tracker/core/services/auth_service.dart';
 
 @GenerateMocks(
-  [FirestoreService],
+  [FirestoreService, AuthService],
   customMocks: [
     MockSpec<CollectionReference<Map<String, dynamic>>>(as: #MockCollectionRef),
     MockSpec<DocumentReference<Map<String, dynamic>>>(as: #MockDocumentRef),
@@ -21,6 +22,7 @@ void main() {
   group('TripRepositoryImpl - Multi-Currency Methods', () {
     late TripRepositoryImpl repository;
     late MockFirestoreService mockFirestoreService;
+    late MockAuthService mockAuthService;
     late MockCollectionRef mockTripsCollection;
     late MockDocumentRef mockDocRef;
     late MockDocSnapshot mockDocSnapshot;
@@ -30,6 +32,7 @@ void main() {
 
     setUp(() {
       mockFirestoreService = MockFirestoreService();
+      mockAuthService = MockAuthService();
       mockTripsCollection = MockCollectionRef();
       mockDocRef = MockDocumentRef();
       mockDocSnapshot = MockDocSnapshot();
@@ -38,7 +41,10 @@ void main() {
       when(mockFirestoreService.trips).thenReturn(mockTripsCollection);
       when(mockTripsCollection.doc(any)).thenReturn(mockDocRef);
 
-      repository = TripRepositoryImpl(firestoreService: mockFirestoreService);
+      repository = TripRepositoryImpl(
+        firestoreService: mockFirestoreService,
+        authService: mockAuthService,
+      );
     });
 
     group('getAllowedCurrencies', () {

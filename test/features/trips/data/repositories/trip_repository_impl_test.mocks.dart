@@ -6,9 +6,11 @@
 import 'dart:async' as _i3;
 
 import 'package:cloud_firestore/cloud_firestore.dart' as _i2;
-import 'package:expense_tracker/shared/services/firestore_service.dart' as _i4;
+import 'package:expense_tracker/core/services/auth_service.dart' as _i7;
+import 'package:expense_tracker/shared/services/firestore_service.dart' as _i5;
+import 'package:firebase_auth/firebase_auth.dart' as _i4;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i5;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -56,46 +58,52 @@ class _FakeFuture_5<T1> extends _i1.SmartFake implements _i3.Future<T1> {
     : super(parent, parentInvocation);
 }
 
-class _FakeDocumentReference_6<T extends Object?> extends _i1.SmartFake
+class _FakeUserCredential_6 extends _i1.SmartFake
+    implements _i4.UserCredential {
+  _FakeUserCredential_6(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeDocumentReference_7<T extends Object?> extends _i1.SmartFake
     implements _i2.DocumentReference<T> {
-  _FakeDocumentReference_6(Object parent, Invocation parentInvocation)
+  _FakeDocumentReference_7(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeQuery_7<T extends Object?> extends _i1.SmartFake
+class _FakeQuery_8<T extends Object?> extends _i1.SmartFake
     implements _i2.Query<T> {
-  _FakeQuery_7(Object parent, Invocation parentInvocation)
+  _FakeQuery_8(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeQuerySnapshot_8<T extends Object?> extends _i1.SmartFake
+class _FakeQuerySnapshot_9<T extends Object?> extends _i1.SmartFake
     implements _i2.QuerySnapshot<T> {
-  _FakeQuerySnapshot_8(Object parent, Invocation parentInvocation)
+  _FakeQuerySnapshot_9(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeAggregateQuery_9 extends _i1.SmartFake
+class _FakeAggregateQuery_10 extends _i1.SmartFake
     implements _i2.AggregateQuery {
-  _FakeAggregateQuery_9(Object parent, Invocation parentInvocation)
+  _FakeAggregateQuery_10(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeDocumentSnapshot_10<T extends Object?> extends _i1.SmartFake
+class _FakeDocumentSnapshot_11<T extends Object?> extends _i1.SmartFake
     implements _i2.DocumentSnapshot<T> {
-  _FakeDocumentSnapshot_10(Object parent, Invocation parentInvocation)
+  _FakeDocumentSnapshot_11(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
-class _FakeSnapshotMetadata_11 extends _i1.SmartFake
+class _FakeSnapshotMetadata_12 extends _i1.SmartFake
     implements _i2.SnapshotMetadata {
-  _FakeSnapshotMetadata_11(Object parent, Invocation parentInvocation)
+  _FakeSnapshotMetadata_12(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
 /// A class which mocks [FirestoreService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockFirestoreService extends _i1.Mock implements _i4.FirestoreService {
+class MockFirestoreService extends _i1.Mock implements _i5.FirestoreService {
   MockFirestoreService() {
     _i1.throwOnMissingStub(this);
   }
@@ -249,8 +257,8 @@ class MockFirestoreService extends _i1.Mock implements _i4.FirestoreService {
               {#timeout: timeout},
             ),
             returnValue:
-                _i5.ifNotNull(
-                  _i5.dummyValueOrNull<T>(
+                _i6.ifNotNull(
+                  _i6.dummyValueOrNull<T>(
                     this,
                     Invocation.method(
                       #runTransaction,
@@ -272,6 +280,45 @@ class MockFirestoreService extends _i1.Mock implements _i4.FirestoreService {
           as _i3.Future<T>);
 }
 
+/// A class which mocks [AuthService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAuthService extends _i1.Mock implements _i7.AuthService {
+  MockAuthService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  bool get isAuthenticated =>
+      (super.noSuchMethod(
+            Invocation.getter(#isAuthenticated),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  _i3.Future<_i4.UserCredential> signInAnonymously() =>
+      (super.noSuchMethod(
+            Invocation.method(#signInAnonymously, []),
+            returnValue: _i3.Future<_i4.UserCredential>.value(
+              _FakeUserCredential_6(
+                this,
+                Invocation.method(#signInAnonymously, []),
+              ),
+            ),
+          )
+          as _i3.Future<_i4.UserCredential>);
+
+  @override
+  _i3.Future<void> signOut() =>
+      (super.noSuchMethod(
+            Invocation.method(#signOut, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+}
+
 /// A class which mocks [CollectionReference].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -286,7 +333,7 @@ class MockCollectionRef extends _i1.Mock
   String get id =>
       (super.noSuchMethod(
             Invocation.getter(#id),
-            returnValue: _i5.dummyValue<String>(this, Invocation.getter(#id)),
+            returnValue: _i6.dummyValue<String>(this, Invocation.getter(#id)),
           )
           as String);
 
@@ -294,7 +341,7 @@ class MockCollectionRef extends _i1.Mock
   String get path =>
       (super.noSuchMethod(
             Invocation.getter(#path),
-            returnValue: _i5.dummyValue<String>(this, Invocation.getter(#path)),
+            returnValue: _i6.dummyValue<String>(this, Invocation.getter(#path)),
           )
           as String);
 
@@ -325,7 +372,7 @@ class MockCollectionRef extends _i1.Mock
             Invocation.method(#add, [data]),
             returnValue:
                 _i3.Future<_i2.DocumentReference<Map<String, dynamic>>>.value(
-                  _FakeDocumentReference_6<Map<String, dynamic>>(
+                  _FakeDocumentReference_7<Map<String, dynamic>>(
                     this,
                     Invocation.method(#add, [data]),
                   ),
@@ -337,7 +384,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.DocumentReference<Map<String, dynamic>> doc([String? path]) =>
       (super.noSuchMethod(
             Invocation.method(#doc, [path]),
-            returnValue: _FakeDocumentReference_6<Map<String, dynamic>>(
+            returnValue: _FakeDocumentReference_7<Map<String, dynamic>>(
               this,
               Invocation.method(#doc, [path]),
             ),
@@ -370,7 +417,7 @@ class MockCollectionRef extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#endAtDocument, [documentSnapshot]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#endAtDocument, [documentSnapshot]),
             ),
@@ -381,7 +428,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.Query<Map<String, dynamic>> endAt(Iterable<Object?>? values) =>
       (super.noSuchMethod(
             Invocation.method(#endAt, [values]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#endAt, [values]),
             ),
@@ -394,7 +441,7 @@ class MockCollectionRef extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#endBeforeDocument, [documentSnapshot]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#endBeforeDocument, [documentSnapshot]),
             ),
@@ -405,7 +452,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.Query<Map<String, dynamic>> endBefore(Iterable<Object?>? values) =>
       (super.noSuchMethod(
             Invocation.method(#endBefore, [values]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#endBefore, [values]),
             ),
@@ -420,7 +467,7 @@ class MockCollectionRef extends _i1.Mock
             Invocation.method(#get, [options]),
             returnValue:
                 _i3.Future<_i2.QuerySnapshot<Map<String, dynamic>>>.value(
-                  _FakeQuerySnapshot_8<Map<String, dynamic>>(
+                  _FakeQuerySnapshot_9<Map<String, dynamic>>(
                     this,
                     Invocation.method(#get, [options]),
                   ),
@@ -432,7 +479,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.Query<Map<String, dynamic>> limit(int? limit) =>
       (super.noSuchMethod(
             Invocation.method(#limit, [limit]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#limit, [limit]),
             ),
@@ -443,7 +490,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.Query<Map<String, dynamic>> limitToLast(int? limit) =>
       (super.noSuchMethod(
             Invocation.method(#limitToLast, [limit]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#limitToLast, [limit]),
             ),
@@ -472,7 +519,7 @@ class MockCollectionRef extends _i1.Mock
   }) =>
       (super.noSuchMethod(
             Invocation.method(#orderBy, [field], {#descending: descending}),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#orderBy, [field], {#descending: descending}),
             ),
@@ -485,7 +532,7 @@ class MockCollectionRef extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#startAfterDocument, [documentSnapshot]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#startAfterDocument, [documentSnapshot]),
             ),
@@ -496,7 +543,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.Query<Map<String, dynamic>> startAfter(Iterable<Object?>? values) =>
       (super.noSuchMethod(
             Invocation.method(#startAfter, [values]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#startAfter, [values]),
             ),
@@ -509,7 +556,7 @@ class MockCollectionRef extends _i1.Mock
   ) =>
       (super.noSuchMethod(
             Invocation.method(#startAtDocument, [documentSnapshot]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#startAtDocument, [documentSnapshot]),
             ),
@@ -520,7 +567,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.Query<Map<String, dynamic>> startAt(Iterable<Object?>? values) =>
       (super.noSuchMethod(
             Invocation.method(#startAt, [values]),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(#startAt, [values]),
             ),
@@ -560,7 +607,7 @@ class MockCollectionRef extends _i1.Mock
                 #isNull: isNull,
               },
             ),
-            returnValue: _FakeQuery_7<Map<String, dynamic>>(
+            returnValue: _FakeQuery_8<Map<String, dynamic>>(
               this,
               Invocation.method(
                 #where,
@@ -587,7 +634,7 @@ class MockCollectionRef extends _i1.Mock
   _i2.AggregateQuery count() =>
       (super.noSuchMethod(
             Invocation.method(#count, []),
-            returnValue: _FakeAggregateQuery_9(
+            returnValue: _FakeAggregateQuery_10(
               this,
               Invocation.method(#count, []),
             ),
@@ -660,7 +707,7 @@ class MockCollectionRef extends _i1.Mock
               aggregateField29,
               aggregateField30,
             ]),
-            returnValue: _FakeAggregateQuery_9(
+            returnValue: _FakeAggregateQuery_10(
               this,
               Invocation.method(#aggregate, [
                 aggregateField1,
@@ -724,7 +771,7 @@ class MockDocumentRef extends _i1.Mock
   String get id =>
       (super.noSuchMethod(
             Invocation.getter(#id),
-            returnValue: _i5.dummyValue<String>(this, Invocation.getter(#id)),
+            returnValue: _i6.dummyValue<String>(this, Invocation.getter(#id)),
           )
           as String);
 
@@ -743,7 +790,7 @@ class MockDocumentRef extends _i1.Mock
   String get path =>
       (super.noSuchMethod(
             Invocation.getter(#path),
-            returnValue: _i5.dummyValue<String>(this, Invocation.getter(#path)),
+            returnValue: _i6.dummyValue<String>(this, Invocation.getter(#path)),
           )
           as String);
 
@@ -786,7 +833,7 @@ class MockDocumentRef extends _i1.Mock
             Invocation.method(#get, [options]),
             returnValue:
                 _i3.Future<_i2.DocumentSnapshot<Map<String, dynamic>>>.value(
-                  _FakeDocumentSnapshot_10<Map<String, dynamic>>(
+                  _FakeDocumentSnapshot_11<Map<String, dynamic>>(
                     this,
                     Invocation.method(#get, [options]),
                   ),
@@ -828,7 +875,7 @@ class MockDocumentRef extends _i1.Mock
               #fromFirestore: fromFirestore,
               #toFirestore: toFirestore,
             }),
-            returnValue: _FakeDocumentReference_6<R>(
+            returnValue: _FakeDocumentReference_7<R>(
               this,
               Invocation.method(#withConverter, [], {
                 #fromFirestore: fromFirestore,
@@ -852,7 +899,7 @@ class MockDocSnapshot extends _i1.Mock
   String get id =>
       (super.noSuchMethod(
             Invocation.getter(#id),
-            returnValue: _i5.dummyValue<String>(this, Invocation.getter(#id)),
+            returnValue: _i6.dummyValue<String>(this, Invocation.getter(#id)),
           )
           as String);
 
@@ -860,7 +907,7 @@ class MockDocSnapshot extends _i1.Mock
   _i2.DocumentReference<Map<String, dynamic>> get reference =>
       (super.noSuchMethod(
             Invocation.getter(#reference),
-            returnValue: _FakeDocumentReference_6<Map<String, dynamic>>(
+            returnValue: _FakeDocumentReference_7<Map<String, dynamic>>(
               this,
               Invocation.getter(#reference),
             ),
@@ -871,7 +918,7 @@ class MockDocSnapshot extends _i1.Mock
   _i2.SnapshotMetadata get metadata =>
       (super.noSuchMethod(
             Invocation.getter(#metadata),
-            returnValue: _FakeSnapshotMetadata_11(
+            returnValue: _FakeSnapshotMetadata_12(
               this,
               Invocation.getter(#metadata),
             ),

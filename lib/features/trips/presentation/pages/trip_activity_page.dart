@@ -49,19 +49,38 @@ class _TripActivityPageState extends State<TripActivityPage> {
   Widget build(BuildContext context) {
     // Check if user has verified their identity for this trip
     final tripCubit = context.read<TripCubit>();
-    if (!tripCubit.isUserMemberOf(widget.tripId)) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.activityLogTitle),
-          elevation: 0,
-        ),
-        body: TripVerificationPrompt(tripId: widget.tripId),
-      );
-    }
 
-    return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.activityLogTitle), elevation: 0),
-      body: ActivityLogList(tripId: widget.tripId),
+    return FutureBuilder<bool>(
+      future: tripCubit.isUserMemberOf(widget.tripId),
+      builder: (context, snapshot) {
+        // Show loading while checking membership
+        if (!snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.activityLogTitle),
+              elevation: 0,
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Show verification prompt if not a member
+        if (snapshot.data == false) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.activityLogTitle),
+              elevation: 0,
+            ),
+            body: TripVerificationPrompt(tripId: widget.tripId),
+          );
+        }
+
+        // User is verified, show activity log
+        return Scaffold(
+          appBar: AppBar(title: Text(context.l10n.activityLogTitle), elevation: 0),
+          body: ActivityLogList(tripId: widget.tripId),
+        );
+      },
     );
   }
 }

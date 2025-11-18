@@ -64,7 +64,7 @@ void main() {
     mockExpenseRepository = MockExpenseRepository();
 
     // Default: User is verified member of trip
-    when(mockTripCubit.isUserMemberOf(testTripId)).thenReturn(true);
+    when(mockTripCubit.isUserMemberOf(testTripId)).thenAnswer((_) async => true);
 
     // Default trip state with allowed currencies
     when(

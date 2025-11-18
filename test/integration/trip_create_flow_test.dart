@@ -42,7 +42,7 @@ void main() {
       mockLocalStorageService = MockLocalStorageService();
 
       // Default stubs
-      when(mockLocalStorageService.getJoinedTripIds()).thenReturn([]);
+      when(mockLocalStorageService.getJoinedTripIds()).thenAnswer((_) async => []);
       when(mockLocalStorageService.getSelectedTripId()).thenReturn(null);
       when(
         mockLocalStorageService.addJoinedTrip(any),

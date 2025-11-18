@@ -5,8 +5,6 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
-import 'package:expense_tracker/core/models/currency_code.dart' as _iCC;
-
 import 'package:expense_tracker/core/services/activity_logger_service.dart'
     as _i7;
 import 'package:expense_tracker/core/services/local_storage_service.dart'
@@ -164,20 +162,20 @@ class MockTripRepository extends _i1.Mock implements _i4.TripRepository {
           as _i5.Future<void>);
 
   @override
-  _i5.Future<List<_iCC.CurrencyCode>> getAllowedCurrencies(String tripId) =>
+  _i5.Future<List<dynamic>> getAllowedCurrencies(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getAllowedCurrencies, [tripId]),
-            returnValue: _i5.Future<List<_iCC.CurrencyCode>>.value(<_iCC.CurrencyCode>[]),
+            returnValue: _i5.Future<List<dynamic>>.value(<dynamic>[]),
             returnValueForMissingStub: _i5.Future<List<dynamic>>.value(
-              <_iCC.CurrencyCode>[],
+              <dynamic>[],
             ),
           )
-          as _i5.Future<List<_iCC.CurrencyCode>>);
+          as _i5.Future<List<dynamic>>);
 
   @override
   _i5.Future<void> updateAllowedCurrencies(
-    String tripId,
-    List<_iCC.CurrencyCode> currencies,
+    String? tripId,
+    List<dynamic>? currencies,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#updateAllowedCurrencies, [tripId, currencies]),
@@ -579,22 +577,24 @@ class MockLocalStorageService extends _i1.Mock
           as _i5.Future<void>);
 
   @override
-  bool verifyJoinedTrip(String? tripId) =>
+  _i5.Future<bool> verifyJoinedTrip(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#verifyJoinedTrip, [tripId]),
-            returnValue: false,
-            returnValueForMissingStub: false,
+            returnValue: _i5.Future<bool>.value(false),
+            returnValueForMissingStub: _i5.Future<bool>.value(false),
           )
-          as bool);
+          as _i5.Future<bool>);
 
   @override
-  List<String> getJoinedTripIds() =>
+  _i5.Future<List<String>> getJoinedTripIds() =>
       (super.noSuchMethod(
             Invocation.method(#getJoinedTripIds, []),
-            returnValue: <String>[],
-            returnValueForMissingStub: <String>[],
+            returnValue: _i5.Future<List<String>>.value(<String>[]),
+            returnValueForMissingStub: _i5.Future<List<String>>.value(
+              <String>[],
+            ),
           )
-          as List<String>);
+          as _i5.Future<List<String>>);
 
   @override
   _i5.Future<void> removeJoinedTrip(String? tripId) =>
@@ -621,12 +621,13 @@ class MockLocalStorageService extends _i1.Mock
           as _i5.Future<void>);
 
   @override
-  String? getUserIdentityForTrip(String? tripId) =>
+  _i5.Future<String?> getUserIdentityForTrip(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getUserIdentityForTrip, [tripId]),
-            returnValueForMissingStub: null,
+            returnValue: _i5.Future<String?>.value(),
+            returnValueForMissingStub: _i5.Future<String?>.value(),
           )
-          as String?);
+          as _i5.Future<String?>);
 
   @override
   _i5.Future<void> removeUserIdentityForTrip(String? tripId) =>

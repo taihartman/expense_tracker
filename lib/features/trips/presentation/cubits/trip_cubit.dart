@@ -763,7 +763,7 @@ class TripCubit extends Cubit<TripState> {
         // Verify storage persistence (critical for web)
         _log('🔍 Verifying storage persistence...');
         await Future.delayed(const Duration(milliseconds: 100));
-        final verified = _localStorageService.verifyJoinedTrip(tripId);
+        final verified = await _localStorageService.verifyJoinedTrip(tripId);
 
         if (!verified) {
           _log('❌ STORAGE VERIFICATION FAILED: Trip ID not found after write');
@@ -854,7 +854,7 @@ class TripCubit extends Cubit<TripState> {
       // Verify storage persistence (critical for web)
       _log('🔍 Verifying storage persistence...');
       await Future.delayed(const Duration(milliseconds: 100));
-      final verified = _localStorageService.verifyJoinedTrip(tripId);
+      final verified = await _localStorageService.verifyJoinedTrip(tripId);
 
       if (!verified) {
         _log('❌ STORAGE VERIFICATION FAILED: Trip ID not found after write');

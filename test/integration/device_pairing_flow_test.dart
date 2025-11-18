@@ -54,7 +54,7 @@ void main() {
       mockDeviceLinkCodeRepository = MockDeviceLinkCodeRepository();
 
       // Default stubs
-      when(mockLocalStorageService.getJoinedTripIds()).thenReturn([]);
+      when(mockLocalStorageService.getJoinedTripIds()).thenAnswer((_) async => []);
       when(mockLocalStorageService.getSelectedTripId()).thenReturn(null);
       when(
         mockLocalStorageService.addJoinedTrip(any),
