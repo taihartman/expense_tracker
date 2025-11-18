@@ -7,7 +7,9 @@ import 'package:equatable/equatable.dart';
 /// (via device pairing or recovery code) as opposed to just being in the
 /// participant list for expense tracking purposes.
 ///
-/// Stored in Firestore at: /trips/{tripId}/verifiedMembers/{participantId}
+/// Stored in Firestore at: /trips/{tripId}/verifiedMembers/{authUid}
+/// where {authUid} is the Firebase Auth UID (not participantId)
+/// The participantId is stored in the document data for business logic.
 class VerifiedMember extends Equatable {
   /// Unique identifier for the participant (matches Participant.id)
   final String participantId;
@@ -30,7 +32,8 @@ class VerifiedMember extends Equatable {
     String documentId,
   ) {
     return VerifiedMember(
-      participantId: documentId, // Use document ID as participant ID
+      // Document ID is now Firebase Auth UID, read participantId from data
+      participantId: data['participantId'] as String,
       participantName: data['participantName'] as String,
       verifiedAt: (data['verifiedAt'] as Timestamp).toDate(),
     );
@@ -39,6 +42,7 @@ class VerifiedMember extends Equatable {
   /// Converts VerifiedMember to Firestore data
   Map<String, dynamic> toFirestore() {
     return {
+      'participantId': participantId,  // Store participantId in document data
       'participantName': participantName,
       'verifiedAt': Timestamp.fromDate(verifiedAt),
     };

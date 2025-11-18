@@ -142,7 +142,7 @@ class AllowedCurrenciesCard extends StatelessWidget {
 
                                     try {
                                       // Get current user for activity logging
-                                      final currentUser = context
+                                      final currentUser = await context
                                           .read<TripCubit>()
                                           .getCurrentUserForTrip(tripId);
                                       final actorName = currentUser?.name;

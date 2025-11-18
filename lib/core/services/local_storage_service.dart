@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'secure_storage_service.dart';
 
 // Conditional import for web-specific functionality
 import 'web_storage_stub.dart' if (dart.library.html) 'dart:html' as html;
@@ -10,29 +11,44 @@ void _log(String message) {
   debugPrint('[${DateTime.now().toIso8601String()}] [LocalStorage] $message');
 }
 
-/// Service for managing local storage using SharedPreferences
+/// Service for managing local storage
 ///
-/// Provides persistent storage for user preferences and app state
+/// SECURITY UPDATE: This service now uses two storage backends:
+/// 1. SecureStorageService (encrypted) for sensitive data:
+///    - Joined trip IDs
+///    - User identities per trip
+/// 2. SharedPreferences (plain-text) for non-sensitive data:
+///    - Selected trip ID (transient UI state)
+///    - Settlement filters (UI preferences)
+///
+/// Migration: Automatically migrates existing plain-text data to encrypted storage
 class LocalStorageService {
   static const String _selectedTripIdKey = 'selected_trip_id';
-  static const String _joinedTripIdsKey = 'joined_trip_ids';
-  static const String _tripIdentityKeyPrefix = 'trip_identity_';
+  static const String _joinedTripIdsKey = 'joined_trip_ids';  // Legacy key
+  static const String _tripIdentityKeyPrefix = 'trip_identity_';  // Legacy prefix
   static const String _settlementFilterUserKeyPrefix = 'settlement_filter_user_';
   static const String _settlementFilterModeKeyPrefix = 'settlement_filter_mode_';
+  static const String _migrationCompletedKey = 'secure_storage_migration_completed';
 
   final SharedPreferences _prefs;
+  final SecureStorageService _secureStorage;
 
-  LocalStorageService(this._prefs);
+  LocalStorageService(this._prefs, this._secureStorage);
 
   /// Initialize the service
   ///
   /// This must be called before using the service
+  /// Automatically migrates sensitive data to encrypted storage
   static Future<LocalStorageService> init() async {
     _log('🔧 Initializing LocalStorageService...');
     _log('🌐 Platform: ${kIsWeb ? "Web" : "Native"}');
 
     final prefs = await SharedPreferences.getInstance();
     _log('✅ SharedPreferences instance obtained');
+
+    // Initialize secure storage
+    final secureStorage = await SecureStorageService.init();
+    _log('✅ SecureStorageService initialized');
 
     // Log all existing keys for debugging
     final keys = prefs.getKeys();
@@ -51,7 +67,72 @@ class LocalStorageService {
       }
     }
 
-    return LocalStorageService(prefs);
+    final service = LocalStorageService(prefs, secureStorage);
+
+    // Migrate legacy plain-text data to encrypted storage (one-time)
+    await service._migrateSensitiveData();
+
+    return service;
+  }
+
+  /// Migrate sensitive data from plain-text to encrypted storage
+  ///
+  /// This is a one-time migration that runs on app initialization
+  Future<void> _migrateSensitiveData() async {
+    // Check if migration already completed
+    final migrationCompleted = _prefs.getBool(_migrationCompletedKey) ?? false;
+    if (migrationCompleted) {
+      _log('✅ Secure storage migration already completed');
+      return;
+    }
+
+    _log('🔄 Starting migration of sensitive data to encrypted storage...');
+
+    try {
+      // Migrate trip IDs
+      final plainTextTripIds = _prefs.getStringList(_joinedTripIdsKey) ?? [];
+
+      // Migrate user identities
+      final plainTextIdentities = <String, String>{};
+      for (final key in _prefs.getKeys()) {
+        if (key.startsWith(_tripIdentityKeyPrefix)) {
+          final tripId = key.substring(_tripIdentityKeyPrefix.length);
+          final participantId = _prefs.getString(key);
+          if (participantId != null) {
+            plainTextIdentities[tripId] = participantId;
+          }
+        }
+      }
+
+      if (plainTextTripIds.isNotEmpty || plainTextIdentities.isNotEmpty) {
+        _log(
+          '🔄 Found ${plainTextTripIds.length} trip IDs and ${plainTextIdentities.length} identities to migrate',
+        );
+
+        await _secureStorage.migrateFromPlainText(
+          plainTextTripIds: plainTextTripIds,
+          plainTextIdentities: plainTextIdentities,
+        );
+
+        // Remove plain-text data from SharedPreferences
+        await _prefs.remove(_joinedTripIdsKey);
+        for (final key in plainTextIdentities.keys) {
+          await _prefs.remove('$_tripIdentityKeyPrefix$key');
+        }
+
+        _log('✅ Migration complete, plain-text data removed');
+      } else {
+        _log('ℹ️ No sensitive data to migrate');
+      }
+
+      // Mark migration as completed
+      await _prefs.setBool(_migrationCompletedKey, true);
+      _log('✅ Migration marked as completed');
+    } catch (e) {
+      _log('❌ Migration failed: $e');
+      // Don't mark as completed so migration will retry next time
+      rethrow;
+    }
   }
 
   /// Save the selected trip ID
@@ -136,104 +217,33 @@ class LocalStorageService {
     }
   }
 
-  /// Add a trip ID to the list of joined trips
+  /// Add a trip ID to the list of joined trips (encrypted)
   Future<void> addJoinedTrip(String tripId) async {
-    _log('➕ Adding joined trip ID: $tripId');
-    final currentIds = getJoinedTripIds();
-
-    if (currentIds.contains(tripId)) {
-      _log('ℹ️ Trip ID $tripId already in joined trips list');
-      return;
-    }
-
-    final updatedIds = [...currentIds, tripId];
-    final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
-    _log(
-      '✅ Added trip ID to joined trips. Total trips: ${updatedIds.length}. Result: $result',
-    );
-
-    // Immediate verification
-    final verified = _prefs.getStringList(_joinedTripIdsKey) ?? [];
-    _log('🔍 Immediate verification: ${verified.length} trips in storage');
-
-    if (!verified.contains(tripId)) {
-      _log(
-        '⚠️ VERIFICATION FAILED: Trip ID $tripId not found in storage after write!',
-      );
-    } else {
-      _log('✅ Verification passed: Trip ID $tripId confirmed in storage');
-    }
-
-    // On web, verify directly in browser localStorage
-    if (kIsWeb) {
-      try {
-        final storage = html.window.localStorage;
-        final webKey = 'flutter.$_joinedTripIdsKey';
-        final webValue = storage[webKey];
-        _log('🌐 Browser localStorage[$webKey]: $webValue');
-      } catch (e) {
-        _log('⚠️ Failed to verify in browser localStorage: $e');
-      }
-    }
+    _log('➕ Delegating to SecureStorageService: addJoinedTrip($tripId)');
+    await _secureStorage.addJoinedTrip(tripId);
   }
 
-  /// Verify that a trip ID is in the joined trips list
-  ///
-  /// Returns true if the trip ID is found, false otherwise.
-  /// This is useful for post-write verification.
-  bool verifyJoinedTrip(String tripId) {
-    _log('🔍 Verifying trip ID in storage: $tripId');
-    final joinedIds = getJoinedTripIds();
-    final isPresent = joinedIds.contains(tripId);
-    _log('🔍 Verification result: ${isPresent ? "FOUND" : "NOT FOUND"}');
-
-    if (kIsWeb) {
-      try {
-        final storage = html.window.localStorage;
-        final webKey = 'flutter.$_joinedTripIdsKey';
-        final webValue = storage[webKey];
-        _log('🌐 Browser localStorage[$webKey]: $webValue');
-        _log(
-          '🌐 Browser localStorage contains "$tripId": ${webValue?.contains(tripId) ?? false}',
-        );
-      } catch (e) {
-        _log('⚠️ Failed to check browser localStorage: $e');
-      }
-    }
-
-    return isPresent;
+  /// Verify that a trip ID is in the joined trips list (encrypted)
+  Future<bool> verifyJoinedTrip(String tripId) async {
+    _log('🔍 Delegating to SecureStorageService: verifyJoinedTrip($tripId)');
+    return await _secureStorage.verifyJoinedTrip(tripId);
   }
 
-  /// Get the list of joined trip IDs
+  /// Get the list of joined trip IDs (encrypted)
   ///
   /// Returns an empty list if no trips have been joined
-  List<String> getJoinedTripIds() {
-    _log('📖 Reading joined trip IDs from key: $_joinedTripIdsKey');
-    final ids = _prefs.getStringList(_joinedTripIdsKey) ?? [];
-    _log(
-      '📖 Found ${ids.length} joined trip(s): ${ids.isEmpty ? "none" : ids.join(", ")}',
-    );
-    return ids;
+  Future<List<String>> getJoinedTripIds() async {
+    _log('📖 Delegating to SecureStorageService: getJoinedTripIds()');
+    return await _secureStorage.getJoinedTripIds();
   }
 
-  /// Remove a trip ID from the list of joined trips
+  /// Remove a trip ID from the list of joined trips (encrypted)
   Future<void> removeJoinedTrip(String tripId) async {
-    _log('➖ Removing joined trip ID: $tripId');
-    final currentIds = getJoinedTripIds();
-
-    if (!currentIds.contains(tripId)) {
-      _log('ℹ️ Trip ID $tripId not found in joined trips list');
-      return;
-    }
-
-    final updatedIds = currentIds.where((id) => id != tripId).toList();
-    final result = await _prefs.setStringList(_joinedTripIdsKey, updatedIds);
-    _log(
-      '✅ Removed trip ID from joined trips. Remaining trips: ${updatedIds.length}. Result: $result',
-    );
+    _log('➖ Delegating to SecureStorageService: removeJoinedTrip($tripId)');
+    await _secureStorage.removeJoinedTrip(tripId);
   }
 
-  /// Save the user's identity (participant ID) for a specific trip
+  /// Save the user's identity (participant ID) for a specific trip (encrypted)
   ///
   /// This stores which participant the current user is in a given trip,
   /// enabling proper attribution of actions to the correct user.
@@ -241,55 +251,39 @@ class LocalStorageService {
     String tripId,
     String participantId,
   ) async {
-    final key = '$_tripIdentityKeyPrefix$tripId';
-    _log('💾 Saving user identity for trip $tripId: $participantId');
-    _log('💾 Using key: $key');
-
-    final result = await _prefs.setString(key, participantId);
-    _log('✅ User identity saved. Result: $result');
-
-    // Verification
-    final verified = _prefs.getString(key);
-    _log('🔍 Verification: $verified');
+    _log(
+      '💾 Delegating to SecureStorageService: saveUserIdentityForTrip($tripId, $participantId)',
+    );
+    await _secureStorage.saveUserIdentityForTrip(tripId, participantId);
   }
 
-  /// Get the user's identity (participant ID) for a specific trip
+  /// Get the user's identity (participant ID) for a specific trip (encrypted)
   ///
   /// Returns null if the user has not selected their identity for this trip.
   /// This happens when accessing a trip without going through the join flow.
-  String? getUserIdentityForTrip(String tripId) {
-    final key = '$_tripIdentityKeyPrefix$tripId';
-    _log('📖 Reading user identity for trip $tripId from key: $key');
-    final participantId = _prefs.getString(key);
-    _log('📖 User identity: ${participantId ?? "null (not set)"}');
-    return participantId;
+  Future<String?> getUserIdentityForTrip(String tripId) async {
+    _log(
+      '📖 Delegating to SecureStorageService: getUserIdentityForTrip($tripId)',
+    );
+    return await _secureStorage.getUserIdentityForTrip(tripId);
   }
 
-  /// Remove the user's identity for a specific trip
+  /// Remove the user's identity for a specific trip (encrypted)
   ///
   /// This should be called when leaving a trip or when identity needs to be re-selected.
   Future<void> removeUserIdentityForTrip(String tripId) async {
-    final key = '$_tripIdentityKeyPrefix$tripId';
-    _log('🗑️ Removing user identity for trip $tripId');
-    await _prefs.remove(key);
-    _log('✅ User identity removed');
+    _log(
+      '🗑️ Delegating to SecureStorageService: removeUserIdentityForTrip($tripId)',
+    );
+    await _secureStorage.removeUserIdentityForTrip(tripId);
   }
 
-  /// Clear all user identities for all trips
+  /// Clear all user identities for all trips (encrypted)
   ///
   /// Useful for testing or complete app reset scenarios.
   Future<void> clearAllUserIdentities() async {
-    _log('🗑️ Clearing all user identities');
-    final keys = _prefs.getKeys();
-    final identityKeys = keys.where(
-      (k) => k.startsWith(_tripIdentityKeyPrefix),
-    );
-
-    for (final key in identityKeys) {
-      await _prefs.remove(key);
-    }
-
-    _log('✅ Cleared ${identityKeys.length} user identity entries');
+    _log('🗑️ Delegating to SecureStorageService: clearAllUserIdentities()');
+    await _secureStorage.clearAllUserIdentities();
   }
 
   /// Save the settlement filter for a specific trip

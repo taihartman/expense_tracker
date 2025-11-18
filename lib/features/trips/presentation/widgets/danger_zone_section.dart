@@ -188,7 +188,7 @@ class DangerZoneSection extends StatelessWidget {
 
     try {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+      final currentUser = await context.read<TripCubit>().getCurrentUserForTrip(
         tripId,
       );
       final actorName = currentUser?.name;
@@ -226,7 +226,7 @@ class DangerZoneSection extends StatelessWidget {
   Future<void> _handleUnarchiveTrip(BuildContext context) async {
     try {
       // Get current user for activity logging
-      final currentUser = context.read<TripCubit>().getCurrentUserForTrip(
+      final currentUser = await context.read<TripCubit>().getCurrentUserForTrip(
         tripId,
       );
       final actorName = currentUser?.name;

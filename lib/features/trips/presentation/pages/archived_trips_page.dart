@@ -147,7 +147,7 @@ class _ArchivedTripsPageState extends State<ArchivedTripsPage> {
                             );
                             if (context.mounted) {
                               // Get current user for activity logging
-                              final currentUser = context
+                              final currentUser = await context
                                   .read<TripCubit>()
                                   .getCurrentUserForTrip(trip.id);
                               final actorName = currentUser?.name;

@@ -157,6 +157,7 @@ class ExpenseTrackerApp extends StatelessWidget {
   static final _firestoreService = FirestoreService();
   static final _tripRepository = TripRepositoryImpl(
     firestoreService: _firestoreService,
+    authService: _authService,
   );
   static final _activityLogRepository = ActivityLogRepositoryImpl();
   static final _activityLoggerService = ActivityLoggerServiceImpl(

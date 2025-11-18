@@ -427,12 +427,12 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
           as _i6.Future<bool>);
 
   @override
-  bool isUserMemberOf(String? tripId) =>
+  _i6.Future<bool> isUserMemberOf(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#isUserMemberOf, [tripId]),
-            returnValue: false,
+            returnValue: _i6.Future<bool>.value(false),
           )
-          as bool);
+          as _i6.Future<bool>);
 
   @override
   _i6.Future<_i9.Trip?> getTripById(String? tripId) =>
@@ -488,9 +488,12 @@ class MockTripCubit extends _i1.Mock implements _i8.TripCubit {
           as _i6.Future<bool>);
 
   @override
-  _i10.Participant? getCurrentUserForTrip(String? tripId) =>
-      (super.noSuchMethod(Invocation.method(#getCurrentUserForTrip, [tripId]))
-          as _i10.Participant?);
+  _i6.Future<_i10.Participant?> getCurrentUserForTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getCurrentUserForTrip, [tripId]),
+            returnValue: _i6.Future<_i10.Participant?>.value(),
+          )
+          as _i6.Future<_i10.Participant?>);
 
   @override
   _i6.Future<List<_i14.VerifiedMember>> getVerifiedMembers(String? tripId) =>

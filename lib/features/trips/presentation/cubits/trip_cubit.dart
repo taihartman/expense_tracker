@@ -79,8 +79,8 @@ class TripCubit extends Cubit<TripState> {
             '📦 Received ${trips.length} trips from stream (${DateTime.now().difference(streamStart).inMilliseconds}ms)',
           );
 
-          // Filter trips to only those the user has joined
-          final joinedTripIds = _localStorageService.getJoinedTripIds();
+          // Filter trips to only those the user has joined (encrypted storage)
+          final joinedTripIds = await _localStorageService.getJoinedTripIds();
           _log(
             '🔍 User has joined ${joinedTripIds.length} trips: $joinedTripIds',
           );
@@ -210,6 +210,32 @@ class TripCubit extends Cubit<TripState> {
 
       final createdTrip = await _tripRepository.createTrip(trip);
       _log('✅ Trip created with ID: ${createdTrip.id}');
+
+      // Add creator to verified members immediately so they can access the trip
+      if (creatorName != null && creatorName.isNotEmpty) {
+        final creatorParticipant = Participant.fromName(creatorName);
+        _log('👤 Adding creator to verified members: ${creatorParticipant.id}');
+        try {
+          await _tripRepository.addVerifiedMember(
+            tripId: createdTrip.id,
+            participantId: creatorParticipant.id,
+            participantName: creatorName,
+          );
+          _log('✅ Creator added to verified members');
+
+          // Save user identity for this trip
+          await _localStorageService.saveUserIdentityForTrip(
+            createdTrip.id,
+            creatorParticipant.id,
+          );
+          _log('👤 User identity saved: ${creatorParticipant.id}');
+        } catch (e) {
+          _log('❌ Failed to add creator to verified members: $e');
+          // This is critical - if we can't add them to verified members,
+          // they won't be able to access the trip due to security rules
+          throw Exception('Failed to set up trip access: $e');
+        }
+      }
 
       // Cache trip ID in local storage (user has joined this trip)
       _log('💾 Caching trip ID in local storage...');
@@ -737,7 +763,7 @@ class TripCubit extends Cubit<TripState> {
         // Verify storage persistence (critical for web)
         _log('🔍 Verifying storage persistence...');
         await Future.delayed(const Duration(milliseconds: 100));
-        final verified = _localStorageService.verifyJoinedTrip(tripId);
+        final verified = await _localStorageService.verifyJoinedTrip(tripId);
 
         if (!verified) {
           _log('❌ STORAGE VERIFICATION FAILED: Trip ID not found after write');
@@ -828,7 +854,7 @@ class TripCubit extends Cubit<TripState> {
       // Verify storage persistence (critical for web)
       _log('🔍 Verifying storage persistence...');
       await Future.delayed(const Duration(milliseconds: 100));
-      final verified = _localStorageService.verifyJoinedTrip(tripId);
+      final verified = await _localStorageService.verifyJoinedTrip(tripId);
 
       if (!verified) {
         _log('❌ STORAGE VERIFICATION FAILED: Trip ID not found after write');
@@ -888,9 +914,9 @@ class TripCubit extends Cubit<TripState> {
     }
   }
 
-  /// Check if the user is a member of a trip (checks local cache)
-  bool isUserMemberOf(String tripId) {
-    final joinedTripIds = _localStorageService.getJoinedTripIds();
+  /// Check if the user is a member of a trip (checks encrypted local storage)
+  Future<bool> isUserMemberOf(String tripId) async {
+    final joinedTripIds = await _localStorageService.getJoinedTripIds();
     return joinedTripIds.contains(tripId);
   }
 
@@ -1024,11 +1050,11 @@ class TripCubit extends Cubit<TripState> {
   /// - The trip doesn't exist in the loaded trips
   ///
   /// This is used for proper attribution of actions in activity logs.
-  Participant? getCurrentUserForTrip(String tripId) {
+  Future<Participant?> getCurrentUserForTrip(String tripId) async {
     _log('👤 Getting current user for trip $tripId');
 
-    // Get the stored participant ID for this trip
-    final participantId = _localStorageService.getUserIdentityForTrip(tripId);
+    // Get the stored participant ID for this trip (from encrypted storage)
+    final participantId = await _localStorageService.getUserIdentityForTrip(tripId);
 
     if (participantId == null) {
       _log('⚠️ No user identity found for trip $tripId');

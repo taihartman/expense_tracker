@@ -141,20 +141,20 @@ class MockLocalStorageService extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  bool verifyJoinedTrip(String? tripId) =>
+  _i4.Future<bool> verifyJoinedTrip(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#verifyJoinedTrip, [tripId]),
-            returnValue: false,
+            returnValue: _i4.Future<bool>.value(false),
           )
-          as bool);
+          as _i4.Future<bool>);
 
   @override
-  List<String> getJoinedTripIds() =>
+  _i4.Future<List<String>> getJoinedTripIds() =>
       (super.noSuchMethod(
             Invocation.method(#getJoinedTripIds, []),
-            returnValue: <String>[],
+            returnValue: _i4.Future<List<String>>.value(<String>[]),
           )
-          as List<String>);
+          as _i4.Future<List<String>>);
 
   @override
   _i4.Future<void> removeJoinedTrip(String? tripId) =>
@@ -181,9 +181,12 @@ class MockLocalStorageService extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  String? getUserIdentityForTrip(String? tripId) =>
-      (super.noSuchMethod(Invocation.method(#getUserIdentityForTrip, [tripId]))
-          as String?);
+  _i4.Future<String?> getUserIdentityForTrip(String? tripId) =>
+      (super.noSuchMethod(
+            Invocation.method(#getUserIdentityForTrip, [tripId]),
+            returnValue: _i4.Future<String?>.value(),
+          )
+          as _i4.Future<String?>);
 
   @override
   _i4.Future<void> removeUserIdentityForTrip(String? tripId) =>

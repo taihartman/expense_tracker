@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/models/currency_code.dart';
+import '../../../../core/services/auth_service.dart';
 import '../../../../shared/services/firestore_service.dart';
 import '../../domain/exceptions/trip_exceptions.dart';
 import '../../domain/models/trip.dart';
@@ -15,9 +16,13 @@ void _log(String message) {
 /// Firestore implementation of TripRepository
 class TripRepositoryImpl implements TripRepository {
   final FirestoreService _firestoreService;
+  final AuthService _authService;
 
-  TripRepositoryImpl({required FirestoreService firestoreService})
-    : _firestoreService = firestoreService;
+  TripRepositoryImpl({
+    required FirestoreService firestoreService,
+    required AuthService authService,
+  })  : _firestoreService = firestoreService,
+        _authService = authService;
 
   @override
   Future<Trip> createTrip(Trip trip) async {
@@ -155,20 +160,28 @@ class TripRepositoryImpl implements TripRepository {
         '➕ Adding verified member: $participantName (ID: $participantId) to trip $tripId',
       );
 
+      // CRITICAL: Use Firebase Auth UID as document ID for security rules
+      // The participantId is stored in the document data for business logic
+      final authUid = _authService.getAuthUidForRateLimiting();
+      if (authUid == null) {
+        throw Exception('User must be authenticated to join trip');
+      }
+
       final verifiedMember = VerifiedMember(
         participantId: participantId,
         participantName: participantName,
         verifiedAt: DateTime.now(),
       );
 
-      // Use participantId as document ID for deduplication
+      // Use Firebase Auth UID as document ID (required for security rules)
+      // Store participantId in document data (for business logic)
       await _firestoreService.trips
           .doc(tripId)
           .collection('verifiedMembers')
-          .doc(participantId)
+          .doc(authUid)  // Changed from participantId to authUid
           .set(verifiedMember.toFirestore());
 
-      _log('✅ Successfully added verified member: $participantName');
+      _log('✅ Successfully added verified member: $participantName (authUid: $authUid)');
     } catch (e) {
       _log('❌ Failed to add verified member: $e');
       throw Exception('Failed to add verified member: $e');
@@ -205,16 +218,22 @@ class TripRepositoryImpl implements TripRepository {
   }) async {
     try {
       _log(
-        '🗑️ Removing verified member (ID: $participantId) from trip $tripId',
+        '🗑️ Removing verified member (Participant ID: $participantId) from trip $tripId',
       );
+
+      // CRITICAL: Use Firebase Auth UID as document ID
+      final authUid = _authService.getAuthUidForRateLimiting();
+      if (authUid == null) {
+        throw Exception('User must be authenticated to leave trip');
+      }
 
       await _firestoreService.trips
           .doc(tripId)
           .collection('verifiedMembers')
-          .doc(participantId)
+          .doc(authUid)  // Changed from participantId to authUid
           .delete();
 
-      _log('✅ Successfully removed verified member');
+      _log('✅ Successfully removed verified member (authUid: $authUid)');
     } catch (e) {
       _log('❌ Failed to remove verified member: $e');
       throw Exception('Failed to remove verified member: $e');

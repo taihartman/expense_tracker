@@ -34,7 +34,7 @@ void main() {
     mockLocalStorageService = MockLocalStorageService();
 
     // Default stub: return empty list for getJoinedTripIds
-    when(mockLocalStorageService.getJoinedTripIds()).thenReturn([]);
+    when(mockLocalStorageService.getJoinedTripIds()).thenAnswer((_) async => []);
     when(mockLocalStorageService.getSelectedTripId()).thenReturn(null);
 
     cubit = TripCubit(
@@ -238,7 +238,7 @@ void main() {
 
       when(
         mockLocalStorageService.getJoinedTripIds(),
-      ).thenReturn(['trip-1', 'trip-2']);
+      ).thenAnswer((_) async => ['trip-1', 'trip-2']);
       when(
         mockTripRepository.getAllTrips(),
       ).thenAnswer((_) => Stream.value(allTrips));
@@ -283,7 +283,7 @@ void main() {
 
         when(
           mockLocalStorageService.getJoinedTripIds(),
-        ).thenReturn([]); // No joined trips
+        ).thenAnswer((_) async => []); // No joined trips
         when(
           mockTripRepository.getAllTrips(),
         ).thenAnswer((_) => Stream.value(allTrips));
@@ -401,7 +401,7 @@ void main() {
         when(
           mockTripRepository.getTripById(tripId),
         ).thenAnswer((_) async => existingTrip);
-        when(mockLocalStorageService.getJoinedTripIds()).thenReturn([tripId]);
+        when(mockLocalStorageService.getJoinedTripIds()).thenAnswer((_) async => [tripId]);
         when(
           mockTripRepository.getAllTrips(),
         ).thenAnswer((_) => Stream.value([existingTrip]));
@@ -448,29 +448,29 @@ void main() {
   });
 
   group('T029: TripCubit.isUserMemberOf checks local cache', () {
-    test('should return true if trip ID is in joined trips cache', () {
+    test('should return true if trip ID is in joined trips cache', () async {
       // Arrange
       const tripId = 'trip-999';
       when(
         mockLocalStorageService.getJoinedTripIds(),
-      ).thenReturn([tripId, 'trip-888']);
+      ).thenAnswer((_) async => [tripId, 'trip-888']);
 
       // Act
-      final isMember = cubit.isUserMemberOf(tripId);
+      final isMember = await cubit.isUserMemberOf(tripId);
 
       // Assert
       expect(isMember, true);
     });
 
-    test('should return false if trip ID is not in joined trips cache', () {
+    test('should return false if trip ID is not in joined trips cache', () async {
       // Arrange
       const tripId = 'trip-999';
       when(
         mockLocalStorageService.getJoinedTripIds(),
-      ).thenReturn(['trip-888', 'trip-777']);
+      ).thenAnswer((_) async => ['trip-888', 'trip-777']);
 
       // Act
-      final isMember = cubit.isUserMemberOf(tripId);
+      final isMember = await cubit.isUserMemberOf(tripId);
 
       // Assert
       expect(isMember, false);

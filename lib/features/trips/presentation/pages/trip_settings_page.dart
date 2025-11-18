@@ -29,16 +29,39 @@ class TripSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     // Check if user has verified their identity for this trip
     final tripCubit = context.read<TripCubit>();
-    if (!tripCubit.isUserMemberOf(tripId)) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.tripSettingsTitle),
-          elevation: 0,
-        ),
-        body: TripVerificationPrompt(tripId: tripId),
-      );
-    }
 
+    return FutureBuilder<bool>(
+      future: tripCubit.isUserMemberOf(tripId),
+      builder: (context, snapshot) {
+        // Show loading while checking membership
+        if (!snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.tripSettingsTitle),
+              elevation: 0,
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // Show verification prompt if not a member
+        if (snapshot.data == false) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(context.l10n.tripSettingsTitle),
+              elevation: 0,
+            ),
+            body: TripVerificationPrompt(tripId: tripId),
+          );
+        }
+
+        // User is verified, show settings
+        return _buildSettings(context);
+      },
+    );
+  }
+
+  Widget _buildSettings(BuildContext context) {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
