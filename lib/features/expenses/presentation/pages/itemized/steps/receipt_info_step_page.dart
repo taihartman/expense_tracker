@@ -39,22 +39,27 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
   void initState() {
     super.initState();
     _selectedCurrency = widget.currencyCode; // T024: Initialize with default
-    // Populate from existing state if available
+
+    // Populate controllers from state after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       final state = context.read<ItemizedExpenseCubit>().state;
-      if (state is ItemizedExpenseEditing) {
-        if (state.expectedSubtotal != null) {
-          _subtotalController.text = formatAmountForInput(
-            state.expectedSubtotal!,
-            _selectedCurrency,
-          );
-        }
-        if (state.taxAmount != null) {
-          _taxController.text = formatAmountForInput(
-            state.taxAmount!,
-            _selectedCurrency,
-          );
-        }
+      final expectedSubtotal = _getExpectedSubtotal(state);
+      final taxAmount = _getTaxAmount(state);
+
+      if (expectedSubtotal != null) {
+        _subtotalController.text = formatAmountForInput(
+          expectedSubtotal,
+          _selectedCurrency,
+        );
+      }
+
+      if (taxAmount != null) {
+        _taxController.text = formatAmountForInput(
+          taxAmount,
+          _selectedCurrency,
+        );
       }
     });
   }
@@ -66,6 +71,30 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
     _subtotalFocusNode.dispose();
     _taxFocusNode.dispose();
     super.dispose();
+  }
+
+  /// Extract expected subtotal from any state type
+  Decimal? _getExpectedSubtotal(ItemizedExpenseState state) {
+    if (state is ItemizedExpenseEditing) {
+      return state.expectedSubtotal;
+    } else if (state is ItemizedExpenseCalculating) {
+      return state.draft.expectedSubtotal;
+    } else if (state is ItemizedExpenseReady) {
+      return state.draft.expectedSubtotal;
+    }
+    return null;
+  }
+
+  /// Extract tax amount from any state type
+  Decimal? _getTaxAmount(ItemizedExpenseState state) {
+    if (state is ItemizedExpenseEditing) {
+      return state.taxAmount;
+    } else if (state is ItemizedExpenseCalculating) {
+      return state.draft.taxAmount;
+    } else if (state is ItemizedExpenseReady) {
+      return state.draft.taxAmount;
+    }
+    return null;
   }
 
   void _handleContinue() {
@@ -93,15 +122,13 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ItemizedExpenseCubit, ItemizedExpenseState>(
-      builder: (context, state) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                 Text(
                   context.l10n.receiptSplitReceiptInfoTitle,
                   style: const TextStyle(
@@ -245,7 +272,5 @@ class _ReceiptInfoStepPageState extends State<ReceiptInfoStepPage> {
             ),
           ),
         );
-      },
-    );
   }
 }
