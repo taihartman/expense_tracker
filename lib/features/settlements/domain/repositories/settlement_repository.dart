@@ -1,4 +1,5 @@
 import '../models/settlement_summary.dart';
+import '../models/settlement_computation_result.dart';
 import '../models/minimal_transfer.dart';
 import '../../../expenses/domain/models/expense.dart';
 import '../../../../core/models/currency_code.dart';
@@ -22,10 +23,10 @@ abstract class SettlementRepository {
 
   /// Manually trigger settlement computation
   /// Normally triggered automatically by Cloud Function on expense changes
-  /// Returns the computed settlement summary
+  /// Returns the computed settlement summary with optional validation warnings
   ///
   /// T029: Added optional [currencyFilter] for per-currency settlements
-  Future<SettlementSummary> computeSettlement(
+  Future<SettlementComputationResult> computeSettlement(
     String tripId, {
     CurrencyCode? currencyFilter,
   });
@@ -35,8 +36,10 @@ abstract class SettlementRepository {
   /// [tripId] - The ID of the trip
   /// [expenses] - The expenses to use for computation (from stream)
   ///
+  /// Returns the computed settlement summary with optional validation warnings
+  ///
   /// T029: Added optional [currencyFilter] for per-currency settlements
-  Future<SettlementSummary> computeSettlementWithExpenses(
+  Future<SettlementComputationResult> computeSettlementWithExpenses(
     String tripId,
     List<Expense> expenses, {
     CurrencyCode? currencyFilter,

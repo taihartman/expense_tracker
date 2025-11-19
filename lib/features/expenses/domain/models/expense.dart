@@ -125,19 +125,49 @@ class Expense {
       return {};
     }
 
-    // For currencies with decimal places, use standard division and rounding
+    // For currencies with decimal places, use remainder distribution
+    // to ensure sum of shares = original amount (conservation of money)
+    // Strategy: Work in smallest currency unit (cents for USD), similar to VND logic
     if (currency.decimalPlaces > 0) {
-      final shareAmount = DecimalHelpers.safeDivide(
-        amount,
-        Decimal.fromInt(participantCount),
+      // Convert to smallest unit (e.g., USD $100.00 → 10000 cents)
+      // .pow() returns Rational, convert to Decimal
+      final scaleFactorRational = Decimal.fromInt(10).pow(currency.decimalPlaces);
+      final scaleFactor = Decimal.parse(scaleFactorRational.toDouble().toString());
+
+      // Multiply returns Rational, convert to Decimal then to BigInt
+      final amountScaledRational = amount * scaleFactor;
+      final amountScaled = Decimal.parse(amountScaledRational.toDouble().toString());
+      final amountInSmallestUnit = amountScaled.toBigInt();
+
+      // Calculate base share in smallest unit (floor division)
+      final baseShareSmallestUnit = amountInSmallestUnit ~/ BigInt.from(participantCount);
+
+      // Calculate remainder (how many extra smallest units to distribute)
+      final totalForBase = baseShareSmallestUnit * BigInt.from(participantCount);
+      final remainderSmallestUnit = amountInSmallestUnit - totalForBase;
+      final remainder = remainderSmallestUnit.toInt();
+
+      // Convert base share back to currency unit (e.g., 3333 cents → $33.33)
+      final baseShareDecimal = DecimalHelpers.safeDivide(
+        Decimal.fromBigInt(baseShareSmallestUnit),
+        scaleFactor,
       );
-      final roundedShare = DecimalHelpers.round(
-        shareAmount,
-        currency.decimalPlaces,
-      );
-      return Map.fromEntries(
-        participants.keys.map((userId) => MapEntry(userId, roundedShare)),
-      );
+
+      // Calculate precision (0.01 for USD with 2 decimals)
+      final precision = Decimal.parse('0.${'0' * (currency.decimalPlaces - 1)}1');
+
+      final shares = <String, Decimal>{};
+      final userIds = participants.keys.toList();
+
+      // First `remainder` people get baseShare + precision, rest get baseShare
+      for (int i = 0; i < userIds.length; i++) {
+        final share = i < remainder
+            ? baseShareDecimal + precision
+            : baseShareDecimal;
+        shares[userIds[i]] = share;
+      }
+
+      return shares;
     }
 
     // For whole-number currencies (like VND), use remainder distribution
@@ -186,21 +216,44 @@ class Expense {
 
     final totalWeightDecimal = Decimal.parse(totalWeight.toString());
 
-    // For currencies with decimal places, use standard calculation
+    // For currencies with decimal places, use remainder distribution
+    // to ensure sum of shares = original amount (conservation of money)
     if (currency.decimalPlaces > 0) {
       final shares = <String, Decimal>{};
-      for (final entry in participants.entries) {
-        final userId = entry.key;
-        final weight = Decimal.parse(entry.value.toString());
+      final userIds = participants.keys.toList();
+      Decimal runningTotal = Decimal.zero;
 
-        // Share = (weight / totalWeight) * amount
-        final weightRatio = DecimalHelpers.safeDivide(weight, totalWeightDecimal);
-        final shareRational = weightRatio * amount;
-        final share = Decimal.parse(shareRational.toDouble().toString());
-        final roundedShare = DecimalHelpers.round(share, currency.decimalPlaces);
+      // Calculate shares with floor rounding for all except last participant
+      for (int i = 0; i < userIds.length; i++) {
+        final userId = userIds[i];
+        final weight = Decimal.parse(participants[userId].toString());
 
-        shares[userId] = roundedShare;
+        if (i == userIds.length - 1) {
+          // Last participant gets the remainder to ensure conservation of money
+          shares[userId] = amount - runningTotal;
+        } else {
+          // Calculate weighted share: (weight / totalWeight) * amount
+          final weightRatio = DecimalHelpers.safeDivide(weight, totalWeightDecimal);
+          final shareRational = weightRatio * amount;
+          final share = Decimal.parse(shareRational.toDouble().toString());
+
+          // Floor to currency precision (e.g., floor $33.336 to $33.33)
+          // Convert to smallest unit, floor, convert back
+          final scaleFactorRational = Decimal.fromInt(10).pow(currency.decimalPlaces);
+          final scaleFactor = Decimal.parse(scaleFactorRational.toDouble().toString());
+          final shareScaledRational = share * scaleFactor;
+          final shareScaled = Decimal.parse(shareScaledRational.toDouble().toString());
+          final shareSmallestUnit = shareScaled.toBigInt();
+          final shareFloored = DecimalHelpers.safeDivide(
+            Decimal.fromBigInt(shareSmallestUnit),
+            scaleFactor,
+          );
+
+          shares[userId] = shareFloored;
+          runningTotal += shareFloored;
+        }
       }
+
       return shares;
     }
 

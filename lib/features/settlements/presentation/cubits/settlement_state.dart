@@ -41,6 +41,7 @@ class SettlementLoaded extends SettlementState {
   final Map<String, PersonCategorySpending>? personCategorySpending;
   final String? selectedUserId; // User ID for filtering transfers
   final TransferFilterMode filterMode; // Filter mode (all/owes/owed)
+  final List<String>? validationWarnings; // Warnings from settlement validation
 
   const SettlementLoaded({
     required this.summary,
@@ -49,6 +50,7 @@ class SettlementLoaded extends SettlementState {
     this.personCategorySpending,
     this.selectedUserId,
     this.filterMode = TransferFilterMode.all,
+    this.validationWarnings,
   });
 
   @override
@@ -59,6 +61,7 @@ class SettlementLoaded extends SettlementState {
     personCategorySpending,
     selectedUserId,
     filterMode,
+    validationWarnings,
   ];
 
   /// Get all transfers (active + settled)
@@ -74,6 +77,7 @@ class SettlementLoaded extends SettlementState {
     Map<String, PersonCategorySpending>? personCategorySpending,
     String? selectedUserId,
     TransferFilterMode? filterMode,
+    List<String>? validationWarnings,
     bool clearFilter = false, // Flag to clear selectedUserId
   }) {
     return SettlementLoaded(
@@ -86,6 +90,7 @@ class SettlementLoaded extends SettlementState {
           ? null
           : (selectedUserId ?? this.selectedUserId),
       filterMode: filterMode ?? this.filterMode,
+      validationWarnings: validationWarnings ?? this.validationWarnings,
     );
   }
 }

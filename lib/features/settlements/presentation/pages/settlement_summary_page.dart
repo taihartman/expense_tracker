@@ -221,6 +221,52 @@ class _SettlementSummaryPageState extends State<SettlementSummaryPage> {
                       ),
                       const SizedBox(height: AppTheme.spacing2),
 
+                      // Validation warnings banner (if any)
+                      if (state.validationWarnings != null &&
+                          state.validationWarnings!.isNotEmpty) ...[
+                        Card(
+                          color: Theme.of(context).colorScheme.errorContainer,
+                          child: Padding(
+                            padding: const EdgeInsets.all(AppTheme.spacing2),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Theme.of(context).colorScheme.error,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: AppTheme.spacing1),
+                                    Text(
+                                      'Validation Warning',
+                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        color: Theme.of(context).colorScheme.error,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: AppTheme.spacing1),
+                                ...state.validationWarnings!.map((warning) =>
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      '• $warning',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: Theme.of(context).colorScheme.onErrorContainer,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppTheme.spacing2),
+                      ],
+
                       // T030: Currency switcher (only show if multiple currencies)
                       if (allowedCurrencies.length > 1) ...[
                         _buildCurrencySwitcher(

@@ -53,11 +53,12 @@ void main() {
 
         // Assert
         expect(shares.length, equals(3));
-        // Each person should get 33.33 (with rounding)
-        final expectedShare = Decimal.parse('33.33');
-        expect(shares['tai'], equals(expectedShare));
-        expect(shares['khiet'], equals(expectedShare));
-        expect(shares['bob'], equals(expectedShare));
+        // With remainder distribution: $100 / 3 = $33.33 base + $0.01 remainder
+        // First participant gets extra cent: $33.34
+        // Others get base: $33.33
+        expect(shares['tai'], equals(Decimal.parse('33.34')));
+        expect(shares['khiet'], equals(Decimal.parse('33.33')));
+        expect(shares['bob'], equals(Decimal.parse('33.33')));
       });
 
       test('handles single participant', () {
@@ -103,12 +104,11 @@ void main() {
 
         // Assert
         final sum = shares.values.fold(Decimal.zero, (a, b) => a + b);
-        // Sum should be within 0.05 of original amount (allow for rounding)
-        final difference = (sum - expense.amount).abs();
+        // Sum must EXACTLY equal original amount (remainder distribution ensures conservation)
         expect(
-          difference <= Decimal.parse('0.05'),
-          isTrue,
-          reason: 'Sum $sum should be close to ${expense.amount}',
+          sum,
+          equals(expense.amount),
+          reason: 'Sum $sum must exactly equal ${expense.amount} (conservation of money)',
         );
       });
     });

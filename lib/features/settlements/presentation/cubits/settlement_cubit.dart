@@ -209,6 +209,7 @@ class SettlementCubit extends Cubit<SettlementState> {
                 final shouldRecompute = _shouldRecomputeInMemory();
 
                 SettlementSummary summary;
+                List<String>? validationWarnings;
                 List<MinimalTransfer> calculatedTransfers;
 
                 if (shouldRecompute) {
@@ -216,10 +217,12 @@ class SettlementCubit extends Cubit<SettlementState> {
                     '🔄 Recomputing settlement (expenses changed or first load)',
                   );
                   _log('⚡ Using expenses from stream - no re-fetch!');
-                  summary = await _settlementRepository.computeSettlementWithExpenses(
+                  final result = await _settlementRepository.computeSettlementWithExpenses(
                     tripId,
                     data.expenses,
                   );
+                  summary = result.summary;
+                  validationWarnings = result.validationWarnings;
 
                   // Cache timestamps for future comparisons
                   _cachedLastComputedAt = summary.lastComputedAt;
@@ -241,13 +244,16 @@ class SettlementCubit extends Cubit<SettlementState> {
                     // No cache exists, must compute
                     _log('⚠️ No cached settlement found, computing...');
                     _log('⚡ Using expenses from stream - no re-fetch!');
-                    summary = await _settlementRepository.computeSettlementWithExpenses(
+                    final result = await _settlementRepository.computeSettlementWithExpenses(
                       tripId,
                       data.expenses,
                     );
+                    summary = result.summary;
+                    validationWarnings = result.validationWarnings;
                     _cachedLastComputedAt = summary.lastComputedAt;
                   } else {
                     summary = cachedSummary;
+                    validationWarnings = null; // Cached summaries don't have warnings
                   }
 
                   // Always fetch fresh transfers (they change when marked as settled)
@@ -333,6 +339,7 @@ class SettlementCubit extends Cubit<SettlementState> {
                       personCategorySpending: categorySpending,
                       selectedUserId: validUserId,
                       filterMode: filterMode,
+                      validationWarnings: validationWarnings,
                     ),
                   );
                 }
@@ -611,12 +618,14 @@ class SettlementCubit extends Cubit<SettlementState> {
               try {
                 // Compute settlement with currency filter
                 _log('🔄 Computing settlement with currency filter');
-                final summary = await _settlementRepository
+                final result = await _settlementRepository
                     .computeSettlementWithExpenses(
                   tripId,
                   data.expenses,
                   currencyFilter: currencyFilter,
                 );
+                final summary = result.summary;
+                final validationWarnings = result.validationWarnings;
 
                 _cachedLastComputedAt = summary.lastComputedAt;
 
@@ -685,6 +694,7 @@ class SettlementCubit extends Cubit<SettlementState> {
                       personCategorySpending: categorySpending,
                       selectedUserId: validUserId,
                       filterMode: filterMode,
+                      validationWarnings: validationWarnings,
                     ),
                   );
                 }

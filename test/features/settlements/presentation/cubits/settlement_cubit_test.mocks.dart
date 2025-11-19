@@ -6,30 +6,32 @@
 import 'dart:async' as _i7;
 
 import 'package:expense_tracker/core/services/local_storage_service.dart'
-    as _i14;
+    as _i15;
 import 'package:expense_tracker/features/categories/domain/models/category.dart'
     as _i5;
 import 'package:expense_tracker/features/categories/domain/repositories/category_repository.dart'
-    as _i13;
+    as _i14;
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart'
     as _i3;
 import 'package:expense_tracker/features/expenses/domain/repositories/expense_repository.dart'
-    as _i9;
+    as _i10;
 import 'package:expense_tracker/features/settlements/domain/models/minimal_transfer.dart'
-    as _i8;
-import 'package:expense_tracker/features/settlements/domain/models/settlement_summary.dart'
+    as _i9;
+import 'package:expense_tracker/features/settlements/domain/models/settlement_computation_result.dart'
     as _i2;
+import 'package:expense_tracker/features/settlements/domain/models/settlement_summary.dart'
+    as _i8;
 import 'package:expense_tracker/features/settlements/domain/repositories/settled_transfer_repository.dart'
-    as _i12;
+    as _i13;
 import 'package:expense_tracker/features/settlements/domain/repositories/settlement_repository.dart'
     as _i6;
 import 'package:expense_tracker/features/trips/domain/models/trip.dart' as _i4;
 import 'package:expense_tracker/features/trips/domain/models/verified_member.dart'
-    as _i11;
+    as _i12;
 import 'package:expense_tracker/features/trips/domain/repositories/trip_repository.dart'
-    as _i10;
+    as _i11;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i15;
+import 'package:mockito/src/dummies.dart' as _i16;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -45,9 +47,9 @@ import 'package:mockito/src/dummies.dart' as _i15;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeSettlementSummary_0 extends _i1.SmartFake
-    implements _i2.SettlementSummary {
-  _FakeSettlementSummary_0(Object parent, Invocation parentInvocation)
+class _FakeSettlementComputationResult_0 extends _i1.SmartFake
+    implements _i2.SettlementComputationResult {
+  _FakeSettlementComputationResult_0(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -72,37 +74,37 @@ class _FakeCategory_3 extends _i1.SmartFake implements _i5.Category {
 class MockSettlementRepository extends _i1.Mock
     implements _i6.SettlementRepository {
   @override
-  _i7.Future<_i2.SettlementSummary?> getSettlementSummary(String? tripId) =>
+  _i7.Future<_i8.SettlementSummary?> getSettlementSummary(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getSettlementSummary, [tripId]),
-            returnValue: _i7.Future<_i2.SettlementSummary?>.value(),
+            returnValue: _i7.Future<_i8.SettlementSummary?>.value(),
             returnValueForMissingStub:
-                _i7.Future<_i2.SettlementSummary?>.value(),
+                _i7.Future<_i8.SettlementSummary?>.value(),
           )
-          as _i7.Future<_i2.SettlementSummary?>);
+          as _i7.Future<_i8.SettlementSummary?>);
 
   @override
-  _i7.Stream<_i2.SettlementSummary?> watchSettlementSummary(String? tripId) =>
+  _i7.Stream<_i8.SettlementSummary?> watchSettlementSummary(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#watchSettlementSummary, [tripId]),
-            returnValue: _i7.Stream<_i2.SettlementSummary?>.empty(),
+            returnValue: _i7.Stream<_i8.SettlementSummary?>.empty(),
             returnValueForMissingStub:
-                _i7.Stream<_i2.SettlementSummary?>.empty(),
+                _i7.Stream<_i8.SettlementSummary?>.empty(),
           )
-          as _i7.Stream<_i2.SettlementSummary?>);
+          as _i7.Stream<_i8.SettlementSummary?>);
 
   @override
-  _i7.Stream<List<_i8.MinimalTransfer>> getMinimalTransfers(String? tripId) =>
+  _i7.Stream<List<_i9.MinimalTransfer>> getMinimalTransfers(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getMinimalTransfers, [tripId]),
-            returnValue: _i7.Stream<List<_i8.MinimalTransfer>>.empty(),
+            returnValue: _i7.Stream<List<_i9.MinimalTransfer>>.empty(),
             returnValueForMissingStub:
-                _i7.Stream<List<_i8.MinimalTransfer>>.empty(),
+                _i7.Stream<List<_i9.MinimalTransfer>>.empty(),
           )
-          as _i7.Stream<List<_i8.MinimalTransfer>>);
+          as _i7.Stream<List<_i9.MinimalTransfer>>);
 
   @override
-  _i7.Future<_i2.SettlementSummary> computeSettlement(
+  _i7.Future<_i2.SettlementComputationResult> computeSettlement(
     String? tripId, {
     dynamic currencyFilter,
   }) =>
@@ -112,8 +114,8 @@ class MockSettlementRepository extends _i1.Mock
               [tripId],
               {#currencyFilter: currencyFilter},
             ),
-            returnValue: _i7.Future<_i2.SettlementSummary>.value(
-              _FakeSettlementSummary_0(
+            returnValue: _i7.Future<_i2.SettlementComputationResult>.value(
+              _FakeSettlementComputationResult_0(
                 this,
                 Invocation.method(
                   #computeSettlement,
@@ -122,21 +124,22 @@ class MockSettlementRepository extends _i1.Mock
                 ),
               ),
             ),
-            returnValueForMissingStub: _i7.Future<_i2.SettlementSummary>.value(
-              _FakeSettlementSummary_0(
-                this,
-                Invocation.method(
-                  #computeSettlement,
-                  [tripId],
-                  {#currencyFilter: currencyFilter},
+            returnValueForMissingStub:
+                _i7.Future<_i2.SettlementComputationResult>.value(
+                  _FakeSettlementComputationResult_0(
+                    this,
+                    Invocation.method(
+                      #computeSettlement,
+                      [tripId],
+                      {#currencyFilter: currencyFilter},
+                    ),
+                  ),
                 ),
-              ),
-            ),
           )
-          as _i7.Future<_i2.SettlementSummary>);
+          as _i7.Future<_i2.SettlementComputationResult>);
 
   @override
-  _i7.Future<_i2.SettlementSummary> computeSettlementWithExpenses(
+  _i7.Future<_i2.SettlementComputationResult> computeSettlementWithExpenses(
     String? tripId,
     List<_i3.Expense>? expenses, {
     dynamic currencyFilter,
@@ -147,8 +150,8 @@ class MockSettlementRepository extends _i1.Mock
               [tripId, expenses],
               {#currencyFilter: currencyFilter},
             ),
-            returnValue: _i7.Future<_i2.SettlementSummary>.value(
-              _FakeSettlementSummary_0(
+            returnValue: _i7.Future<_i2.SettlementComputationResult>.value(
+              _FakeSettlementComputationResult_0(
                 this,
                 Invocation.method(
                   #computeSettlementWithExpenses,
@@ -157,18 +160,19 @@ class MockSettlementRepository extends _i1.Mock
                 ),
               ),
             ),
-            returnValueForMissingStub: _i7.Future<_i2.SettlementSummary>.value(
-              _FakeSettlementSummary_0(
-                this,
-                Invocation.method(
-                  #computeSettlementWithExpenses,
-                  [tripId, expenses],
-                  {#currencyFilter: currencyFilter},
+            returnValueForMissingStub:
+                _i7.Future<_i2.SettlementComputationResult>.value(
+                  _FakeSettlementComputationResult_0(
+                    this,
+                    Invocation.method(
+                      #computeSettlementWithExpenses,
+                      [tripId, expenses],
+                      {#currencyFilter: currencyFilter},
+                    ),
+                  ),
                 ),
-              ),
-            ),
           )
-          as _i7.Future<_i2.SettlementSummary>);
+          as _i7.Future<_i2.SettlementComputationResult>);
 
   @override
   _i7.Future<bool> settlementExists(String? tripId) =>
@@ -210,7 +214,7 @@ class MockSettlementRepository extends _i1.Mock
 /// A class which mocks [ExpenseRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockExpenseRepository extends _i1.Mock implements _i9.ExpenseRepository {
+class MockExpenseRepository extends _i1.Mock implements _i10.ExpenseRepository {
   @override
   _i7.Future<_i3.Expense> createExpense(_i3.Expense? expense) =>
       (super.noSuchMethod(
@@ -313,7 +317,7 @@ class MockExpenseRepository extends _i1.Mock implements _i9.ExpenseRepository {
 /// A class which mocks [TripRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockTripRepository extends _i1.Mock implements _i10.TripRepository {
+class MockTripRepository extends _i1.Mock implements _i11.TripRepository {
   @override
   _i7.Future<_i4.Trip> createTrip(_i4.Trip? trip) =>
       (super.noSuchMethod(
@@ -394,18 +398,18 @@ class MockTripRepository extends _i1.Mock implements _i10.TripRepository {
           as _i7.Future<void>);
 
   @override
-  _i7.Future<List<_i11.VerifiedMember>> getVerifiedMembers(String? tripId) =>
+  _i7.Future<List<_i12.VerifiedMember>> getVerifiedMembers(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getVerifiedMembers, [tripId]),
-            returnValue: _i7.Future<List<_i11.VerifiedMember>>.value(
-              <_i11.VerifiedMember>[],
+            returnValue: _i7.Future<List<_i12.VerifiedMember>>.value(
+              <_i12.VerifiedMember>[],
             ),
             returnValueForMissingStub:
-                _i7.Future<List<_i11.VerifiedMember>>.value(
-                  <_i11.VerifiedMember>[],
+                _i7.Future<List<_i12.VerifiedMember>>.value(
+                  <_i12.VerifiedMember>[],
                 ),
           )
-          as _i7.Future<List<_i11.VerifiedMember>>);
+          as _i7.Future<List<_i12.VerifiedMember>>);
 
   @override
   _i7.Future<void> removeVerifiedMember({
@@ -450,16 +454,16 @@ class MockTripRepository extends _i1.Mock implements _i10.TripRepository {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockSettledTransferRepository extends _i1.Mock
-    implements _i12.SettledTransferRepository {
+    implements _i13.SettledTransferRepository {
   @override
-  _i7.Stream<List<_i8.MinimalTransfer>> getSettledTransfers(String? tripId) =>
+  _i7.Stream<List<_i9.MinimalTransfer>> getSettledTransfers(String? tripId) =>
       (super.noSuchMethod(
             Invocation.method(#getSettledTransfers, [tripId]),
-            returnValue: _i7.Stream<List<_i8.MinimalTransfer>>.empty(),
+            returnValue: _i7.Stream<List<_i9.MinimalTransfer>>.empty(),
             returnValueForMissingStub:
-                _i7.Stream<List<_i8.MinimalTransfer>>.empty(),
+                _i7.Stream<List<_i9.MinimalTransfer>>.empty(),
           )
-          as _i7.Stream<List<_i8.MinimalTransfer>>);
+          as _i7.Stream<List<_i9.MinimalTransfer>>);
 
   @override
   _i7.Future<void> markTransferAsSettled(
@@ -508,7 +512,7 @@ class MockSettledTransferRepository extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockCategoryRepository extends _i1.Mock
-    implements _i13.CategoryRepository {
+    implements _i14.CategoryRepository {
   @override
   _i7.Stream<List<_i5.Category>> getTopCategories({int? limit = 5}) =>
       (super.noSuchMethod(
@@ -625,7 +629,7 @@ class MockCategoryRepository extends _i1.Mock
           as _i7.Future<List<_i5.Category>>);
 
   @override
-  _i7.Future<List<_i13.SimilarCategoryMatch>> findSimilarCategories(
+  _i7.Future<List<_i14.SimilarCategoryMatch>> findSimilarCategories(
     String? query, {
     double? threshold = 0.8,
     int? limit = 3,
@@ -636,15 +640,15 @@ class MockCategoryRepository extends _i1.Mock
               [query],
               {#threshold: threshold, #limit: limit},
             ),
-            returnValue: _i7.Future<List<_i13.SimilarCategoryMatch>>.value(
-              <_i13.SimilarCategoryMatch>[],
+            returnValue: _i7.Future<List<_i14.SimilarCategoryMatch>>.value(
+              <_i14.SimilarCategoryMatch>[],
             ),
             returnValueForMissingStub:
-                _i7.Future<List<_i13.SimilarCategoryMatch>>.value(
-                  <_i13.SimilarCategoryMatch>[],
+                _i7.Future<List<_i14.SimilarCategoryMatch>>.value(
+                  <_i14.SimilarCategoryMatch>[],
                 ),
           )
-          as _i7.Future<List<_i13.SimilarCategoryMatch>>);
+          as _i7.Future<List<_i14.SimilarCategoryMatch>>);
 
   @override
   _i7.Future<String?> getMostPopularIcon(String? categoryId) =>
@@ -660,7 +664,7 @@ class MockCategoryRepository extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockLocalStorageService extends _i1.Mock
-    implements _i14.LocalStorageService {
+    implements _i15.LocalStorageService {
   @override
   _i7.Future<void> saveSelectedTripId(String? tripId) =>
       (super.noSuchMethod(
@@ -781,14 +785,14 @@ class MockLocalStorageService extends _i1.Mock
       (super.noSuchMethod(
             Invocation.method(#getSettlementFilter, [tripId]),
             returnValue: (
-              filterMode: _i15.dummyValue<String>(
+              filterMode: _i16.dummyValue<String>(
                 this,
                 Invocation.method(#getSettlementFilter, [tripId]),
               ),
               userId: null,
             ),
             returnValueForMissingStub: (
-              filterMode: _i15.dummyValue<String>(
+              filterMode: _i16.dummyValue<String>(
                 this,
                 Invocation.method(#getSettlementFilter, [tripId]),
               ),

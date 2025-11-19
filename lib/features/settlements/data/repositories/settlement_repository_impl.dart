@@ -6,6 +6,7 @@ import '../../../expenses/domain/models/expense.dart';
 import '../../../trips/domain/repositories/trip_repository.dart';
 import '../../../trips/domain/models/trip.dart';
 import '../../domain/models/settlement_summary.dart';
+import '../../domain/models/settlement_computation_result.dart';
 import '../../domain/models/minimal_transfer.dart';
 import '../../domain/models/person_summary.dart';
 import '../../domain/repositories/settlement_repository.dart';
@@ -141,7 +142,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
   @override
   /// T029: Added currencyFilter parameter for per-currency settlements
-  Future<SettlementSummary> computeSettlementWithExpenses(
+  Future<SettlementComputationResult> computeSettlementWithExpenses(
     String tripId,
     List<Expense> expenses, {
     CurrencyCode? currencyFilter,
@@ -169,7 +170,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
   @override
   /// T029: Added currencyFilter parameter for per-currency settlements
-  Future<SettlementSummary> computeSettlement(
+  Future<SettlementComputationResult> computeSettlement(
     String tripId, {
     CurrencyCode? currencyFilter,
   }) async {
@@ -202,7 +203,7 @@ class SettlementRepositoryImpl implements SettlementRepository {
   /// Shared by both computeSettlement() and computeSettlementWithExpenses()
   ///
   /// T029: Added baseCurrency and currencyFilter parameters for per-currency settlements
-  Future<SettlementSummary> _computeSettlementInternal(
+  Future<SettlementComputationResult> _computeSettlementInternal(
     String tripId,
     Trip trip,
     List<Expense> expenses,
@@ -402,21 +403,27 @@ class SettlementRepositoryImpl implements SettlementRepository {
       _log('\n🔍 Validating settlement...');
       final validation = _validator.validate(settlementSummary, transfersWithSettledStatus);
 
+      List<String>? validationWarnings;
+
       if (!validation.isValid) {
-        _log('❌ VALIDATION FAILED:');
+        _log('⚠️  VALIDATION WARNING (non-blocking):');
         for (final issue in validation.issues) {
           _log('  - $issue');
         }
-        throw Exception('Settlement validation failed: ${validation.issues.join(", ")}');
+        validationWarnings = validation.issues;
+        _log('⚠️  Settlement will be shown with warnings');
+      } else {
+        _log('✅ Validation passed - settlement is mathematically correct');
       }
-
-      _log('✅ Validation passed - settlement is mathematically correct');
 
       _log('✅ Settlement computed and saved successfully');
       _log('   ${transfersWithSettledStatus.length} transfers created');
       _log('   ${personSummaries.length} person summaries saved\n');
 
-      return settlementSummary;
+      return SettlementComputationResult(
+        summary: settlementSummary,
+        validationWarnings: validationWarnings,
+      );
   }
 
   @override

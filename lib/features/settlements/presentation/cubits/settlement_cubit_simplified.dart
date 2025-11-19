@@ -90,9 +90,11 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
               try {
                 // Calculate settlement summary from current expenses
                 // This is FAST (< 5ms for 200 expenses)
-                final summary = await _settlementRepository.computeSettlement(
+                final result = await _settlementRepository.computeSettlement(
                   tripId,
                 );
+                final summary = result.summary;
+                final validationWarnings = result.validationWarnings;
 
                 _log('✅ Settlement calculated successfully');
                 _log('   ${summary.personSummaries.length} person summaries');
@@ -117,6 +119,7 @@ class SettlementCubitSimplified extends Cubit<SettlementState> {
                       summary: summary,
                       activeTransfers: separated.active,
                       settledTransfers: separated.settled,
+                      validationWarnings: validationWarnings,
                     ),
                   );
                 }

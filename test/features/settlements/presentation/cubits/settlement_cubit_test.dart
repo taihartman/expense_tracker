@@ -13,6 +13,7 @@ import 'package:expense_tracker/core/services/local_storage_service.dart';
 import 'package:expense_tracker/core/models/currency_code.dart';
 import 'package:expense_tracker/features/expenses/domain/models/expense.dart';
 import 'package:expense_tracker/features/settlements/domain/models/settlement_summary.dart';
+import 'package:expense_tracker/features/settlements/domain/models/settlement_computation_result.dart';
 import 'package:expense_tracker/features/trips/domain/models/trip.dart';
 import 'package:expense_tracker/core/models/participant.dart';
 import 'package:expense_tracker/core/models/split_type.dart';
@@ -153,7 +154,7 @@ void main() {
               allExpenses,
               currencyFilter: CurrencyCode.usd,
             ),
-          ).thenAnswer((_) async => usdSettlement);
+          ).thenAnswer((_) async => SettlementComputationResult(summary: usdSettlement));
         },
         act: (cubit) async {
           await cubit.loadSettlement(testTripId);
@@ -181,7 +182,7 @@ void main() {
               allExpenses,
               currencyFilter: CurrencyCode.eur,
             ),
-          ).thenAnswer((_) async => eurSettlement);
+          ).thenAnswer((_) async => SettlementComputationResult(summary: eurSettlement));
         },
         act: (cubit) async {
           await cubit.loadSettlement(testTripId);
@@ -209,7 +210,7 @@ void main() {
               allExpenses,
               currencyFilter: CurrencyCode.eur,
             ),
-          ).thenAnswer((_) async => eurSettlement);
+          ).thenAnswer((_) async => SettlementComputationResult(summary: eurSettlement));
         },
         act: (cubit) async {
           // Load EUR-filtered settlements directly
@@ -234,7 +235,7 @@ void main() {
               testTripId,
               allExpenses,
             ),
-          ).thenAnswer((_) async => usdSettlement);
+          ).thenAnswer((_) async => SettlementComputationResult(summary: usdSettlement));
         },
         act: (cubit) async {
           await cubit.loadSettlement(testTripId);

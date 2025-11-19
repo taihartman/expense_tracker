@@ -214,14 +214,15 @@ void main() {
         );
 
         // Assert USD settlements
-        // Alice paid 100, owes 100/3 + 90/3 = 63.33, net = +36.67
+        // Alice paid 100, owes 100/3 + 90/3
+        // With remainder distribution: 100/3 = 33.34 (alice gets extra cent) + 30.00 = 63.34
         expect(
           usdSummaries['alice']!.totalPaidBase,
           Decimal.parse('100'),
         );
         expect(
           usdSummaries['alice']!.totalOwedBase.toStringAsFixed(2),
-          '63.33',
+          '63.34',
         );
 
         // Assert EUR settlements
