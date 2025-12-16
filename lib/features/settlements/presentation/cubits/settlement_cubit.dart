@@ -87,17 +87,20 @@ class SettlementCubit extends Cubit<SettlementState> {
   _separateTransfers(
     List<MinimalTransfer> calculatedTransfers,
     List<MinimalTransfer> settledTransfers,
+    CurrencyCode? currencyFilter,
   ) {
     final active = <MinimalTransfer>[];
     final minThreshold = Decimal.parse('0.01');
 
     for (final transfer in calculatedTransfers) {
       // Sum all settled amounts for this fromUserId → toUserId pair
+      // When currency filter is active, only count settled transfers with matching currency
       final settledAmount = settledTransfers
           .where(
             (settled) =>
                 settled.fromUserId == transfer.fromUserId &&
-                settled.toUserId == transfer.toUserId,
+                settled.toUserId == transfer.toUserId &&
+                (currencyFilter == null || settled.currency == currencyFilter),
           )
           .fold(Decimal.zero, (sum, settled) => sum + settled.amountBase);
 
@@ -115,7 +118,15 @@ class SettlementCubit extends Cubit<SettlementState> {
       }
     }
 
-    return (active: active, settled: settledTransfers);
+    // When currency filter is active, only return settled transfers with matching currency
+    return (
+      active: active,
+      settled: currencyFilter != null
+          ? settledTransfers
+              .where((s) => s.currency == currencyFilter)
+              .toList()
+          : settledTransfers,
+    );
   }
 
   /// Fast in-memory check if settlement needs recomputation
@@ -286,10 +297,11 @@ class SettlementCubit extends Cubit<SettlementState> {
                   );
                 }
 
-                // Separate active from settled
+                // Separate active from settled (no currency filter for loadSettlement)
                 final separated = _separateTransfers(
                   calculatedTransfers,
                   data.settled,
+                  null, // No currency filter
                 );
                 _log(
                   '📊 ${separated.active.length} active, ${separated.settled.length} settled',
@@ -656,10 +668,11 @@ class SettlementCubit extends Cubit<SettlementState> {
 
                 _log('✅ Settlement computed: ${summary.personSummaries.length} people');
 
-                // Separate active from settled
+                // Separate active from settled (with currency filter)
                 final separated = _separateTransfers(
                   calculatedTransfers,
                   data.settled,
+                  currencyFilter, // Pass currency filter to match settled transfers
                 );
                 _log(
                   '📊 ${separated.active.length} active, ${separated.settled.length} settled',
