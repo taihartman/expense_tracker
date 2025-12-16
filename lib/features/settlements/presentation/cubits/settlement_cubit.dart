@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
@@ -75,27 +76,57 @@ class SettlementCubit extends Cubit<SettlementState> {
        super(const SettlementInitial());
 
   /// Separate transfers into active and settled lists
+  ///
+  /// For each calculated transfer, subtracts the total settled amount for that
+  /// pair (fromUserId → toUserId). Only includes in active list if remaining
+  /// amount is greater than 0.01.
+  ///
+  /// This fixes a bug where ANY prior settlement between two people would
+  /// completely hide all future debts between them.
   ({List<MinimalTransfer> active, List<MinimalTransfer> settled})
   _separateTransfers(
     List<MinimalTransfer> calculatedTransfers,
     List<MinimalTransfer> settledTransfers,
+    CurrencyCode? currencyFilter,
   ) {
     final active = <MinimalTransfer>[];
+    final minThreshold = Decimal.parse('0.01');
 
     for (final transfer in calculatedTransfers) {
-      // Check if this transfer matches any settled transfer
-      final isSettled = settledTransfers.any(
-        (settled) =>
-            settled.fromUserId == transfer.fromUserId &&
-            settled.toUserId == transfer.toUserId,
+      // Sum all settled amounts for this fromUserId → toUserId pair
+      // When currency filter is active, only count settled transfers with matching currency
+      final settledAmount = settledTransfers
+          .where(
+            (settled) =>
+                settled.fromUserId == transfer.fromUserId &&
+                settled.toUserId == transfer.toUserId &&
+                (currencyFilter == null || settled.currency == currencyFilter),
+          )
+          .fold(Decimal.zero, (sum, settled) => sum + settled.amountBase);
+
+      // Calculate remaining amount after subtracting settled
+      final remainingAmount = transfer.amountBase - settledAmount;
+
+      _log(
+        '💰 ${transfer.fromUserId}→${transfer.toUserId}: '
+        'calculated=${transfer.amountBase}, settled=$settledAmount, remaining=$remainingAmount',
       );
 
-      if (!isSettled) {
-        active.add(transfer);
+      // Only add to active if there's still a meaningful amount owed
+      if (remainingAmount > minThreshold) {
+        active.add(transfer.copyWith(amountBase: remainingAmount));
       }
     }
 
-    return (active: active, settled: settledTransfers);
+    // When currency filter is active, only return settled transfers with matching currency
+    return (
+      active: active,
+      settled: currencyFilter != null
+          ? settledTransfers
+              .where((s) => s.currency == currencyFilter)
+              .toList()
+          : settledTransfers,
+    );
   }
 
   /// Fast in-memory check if settlement needs recomputation
@@ -266,10 +297,11 @@ class SettlementCubit extends Cubit<SettlementState> {
                   );
                 }
 
-                // Separate active from settled
+                // Separate active from settled (no currency filter for loadSettlement)
                 final separated = _separateTransfers(
                   calculatedTransfers,
                   data.settled,
+                  null, // No currency filter
                 );
                 _log(
                   '📊 ${separated.active.length} active, ${separated.settled.length} settled',
@@ -636,10 +668,11 @@ class SettlementCubit extends Cubit<SettlementState> {
 
                 _log('✅ Settlement computed: ${summary.personSummaries.length} people');
 
-                // Separate active from settled
+                // Separate active from settled (with currency filter)
                 final separated = _separateTransfers(
                   calculatedTransfers,
                   data.settled,
+                  currencyFilter, // Pass currency filter to match settled transfers
                 );
                 _log(
                   '📊 ${separated.active.length} active, ${separated.settled.length} settled',
