@@ -656,10 +656,24 @@ class ItemizedExpenseCubit extends Cubit<ItemizedExpenseState> {
     emit(ItemizedExpenseCalculating(validatedState));
 
     try {
+      // Build extras for calculation, including taxAmount from receipt info
+      // if not already set via extras.tax
+      Extras calculationExtras = validatedState.extras;
+      if (validatedState.taxAmount != null &&
+          validatedState.taxAmount! > Decimal.zero &&
+          validatedState.extras.tax == null) {
+        calculationExtras = validatedState.extras.copyWith(
+          tax: TaxExtra.amount(value: validatedState.taxAmount!),
+        );
+        debugPrint(
+          '🟡 [Cubit] Added taxAmount ${validatedState.taxAmount} to calculation extras',
+        );
+      }
+
       // Run calculation
       final participantBreakdown = _calculator.calculate(
         items: validatedState.items,
-        extras: validatedState.extras,
+        extras: calculationExtras,
         allocation: validatedState.allocation,
         currencyCode: validatedState.currencyCode,
       );
