@@ -10,15 +10,11 @@ class DefaultCategories {
   static const String activities = 'Activities';
   static const String shopping = 'Shopping';
   static const String other = 'Other';
+  static const String potato = 'Potato';
 
   /// Get all category data (icons and colors)
   static const List<Map<String, String>> all = [
     {'name': meals, 'icon': 'restaurant', 'color': '#FF5722'},
-    {'name': transport, 'icon': 'directions_car', 'color': '#2196F3'},
-    {'name': accommodation, 'icon': 'hotel', 'color': '#9C27B0'},
-    {'name': activities, 'icon': 'local_activity', 'color': '#4CAF50'},
-    {'name': shopping, 'icon': 'shopping_bag', 'color': '#FF9800'},
-    {'name': other, 'icon': 'more_horiz', 'color': '#9E9E9E'},
   ];
 
   /// Get localized display name for a category
@@ -33,6 +29,8 @@ class DefaultCategories {
       case activities:
         return context.l10n.categoryActivities;
       case shopping:
+        return context.l10n.categoryShopping;
+      case potato:
         return context.l10n.categoryShopping;
       case other:
         return context.l10n.categoryOther;
