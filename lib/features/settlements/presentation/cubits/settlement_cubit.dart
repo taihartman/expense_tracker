@@ -172,6 +172,13 @@ class SettlementCubit extends Cubit<SettlementState> {
   Future<void> loadSettlement(String tripId) async {
     try {
       _log('📥 Loading settlement for trip: $tripId');
+
+      // Track if we're switching to a different trip (to clear filters)
+      final isSwitchingTrips = _currentTripId != null && _currentTripId != tripId;
+      if (isSwitchingTrips) {
+        _log('🔄 Switching trips from $_currentTripId to $tripId - will clear filters');
+      }
+
       _currentTripId = tripId;
 
       await _combinedSubscription?.cancel();
@@ -333,34 +340,41 @@ class SettlementCubit extends Cubit<SettlementState> {
                 }
 
                 if (!isClosed) {
-                  // Restore saved filter from local storage
-                  final savedFilter = _localStorageService.getSettlementFilter(tripId);
-
-                  // Validate that saved userId exists in current trip participants
+                  // When switching trips, clear filters instead of restoring
+                  // This prevents stale filters from other trips appearing
                   String? validUserId;
-                  if (savedFilter.userId != null) {
-                    final userExists = summary.personSummaries.containsKey(savedFilter.userId);
-                    if (userExists) {
-                      validUserId = savedFilter.userId;
-                      _log(
-                        '🔍 Restored filter: userId=$validUserId, mode=${savedFilter.filterMode}',
-                      );
-                    } else {
-                      _log(
-                        '⚠️ Saved filter user (${savedFilter.userId}) not found in trip, ignoring',
-                      );
-                    }
-                  }
-
-                  // Parse filter mode from string
                   TransferFilterMode filterMode = TransferFilterMode.all;
-                  try {
-                    filterMode = TransferFilterMode.values.firstWhere(
-                      (e) => e.name == savedFilter.filterMode,
-                      orElse: () => TransferFilterMode.all,
-                    );
-                  } catch (e) {
-                    _log('⚠️ Invalid filter mode: ${savedFilter.filterMode}, using default');
+
+                  if (!isSwitchingTrips) {
+                    // Restore saved filter from local storage (same trip refresh)
+                    final savedFilter = _localStorageService.getSettlementFilter(tripId);
+
+                    // Validate that saved userId exists in current trip participants
+                    if (savedFilter.userId != null) {
+                      final userExists = summary.personSummaries.containsKey(savedFilter.userId);
+                      if (userExists) {
+                        validUserId = savedFilter.userId;
+                        _log(
+                          '🔍 Restored filter: userId=$validUserId, mode=${savedFilter.filterMode}',
+                        );
+                      } else {
+                        _log(
+                          '⚠️ Saved filter user (${savedFilter.userId}) not found in trip, ignoring',
+                        );
+                      }
+                    }
+
+                    // Parse filter mode from string
+                    try {
+                      filterMode = TransferFilterMode.values.firstWhere(
+                        (e) => e.name == savedFilter.filterMode,
+                        orElse: () => TransferFilterMode.all,
+                      );
+                    } catch (e) {
+                      _log('⚠️ Invalid filter mode: ${savedFilter.filterMode}, using default');
+                    }
+                  } else {
+                    _log('🔍 Cleared filters due to trip switch');
                   }
 
                   emit(
@@ -591,6 +605,13 @@ class SettlementCubit extends Cubit<SettlementState> {
       _log(
         '💱 Loading settlement for trip: $tripId, currency: ${currencyFilter?.code ?? "all"}',
       );
+
+      // Track if we're switching to a different trip (to clear filters)
+      final isSwitchingTrips = _currentTripId != null && _currentTripId != tripId;
+      if (isSwitchingTrips) {
+        _log('🔄 Switching trips from $_currentTripId to $tripId - will clear filters');
+      }
+
       _currentTripId = tripId;
 
       await _combinedSubscription?.cancel();
@@ -699,24 +720,30 @@ class SettlementCubit extends Cubit<SettlementState> {
                 }
 
                 if (!isClosed) {
-                  // Restore saved filter
-                  final savedFilter = _localStorageService.getSettlementFilter(tripId);
+                  // When switching trips, clear filters instead of restoring
                   String? validUserId;
-                  if (savedFilter.userId != null) {
-                    final userExists = summary.personSummaries.containsKey(savedFilter.userId);
-                    if (userExists) {
-                      validUserId = savedFilter.userId;
-                    }
-                  }
-
                   TransferFilterMode filterMode = TransferFilterMode.all;
-                  try {
-                    filterMode = TransferFilterMode.values.firstWhere(
-                      (e) => e.name == savedFilter.filterMode,
-                      orElse: () => TransferFilterMode.all,
-                    );
-                  } catch (e) {
-                    _log('⚠️ Invalid filter mode: ${savedFilter.filterMode}');
+
+                  if (!isSwitchingTrips) {
+                    // Restore saved filter (same trip, just currency change)
+                    final savedFilter = _localStorageService.getSettlementFilter(tripId);
+                    if (savedFilter.userId != null) {
+                      final userExists = summary.personSummaries.containsKey(savedFilter.userId);
+                      if (userExists) {
+                        validUserId = savedFilter.userId;
+                      }
+                    }
+
+                    try {
+                      filterMode = TransferFilterMode.values.firstWhere(
+                        (e) => e.name == savedFilter.filterMode,
+                        orElse: () => TransferFilterMode.all,
+                      );
+                    } catch (e) {
+                      _log('⚠️ Invalid filter mode: ${savedFilter.filterMode}');
+                    }
+                  } else {
+                    _log('🔍 Cleared filters due to trip switch');
                   }
 
                   emit(
